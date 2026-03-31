@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { FileUp, Loader2, Mic, MicOff, Sparkles, AlertCircle } from 'lucide-react';
+import { FileUp, Loader2, Mic, Sparkles, AlertCircle } from 'lucide-react';
 
 export type VentureExtracted = {
   projectName: string;
@@ -52,7 +52,7 @@ export function VentureAiAssist({ onExtracted }: Props) {
         lang: string;
         interimResults: boolean;
         continuous: boolean;
-        onresult: ((e: { resultIndex: number; results: { length: number; [i: number]: { [0]: { transcript: string } } } }) => void) | null;
+        onresult: ((e: { resultIndex: number; results: { length: number; [i: number]: { isFinal: boolean; [0]: { transcript: string } } } }) => void) | null;
         onerror: (() => void) | null;
         onend: (() => void) | null;
         start: () => void;
@@ -62,7 +62,7 @@ export function VentureAiAssist({ onExtracted }: Props) {
         lang: string;
         interimResults: boolean;
         continuous: boolean;
-        onresult: ((e: { resultIndex: number; results: { length: number; [i: number]: { [0]: { transcript: string } } } }) => void) | null;
+        onresult: ((e: { resultIndex: number; results: { length: number; [i: number]: { isFinal: boolean; [0]: { transcript: string } } } }) => void) | null;
         onerror: (() => void) | null;
         onend: (() => void) | null;
         start: () => void;
@@ -75,15 +75,21 @@ export function VentureAiAssist({ onExtracted }: Props) {
     stopListening();
     const rec = new SR();
     rec.lang = 'en-US';
+    // Interim updates must NOT be appended — only final segments, or each partial
+    // re-fire duplicates the same phrase ("I am" + "I am planning" + …).
     rec.interimResults = true;
     rec.continuous = true;
     rec.onresult = (event) => {
       let chunk = '';
       for (let i = event.resultIndex; i < event.results.length; i++) {
-        chunk += event.results[i][0].transcript;
+        const r = event.results[i];
+        if (r.isFinal) {
+          chunk += r[0].transcript;
+        }
       }
-      if (chunk) {
-        setBrief((prev) => (prev ? `${prev.trim()} ${chunk}` : chunk));
+      const t = chunk.trim();
+      if (t) {
+        setBrief((prev) => (prev ? `${prev.trim()} ${t}` : t));
       }
     };
     rec.onerror = () => setListening(false);
@@ -107,7 +113,7 @@ export function VentureAiAssist({ onExtracted }: Props) {
       name.endsWith('.json');
 
     if (!ok) {
-      setError('Use a text-based file (.txt, .md, .csv, .json) or paste content below.');
+      setError('Use .txt, .md, .csv, .json — or paste below.');
       e.target.value = '';
       return;
     }
@@ -124,7 +130,7 @@ export function VentureAiAssist({ onExtracted }: Props) {
   const runExtract = async () => {
     const text = brief.trim();
     if (!text) {
-      setError('Add a description, upload a file, or use voice first.');
+      setError('Add a brief, file, or voice first.');
       return;
     }
     setError(null);
@@ -148,71 +154,83 @@ export function VentureAiAssist({ onExtracted }: Props) {
     }
   };
 
+  const inputClass =
+    'w-full min-h-[7rem] resize-y bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 text-xl text-zinc-100 placeholder-zinc-800 focus:outline-none focus:border-zinc-500 transition-all font-medium shadow-inner';
+
   return (
-    <div className="mb-10 rounded-2xl border border-[#0D9488]/30 bg-[#0D9488]/[0.06] p-6 shadow-inner">
-      <div className="mb-4 flex items-center gap-2">
-        <Sparkles className="h-5 w-5 text-[#0D9488]" aria-hidden />
-        <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-[#0D9488]">AI venture setup</h3>
-      </div>
-      <p className="mb-4 text-sm leading-relaxed text-zinc-400">
-        Speak, type a rough brief, or upload a text file — we&apos;ll fill the form so you don&apos;t have to type everything.
-      </p>
+    <div className="space-y-3">
+      <label className="flex items-center gap-2 text-xs font-bold text-zinc-500 uppercase tracking-widest">
+        <Sparkles className="h-3.5 w-3.5 shrink-0 text-[#0D9488]" aria-hidden />
+        AI assist
+      </label>
 
       <textarea
         value={brief}
         onChange={(e) => setBrief(e.target.value)}
-        placeholder="Example: We’re building a B2B tool for indie retailers to forecast inventory using on-device AI. Targeting EU shops under 50 employees. Goal: pilot in Q2…"
-        className="mb-3 min-h-[120px] w-full resize-y rounded-xl border border-zinc-800 bg-zinc-950/80 p-4 text-base text-zinc-100 placeholder-zinc-600 focus:border-[#0D9488]/50 focus:outline-none"
+        placeholder="Short pitch or notes…"
+        className={inputClass}
         disabled={extracting}
       />
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <input ref={fileInputRef} type="file" accept=".txt,.md,.csv,.json,text/plain" className="hidden" onChange={handleFile} />
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={extracting}
-          className="inline-flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900/80 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-zinc-200 transition hover:border-zinc-500 disabled:opacity-50"
-        >
-          <FileUp className="h-4 w-4" aria-hidden />
-          Upload file
-        </button>
-        {voiceSupported ? (
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+          <input ref={fileInputRef} type="file" accept=".txt,.md,.csv,.json,text/plain" className="hidden" onChange={handleFile} />
           <button
             type="button"
-            onClick={() => (listening ? stopListening() : startListening())}
+            onClick={() => fileInputRef.current?.click()}
             disabled={extracting}
-            className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition disabled:opacity-50 ${
-              listening
-                ? 'border-red-500/50 bg-red-950/40 text-red-200'
-                : 'border-zinc-700 bg-zinc-900/80 text-zinc-200 hover:border-zinc-500'
-            }`}
+            className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 transition-colors hover:text-zinc-200 disabled:opacity-50"
           >
-            {listening ? <MicOff className="h-4 w-4" aria-hidden /> : <Mic className="h-4 w-4" aria-hidden />}
-            {listening ? 'Stop' : 'Voice'}
+            <FileUp className="h-3.5 w-3.5 opacity-80" aria-hidden />
+            File
           </button>
-        ) : (
-          <span className="text-[10px] text-zinc-600">Voice needs Chrome / Edge</span>
-        )}
-        {fileLabel ? <span className="text-xs text-zinc-500">Added: {fileLabel}</span> : null}
+          {voiceSupported ? (
+            <>
+              <button
+                type="button"
+                onClick={() => (listening ? stopListening() : startListening())}
+                disabled={extracting}
+                className={`inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-colors disabled:opacity-50 ${
+                  listening ? 'text-[#0D9488]' : 'text-zinc-500 hover:text-zinc-200'
+                }`}
+                aria-pressed={listening}
+              >
+                <Mic className={`h-3.5 w-3.5 opacity-90 ${listening ? 'animate-pulse' : ''}`} aria-hidden />
+                {listening ? 'Stop' : 'Voice'}
+              </button>
+              {listening ? (
+                <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#0D9488]" aria-live="polite">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#0D9488] opacity-60" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-[#0D9488]" />
+                  </span>
+                  Listening
+                </span>
+              ) : null}
+            </>
+          ) : (
+            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Voice (Chrome / Edge)</span>
+          )}
+          {fileLabel ? <span className="text-[10px] text-zinc-600">{fileLabel}</span> : null}
+        </div>
+
+        <button
+          type="button"
+          onClick={runExtract}
+          disabled={extracting || !brief.trim()}
+          className="inline-flex shrink-0 items-center gap-2 self-start py-1 text-[10px] font-bold uppercase tracking-widest text-[#0D9488] transition-colors hover:text-[#5eead4] disabled:cursor-not-allowed disabled:opacity-30 sm:self-auto"
+        >
+          {extracting ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Sparkles className="h-3.5 w-3.5" aria-hidden />}
+          {extracting ? 'Extracting…' : 'Extract & fill'}
+        </button>
       </div>
 
       {error ? (
-        <div className="mb-3 flex items-start gap-2 rounded-lg border border-red-900/50 bg-red-950/30 p-3 text-sm text-red-200">
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+        <div className="flex items-start gap-2 rounded-2xl border border-red-900/35 bg-red-950/15 px-4 py-3 text-sm text-red-300/90 shadow-inner">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 opacity-90" aria-hidden />
           {error}
         </div>
       ) : null}
-
-      <button
-        type="button"
-        onClick={runExtract}
-        disabled={extracting || !brief.trim()}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#0D9488] py-3.5 text-sm font-extrabold uppercase tracking-wider text-zinc-950 shadow-lg transition hover:bg-[#14b8a6] disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:px-8"
-      >
-        {extracting ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden /> : <Sparkles className="h-5 w-5" aria-hidden />}
-        {extracting ? 'Extracting…' : 'Extract & fill form'}
-      </button>
     </div>
   );
 }

@@ -139,7 +139,7 @@ export function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) 
 
                     <div className="flex-1 py-4">
                         {step === 1 && (
-                            <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+                            <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
                                 <VentureAiAssist onExtracted={applyExtracted} />
                                 <div className="space-y-3">
                                     <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Venture Name</label>
