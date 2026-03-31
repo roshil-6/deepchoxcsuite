@@ -1,0 +1,21 @@
+# Render Blueprint — link repo and adjust service name as needed.
+# Add a Postgres instance in the dashboard, set DATABASE_URL on this web service.
+
+services:
+  - type: web
+    name: deepchox-c-suite
+    runtime: node
+    plan: starter
+    region: oregon
+    buildCommand: npm ci && npx prisma generate && npm run build
+    startCommand: npx prisma migrate deploy && npm run start
+    envVars:
+      - key: NODE_VERSION
+        value: 22.12.0
+      - key: GROQ_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      # Optional:
+      # - key: GROQ_MODEL
+      #   value: llama-3.3-70b-versatile

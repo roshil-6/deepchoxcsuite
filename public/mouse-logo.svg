@@ -1,0 +1,5 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Mouse cursor arrow shape -->
+  <path d="M12 8L12 48L22 38L28 52L36 48L30 34L44 34L12 8Z" fill="black" stroke="white" stroke-width="2" stroke-linejoin="miter"/>
+  <path d="M14 12L38 30L28 30L32 42L28 44L24 32L16 40L14 12Z" fill="white"/>
+</svg>

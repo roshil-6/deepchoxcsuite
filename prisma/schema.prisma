@@ -1,0 +1,42 @@
+// PostgreSQL on Render (or any URL in DATABASE_URL)
+// Run: npx prisma migrate dev  (local)  |  npx prisma migrate deploy  (Render build/start)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Unified enquiries inbox (WhatsApp, email, social, etc.) — populate via future webhooks / sync jobs.
+model Enquiry {
+  id         String   @id @default(cuid())
+  /// Optional Dexie venture id — tag enquiries to a startup workspace.
+  ventureId  Int?
+  source     String
+  externalId String?
+  subject    String?
+  body       String   @db.Text
+  receivedAt DateTime
+  importance String   @default("normal")
+  isRead     Boolean  @default(false)
+  rawMeta    Json?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([receivedAt])
+  @@index([source])
+  @@index([ventureId])
+}
+
+/// Optional: last agent / sync run metadata for “Sync” button and background jobs.
+model AgentSyncState {
+  id        String    @id @default(cuid())
+  scope     String    @unique
+  lastRunAt DateTime?
+  summary   String?   @db.Text
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
