@@ -102,8 +102,8 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                 {/* Top bar — minimal wordmark + actions; full brand lives in hero */}
                 <header className="sticky top-0 z-30 bg-transparent">
                     <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-x-4 gap-y-3 px-5 py-3.5 sm:px-8 lg:px-12">
-                        <span className="font-sans text-[11px] font-semibold uppercase tracking-[0.28em] text-zinc-500 [text-shadow:0_1px_12px_rgba(0,0,0,0.5)]">
-                            DeepChox
+                        <span className="font-sans text-[12px] font-semibold tracking-[0.12em] text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.85)]">
+                            Virtual C-Suite
                         </span>
                         <nav
                             className="flex flex-1 flex-wrap items-center justify-end gap-x-1 gap-y-2 sm:flex-initial sm:gap-x-2 md:gap-x-3 [text-shadow:0_2px_24px_rgba(0,0,0,0.85)]"
