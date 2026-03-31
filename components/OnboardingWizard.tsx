@@ -4,20 +4,16 @@ import React, { useState, useEffect } from 'react';
 import {
     Building2,
     Target,
-    Users,
-    Clock,
     ArrowRight,
     Check,
     Sparkles,
-    Zap,
     Briefcase,
-    ChevronRight,
     ShieldCheck,
     X,
     ScanSearch,
     PieChart,
-    LayoutGrid
 } from 'lucide-react';
+import { VentureAiAssist, type VentureExtracted } from '@/components/VentureAiAssist';
 
 interface OnboardingWizardProps {
     onComplete: (data: any) => void;
@@ -33,8 +29,26 @@ export function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) 
         targetAudience: '',
         primaryGoal: '',
         timeline: '',
+        resources: '',
+        valueProposition: '',
+        challenges: '',
         isAnalyzing: false
     });
+
+    const applyExtracted = (d: VentureExtracted) => {
+        setFormData((prev) => ({
+            ...prev,
+            projectName: d.projectName || prev.projectName,
+            industry: d.industry || prev.industry,
+            problemStatement: d.problemStatement || prev.problemStatement,
+            targetAudience: d.targetAudience || prev.targetAudience,
+            primaryGoal: d.primaryGoal || prev.primaryGoal,
+            timeline: d.timeline || prev.timeline,
+            resources: d.resources || prev.resources,
+            valueProposition: d.valueProposition || prev.valueProposition,
+            challenges: d.challenges || prev.challenges,
+        }));
+    };
 
     const totalSteps = 4;
 
@@ -44,10 +58,13 @@ export function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) 
     };
 
     const handleComplete = () => {
-        setFormData(prev => ({ ...prev, isAnalyzing: true }));
-        // Simulate AI synthesis
+        setFormData((prev) => ({ ...prev, isAnalyzing: true }));
         setTimeout(() => {
-            onComplete(formData);
+            setFormData((prev) => {
+                const { isAnalyzing: _a, ...rest } = prev;
+                onComplete(rest);
+                return prev;
+            });
         }, 2500);
     };
 
@@ -123,6 +140,7 @@ export function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) 
                     <div className="flex-1 py-4">
                         {step === 1 && (
                             <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+                                <VentureAiAssist onExtracted={applyExtracted} />
                                 <div className="space-y-3">
                                     <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Venture Name</label>
                                     <input
@@ -154,7 +172,16 @@ export function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) 
                                         value={formData.problemStatement}
                                         onChange={(e) => setFormData({ ...formData, problemStatement: e.target.value })}
                                         placeholder="What specific friction are we resolving?"
-                                        className="w-full bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 text-xl text-zinc-100 placeholder-zinc-800 focus:outline-none focus:border-zinc-500 transition-all font-medium h-48 resize-none shadow-inner"
+                                        className="w-full bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 text-xl text-zinc-100 placeholder-zinc-800 focus:outline-none focus:border-zinc-500 transition-all font-medium h-36 resize-none shadow-inner"
+                                    />
+                                </div>
+                                <div className="space-y-3">
+                                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Target audience</label>
+                                    <textarea
+                                        value={formData.targetAudience}
+                                        onChange={(e) => setFormData({ ...formData, targetAudience: e.target.value })}
+                                        placeholder="Who is this for?"
+                                        className="w-full bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 text-xl text-zinc-100 placeholder-zinc-800 focus:outline-none focus:border-zinc-500 transition-all font-medium h-32 resize-none shadow-inner"
                                     />
                                 </div>
                             </div>
