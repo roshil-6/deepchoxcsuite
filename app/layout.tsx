@@ -1,13 +1,12 @@
 import type { Metadata } from 'next';
-import { Open_Sans, Playfair_Display, JetBrains_Mono, Syne } from 'next/font/google';
+import { Inter, Playfair_Display, JetBrains_Mono, Syne } from 'next/font/google';
 import './globals.css';
 import { OfficeProvider } from '@/lib/OfficeContext';
 
-const openSans = Open_Sans({
+const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-open-sans',
-  weight: ['400', '500', '600', '700'],
+  variable: '--font-inter',
 });
 
 const playfair = Playfair_Display({
@@ -43,7 +42,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${openSans.variable} ${playfair.variable} ${jetbrains.variable} ${syne.variable} font-sans bg-brand-bg text-brand-text antialiased overflow-x-hidden leading-normal tracking-tight`}
+        className={`${inter.variable} ${playfair.variable} ${jetbrains.variable} ${syne.variable} font-sans bg-brand-bg text-brand-text antialiased overflow-x-hidden leading-normal tracking-tight`}
       >
         <OfficeProvider>
           {children}

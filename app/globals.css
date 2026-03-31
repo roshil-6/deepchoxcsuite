@@ -21,7 +21,7 @@
   --color-office-accent: #8ab4f8;
   --color-office-accent-muted: rgba(138, 180, 248, 0.14);
 
-  --font-sans: var(--font-open-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   /* Playfair loaded via next/font on <body> as --font-playfair */
   --font-serif: var(--font-playfair), ui-serif, Georgia, "Times New Roman", serif;
   --font-mono: "JetBrains Mono", "monospace";
