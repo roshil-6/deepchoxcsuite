@@ -51,9 +51,10 @@ function stripJsonFence(raw: string): string {
 export async function POST(req: Request) {
   try {
     if (!process.env.GROQ_API_KEY?.trim()) {
+      // 200 so the client can read JSON without treating it as a transport failure; UI still shows data.error.
       return NextResponse.json(
         { ok: false, error: 'GROQ_API_KEY required for Personal Assistant actions.' },
-        { status: 503 }
+        { status: 200 }
       );
     }
 

@@ -1,50 +1,40 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
-import Image from 'next/image';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Mail, Lock, Play, User, Shield } from 'lucide-react';
+import { ArrowRight, Mail, Lock, User, Shield, Volume2, VolumeX } from 'lucide-react';
 
-/** Default hero still — add `public/landing-hero-suite-intelligence.png` or set `NEXT_PUBLIC_LANDING_HERO_IMAGE_URL`. */
-export const LANDING_HERO_STILL = '/landing-hero-suite-intelligence.png';
+/** Default hero video — `public/landing-hero-demo.mp4`. Override with `NEXT_PUBLIC_LANDING_HERO_VIDEO_URL` (full URL). */
+export const LANDING_HERO_VIDEO_DEFAULT = '/landing-hero-demo.mp4';
 
 interface LandingPageProps {
     onStart: () => void;
-    /** MP4/WebM URL for the hero video. Defaults to `NEXT_PUBLIC_LANDING_HERO_VIDEO_URL`. */
+    /** MP4/WebM URL — overrides env and default file in `public/`. */
     heroVideoSrc?: string | null;
 }
 
 export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
-    /** Optional demo video — shown *below* the hero image, never replaces it. */
+    /** Hero video only. Prop → env → `public/landing-hero-demo.mp4`. */
     const resolvedHeroVideo = (() => {
         const fromProp =
             heroVideoSrc != null && String(heroVideoSrc).trim() !== '' ? String(heroVideoSrc).trim() : null;
         if (fromProp) return fromProp;
         const env = process.env.NEXT_PUBLIC_LANDING_HERO_VIDEO_URL;
-        return typeof env === 'string' && env.trim() !== '' ? env.trim() : null;
+        if (typeof env === 'string' && env.trim() !== '') return env.trim();
+        return LANDING_HERO_VIDEO_DEFAULT;
     })();
 
-    /** Hero screenshot: env URL first, then `/landing-hero-suite-intelligence.png` in `public/`. */
-    const heroImageSrc = useMemo(() => {
-        const fromEnv =
-            process.env.NEXT_PUBLIC_LANDING_HERO_IMAGE_URL?.trim() ||
-            process.env.NEXT_PUBLIC_LANDING_HERO_STILL_URL?.trim();
-        if (fromEnv) return fromEnv;
-        return LANDING_HERO_STILL;
-    }, []);
-
-    const isExternalHeroImage =
-        heroImageSrc.startsWith('http://') || heroImageSrc.startsWith('https://');
     const [isVisible, setIsVisible] = useState(false);
     const [signupOpen, setSignupOpen] = useState(false);
     const [signupEmail, setSignupEmail] = useState('');
     const [signupUsername, setSignupUsername] = useState('');
     const [signupPassword, setSignupPassword] = useState('');
     const [signupSubmitted, setSignupSubmitted] = useState(false);
-    /** True if `/public/landing-hero-suite-intelligence.png` is missing or failed to load */
-    const [heroStillError, setHeroStillError] = useState(false);
     /** Normalized pointer 0–100 for CSS-driven background parallax */
     const [bgPointer, setBgPointer] = useState({ x: 50, y: 32 });
+    /** Browsers allow autoplay only when muted — user can enable sound via control */
+    const [heroVideoMuted, setHeroVideoMuted] = useState(true);
+    const heroVideoRef = useRef<HTMLVideoElement>(null);
 
     const handleBgPointer = (e: React.PointerEvent<HTMLDivElement>) => {
         const rect = e.currentTarget.getBoundingClientRect();
@@ -56,6 +46,14 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
     useEffect(() => {
         setIsVisible(true);
     }, []);
+
+    useEffect(() => {
+        const v = heroVideoRef.current;
+        if (!v) return;
+        const sync = () => setHeroVideoMuted(v.muted);
+        v.addEventListener('volumechange', sync);
+        return () => v.removeEventListener('volumechange', sync);
+    }, [resolvedHeroVideo]);
 
     useEffect(() => {
         if (!signupOpen) return;
@@ -93,6 +91,15 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                         background: `radial-gradient(ellipse 88% 68% at ${bgPointer.x}% ${bgPointer.y}%, #101014 0%, #050506 42%, #000000 100%)`,
                     }}
                 />
+                {/* Subtle violet from top-left — soft gradients only, no blur orbs */}
+                <div
+                    className="absolute inset-0"
+                    aria-hidden
+                    style={{
+                        background:
+                            'radial-gradient(ellipse 70% 52% at 0% 0%, rgba(124, 58, 237, 0.11) 0%, transparent 50%), linear-gradient(158deg, rgba(91, 33, 182, 0.06) 0%, transparent 36%)',
+                    }}
+                />
                 <div
                     className="absolute inset-0 opacity-[0.68]"
                     style={{
@@ -113,7 +120,7 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
             </div>
 
             <div
-                className={`relative z-10 mx-auto flex min-h-screen w-full max-w-[1280px] flex-col px-0 font-sans transition-all duration-700 ease-out ${
+                className={`relative z-10 mx-auto flex min-h-screen w-full max-w-[1600px] flex-col px-0 font-sans transition-all duration-700 ease-out ${
                     isVisible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
                 }`}
             >
@@ -163,119 +170,65 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                 </header>
 
                 {/* Above-the-fold hero — Google AI Studio–style stack (fits in one viewport) */}
-                <section className="flex min-h-[calc(100dvh-3.75rem)] shrink-0 flex-col items-center justify-center px-5 py-4 sm:px-10 sm:py-6 lg:px-14">
-                    <div className="mx-auto flex w-full max-w-5xl flex-col items-center text-center">
-                        {/* Logo + wordmark + tagline: tagline aligns under “DeepChox”, whole block centered */}
-                        <div className="flex w-full justify-center">
-                            <div className="flex items-start gap-3 sm:gap-4">
-                                <Image
-                                    src="/deepchox-mark.svg"
-                                    alt=""
-                                    width={128}
-                                    height={128}
-                                    priority
-                                    className="mt-0.5 h-16 w-16 shrink-0 sm:mt-1 sm:h-[4.5rem] sm:w-[4.5rem]"
+                <section className="flex min-h-[calc(100dvh-3.75rem)] shrink-0 flex-col items-center justify-center px-4 py-4 sm:px-6 sm:py-6 lg:px-10">
+                    <div className="mx-auto flex w-full max-w-[min(100%,72rem)] flex-col items-center text-center lg:max-w-[min(100%,80rem)]">
+                        {/* Wordmark — no logo; accent matches --color-brand-teal (blue) */}
+                        <div className="flex w-full justify-center px-1">
+                            <div className="flex w-full max-w-xl flex-col items-center text-center sm:max-w-2xl lg:max-w-3xl">
+                                <p className="font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-brand-teal sm:text-[11px]">
+                                    Virtual C-Suite
+                                </p>
+                                <span
+                                    className="mt-2 font-[family-name:var(--font-brand-display)] text-[clamp(2.5rem,8vw,4.5rem)] font-semibold leading-[1.02] tracking-[-0.02em] text-white [text-shadow:0_2px_40px_rgba(0,0,0,0.5),0_0_72px_rgba(138,180,248,0.14)]"
+                                >
+                                    DeepChox
+                                </span>
+                                <span
+                                    className="mt-3 block h-px w-12 bg-gradient-to-r from-brand-teal/85 to-transparent"
                                     aria-hidden
                                 />
-                                <div className="flex min-w-0 flex-col items-start text-left">
-                                    <span className="font-sans text-[clamp(2.35rem,7vw,4.25rem)] font-semibold leading-[1.05] tracking-tight text-white">
-                                        DeepChox
-                                    </span>
-                                    <p className="mt-2 max-w-[20rem] font-sans text-[14px] font-normal leading-snug text-zinc-400 sm:text-[15px] sm:leading-relaxed">
-                                        Virtual AI-powered office
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div
-                            className="relative mt-5 w-full max-w-5xl overflow-hidden rounded-2xl border border-zinc-800/90 bg-zinc-950/80 shadow-[0_24px_80px_-20px_rgba(0,0,0,0.85)] sm:mt-6"
-                            style={{ aspectRatio: '16/9', maxHeight: 'min(46vh, 520px)' }}
-                        >
-                            {!heroStillError ? (
-                                <div className="absolute inset-0">
-                                    {isExternalHeroImage ? (
-                                        <img
-                                            src={heroImageSrc}
-                                            alt="DeepChox Intelligence Suite — staff network, venture record, and officer desks"
-                                            className="absolute inset-0 h-full w-full object-cover object-top"
-                                            onError={() => setHeroStillError(true)}
-                                        />
-                                    ) : (
-                                        <div className="relative h-full w-full">
-                                            <Image
-                                                src={heroImageSrc}
-                                                alt="DeepChox Intelligence Suite — staff network, venture record, and officer desks"
-                                                fill
-                                                className="object-cover object-top"
-                                                priority
-                                                sizes="(max-width: 1280px) 100vw, 1280px"
-                                                onError={() => setHeroStillError(true)}
-                                            />
-                                        </div>
-                                    )}
-                                    <div
-                                        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent"
-                                        aria-hidden
-                                    />
-                                    <div className="absolute inset-x-0 bottom-0 flex flex-col gap-1 px-4 pb-3 pt-8 sm:px-5 sm:pb-4">
-                                        <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.18em] text-teal-300/95">
-                                            Intelligence Suite
-                                        </p>
-                                        <p className="max-w-2xl font-sans text-[11px] leading-snug text-zinc-300/95 sm:text-xs">
-                                            Staff network &amp; process — venture record, CEO · CTO · CFO · CSO · CMO, and one
-                                            controlled merge.
-                                        </p>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gradient-to-b from-zinc-900/90 via-black to-black px-4">
-                                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_40%,rgba(34,211,238,0.12),transparent_65%)]" />
-                                    <Image
-                                        src="/deepchox-mark.svg"
-                                        alt=""
-                                        width={56}
-                                        height={56}
-                                        className="relative h-12 w-12 opacity-90 sm:h-14 sm:w-14"
-                                        aria-hidden
-                                    />
-                                    <div className="relative flex h-12 w-12 items-center justify-center rounded-full border border-zinc-700/80 bg-zinc-900/90 text-zinc-300">
-                                        <Play className="ml-0.5 h-5 w-5 fill-current" aria-hidden />
-                                    </div>
-                                    <p className="relative max-w-[22rem] text-center font-sans text-[11px] leading-relaxed text-zinc-500 sm:text-xs">
-                                        Add{' '}
-                                        <code className="rounded bg-zinc-900 px-1.5 py-0.5 font-mono text-[10px] text-zinc-400">
-                                            public/landing-hero-suite-intelligence.png
-                                        </code>{' '}
-                                        or set{' '}
-                                        <code className="rounded bg-zinc-900 px-1.5 py-0.5 font-mono text-[10px] text-zinc-400">
-                                            NEXT_PUBLIC_LANDING_HERO_IMAGE_URL
-                                        </code>{' '}
-                                        (full URL). Optional:{' '}
-                                        <code className="rounded bg-zinc-900 px-1.5 py-0.5 font-mono text-[10px] text-zinc-400">
-                                            NEXT_PUBLIC_LANDING_HERO_VIDEO_URL
-                                        </code>{' '}
-                                        shows a demo video below this frame.
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-
-                        {resolvedHeroVideo ? (
-                            <div className="relative mt-4 w-full max-w-5xl overflow-hidden rounded-xl border border-zinc-800/80 bg-black/40 shadow-lg">
-                                <video
-                                    className="max-h-[min(40vh,360px)] w-full object-contain"
-                                    controls
-                                    playsInline
-                                    preload="metadata"
-                                    poster={isExternalHeroImage ? heroImageSrc : LANDING_HERO_STILL}
-                                    src={resolvedHeroVideo}
-                                />
-                                <p className="border-t border-zinc-800/80 px-3 py-2 text-center font-sans text-[10px] text-zinc-500">
-                                    Demo video — hero above stays your product screenshot
+                                <p className="mt-4 max-w-[22rem] font-sans text-[14px] font-normal leading-[1.55] text-zinc-400 sm:max-w-[26rem] sm:text-[15px] sm:leading-relaxed">
+                                    One command center for your venture — strategy, finance, product, and market intel, with
+                                    AI at every desk.
                                 </p>
                             </div>
-                        ) : null}
+                        </div>
+
+                        {/* Centered preview box — capped width so the hero stays balanced on large screens */}
+                        <div className="relative mx-auto mt-5 w-full max-w-[min(100%,36rem)] overflow-hidden rounded-2xl border border-zinc-800/90 bg-zinc-900/40 shadow-[0_20px_60px_-18px_rgba(0,0,0,0.75)] sm:mt-6 sm:max-w-[min(100%,42rem)] lg:max-w-[min(100%,48rem)]">
+                            <div className="relative aspect-video w-full overflow-hidden bg-zinc-950">
+                                <video
+                                    ref={heroVideoRef}
+                                    className="absolute inset-0 h-full w-full object-cover object-center"
+                                    autoPlay
+                                    loop
+                                    muted={heroVideoMuted}
+                                    playsInline
+                                    preload="auto"
+                                    controls
+                                    src={resolvedHeroVideo}
+                                >
+                                    Your browser does not support the video tag.
+                                </video>
+                                <button
+                                    type="button"
+                                    onClick={() => setHeroVideoMuted((m) => !m)}
+                                    className="absolute right-2 top-2 z-10 inline-flex items-center gap-2 rounded-lg border border-zinc-600/90 bg-black/75 px-2.5 py-1.5 font-sans text-[11px] font-semibold text-zinc-100 shadow-lg backdrop-blur-sm transition hover:bg-black/90 hover:border-zinc-500 sm:right-3 sm:top-3 sm:px-3 sm:py-2 sm:text-xs"
+                                    aria-pressed={!heroVideoMuted}
+                                    aria-label={heroVideoMuted ? 'Turn sound on' : 'Mute video'}
+                                >
+                                    {heroVideoMuted ? (
+                                        <VolumeX className="h-4 w-4 shrink-0 text-zinc-400" aria-hidden />
+                                    ) : (
+                                        <Volume2 className="h-4 w-4 shrink-0 text-brand-teal" aria-hidden />
+                                    )}
+                                    <span className="hidden sm:inline">{heroVideoMuted ? 'Sound on' : 'Mute'}</span>
+                                </button>
+                            </div>
+                            <p className="border-t border-zinc-800/80 px-3 py-2 text-center font-sans text-[10px] text-zinc-500">
+                                Plays automatically — tap Sound on for audio
+                            </p>
+                        </div>
 
                         <h1 className="font-serif mx-auto mt-5 max-w-[22ch] text-balance text-[clamp(2.15rem,6vw,4.25rem)] font-semibold leading-[1.08] tracking-[0.015em] text-white sm:mt-6 sm:max-w-[24ch] [text-shadow:0_4px_40px_rgba(0,0,0,0.55)]">
                             Where venture and intelligence meet

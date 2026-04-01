@@ -32,6 +32,10 @@ const syne = Syne({
 export const metadata: Metadata = {
   title: 'DEEPCHOX - Virtual AI Office',
   description: 'Zero-Data, Report-First Multi-Agent Business Application',
+  icons: {
+    icon: [{ url: '/deepchox-mark.svg', type: 'image/svg+xml' }],
+    apple: '/deepchox-mark.svg',
+  },
 };
 
 export default function RootLayout({

@@ -6,6 +6,7 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, CheckCircle2, Lock, Loader2, Download, Target, ClipboardList, Calculator, ScanSearch } from 'lucide-react';
+import { NOISE_DATA_URL } from '@/lib/noiseTexture';
 
 export function ReportCeremony({ onClose }: { onClose: () => void }) {
     const { activeProject } = useOffice();
@@ -97,7 +98,10 @@ export function ReportCeremony({ onClose }: { onClose: () => void }) {
             >
                 {/* Header */}
                 <div className="h-32 bg-zinc-900 flex items-center justify-center relative overflow-hidden">
-                    <div className="absolute inset-0 bg-[url('/noise.png')] opacity-20 mix-blend-overlay"></div>
+                    <div
+                        className="absolute inset-0 opacity-20 mix-blend-overlay"
+                        style={{ backgroundImage: `url("${NOISE_DATA_URL}")` }}
+                    />
                     {step === 'done' ? (
                         <div className="w-16 h-16 bg-violet-500/20 rounded-full flex items-center justify-center shadow-lg animate-in zoom-in border border-violet-500/50">
                             <CheckCircle2 className="w-8 h-8 text-violet-500" />

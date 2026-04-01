@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useOffice } from '@/lib/OfficeContext';
+import { NOISE_DATA_URL } from '@/lib/noiseTexture';
 import { EyeOff } from 'lucide-react';
 
 export function OfficeShell({ children }: { children: React.ReactNode }) {
@@ -10,7 +11,10 @@ export function OfficeShell({ children }: { children: React.ReactNode }) {
     return (
         <div className={`relative h-screen w-full overflow-hidden bg-brand-bg font-sans text-brand-text transition-all duration-700 ${systemState.isDeepWork ? 'brightness-75 saturate-0' : ''
             }`}>
-            <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.03]" style={{ backgroundImage: 'url("/noise.png")', mixBlendMode: 'overlay' }} />
+            <div
+                className="pointer-events-none absolute inset-0 z-0 opacity-[0.03]"
+                style={{ backgroundImage: `url("${NOISE_DATA_URL}")`, mixBlendMode: 'overlay' }}
+            />
 
             {/* Deep Work Focus Overlay (Pure Black) */}
             <div className={`absolute inset-0 z-50 pointer-events-none bg-black transition-opacity duration-1000 ${systemState.isDeepWork ? 'opacity-80' : 'opacity-0'}`} />
