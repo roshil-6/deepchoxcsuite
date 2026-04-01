@@ -5,6 +5,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Mail, Lock, Play, User, Shield } from 'lucide-react';
 
+/** Default hero still — drop `landing-hero-suite-intelligence.png` into `/public` (Intelligence Suite screenshot). */
+export const LANDING_HERO_STILL = '/landing-hero-suite-intelligence.png';
+
 interface LandingPageProps {
     onStart: () => void;
     /** MP4/WebM URL for the hero video. Defaults to `NEXT_PUBLIC_LANDING_HERO_VIDEO_URL`. */
@@ -25,6 +28,8 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
     const [signupUsername, setSignupUsername] = useState('');
     const [signupPassword, setSignupPassword] = useState('');
     const [signupSubmitted, setSignupSubmitted] = useState(false);
+    /** True if `/public/landing-hero-suite-intelligence.png` is missing or failed to load */
+    const [heroStillError, setHeroStillError] = useState(false);
     /** Normalized pointer 0–100 for CSS-driven background parallax */
     const [bgPointer, setBgPointer] = useState({ x: 50, y: 32 });
 
@@ -180,8 +185,34 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                                     controls
                                     playsInline
                                     preload="metadata"
+                                    poster={LANDING_HERO_STILL}
                                     src={resolvedHeroVideo}
                                 />
+                            ) : !heroStillError ? (
+                                <div className="absolute inset-0">
+                                    <Image
+                                        src={LANDING_HERO_STILL}
+                                        alt="DeepChox Intelligence Suite — staff network, venture record, and officer desks"
+                                        fill
+                                        className="object-cover object-top"
+                                        priority
+                                        sizes="(max-width: 1280px) 100vw, 1280px"
+                                        onError={() => setHeroStillError(true)}
+                                    />
+                                    <div
+                                        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent"
+                                        aria-hidden
+                                    />
+                                    <div className="absolute inset-x-0 bottom-0 flex flex-col gap-1 px-4 pb-3 pt-8 sm:px-5 sm:pb-4">
+                                        <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.18em] text-teal-300/95">
+                                            Intelligence Suite
+                                        </p>
+                                        <p className="max-w-2xl font-sans text-[11px] leading-snug text-zinc-300/95 sm:text-xs">
+                                            Staff network &amp; process — venture record, CEO · CTO · CFO · CSO · CMO, and one
+                                            controlled merge.
+                                        </p>
+                                    </div>
+                                </div>
                             ) : (
                                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gradient-to-b from-zinc-900/90 via-black to-black px-4">
                                     <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_40%,rgba(34,211,238,0.12),transparent_65%)]" />
@@ -196,8 +227,12 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                                     <div className="relative flex h-12 w-12 items-center justify-center rounded-full border border-zinc-700/80 bg-zinc-900/90 text-zinc-300">
                                         <Play className="ml-0.5 h-5 w-5 fill-current" aria-hidden />
                                     </div>
-                                    <p className="relative max-w-[18rem] text-center font-sans text-[11px] leading-relaxed text-zinc-500 sm:text-xs">
-                                        Add a video URL in{' '}
+                                    <p className="relative max-w-[20rem] text-center font-sans text-[11px] leading-relaxed text-zinc-500 sm:text-xs">
+                                        Add{' '}
+                                        <code className="rounded bg-zinc-900 px-1.5 py-0.5 font-mono text-[10px] text-zinc-400">
+                                            public/landing-hero-suite-intelligence.png
+                                        </code>{' '}
+                                        (your screenshot) or set{' '}
                                         <code className="rounded bg-zinc-900 px-1.5 py-0.5 font-mono text-[10px] text-zinc-400">
                                             NEXT_PUBLIC_LANDING_HERO_VIDEO_URL
                                         </code>
