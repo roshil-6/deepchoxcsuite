@@ -25,24 +25,24 @@ export interface ChatRailTheme {
 /** Flat dark-grey chat rail — room copy varies, chrome stays calm */
 const DEFAULT_CHAT: ChatRailTheme = {
   agentRole: 'chief_of_staff',
-  roleLabel: 'your Chief of Staff',
-  subtitle: 'Coordinating your office.',
-  emptyPrompt: 'Tell me what you need orchestrated across the team.',
+  roleLabel: 'Chief of Staff',
+  subtitle: 'Side thread for this room.',
+  emptyPrompt: 'Ask something about this venture or desk.',
   headerClass: 'border-b border-white/[0.07] bg-brand-panel/70 backdrop-blur-sm',
   railClass: 'border-r border-white/[0.07] bg-brand-panel/70',
   userBubbleClass: 'border border-white/[0.1] bg-brand-input/90 text-brand-text shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
   accentDot: 'bg-brand-teal',
-  placeholder: 'Issue a directive…',
+  placeholder: 'Message…',
 };
 
 export function getChatRailTheme(activeRoom: string): ChatRailTheme {
   const map: Record<string, Partial<ChatRailTheme> & { agentRole: AgentRole }> = {
     dashboard: {
       agentRole: 'chief_of_staff',
-      roleLabel: 'your Chief of Staff',
-      subtitle: 'On the executive overview with you.',
-      emptyPrompt: 'Ask for a read on the venture, priorities, or what to do next.',
-      placeholder: 'Steer the overview…',
+      roleLabel: 'Chief of Staff',
+      subtitle: 'Overview.',
+      emptyPrompt: 'Ask about this venture, priorities, or next steps.',
+      placeholder: 'Message…',
     },
     reports: {
       agentRole: 'chief_of_staff',

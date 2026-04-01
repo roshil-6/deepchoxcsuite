@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useOffice, getAgentSystemPrompt, AgentRole } from '@/lib/OfficeContext';
 import { getChatRailTheme, getChatAgentRoleForRoom } from '@/lib/roomThemes';
-import { Sparkles, Paperclip, ArrowUp, Bot, Stars, X } from 'lucide-react';
+import { Paperclip, ArrowUp, Bot, X, Eraser } from 'lucide-react';
 
 interface Message {
     id: string;
@@ -174,22 +174,22 @@ export function ChatAssistant({
         <div
             className={`flex min-h-0 flex-col overflow-hidden shadow-none transition-all duration-300 ${
                 isBottomDock && dockThreadEmpty
-                    ? 'h-auto w-full rounded-none border-0 bg-brand-bg'
+                    ? 'h-auto w-full rounded-none border-0 bg-transparent'
                     : isBottomDock
-                      ? 'h-full min-h-[min(36vh,320px)] rounded-none border-0 bg-brand-bg'
+                      ? 'h-full min-h-0 max-h-full rounded-none border-0 bg-transparent'
                       : chatTheme.railClass
             }`}
         >
             {isBottomDock && !dockThreadEmpty ? (
-                <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/[0.08] px-4 pb-2 pt-3 sm:px-5">
-                    <p className="min-w-0 text-[12px] leading-snug text-brand-muted">
-                        <span className="font-medium text-brand-text">{currentAgent.name}</span>
+                <div className="flex shrink-0 items-baseline justify-between gap-2 pb-2 pt-0.5">
+                    <p className="min-w-0 text-[11px] leading-snug text-brand-muted/90">
+                        <span className="text-brand-text/90">{currentAgent.name}</span>
                         <span className="text-brand-muted"> · {currentAgent.title}</span>
                     </p>
                     <button
                         type="button"
                         onClick={() => setMessages([])}
-                        className="shrink-0 text-[12px] font-medium text-brand-muted transition-colors hover:text-brand-text"
+                        className="shrink-0 text-[11px] text-brand-muted/80 transition-colors hover:text-brand-text"
                         title="Clear thread"
                     >
                         Clear
@@ -202,8 +202,8 @@ export function ChatAssistant({
                             <Bot className="h-4 w-4" aria-hidden />
                         </div>
                         <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold text-zinc-100">AI thread</p>
-                            <p className="truncate text-[10px] text-zinc-500">Optional · same model as command deck</p>
+                            <p className="truncate text-sm font-medium text-zinc-100">Chat</p>
+                            <p className="truncate text-[10px] text-zinc-500">Same model as elsewhere</p>
                         </div>
                     </div>
                     <div className="flex shrink-0 items-center gap-1">
@@ -213,7 +213,7 @@ export function ChatAssistant({
                             className="rounded-lg border border-zinc-700/60 bg-zinc-900/50 p-2 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
                             title="Clear thread"
                         >
-                            <Sparkles className="h-3.5 w-3.5" aria-hidden />
+                            <Eraser className="h-3.5 w-3.5" aria-hidden />
                         </button>
                         {onClose && (
                             <button
@@ -237,16 +237,11 @@ export function ChatAssistant({
                         </div>
                         <div className="min-w-0">
                             <p className="text-[13px] leading-snug text-brand-text/90">
-                                Hey — I&apos;m{' '}
-                                <span className="font-semibold text-white">{chatTheme.roleLabel}</span>.
+                                <span className="font-medium text-white">{chatTheme.roleLabel}</span>
+                                <span className="text-brand-muted"> · </span>
+                                <span className="text-[12px] text-brand-muted">{currentAgent.title}</span>
                             </p>
                             <p className="mt-1 text-[11px] leading-relaxed text-brand-muted">{chatTheme.subtitle}</p>
-                            <div className="mt-2 flex items-center gap-2">
-                                <span className={`h-1.5 w-1.5 shrink-0 rounded-full animate-pulse ${chatTheme.accentDot}`} aria-hidden />
-                                <span className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Online</span>
-                                <span className="text-brand-border">·</span>
-                                <span className="truncate text-[10px] font-medium text-brand-muted">{currentAgent.title}</span>
-                            </div>
                         </div>
                     </div>
                     <button
@@ -255,45 +250,47 @@ export function ChatAssistant({
                         className="shrink-0 rounded-xl border border-white/[0.1] bg-white/[0.04] p-2 text-brand-muted transition-colors hover:bg-brand-input hover:text-white"
                         title="Clear thread"
                     >
-                        <Sparkles className="h-4 w-4" aria-hidden />
+                        <Eraser className="h-4 w-4" aria-hidden />
                     </button>
                 </div>
             )}
 
             {!dockThreadEmpty && (
             <div
-                className={`custom-scrollbar min-h-0 flex-1 space-y-6 overflow-y-auto bg-brand-bg ${
-                    isBottomDock ? 'px-4 pb-2 pt-0 sm:px-5' : 'p-4 sm:p-5'
+                className={`custom-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto ${
+                    isBottomDock ? 'bg-transparent px-0 pb-2 pt-0' : 'bg-brand-bg p-4 sm:p-5'
                 }`}
             >
                 {messages.length === 0 && (
                     <div
-                        className={`flex select-none flex-col items-start rounded-2xl border border-white/[0.07] bg-white/[0.02] p-4 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:p-6 ${
-                            variant === 'drawer' ? 'min-h-[120px]' : 'min-h-[160px]'
+                        className={`flex select-none flex-col items-start text-left ${
+                            isBottomDock
+                                ? 'py-1'
+                                : `rounded-2xl border border-white/[0.07] bg-white/[0.02] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:p-6 ${variant === 'drawer' ? 'min-h-[120px]' : 'min-h-[160px]'}`
                         }`}
                     >
-                        <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-zinc-900/70">
-                            <Stars className="h-4 w-4 text-zinc-500" strokeWidth={1.25} aria-hidden />
-                        </div>
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500">This thread</p>
-                        <p className="mt-2 max-w-[280px] text-sm leading-relaxed text-zinc-300">{chatTheme.emptyPrompt}</p>
+                        <p className="max-w-[280px] text-sm leading-relaxed text-zinc-300">{chatTheme.emptyPrompt}</p>
                         {variant !== 'drawer' && (
-                            <p className="mt-3 text-xs text-zinc-600">Say more in the composer at the bottom.</p>
+                            <p className="mt-3 text-xs text-zinc-600">Use the box below.</p>
                         )}
                     </div>
                 )}
 
                 {messages.map((msg) => (
-                    <div key={msg.id} className={`flex gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                    <div key={msg.id} className={`flex gap-2.5 sm:gap-3 ${isBottomDock ? '' : 'animate-in fade-in slide-in-from-bottom-4 duration-500'} ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
                         {msg.role === 'assistant' && (
-                            <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-zinc-600 bg-zinc-800">
-                                <Bot className="h-4 w-4 text-zinc-400" />
+                            <div className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${isBottomDock ? 'bg-white/[0.04] text-brand-muted' : 'border border-zinc-600 bg-zinc-800'}`}>
+                                <Bot className={`h-3.5 w-3.5 ${isBottomDock ? 'text-brand-muted' : 'text-zinc-400'}`} />
                             </div>
                         )}
 
-                        <div className={`max-w-[85%] rounded-lg p-4 text-sm leading-relaxed ${msg.role === 'user'
-                            ? `rounded-tr-sm border text-zinc-50 ${chatTheme.userBubbleClass}`
-                            : 'rounded-tl-sm border border-zinc-600 bg-zinc-800 font-sans text-zinc-300'
+                        <div className={`max-w-[88%] text-sm leading-relaxed ${msg.role === 'user'
+                            ? isBottomDock
+                                ? `rounded-2xl rounded-br-md bg-brand-teal/[0.12] px-3 py-2.5 text-brand-text ring-1 ring-white/[0.06]`
+                                : `rounded-lg rounded-tr-sm border p-4 text-zinc-50 ${chatTheme.userBubbleClass}`
+                            : isBottomDock
+                              ? 'rounded-2xl rounded-bl-md bg-white/[0.04] px-3 py-2.5 text-brand-text/95'
+                              : 'rounded-lg rounded-tl-sm border border-zinc-600 bg-zinc-800 p-4 font-sans text-zinc-300'
                             }`}>
                             <p className="whitespace-pre-wrap">{msg.content}</p>
                         </div>
@@ -301,14 +298,12 @@ export function ChatAssistant({
                 ))}
 
                 {isLoading && (
-                    <div className="flex gap-4 p-2">
-                        <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-zinc-600 bg-zinc-800">
-                            <Bot className="h-4 w-4 text-zinc-400" />
+                    <div className={isBottomDock ? 'flex gap-2.5' : 'flex gap-4 p-2'}>
+                        <div className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${isBottomDock ? 'bg-white/[0.04]' : 'border border-zinc-600 bg-zinc-800'}`}>
+                            <Bot className={`h-3.5 w-3.5 ${isBottomDock ? 'text-brand-muted' : 'text-zinc-400'}`} />
                         </div>
-                        <div className="flex items-center gap-1.5 rounded-lg rounded-tl-sm border border-zinc-700 bg-zinc-800 px-5 py-3">
-                            <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-500"></div>
-                            <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-500 delay-100"></div>
-                            <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-500 delay-200"></div>
+                        <div className={`flex items-center ${isBottomDock ? 'rounded-2xl rounded-bl-md bg-white/[0.04] px-3 py-2.5' : 'rounded-lg rounded-tl-sm border border-zinc-700 bg-zinc-800 px-5 py-3'}`}>
+                            <span className={`text-sm ${isBottomDock ? 'text-brand-muted' : 'text-zinc-500'}`}>…</span>
                         </div>
                     </div>
                 )}
@@ -319,16 +314,16 @@ export function ChatAssistant({
             {/* File Context Chips */}
             {activeProject?.files && activeProject.files.length > 0 && (
                 <div
-                    className={`flex flex-wrap gap-2 border-t px-4 py-2 sm:px-5 ${
+                    className={`flex flex-wrap gap-2 px-1 py-1.5 sm:px-2 ${
                         isBottomDock
-                            ? 'border-zinc-800/35 bg-transparent'
-                            : 'border-white/[0.07] bg-brand-panel/60 px-6 py-3 backdrop-blur-sm'
+                            ? 'border-0 bg-transparent'
+                            : 'border-t border-white/[0.07] bg-brand-panel/60 px-6 py-3 backdrop-blur-sm'
                     }`}
                 >
                     {activeProject.files.map(f => (
-                        <div key={f.id} className="bg-zinc-900/80 text-zinc-400 text-[9px] px-2.5 py-1.5 rounded-lg border border-zinc-800 flex items-center gap-2 uppercase tracking-widest font-bold shadow-sm hover:bg-zinc-800 transition-colors cursor-default">
-                            <span className="text-brand-teal">FILE</span>
-                            <span className="truncate max-w-[120px] text-zinc-300">{f.name}</span>
+                        <div key={f.id} className="flex cursor-default items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900/80 px-2.5 py-1.5 text-[11px] text-zinc-300 shadow-sm transition-colors hover:bg-zinc-800">
+                            <span className="text-zinc-500">File</span>
+                            <span className="max-w-[120px] truncate">{f.name}</span>
                         </div>
                     ))}
                 </div>
@@ -337,14 +332,14 @@ export function ChatAssistant({
             <div
                 className={`shrink-0 ${
                     isBottomDock
-                        ? 'border-t border-white/[0.06] bg-brand-bg/90 px-4 pb-3 pt-2 backdrop-blur-md sm:px-5 sm:pb-4'
+                        ? 'border-0 bg-transparent pb-0 pt-1'
                         : 'border-t border-white/[0.07] bg-brand-panel/80 p-4 backdrop-blur-sm sm:p-5'
                 }`}
             >
                 <div
                     className={`group relative overflow-hidden transition-colors ${
                         isBottomDock
-                            ? 'rounded-3xl border border-white/[0.08] bg-brand-panel/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] focus-within:ring-1 focus-within:ring-brand-teal/25'
+                            ? 'rounded-xl bg-white/[0.04] ring-1 ring-white/[0.06] focus-within:bg-white/[0.06] focus-within:ring-white/[0.1]'
                             : 'rounded-2xl border border-white/[0.08] bg-brand-bg/80 focus-within:ring-1 focus-within:ring-brand-teal/30'
                     }`}
                 >
@@ -369,9 +364,9 @@ export function ChatAssistant({
                         type="button"
                         onClick={handleSendMessage}
                         disabled={!inputValue.trim() || isLoading}
-                        className={`absolute bottom-2 right-2 z-10 rounded-xl p-2 transition-colors active:scale-[0.98] disabled:translate-y-2 disabled:opacity-0 sm:bottom-2.5 sm:right-2.5 sm:p-2 ${
+                        className={`absolute bottom-2 right-2 z-10 rounded-lg p-2 transition-colors active:scale-[0.98] disabled:translate-y-2 disabled:opacity-0 sm:bottom-2.5 sm:right-2.5 sm:p-2 ${
                             isBottomDock
-                                ? 'border border-white/[0.1] bg-brand-input/90 text-brand-text hover:bg-brand-card'
+                                ? 'bg-brand-teal/90 text-[#131314] hover:bg-brand-teal'
                                 : 'bg-brand-teal text-[#131314] hover:bg-brand-teal/90'
                         }`}
                     >
@@ -394,19 +389,13 @@ export function ChatAssistant({
                             className={`flex items-center gap-1.5 transition-colors hover:text-brand-text ${
                                 isBottomDock
                                     ? 'text-[12px] font-medium text-brand-muted'
-                                    : 'text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:text-zinc-300'
+                                    : 'text-[12px] font-medium text-zinc-500 hover:text-zinc-300'
                             }`}
                         >
                             <Paperclip className="h-3.5 w-3.5" aria-hidden />
                             <span>Add context</span>
                         </button>
                     </div>
-                    {variant !== 'drawer' && !isBottomDock && (
-                        <div className="flex items-center gap-2">
-                            <span className="h-1.5 w-1.5 rounded-full bg-zinc-800" />
-                            <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-700">v2.1 Secure</span>
-                        </div>
-                    )}
                 </div>
             </div>
         </div>

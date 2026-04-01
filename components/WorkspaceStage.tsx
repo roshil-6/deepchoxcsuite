@@ -40,7 +40,7 @@ const WORKSPACE_TITLES: Record<string, string> = {
     intelligence_diary: 'Neural Diary',
     dexo: 'Dexo Core',
     org_structure: 'Org structure',
-    personal_assistant: 'Personal Assistant',
+    personal_assistant: 'Assistant',
     enquiries: 'Enquiries',
     suite_intelligence: 'Suite intelligence',
 };
@@ -130,19 +130,19 @@ export function WorkspaceStage({ onNewVenture }: { onNewVenture?: () => void }) 
                 className={
                     activeRoom === 'dexo'
                         ? 'relative z-10 flex min-h-0 flex-1 flex-col p-0'
-                        : 'relative z-10 flex min-h-0 flex-1 flex-col px-4 py-4 animate-in fade-in duration-300 sm:px-5 sm:py-5'
+                        : 'relative z-10 flex min-h-0 flex-1 flex-col py-3 animate-in fade-in duration-300 sm:py-4'
                 }
             >
                 {!shell.immersive && (
-                    <header className="mb-3 flex h-14 shrink-0 items-center justify-between rounded-2xl border border-white/[0.07] bg-white/[0.03] px-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-sm sm:px-5">
+                    <header className="mb-3 flex shrink-0 items-center justify-between gap-3">
                         <h1 className="text-[15px] font-medium tracking-tight text-brand-text">{workspaceTitle(activeRoom)}</h1>
                         <div className="flex items-center gap-1 sm:gap-2">
                             <button
                                 type="button"
-                                className="flex items-center gap-2 rounded-full border border-white/[0.08] bg-brand-input/80 py-1 pl-1 pr-2 transition-colors hover:bg-brand-card sm:pr-3"
+                                className="flex items-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.03] py-1 pl-1 pr-2 transition-colors hover:bg-white/[0.06] sm:pr-3"
                             >
-                                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.06]">
-                                    <User className="h-4 w-4 text-brand-text" aria-hidden />
+                                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/[0.05]">
+                                    <User className="h-3.5 w-3.5 text-brand-text" aria-hidden />
                                 </span>
                                 <span className="hidden text-sm text-brand-muted sm:inline">Executive</span>
                                 <ChevronDown className="hidden h-4 w-4 text-brand-muted sm:block" aria-hidden />

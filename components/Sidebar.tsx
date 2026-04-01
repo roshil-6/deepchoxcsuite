@@ -72,19 +72,19 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
       <div className="custom-scrollbar relative flex-1 space-y-6 overflow-x-hidden overflow-y-auto px-2 pb-4 text-brand-text">
 
         {/* Main Workspace */}
-        <NavSection label="Command & Control">
+        <NavSection label="Overview">
           <NavItem icon={<LayoutGrid className="w-4 h-4" />} label="Executive Overview" isActive={activeRoom === 'dashboard'} onClick={() => { setActiveProject(null); switchRoom('dashboard'); }} />
           <NavItem
             icon={<MessageSquare className="w-4 h-4" />}
-            label="Personal Assistant"
+            label="Assistant"
             isActive={activeRoom === 'personal_assistant'}
             onClick={() => switchRoom('personal_assistant')}
-            title="Venture setup, intent, and ongoing updates — chat-first"
+            title="Venture context and updates"
           />
         </NavSection>
 
         {/* Intelligence Layers */}
-        <NavSection label="Intelligence Layers">
+        <NavSection label="Suite">
           <NavItem
             icon={<GitBranch className="w-4 h-4" />}
             label="Suite intelligence"
@@ -98,7 +98,7 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
         </NavSection>
 
         {/* Agents */}
-        <NavSection label="The C-Suite">
+        <NavSection label="Desks">
           {C_SUITE_ORDER.map((role) => {
             const agent = agents[role];
             const pendingN = staffAttentionPending.filter((i) => i.role === role).length;
@@ -136,18 +136,18 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
         </NavSection>
 
         {/* Projects */}
-        <NavSection label="Active Ventures">
+        <NavSection label="Ventures">
           <button
             type="button"
             onClick={() => {
               switchRoom('dashboard');
               onNewVenture();
             }}
-            className="mb-2 flex h-8 w-full items-center gap-2 px-2 text-xs font-bold uppercase tracking-widest text-zinc-500 transition-colors hover:text-zinc-300"
-            title="Creates a venture and opens Personal Assistant to describe your idea and goals in chat"
+            className="mb-2 flex h-8 w-full items-center gap-2 px-2 text-xs font-medium text-brand-muted transition-colors hover:text-brand-text"
+            title="New venture and open Assistant"
           >
             <Plus className="h-3 w-3" aria-hidden />
-            New Venture
+            New venture
           </button>
 
           <div className="space-y-1">

@@ -11,7 +11,7 @@ import {
 } from '@/lib/paApplyUpdates';
 import { getAllProjects, saveProject } from '@/lib/db';
 import { isVentureUnsettled, PA_WELCOME_MESSAGE } from '@/lib/ventureSetupState';
-import { ArrowUp, Bot, ClipboardList, FileUp, Lightbulb, Mic, Sparkles } from 'lucide-react';
+import { ArrowUp, Bot, ClipboardList, FileUp, Lightbulb, Mic } from 'lucide-react';
 
 type Msg = {
     id: string;
@@ -257,13 +257,13 @@ export function PersonalAssistant() {
     if (!activeProject) {
         return (
             <div className="flex h-full min-h-0 flex-col items-center justify-center gap-4 bg-brand-bg px-6 text-center">
-                <p className="max-w-md text-sm text-brand-muted">Select a venture to use your Personal Assistant — it needs full venture context to direct duties and give insight.</p>
+                <p className="max-w-md text-sm text-brand-muted">Choose a venture first.</p>
                 <button
                     type="button"
                     onClick={() => switchRoom('dashboard')}
-                    className="rounded-lg border border-brand-border bg-brand-card px-4 py-2 text-sm font-medium text-brand-text transition-colors hover:bg-brand-input"
+                    className="rounded-lg border border-white/[0.1] bg-white/[0.04] px-4 py-2 text-sm font-medium text-brand-text transition-colors hover:bg-white/[0.07]"
                 >
-                    Go to Executive Overview
+                    Open overview
                 </button>
             </div>
         );
@@ -274,16 +274,14 @@ export function PersonalAssistant() {
             {/* Desktop: insight column — soft panels, no heavy grid */}
             <aside className="hidden w-[min(100%,380px)] shrink-0 flex-col bg-gradient-to-b from-brand-panel/20 via-transparent to-transparent lg:flex lg:border-r lg:border-white/[0.05]">
                 <div className="shrink-0 px-4 py-4 sm:px-5">
-                    <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-muted/90">Portfolio insight</h3>
-                    <p className="mt-1.5 text-[12px] leading-relaxed text-brand-muted/85">
-                        Live snapshot from your venture record — not a substitute for AI analysis in chat.
-                    </p>
+                    <h3 className="text-[12px] font-medium text-brand-text/90">At a glance</h3>
+                    <p className="mt-1 text-[11px] leading-relaxed text-brand-muted">Saved in this venture.</p>
                 </div>
                 <div className="custom-scrollbar flex-1 space-y-3 overflow-y-auto px-4 pb-4 sm:px-5">
                     <div className="rounded-2xl bg-white/[0.03] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] ring-1 ring-white/[0.06] backdrop-blur-sm">
                         <div className="flex items-center gap-2 text-[11px] font-medium text-brand-text">
-                            <ClipboardList className="h-3.5 w-3.5 text-brand-teal/90" aria-hidden />
-                            Execution signals
+                            <ClipboardList className="h-3.5 w-3.5 text-brand-muted" aria-hidden />
+                            Progress
                         </div>
                         <ul className="mt-2.5 space-y-1.5 text-[12px] text-brand-muted/90">
                             <li>Priorities: {priorities.length ? `${priDone}/${priorities.length} done` : '—'}</li>
@@ -293,50 +291,42 @@ export function PersonalAssistant() {
                     </div>
                     <div className="rounded-2xl bg-white/[0.03] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] ring-1 ring-white/[0.06] backdrop-blur-sm">
                         <div className="flex items-center gap-2 text-[11px] font-medium text-brand-text">
-                            <Lightbulb className="h-3.5 w-3.5 text-brand-teal/90" aria-hidden />
-                            Strategic line
+                            <Lightbulb className="h-3.5 w-3.5 text-brand-muted" aria-hidden />
+                            Strategy
                         </div>
                         <p className="mt-2 line-clamp-6 text-[12px] leading-relaxed text-brand-muted/90">
                             {(strategyDoc.strategicIntent || strategyDoc.vision || strategyDoc.content || '').trim().slice(0, 420) ||
-                                'Pin strategic intent and narrative on the CEO desk to populate this summary.'}
+                                'Nothing here yet — add intent on the CEO desk or below.'}
                         </p>
                     </div>
                     <button
                         type="button"
                         onClick={requestExecutiveBriefing}
                         disabled={loading}
-                        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-teal/12 py-2.5 text-[12px] font-semibold text-brand-text shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] ring-1 ring-brand-teal/25 transition-colors hover:bg-brand-teal/18 disabled:opacity-50"
+                        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white/[0.05] py-2.5 text-[12px] font-medium text-brand-text ring-1 ring-white/[0.08] transition-colors hover:bg-white/[0.08] disabled:opacity-50"
                     >
-                        <Sparkles className="h-3.5 w-3.5 text-brand-teal" aria-hidden />
-                        {loading ? 'Requesting…' : 'Ask for executive briefing'}
+                        {loading ? '…' : 'Request briefing'}
                     </button>
                 </div>
             </aside>
 
             {/* Main: messages fill the middle; composer pinned to bottom */}
             <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-                <header className="shrink-0 border-b border-white/[0.06] bg-brand-bg/55 px-4 py-3.5 backdrop-blur-md sm:px-5">
-                    <div className="mx-auto flex max-w-3xl flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-                        <div className="flex min-w-0 flex-wrap items-center gap-2.5">
-                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-white/[0.05] ring-1 ring-white/[0.08]">
-                                <Sparkles className="h-4 w-4 text-brand-teal" aria-hidden />
-                            </span>
-                            <div className="min-w-0">
-                                <h2 className="text-[15px] font-medium tracking-tight text-brand-text">Personal Assistant</h2>
-                                <p className="mt-0.5 text-[11px] text-brand-muted/90">
-                                    Holistic insight across <span className="text-brand-text/90">{activeProject.name}</span>
-                                </p>
-                            </div>
+                <header className="shrink-0 border-b border-white/[0.06] bg-brand-bg/55 px-4 py-3 backdrop-blur-md sm:px-5">
+                    <div className="mx-auto flex max-w-3xl flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
+                        <div className="min-w-0">
+                            <h2 className="text-[15px] font-medium tracking-tight text-brand-text">Assistant</h2>
+                            <p className="mt-0.5 truncate text-[12px] text-brand-muted">{activeProject.name}</p>
                         </div>
-                        <p className="inline-flex max-w-full items-center rounded-full bg-brand-teal/[0.09] px-3 py-1.5 text-[10px] font-medium leading-snug tracking-wide text-brand-teal/95 ring-1 ring-brand-teal/20 sm:shrink-0 sm:text-[11px]">
-                            We coordinate every section from here
+                        <p className="text-[11px] leading-snug text-brand-muted sm:max-w-[14rem] sm:text-right">
+                            Updates the venture record (strategy, tasks, calendar) when you ask.
                         </p>
                     </div>
                 </header>
 
                 {/* Mobile snapshot */}
                 <div className="shrink-0 border-b border-white/[0.05] bg-white/[0.02] px-4 py-3 backdrop-blur-sm lg:hidden">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted/80">Snapshot</p>
+                    <p className="text-[11px] font-medium text-brand-muted">Summary</p>
                     <p className="mt-1 text-[11px] text-brand-muted/90">
                         Priorities {priDone}/{priorities.length || 0} · Phases {phaseDone}/{phases.length || 0} · Events {events}
                     </p>
@@ -344,9 +334,9 @@ export function PersonalAssistant() {
                         type="button"
                         onClick={requestExecutiveBriefing}
                         disabled={loading}
-                        className="mt-2.5 w-full rounded-xl bg-brand-teal/10 py-2 text-[10px] font-semibold text-brand-text ring-1 ring-brand-teal/20 disabled:opacity-50"
+                        className="mt-2.5 w-full rounded-xl bg-white/[0.06] py-2 text-[11px] font-medium text-brand-text ring-1 ring-white/[0.08] disabled:opacity-50"
                     >
-                        Executive briefing
+                        Briefing
                     </button>
                 </div>
 
@@ -354,10 +344,9 @@ export function PersonalAssistant() {
                     <div className="mx-auto max-w-3xl space-y-5 px-4 py-6 pb-8 sm:px-5">
                         {messages.length === 0 && activeProject && !isVentureUnsettled(activeProject) && (
                             <div className="rounded-2xl bg-white/[0.03] p-4 text-sm text-brand-muted/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] ring-1 ring-white/[0.06]">
-                                <p className="font-medium text-brand-text">Continue with your assistant</p>
+                                <p className="font-medium text-brand-text">Continue</p>
                                 <p className="mt-2 leading-relaxed">
-                                    Ask for updates, priorities, risks, or concrete changes to this venture. Use the voice and file
-                                    controls under the composer to dictate or attach a brief.
+                                    Ask for changes to this venture. Use file or voice under the box if you prefer.
                                 </p>
                             </div>
                         )}
@@ -407,9 +396,7 @@ export function PersonalAssistant() {
                                     <Bot className="h-4 w-4 text-brand-muted/90" aria-hidden />
                                 </div>
                                 <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md bg-white/[0.04] px-4 py-3 ring-1 ring-white/[0.06]">
-                                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-brand-muted/80" />
-                                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-brand-muted/80 [animation-delay:150ms]" />
-                                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-brand-muted/80 [animation-delay:300ms]" />
+                                    <span className="text-[12px] text-brand-muted">…</span>
                                 </div>
                             </div>
                         )}
@@ -432,7 +419,7 @@ export function PersonalAssistant() {
                                             sendMessage(input);
                                         }
                                     }}
-                                    placeholder="Type your idea, paste notes, or use voice / file below…"
+                                    placeholder="Message…"
                                     rows={1}
                                     disabled={loading}
                                     className="max-h-40 min-h-[52px] w-full resize-none rounded-t-3xl border-none bg-transparent px-4 py-3.5 pr-14 text-sm text-brand-text placeholder:text-brand-muted/70 focus:ring-0 sm:min-h-[56px] sm:px-5 sm:py-4"
@@ -460,9 +447,9 @@ export function PersonalAssistant() {
                                         type="button"
                                         onClick={() => fileInputRef.current?.click()}
                                         disabled={loading}
-                                        className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-brand-muted transition-colors hover:text-brand-text disabled:opacity-50"
+                                        className="inline-flex items-center gap-1.5 text-[12px] font-medium text-brand-muted transition-colors hover:text-brand-text disabled:opacity-50"
                                     >
-                                        <FileUp className="h-3.5 w-3.5 opacity-80" aria-hidden />
+                                        <FileUp className="h-3.5 w-3.5 opacity-70" aria-hidden />
                                         File
                                     </button>
                                     {voiceSupported ? (
@@ -470,25 +457,19 @@ export function PersonalAssistant() {
                                             type="button"
                                             onClick={() => (listening ? stopListening() : startListening())}
                                             disabled={loading}
-                                            className={`inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-colors disabled:opacity-50 ${
+                                            className={`inline-flex items-center gap-1.5 text-[12px] font-medium transition-colors disabled:opacity-50 ${
                                                 listening ? 'text-brand-teal' : 'text-brand-muted hover:text-brand-text'
                                             }`}
                                             aria-pressed={listening}
                                         >
-                                            <Mic className={`h-3.5 w-3.5 opacity-90 ${listening ? 'animate-pulse' : ''}`} aria-hidden />
+                                            <Mic className="h-3.5 w-3.5 opacity-70" aria-hidden />
                                             {listening ? 'Stop' : 'Voice'}
                                         </button>
                                     ) : (
-                                        <span className="text-[10px] font-bold uppercase tracking-widest text-brand-muted/70">
-                                            Voice (Chrome / Edge)
-                                        </span>
+                                        <span className="text-[11px] text-brand-muted/70">Voice needs Chrome or Edge</span>
                                     )}
                                     {listening ? (
-                                        <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-brand-teal" aria-live="polite">
-                                            <span className="relative flex h-2 w-2">
-                                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-teal opacity-60" />
-                                                <span className="relative inline-flex h-2 w-2 rounded-full bg-brand-teal" />
-                                            </span>
+                                        <span className="text-[11px] text-brand-teal" aria-live="polite">
                                             Listening
                                         </span>
                                     ) : null}
@@ -499,8 +480,8 @@ export function PersonalAssistant() {
                                 <p className="border-t border-white/[0.06] px-3 pb-2.5 text-[11px] text-rose-400/90 sm:px-4">{fileError}</p>
                             ) : null}
                         </div>
-                        <p className="mt-2 text-center text-[10px] text-brand-muted/90 sm:text-[11px]">
-                            Enter to send · Shift+Enter for new line · File appends text to your message
+                        <p className="mt-2 text-center text-[10px] text-brand-muted/80 sm:text-[11px]">
+                            Enter to send · Shift+Enter for a new line
                         </p>
                     </div>
                 </div>

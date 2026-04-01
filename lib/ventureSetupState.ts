@@ -23,4 +23,4 @@ export function isVentureUnsettled(p: Project): boolean {
 }
 
 export const PA_WELCOME_MESSAGE =
-    "Hey — I'm your personal assistant in this virtual office. Tell me about your idea, startup, or venture you're going to build — we'll set up your office from here.";
+    "I'm the assistant for this workspace. Describe what you're building (idea, stage, audience). We'll shape your venture record from this thread.";

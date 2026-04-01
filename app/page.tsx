@@ -57,13 +57,14 @@ export default function Home() {
           <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden">
             <div className="relative z-10 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-brand-bg">
               <DailySyncBanner />
-              <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-                <div className="min-h-0 flex-1 basis-0 overflow-hidden">
+              {/* One padded column: workspace + chat share the same inset — no separate “dock card” */}
+              <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 sm:px-5">
+                <div className="relative min-h-0 flex-1 basis-0 overflow-hidden">
                   <WorkspaceStage onNewVenture={() => void createVentureAndOpenAssistant()} />
                 </div>
                 {activeRoom !== 'dexo' && activeRoom !== 'personal_assistant' && (
-                  <div className="mt-auto w-full shrink-0 border-t border-white/[0.06] bg-brand-bg/95 backdrop-blur-sm">
-                    <div className="max-h-[min(52vh,560px)] min-h-0 w-full overflow-hidden">
+                  <div className="mt-auto w-full shrink-0 border-t border-white/[0.04] pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+                    <div className="max-h-[min(36vh,380px)] min-h-0 w-full overflow-hidden">
                       <ChatAssistant variant="bottomDock" />
                     </div>
                   </div>

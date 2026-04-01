@@ -286,7 +286,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                     </header>
 
                     <section aria-label="Shortcuts" className="mb-6">
-                        <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-muted">Surfaces</p>
+                        <p className="mb-4 text-[11px] font-medium text-brand-muted/90">Surfaces</p>
                         <div className="grid gap-4 sm:grid-cols-2">
                             <button
                                 type="button"
@@ -356,24 +356,24 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     aria-label="Portfolio summary"
                                 >
                                     <div className="rounded-xl border border-brand-border bg-brand-panel/70 px-4 py-3">
-                                        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-muted">Ventures</p>
+                                        <p className="text-[10px] font-medium text-brand-muted/90">Ventures</p>
                                         <p className="mt-1 font-serif text-xl font-semibold tabular-nums text-brand-text">{ventureCount}</p>
                                     </div>
                                     <div className="rounded-xl border border-brand-border bg-brand-panel/70 px-4 py-3">
-                                        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-muted">Office sync</p>
+                                        <p className="text-[10px] font-medium text-brand-muted/90">Office sync</p>
                                         <p className="mt-1 font-serif text-xl font-semibold tabular-nums text-brand-text">
                                             {Math.max(0, Math.floor((Date.now() - systemState.lastSync) / 60000))}m
                                         </p>
                                     </div>
                                     <div className="rounded-xl border border-brand-border bg-brand-panel/70 px-4 py-3">
-                                        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-muted">Exec roles</p>
+                                        <p className="text-[10px] font-medium text-brand-muted/90">Exec roles</p>
                                         <p className="mt-1 font-serif text-xl font-semibold tabular-nums text-brand-text">{EXEC_OUTPUT_ROLES.length}</p>
                                     </div>
                                 </div>
 
                     <section className="grid gap-4 lg:grid-cols-2" aria-label="Portfolio charts">
                         <div className="rounded-xl border border-brand-border bg-brand-panel/70 p-4 sm:p-5">
-                            <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-muted">Portfolio mix</h3>
+                            <h3 className="text-[11px] font-medium text-brand-muted/90">Portfolio mix</h3>
                             <p className="mt-1 text-[10px] text-brand-muted">
                                 <span className="text-brand-teal">Strategy</span> on file vs{' '}
                                 <span className="text-slate-400">draft</span> records
@@ -414,7 +414,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             )}
                         </div>
                         <div className="rounded-xl border border-brand-border bg-brand-panel/70 p-4 sm:p-5">
-                            <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-muted">New ventures by month</h3>
+                            <h3 className="text-[11px] font-medium text-brand-muted/90">New ventures by month</h3>
                             <p className="mt-1 text-[10px] text-brand-muted">
                                 Count of ventures per calendar month (by created date) · colors rotate for contrast only
                             </p>
@@ -445,7 +445,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
 
                     <section id="portfolio-ventures" className="scroll-mt-6">
                         <div className="mb-4">
-                            <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-muted">
+                            <h2 className="text-[11px] font-medium text-brand-muted/90">
                                 {ventureCount > 0 ? 'Your ventures' : 'No ventures yet'}
                             </h2>
                             <p className="mt-1 text-sm text-brand-muted">
@@ -472,7 +472,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                             <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-brand-muted">
                                                 <span>{new Date(project.timestamp).toLocaleDateString()}</span>
                                                 <span
-                                                    className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                                                    className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-medium ${
                                                         project.strategy
                                                             ? 'border border-violet-900/50 bg-violet-950/30 text-violet-400/90'
                                                             : 'border border-brand-border bg-brand-input/90 text-brand-muted'
@@ -497,7 +497,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                     </section>
 
                     <div className="mt-8 rounded-xl border border-brand-border/80 bg-brand-panel/30 p-5">
-                        <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-muted">Executive desks</h3>
+                        <h3 className="text-[11px] font-medium text-brand-muted/90">Executive desks</h3>
                         <p className="mt-1 text-xs text-brand-muted">Each role produces a fixed artifact once a venture is active.</p>
                         <ul className="mt-4 grid gap-2 sm:grid-cols-2">
                             {EXEC_OUTPUT_ROLES.map((role) => (
@@ -517,7 +517,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     }
 
     return (
-        <div className="h-full overflow-y-auto custom-scrollbar bg-brand-bg px-4 py-5 pb-8 font-sans sm:px-8 sm:py-6">
+        <div className="h-full overflow-y-auto custom-scrollbar bg-brand-bg px-0 py-5 pb-8 font-sans sm:py-6">
             <div className="mx-auto w-full max-w-[1200px]">
                     <div className="space-y-10 pb-12 animate-in fade-in duration-500">
                         <header className="flex flex-col gap-6 border-b border-brand-border/80 pb-8 sm:flex-row sm:items-end sm:justify-between">
@@ -577,7 +577,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         <Sparkles className="h-5 w-5 text-teal-400" aria-hidden />
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-teal">Featured</p>
+                                        <p className="text-[11px] font-medium text-brand-teal/90">Featured</p>
                                         <h2 className="mt-1 text-base font-semibold text-brand-text">Latest AI staff research</h2>
                                         <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-brand-muted">
                                             {activeProject.agentStaffSnapshot.summary}
@@ -591,7 +591,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         )}
 
                         <section aria-labelledby="exec-hub-tiles">
-                            <h2 id="exec-hub-tiles" className="mb-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-muted">
+                            <h2 id="exec-hub-tiles" className="mb-1 text-[11px] font-medium text-brand-muted/90">
                                 Surfaces
                             </h2>
                             <p className="mb-6 max-w-2xl text-sm leading-relaxed text-brand-muted">
@@ -701,7 +701,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             >
                                 <div className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-b border-brand-border/90 bg-brand-panel/95 px-4 py-3 backdrop-blur-sm sm:px-5">
                                     <div>
-                                        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-muted">Workspace canvas</p>
+                                        <p className="text-[10px] font-medium text-brand-muted/90">Workspace canvas</p>
                                         <p className="text-sm font-semibold text-brand-text">Dashboard</p>
                                     </div>
                                     <button
@@ -745,7 +745,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             ).map(([label, text]) =>
                                 text?.trim() ? (
                                     <div key={label} className="rounded-lg border border-brand-border/80 bg-brand-panel/50 p-3">
-                                        <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">{label}</p>
+                                        <p className="text-[10px] font-medium text-brand-muted/90">{label}</p>
                                         <p className="mt-2 max-h-28 overflow-y-auto text-[11px] leading-snug text-brand-muted custom-scrollbar whitespace-pre-wrap">
                                             {text}
                                         </p>
@@ -775,18 +775,18 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                 )}
 
                 <section className="mb-10" aria-labelledby="dash-snapshot">
-                    <h2 id="dash-snapshot" className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-muted">
+                    <h2 id="dash-snapshot" className="mb-3 text-[11px] font-medium text-brand-muted/90">
                         Venture snapshot
                     </h2>
                     <div className="grid gap-6 lg:grid-cols-2">
                         <div className="rounded-xl border border-brand-border bg-brand-input/60 p-5 sm:p-6">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-muted">Strategic line</p>
+                            <p className="text-[10px] font-medium text-brand-muted/90">Strategic line</p>
                             <p className="mt-2 line-clamp-6 text-sm leading-relaxed text-brand-text">
                                 {intentPreview || 'Pin strategic intent and narrative on the CEO desk to populate this summary.'}
                             </p>
                             <div className="mt-6 grid grid-cols-2 gap-3 border-t border-brand-border/80 pt-5 sm:grid-cols-3">
                                 <div>
-                                    <p className="text-[10px] uppercase tracking-wider text-brand-muted">Phases</p>
+                                    <p className="text-[10px] font-medium text-brand-muted/90">Phases</p>
                                     <p className="mt-1 font-mono text-sm text-brand-text">
                                         {phaseTotal ? `${phaseDone}/${phaseTotal}` : '—'}
                                         {phaseActive > 0 ? (
@@ -795,13 +795,13 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     </p>
                                 </div>
                                 <div>
-                                    <p className="text-[10px] uppercase tracking-wider text-brand-muted">Priorities</p>
+                                    <p className="text-[10px] font-medium text-brand-muted/90">Priorities</p>
                                     <p className="mt-1 font-mono text-sm text-brand-text">
                                         {priTotal ? `${priDone}/${priTotal}` : '—'}
                                     </p>
                                 </div>
                                 <div className="col-span-2 sm:col-span-1">
-                                    <p className="text-[10px] uppercase tracking-wider text-brand-muted">Execution score</p>
+                                    <p className="text-[10px] font-medium text-brand-muted/90">Execution score</p>
                                     <p className="mt-1 font-serif text-2xl font-semibold tabular-nums text-brand-text">{executionScore}%</p>
                                     <p className="mt-1 text-[10px] leading-snug text-brand-muted">
                                         Heuristic checklist index (0–100), not revenue or financial performance.
@@ -985,7 +985,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                 </section>
 
                 <section className="mb-10" aria-labelledby="dash-ping">
-                    <h2 id="dash-ping" className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-muted">
+                    <h2 id="dash-ping" className="mb-3 text-[11px] font-medium text-brand-muted/90">
                         Office chat
                     </h2>
                     <div className="rounded-xl border border-brand-border/80 bg-brand-panel/50 p-4 sm:p-5">
@@ -997,7 +997,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                 </section>
 
                 <section className="mb-10" aria-labelledby="dash-signal">
-                    <h2 id="dash-signal" className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-muted">
+                    <h2 id="dash-signal" className="mb-3 text-[11px] font-medium text-brand-muted/90">
                         Signal &amp; activity
                     </h2>
                     <div className="grid gap-6 lg:grid-cols-2 lg:items-stretch">
@@ -1060,7 +1060,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                             style={{ borderRadius: '0 0.5rem 0.5rem 0' }}
                                         >
                                             <div className="mb-1 flex flex-wrap items-center gap-2">
-                                                <span className="rounded bg-brand-input px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-brand-muted">
+                                                <span className="rounded bg-brand-input px-2 py-0.5 text-[10px] font-medium text-brand-muted">
                                                     {log.source}
                                                 </span>
                                                 <span className="font-mono text-[10px] text-brand-muted">
@@ -1078,7 +1078,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                 </section>
 
                 <section className="mb-10" aria-labelledby="dash-desks">
-                    <h2 id="dash-desks" className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-muted">
+                    <h2 id="dash-desks" className="mb-3 text-[11px] font-medium text-brand-muted/90">
                         Operational desks
                     </h2>
                     <div className="grid gap-3 sm:grid-cols-2">
@@ -1110,7 +1110,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                 </section>
 
                 <section className="mb-6" aria-labelledby="dash-next">
-                    <h2 id="dash-next" className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-muted">
+                    <h2 id="dash-next" className="mb-3 text-[11px] font-medium text-brand-muted/90">
                         Next focus
                     </h2>
                     <div className="flex flex-col gap-6 overflow-hidden rounded-xl border border-brand-border bg-brand-input/60 p-6 md:flex-row md:items-start md:justify-between md:p-8">
