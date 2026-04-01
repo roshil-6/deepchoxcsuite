@@ -5,6 +5,7 @@ import type { AgentSyncPayload, AiSyncTraceStep, SyncProjectDTO } from '@/lib/ag
 const SYNC_SYSTEM = `You are the combined AI staff of a growing startup: CEO strategy, CTO product, CFO finance, CSO market intel, and CMO GTM. The user pressed "Sync" — you must research across the venture snapshot and public news context, then output ONE JSON object only (no markdown fence).
 
 RULES:
+- The venture snapshot may include "ventureOnboarding" (wizard goals, problem, audience, timeline, industry). Use it as baseline truth; do not ask the user to restate what is already there.
 - Ground everything in the provided venture data and news headlines. Do not invent funding amounts, customer counts, or KPIs not implied by the input.
 - If data is missing for a desk, say what is missing in that desk's string (short).
 - Propose concrete, dated-feeling next steps where possible.
@@ -160,8 +161,9 @@ Respond with the JSON object only.`;
       { id: 'intel', label: 'Fetch news headlines', detail: intelDetail },
       {
         id: 'groq',
-        label: 'Call Groq (structured JSON)',
-        detail: 'Model llama3 → llama-3.3-70b-versatile, temperature 0.35, one JSON object (desks + appends + kanban + events + attention + focus)',
+        label: 'Combined staff model — one structured pass',
+        detail:
+          'All officer perspectives are produced together (CEO, CTO, CFO, CSO, CMO) so the plan stays internally consistent before merge.',
       },
       {
         id: 'merge',
@@ -169,6 +171,26 @@ Respond with the JSON object only.`;
         detail: `Kanban +${(normalized.kanbanAdds ?? []).length}, Events +${(normalized.eventAdds ?? []).length}, Notifications ${(normalized.attentionItems ?? []).length}, Focus bullets ${(normalized.focusToday ?? []).length}`,
       },
     ];
+
+    const deskTrace: { id: string; key: keyof AgentSyncPayload['desks']; label: string }[] = [
+      { id: 'desk-ceo', key: 'ceo', label: 'CEO — strategy & narrative' },
+      { id: 'desk-pm', key: 'pm', label: 'CTO — product & delivery' },
+      { id: 'desk-cfo', key: 'accountant', label: 'CFO — finance & runway' },
+      { id: 'desk-scout', key: 'scout', label: 'CSO — market & competitive intel' },
+      { id: 'desk-cmo', key: 'cmo', label: 'CMO — GTM & messaging' },
+    ];
+    for (const d of deskTrace) {
+      const text = String(normalized.desks[d.key] ?? '').trim();
+      const excerpt =
+        text.length > 200 ? `${text.slice(0, 200)}…` : text || '(No desk output — venture data may be thin for this role.)';
+      trace.push({ id: d.id, label: d.label, detail: excerpt });
+    }
+    trace.push({
+      id: 'handoff',
+      label: 'Merge into venture record',
+      detail:
+        'Applying append-only intel, directives, notes, kanban tasks, calendar events, bell notifications, and your focus list.',
+    });
 
     return NextResponse.json({ ok: true, result: normalized, trace });
   } catch (e) {

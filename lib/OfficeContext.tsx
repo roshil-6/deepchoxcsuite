@@ -14,6 +14,7 @@ import {
   saveProject,
   secureWipeDatabase,
 } from './db';
+import { formatVentureOnboardingForPrompt } from '@/lib/ventureOnboarding';
 import {
   projectToSyncDto,
   type AgentSyncPayload,
@@ -232,14 +233,13 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
     if (!syncToastMessage) return;
     const t = window.setTimeout(() => {
       setSyncToastMessage(null);
-      setLastAiSyncTrace(null);
+      // Keep lastAiSyncTrace — Intelligence Suite shows the full process until the next sync.
     }, 9000);
     return () => window.clearTimeout(t);
   }, [syncToastMessage]);
 
   const dismissSyncToast = () => {
     setSyncToastMessage(null);
-    setLastAiSyncTrace(null);
   };
 
   const dismissStaffAttention = async (id: string) => {
@@ -720,12 +720,17 @@ export function useOffice(): OfficeContextType {
  * High Interaction & Analysis Logic implemented here.
  */
 export function getAgentSystemPrompt(role: AgentRole, project?: Project | null): string {
+  const onboardingBlock = formatVentureOnboardingForPrompt(project ?? null);
+
   const commonDirectives = `
     CORE RULE: DO NOT ASSUME. YOU ARE AN ANALYST, NOT A CREATIVE WRITER.
     - If the user provides a file or specific data, use it strictly.
-    - If information is missing, ASK clarifying questions before generating a plan.
+    - If VERIFIED VENTURE ONBOARDING is present below, treat it as already-captured facts — do not ask the user to re-state goals, audience, problem, or timeline from scratch; only ask for details that are genuinely missing or ambiguous.
+    - If information is still missing after using onboarding + context, ask focused clarifying questions.
     - Your goal is ACCURACY and STRATEGIC DEPTH.
     - Quote specific parts of the user's input/files to show you analyzed it.
+
+    ${onboardingBlock}
 
     ${project?.userNotes ? `FOUNDER'S JOURNAL CONTEXT:
     The founder has recorded these personal observations:

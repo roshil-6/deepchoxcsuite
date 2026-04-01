@@ -117,8 +117,8 @@ export default function Home() {
                 <div className="min-h-0 flex-1 basis-0 overflow-hidden">
                   <WorkspaceStage onTriggerOnboarding={() => setShowOnboarding(true)} />
                 </div>
-                {/* Dexo Core has its own full-height composer — hide dock to avoid two chat inputs and theme seams */}
-                {activeRoom !== 'dexo' && (
+                {/* Rooms with a dedicated in-workspace composer — hide global dock to avoid duplicate inputs */}
+                {activeRoom !== 'dexo' && activeRoom !== 'personal_assistant' && (
                   <div className="mt-auto w-full shrink-0 border-t border-brand-border/50 bg-brand-bg">
                     <div className="max-h-[min(52vh,560px)] min-h-0 w-full overflow-hidden">
                       <ChatAssistant variant="bottomDock" />

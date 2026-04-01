@@ -1,4 +1,5 @@
 import type { Project, ProjectEvent, StaffAttentionRole } from '@/lib/db';
+import { parseVentureOnboarding } from '@/lib/ventureOnboarding';
 
 const VALID: StaffAttentionRole[] = ['ceo', 'pm', 'accountant', 'scout', 'cmo', 'chief_of_staff'];
 
@@ -44,6 +45,8 @@ export interface AgentSyncPayload {
 export interface SyncProjectDTO {
   id: number;
   name: string;
+  /** Wizard + goals — same source as Personal Assistant context. */
+  ventureOnboarding?: Record<string, string>;
   strategy: string;
   productPlan: string;
   budget: string;
@@ -57,9 +60,11 @@ export interface SyncProjectDTO {
 
 export function projectToSyncDto(p: Project): SyncProjectDTO {
   const journal = p.journal || [];
+  const ventureOnboarding = parseVentureOnboarding(p.onboardingData);
   return {
     id: p.id!,
     name: p.name,
+    ...(ventureOnboarding ? { ventureOnboarding } : {}),
     strategy: (p.strategy || '').slice(0, 12000),
     productPlan: (p.productPlan || '').slice(0, 12000),
     budget: (p.budget || '').slice(0, 8000),

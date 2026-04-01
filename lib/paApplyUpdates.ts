@@ -1,4 +1,5 @@
 import type { Project, ProjectEvent, KanbanTask } from '@/lib/db';
+import { parseVentureOnboarding } from '@/lib/ventureOnboarding';
 import { parseStrategy, serializeStrategy } from '@/lib/strategyDoc';
 import { ensureSingleActivePhase } from '@/lib/strategyDoc';
 import type { Priority, StrategyPhase } from '@/lib/strategyDoc';
@@ -156,9 +157,12 @@ export function parsePersonalAssistantUpdatesFromModel(raw: unknown): PersonalAs
 
 /** Trimmed venture snapshot for POST /api/personal-assistant (Groq context limits). */
 export function projectPayloadForPA(p: Project): Record<string, unknown> {
+  const ventureOnboarding = parseVentureOnboarding(p.onboardingData);
   return {
     id: p.id,
     name: p.name,
+    /** Original wizard answers — was missing before, so PA kept asking for basics. */
+    ventureOnboarding: ventureOnboarding ?? {},
     strategy: (p.strategy || '').slice(0, 20000),
     productPlan: (p.productPlan || '').slice(0, 12000),
     budget: (p.budget || '').slice(0, 8000),
