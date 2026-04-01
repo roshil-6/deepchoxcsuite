@@ -17,6 +17,7 @@ import {
     Bot,
 } from 'lucide-react';
 import type { Project, ProjectEvent, StaffAttentionItem } from '@/lib/db';
+import { DeskShell, DeskEmpty } from '@/components/workspaces/DeskShell';
 
 const MAX_PROMPT_CONTEXT = 7200;
 
@@ -371,11 +372,7 @@ export function FinancialLedger() {
     }, []);
 
     if (!activeProject) {
-        return (
-            <div className="flex h-full items-center justify-center p-8 text-sm text-brand-muted">
-                Select a venture to open the CFO desk.
-            </div>
-        );
+        return <DeskEmpty className="text-brand-muted">Select a venture to open the CFO desk.</DeskEmpty>;
     }
 
     if (!topic) return null;
@@ -388,8 +385,12 @@ export function FinancialLedger() {
     const signals = financeSignals(budgetText);
 
     return (
-        <div className="flex h-full min-h-0 flex-col overflow-hidden bg-brand-bg">
-            <div className="custom-scrollbar flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6 py-5 sm:px-8">
+        <DeskShell
+            eyebrow="CFO · Numbers + scenario table"
+            title="Chief Financial Officer"
+            description="Key figures and comparable scenarios (base / upside / downside). Work in the budget field; pick a topic to focus the review and AI prompts below."
+        >
+            <div className="flex flex-col gap-5">
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     <div className="rounded-lg border border-brand-border bg-brand-panel px-4 py-3">
                         <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Venture</p>
@@ -606,6 +607,6 @@ export function FinancialLedger() {
                     </div>
                 </div>
             </div>
-        </div>
+        </DeskShell>
     );
 }

@@ -21,6 +21,7 @@ import { parseStrategy, serializeStrategy } from '@/lib/strategyDoc';
 import { ceo } from '@/lib/ceoTheme';
 import { StrategyFlowCanvas } from '@/components/workspaces/StrategyFlowCanvas';
 import { TimelinePhaseSetter } from '@/components/workspaces/TimelinePhaseSetter';
+import { DeskShell, DeskEmpty } from '@/components/workspaces/DeskShell';
 
 type ToolId = 'narrative' | 'flow' | 'phases' | 'team' | 'schedule' | 'priorities';
 
@@ -141,11 +142,7 @@ export function StrategyNotebook() {
     const events = [...(activeProject?.events || [])].sort((a, b) => a.date - b.date);
 
     if (!activeProject) {
-        return (
-            <div className="flex h-full flex-col items-center justify-center gap-2 p-8 text-center text-zinc-500">
-                <p className="text-sm font-medium text-zinc-400">Select a venture to open the CEO desk.</p>
-            </div>
-        );
+        return <DeskEmpty>Select a venture to open the CEO desk.</DeskEmpty>;
     }
 
     const navItems: { id: ToolId; label: string; sub: string }[] = [
@@ -180,7 +177,7 @@ export function StrategyNotebook() {
     };
 
     const surfaceToolbar = (
-        <header className="flex shrink-0 flex-wrap items-center gap-3 border-b border-brand-border bg-brand-panel px-3 py-3 sm:px-5">
+        <header className="flex shrink-0 flex-wrap items-center gap-3 border-b border-zinc-700 bg-zinc-900/40 px-6 py-3 sm:px-8">
             <button
                 type="button"
                 onClick={goHub}
@@ -208,72 +205,64 @@ export function StrategyNotebook() {
     return (
         <div className="flex h-full min-h-0 flex-col overflow-hidden bg-brand-bg">
             {deskView === 'hub' ? (
-                <>
-                    <header className="shrink-0 border-b border-brand-border bg-brand-panel px-4 py-5 sm:px-6">
-                        <div className="flex items-start gap-3">
-                            <span className="mt-0.5 h-10 w-1 shrink-0 rounded-full bg-gradient-to-b from-brand-teal to-brand-purple" aria-hidden />
-                            <div className="min-w-0">
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">CEO</p>
-                                <h1 className="mt-0.5 text-lg font-semibold text-zinc-100 sm:text-xl">Decision + reasoning</h1>
-                                <p className="mt-2 max-w-2xl text-xs leading-relaxed text-zinc-500">
-                                    Clear call with rationale — what we commit to and why. Pin intent, then open a planning surface. Use Back to
-                                    return here.
-                                </p>
-                            </div>
-                        </div>
-                    </header>
-
-                    <div className="custom-scrollbar flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto p-4 sm:p-6">
-                        <div className={`rounded-xl border p-4 ${ceo.card}`}>
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">Strategic intent · pinned</p>
+                <DeskShell
+                    eyebrow="CEO · Decision + reasoning"
+                    title="Chief Executive Officer"
+                    description="Clear call with rationale — what we commit to and why. Pin intent, then open a planning surface. Use Back on any surface to return here."
+                    bodyClassName="pb-10 sm:pb-14"
+                    footer={
+                        <button
+                            type="button"
+                            onClick={() => persist(doc)}
+                            className="inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-lg border border-zinc-600 bg-zinc-800 px-4 py-2.5 text-xs font-semibold text-zinc-100 transition hover:bg-zinc-700 sm:w-auto"
+                        >
+                            {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                            Save strategy
+                        </button>
+                    }
+                >
+                    <div className="flex flex-col gap-8">
+                        <div className="space-y-2">
+                            <label className="text-xs font-medium text-zinc-500" htmlFor="ceo-strategic-intent">
+                                Strategic intent
+                            </label>
                             <textarea
+                                id="ceo-strategic-intent"
                                 value={doc.strategicIntent ?? ''}
                                 onChange={(e) => setDoc({ ...doc, strategicIntent: e.target.value })}
                                 onBlur={(e) => persist({ ...doc, strategicIntent: e.target.value })}
                                 placeholder={intentPinned}
                                 rows={3}
-                                className="mt-2 w-full max-w-3xl resize-none rounded-lg border border-brand-border bg-brand-bg p-3 text-sm leading-relaxed text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand-teal/30"
+                                className="w-full resize-none rounded-lg border border-zinc-700 bg-zinc-900/60 px-3 py-3 text-sm leading-relaxed text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-zinc-500/30"
                             />
                         </div>
 
-                        <div>
-                            <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">Planning surfaces</p>
-                            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                        <div className="overflow-hidden rounded-xl border border-zinc-700/90">
+                            <div className="border-b border-zinc-800 bg-zinc-900/40 px-4 py-2.5">
+                                <p className="text-xs font-medium text-zinc-500">Planning surfaces</p>
+                            </div>
+                            <ul className="divide-y divide-zinc-800">
                                 {navItems.map((item) => (
-                                    <button
-                                        key={item.id}
-                                        type="button"
-                                        onClick={() => openSurface(item.id)}
-                                        className={`flex flex-col items-start gap-2 rounded-xl border border-brand-border bg-brand-card p-4 text-left transition ${ceo.cardHover} hover:bg-brand-input/80`}
-                                    >
-                                        <span className="flex w-full items-start gap-3">
-                                            <span
-                                                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border ${ceo.hubIcon}`}
-                                            >
+                                    <li key={item.id}>
+                                        <button
+                                            type="button"
+                                            onClick={() => openSurface(item.id)}
+                                            className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition hover:bg-zinc-800/50"
+                                        >
+                                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-zinc-600 bg-zinc-900/80 text-zinc-400">
                                                 {modeIcon(item.id)}
                                             </span>
                                             <span className="min-w-0 flex-1">
-                                                <span className="block font-semibold text-zinc-100">{item.label}</span>
+                                                <span className="block text-sm font-medium text-zinc-200">{item.label}</span>
                                                 <span className="mt-0.5 block text-xs text-zinc-500">{item.sub}</span>
                                             </span>
-                                        </span>
-                                    </button>
+                                        </button>
+                                    </li>
                                 ))}
-                            </div>
+                            </ul>
                         </div>
                     </div>
-
-                    <div className="shrink-0 border-t border-brand-border bg-brand-panel/50 p-3 sm:px-6">
-                        <button
-                            type="button"
-                            onClick={() => persist(doc)}
-                            className={`flex w-full max-w-md items-center justify-center gap-2 rounded-lg py-2.5 text-xs font-semibold text-[#0a0a0a] shadow-md shadow-brand-teal/20 sm:w-auto sm:px-8 ${ceo.accentBg} ${ceo.accentBgHover}`}
-                        >
-                            {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-                            Save strategy
-                        </button>
-                    </div>
-                </>
+                </DeskShell>
             ) : (
                 <>
                     {surfaceToolbar}

@@ -24,8 +24,8 @@ interface SidebarProps {
   onNewVenture: () => void;
 }
 
-/** Order: five officer desks (CEO→CSO), then staff / suite tools */
-const C_SUITE_ORDER = ['ceo', 'accountant', 'pm', 'cmo', 'scout', 'chief_of_staff', 'dexo', 'shark'] as const;
+/** Desks shown in the rail (VC gauntlet / shark excluded — overlaps Chief of Staff) */
+const C_SUITE_ORDER = ['ceo', 'accountant', 'pm', 'cmo', 'scout', 'chief_of_staff', 'dexo'] as const;
 
 export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
   const { activeRoom, switchRoom, agents, activeProject, setActiveProject, setAllProjects, staffAttentionPending } = useOffice();

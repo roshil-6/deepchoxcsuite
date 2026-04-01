@@ -27,6 +27,7 @@ import {
     FolderOpen,
     Flame,
 } from 'lucide-react';
+import { DeskShell, DeskTabButton, DeskEmpty } from '@/components/workspaces/DeskShell';
 
 const COLUMNS: { id: KanbanTask['status']; label: string }[] = [
     { id: 'todo', label: 'Backlog' },
@@ -36,6 +37,26 @@ const COLUMNS: { id: KanbanTask['status']; label: string }[] = [
 ];
 
 type MainTool = 'war' | 'recent' | 'planning' | 'docs' | 'board' | 'roadmap';
+
+function productToolIcon(id: MainTool) {
+    const c = 'h-4 w-4';
+    switch (id) {
+        case 'board':
+            return <LayoutGrid className={c} aria-hidden />;
+        case 'roadmap':
+            return <BookOpen className={c} aria-hidden />;
+        case 'war':
+            return <Flame className={c} aria-hidden />;
+        case 'recent':
+            return <History className={c} aria-hidden />;
+        case 'planning':
+            return <Map className={c} aria-hidden />;
+        case 'docs':
+            return <FolderOpen className={c} aria-hidden />;
+        default:
+            return null;
+    }
+}
 
 const ACTION_LABELS: Record<RecentAction['category'], string> = {
     ship: 'Ship / release',
@@ -152,11 +173,7 @@ export function ProductKanban() {
     const ceoFlow = activeProject ? getCeoFlowForPlanning(activeProject.strategy || '') : { nodes: [], edges: [] };
 
     if (!activeProject) {
-        return (
-            <div className="flex h-full items-center justify-center p-8 text-sm text-zinc-500">
-                Select a venture to open the product desk.
-            </div>
-        );
+        return <DeskEmpty>Select a venture to open the product desk.</DeskEmpty>;
     }
 
     const intent = pd.intent?.trim() || 'Pin product intent: what you ship next and for whom.';
@@ -172,17 +189,28 @@ export function ProductKanban() {
 
     return (
         <div className="flex h-full min-h-0 overflow-hidden bg-brand-bg">
-            <div className="custom-scrollbar flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto">
-                <header className="shrink-0 border-b border-brand-border px-5 py-4 sm:px-6">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">CTO · Architecture recommendation</p>
-                    <h1 className="mt-0.5 text-lg font-semibold text-zinc-100 sm:text-xl">Chief Technology Officer</h1>
-                    <p className="mt-1 max-w-2xl text-xs leading-relaxed text-zinc-500">
-                        Systems view, trade-offs, and what to build or change first. War room persists per venture; planning mirrors the
-                        CEO flow; documents capture client and meeting notes in one vault.
-                    </p>
-                </header>
-
-                <div className="p-5 sm:p-6">
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+                <DeskShell
+                    className="min-h-0 flex-1"
+                    eyebrow="CTO · Architecture recommendation"
+                    title="Chief Technology Officer"
+                    description="Systems view, trade-offs, and what to build or change first. War room persists per venture; planning mirrors the CEO flow; documents capture client and meeting notes in one vault."
+                    tabs={
+                        <>
+                            {nav.map((item) => (
+                                <DeskTabButton
+                                    key={item.id}
+                                    active={tool === item.id}
+                                    onClick={() => setTool(item.id)}
+                                    icon={productToolIcon(item.id)}
+                                >
+                                    {item.label}
+                                </DeskTabButton>
+                            ))}
+                        </>
+                    }
+                >
+                    <div className="flex flex-col gap-4">
                     {tool === 'board' && (
                         <div className="flex min-h-[420px] flex-col gap-4">
                             <div className="flex flex-wrap items-end gap-2">
@@ -417,11 +445,12 @@ export function ProductKanban() {
                             </ul>
                         </section>
                     )}
-                </div>
+                    </div>
+                </DeskShell>
             </div>
 
-            <aside className="flex w-[min(100%,300px)] shrink-0 flex-col border-l border-brand-border bg-brand-panel">
-                <div className="border-b border-brand-border p-4">
+            <aside className="flex w-[min(100%,280px)] shrink-0 flex-col border-l border-zinc-800 bg-zinc-900/30">
+                <div className="border-b border-zinc-800 p-4">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">Product intent · pinned</p>
                     <textarea
                         value={pd.intent ?? ''}
@@ -429,39 +458,14 @@ export function ProductKanban() {
                         onBlur={(e) => persistProduct({ ...pd, intent: e.target.value })}
                         placeholder={intent}
                         rows={3}
-                        className="mt-2 w-full resize-none rounded-lg border border-zinc-600 bg-brand-panel p-3 text-xs leading-relaxed text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand-teal/30"
+                        className="mt-2 w-full resize-none rounded-lg border border-zinc-700 bg-zinc-900/60 p-3 text-xs leading-relaxed text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-zinc-500/30"
                     />
                     <p className="mt-2 flex items-center gap-1 text-[10px] text-zinc-600">
                         <Sparkles className="h-3 w-3 shrink-0" aria-hidden />
-                        AI planning rail — jump to a surface below.
+                        Surfaces match the tabs above.
                     </p>
                 </div>
-                <nav className="custom-scrollbar flex flex-1 flex-col gap-1 overflow-y-auto p-2">
-                    {nav.map((item) => (
-                        <button
-                            key={item.id}
-                            type="button"
-                            onClick={() => setTool(item.id)}
-                            className={`rounded-lg border px-3 py-2.5 text-left text-xs transition ${
-                                tool === item.id
-                                    ? 'border-zinc-500 bg-zinc-800 text-zinc-100'
-                                    : 'border-transparent text-zinc-400 hover:border-brand-border hover:bg-brand-panel hover:text-zinc-200'
-                            }`}
-                        >
-                            <span className="flex items-center gap-2 font-medium">
-                                {item.id === 'board' && <LayoutGrid className="h-3.5 w-3.5" />}
-                                {item.id === 'roadmap' && <BookOpen className="h-3.5 w-3.5" />}
-                                {item.id === 'war' && <Flame className="h-3.5 w-3.5" />}
-                                {item.id === 'recent' && <History className="h-3.5 w-3.5" />}
-                                {item.id === 'planning' && <Map className="h-3.5 w-3.5" />}
-                                {item.id === 'docs' && <FolderOpen className="h-3.5 w-3.5" />}
-                                {item.label}
-                            </span>
-                            <span className="mt-0.5 block text-[10px] text-zinc-500">{item.sub}</span>
-                        </button>
-                    ))}
-                </nav>
-                <div className="border-t border-brand-border p-3">
+                <div className="mt-auto border-t border-zinc-800 p-3">
                     <button
                         type="button"
                         onClick={() => persistProduct(pd)}

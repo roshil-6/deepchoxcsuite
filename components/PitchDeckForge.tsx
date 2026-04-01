@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { useOffice } from '@/lib/OfficeContext';
-import { FileText, Download, Loader2, CheckCircle, LayoutTemplate } from 'lucide-react';
+import { Download, Loader2, CheckCircle, LayoutTemplate } from 'lucide-react';
+import { DeskShell, DeskEmpty } from '@/components/workspaces/DeskShell';
 import jsPDF from 'jspdf';
 
 export function PitchDeckForge() {
@@ -112,74 +113,70 @@ export function PitchDeckForge() {
         setIsComplete(true);
     };
 
-    if (!activeProject) return <div className="p-10 text-zinc-500">No active project loaded.</div>;
+    if (!activeProject) {
+        return <DeskEmpty>No active project loaded.</DeskEmpty>;
+    }
+
+    const isCmo = activeRoom === 'cmo';
 
     return (
-        <div className="flex flex-col h-full bg-brand-bg text-brand-text items-center justify-center p-10">
-            <div className="max-w-2xl w-full bg-zinc-900/30 border border-zinc-800 p-10 rounded-3xl text-center space-y-8 backdrop-blur-xl shadow-2xl">
-
-                <div className="w-20 h-20 bg-zinc-900 rounded-2xl flex items-center justify-center mx-auto border border-zinc-800 shadow-xl">
-                    <LayoutTemplate className="w-10 h-10 text-[#0D9488]" />
+        <DeskShell
+            eyebrow={isCmo ? 'CMO · GTM plan or messaging framework' : 'Pitch forge · Export'}
+            title={isCmo ? 'Chief Marketing Officer' : 'Pitch Deck Forge'}
+            description={
+                isCmo
+                    ? 'Shape narrative and motion — this forge turns venture intel into a slide story you can ship or rehearse.'
+                    : 'Compile strategy, financials, and market intel into a seven-slide PDF investor deck.'
+            }
+        >
+            <div className="mx-auto flex max-w-2xl flex-col items-center gap-8 py-4 text-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-zinc-700 bg-zinc-900">
+                    <LayoutTemplate className="h-8 w-8 text-zinc-400" aria-hidden />
                 </div>
 
-                <div>
-                    {activeRoom === 'cmo' && (
-                        <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-                            CMO · GTM plan or messaging framework
-                        </p>
-                    )}
-                    <h2 className="text-3xl font-bold tracking-tight mb-2">
-                        {activeRoom === 'cmo' ? 'Chief Marketing Officer' : 'Pitch Deck Forge'}
-                    </h2>
-                    <p className="text-zinc-500">
-                        {activeRoom === 'cmo'
-                            ? 'Shape narrative and motion — this forge turns venture intel into a slide story you can ship or rehearse.'
-                            : 'Instantly compile your Strategy, Financials, and Market Intel into a professional 7-slide PDF investor presentation.'}
-                    </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 text-left max-w-md mx-auto">
-                    <div className="p-3 bg-zinc-950/50 rounded-lg border border-zinc-900">
-                        <div className="text-[10px] uppercase text-zinc-600 font-bold">Slide 1</div>
-                        <div className="text-sm font-bold text-zinc-300">Title & Vision</div>
+                <div className="grid max-w-md grid-cols-2 gap-3 text-left">
+                    <div className="rounded-lg border border-zinc-700 bg-zinc-900/50 p-3">
+                        <div className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Slide 1</div>
+                        <div className="text-sm font-medium text-zinc-200">Title & vision</div>
                     </div>
-                    <div className="p-3 bg-zinc-950/50 rounded-lg border border-zinc-900">
-                        <div className="text-[10px] uppercase text-zinc-600 font-bold">Slide 2</div>
-                        <div className="text-sm font-bold text-zinc-300">The Problem</div>
+                    <div className="rounded-lg border border-zinc-700 bg-zinc-900/50 p-3">
+                        <div className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Slide 2</div>
+                        <div className="text-sm font-medium text-zinc-200">The problem</div>
                     </div>
-                    <div className="p-3 bg-zinc-950/50 rounded-lg border border-zinc-900">
-                        <div className="text-[10px] uppercase text-zinc-600 font-bold">Slide 3</div>
-                        <div className="text-sm font-bold text-zinc-300">The Solution</div>
+                    <div className="rounded-lg border border-zinc-700 bg-zinc-900/50 p-3">
+                        <div className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Slide 3</div>
+                        <div className="text-sm font-medium text-zinc-200">The solution</div>
                     </div>
-                    <div className="p-3 bg-zinc-950/50 rounded-lg border border-zinc-900">
-                        <div className="text-[10px] uppercase text-zinc-600 font-bold">Slide 4-7</div>
-                        <div className="text-sm font-bold text-zinc-300">Market, Biz, $$$, Team</div>
+                    <div className="rounded-lg border border-zinc-700 bg-zinc-900/50 p-3">
+                        <div className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Slides 4–7</div>
+                        <div className="text-sm font-medium text-zinc-200">Market, biz, money, team</div>
                     </div>
                 </div>
 
                 <button
+                    type="button"
                     onClick={generatePDF}
                     disabled={isGenerating}
-                    className="w-full py-4 bg-gradient-to-r from-[#0D9488] to-teal-700 hover:from-teal-500 hover:to-teal-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-teal-900/20 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3"
+                    className="flex w-full max-w-md items-center justify-center gap-2 rounded-lg border border-zinc-600 bg-zinc-800 py-3.5 text-sm font-semibold text-zinc-100 shadow-md transition hover:bg-zinc-700 active:scale-[0.99] disabled:opacity-50"
                 >
                     {isGenerating ? (
                         <>
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                            Forging Deck...
+                            <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
+                            Forging deck…
                         </>
                     ) : isComplete ? (
                         <>
-                            <CheckCircle className="w-5 h-5" />
-                            Deck Downloaded
+                            <CheckCircle className="h-5 w-5" aria-hidden />
+                            Deck downloaded
                         </>
                     ) : (
                         <>
-                            <Download className="w-5 h-5" />
-                            Generate Pitch Deck
+                            <Download className="h-5 w-5" aria-hidden />
+                            Generate pitch deck
                         </>
                     )}
                 </button>
             </div>
-        </div>
+        </DeskShell>
     );
 }
