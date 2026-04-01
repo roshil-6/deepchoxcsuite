@@ -1,5 +1,5 @@
 import type { Project, ProjectEvent, StaffAttentionRole } from '@/lib/db';
-import { parseVentureOnboarding } from '@/lib/ventureOnboarding';
+import { mergeVentureOnboardingFromProject } from '@/lib/ventureOnboarding';
 
 const VALID: StaffAttentionRole[] = ['ceo', 'pm', 'accountant', 'scout', 'cmo', 'chief_of_staff'];
 
@@ -60,11 +60,11 @@ export interface SyncProjectDTO {
 
 export function projectToSyncDto(p: Project): SyncProjectDTO {
   const journal = p.journal || [];
-  const ventureOnboarding = parseVentureOnboarding(p.onboardingData);
+  const ventureOnboarding = mergeVentureOnboardingFromProject(p);
   return {
     id: p.id!,
     name: p.name,
-    ...(ventureOnboarding ? { ventureOnboarding } : {}),
+    ...(Object.keys(ventureOnboarding).length ? { ventureOnboarding } : {}),
     strategy: (p.strategy || '').slice(0, 12000),
     productPlan: (p.productPlan || '').slice(0, 12000),
     budget: (p.budget || '').slice(0, 8000),

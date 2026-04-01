@@ -49,14 +49,14 @@ function workspaceTitle(room: string) {
     return WORKSPACE_TITLES[room] ?? 'Workspace';
 }
 
-export function WorkspaceStage({ onTriggerOnboarding }: { onTriggerOnboarding?: () => void }) {
+export function WorkspaceStage({ onNewVenture }: { onNewVenture?: () => void }) {
     const { activeRoom } = useOffice();
     const shell = getWorkspaceShellTheme(activeRoom);
 
     const renderWorkspace = () => {
         switch (activeRoom) {
             case 'dashboard':
-                return <Dashboard onTriggerOnboarding={onTriggerOnboarding} />;
+                return <Dashboard onNewVenture={onNewVenture} />;
             case 'reports':
                 return <ReportsLibrary />;
             case 'calendar':
@@ -110,7 +110,7 @@ export function WorkspaceStage({ onTriggerOnboarding }: { onTriggerOnboarding?: 
                     </OperationalDesk>
                 );
             default:
-                return <Dashboard onTriggerOnboarding={onTriggerOnboarding} />;
+                return <Dashboard onNewVenture={onNewVenture} />;
         }
     };
 
@@ -134,14 +134,14 @@ export function WorkspaceStage({ onTriggerOnboarding }: { onTriggerOnboarding?: 
                 }
             >
                 {!shell.immersive && (
-                    <header className="mb-3 flex h-14 shrink-0 items-center justify-between rounded-lg border border-brand-border bg-brand-panel px-4 sm:px-5">
+                    <header className="mb-3 flex h-14 shrink-0 items-center justify-between rounded-2xl border border-white/[0.07] bg-white/[0.03] px-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-sm sm:px-5">
                         <h1 className="text-[15px] font-medium tracking-tight text-brand-text">{workspaceTitle(activeRoom)}</h1>
                         <div className="flex items-center gap-1 sm:gap-2">
                             <button
                                 type="button"
-                                className="flex items-center gap-2 rounded-full border border-brand-border bg-brand-input py-1 pl-1 pr-2 transition-colors hover:bg-brand-card sm:pr-3"
+                                className="flex items-center gap-2 rounded-full border border-white/[0.08] bg-brand-input/80 py-1 pl-1 pr-2 transition-colors hover:bg-brand-card sm:pr-3"
                             >
-                                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-border/80">
+                                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.06]">
                                     <User className="h-4 w-4 text-brand-text" aria-hidden />
                                 </span>
                                 <span className="hidden text-sm text-brand-muted sm:inline">Executive</span>

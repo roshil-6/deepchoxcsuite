@@ -24,6 +24,7 @@ export function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) 
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
         projectName: '',
+        strategicIntent: '',
         industry: '',
         problemStatement: '',
         targetAudience: '',
@@ -39,6 +40,7 @@ export function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) 
         setFormData((prev) => ({
             ...prev,
             projectName: d.projectName || prev.projectName,
+            strategicIntent: d.strategicIntent || prev.strategicIntent,
             industry: d.industry || prev.industry,
             problemStatement: d.problemStatement || prev.problemStatement,
             targetAudience: d.targetAudience || prev.targetAudience,
@@ -161,6 +163,23 @@ export function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) 
                                         className="w-full bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 text-xl text-zinc-100 placeholder-zinc-800 focus:outline-none focus:border-zinc-500 transition-all font-medium shadow-inner"
                                     />
                                 </div>
+                                <div className="space-y-3">
+                                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">
+                                        Strategic intent <span className="font-normal text-zinc-600 normal-case">(required for AI context)</span>
+                                    </label>
+                                    <p className="text-[13px] leading-relaxed text-zinc-500">
+                                        In 2–4 sentences, cover: <strong className="text-zinc-400">what you are building</strong>,{' '}
+                                        <strong className="text-zinc-400">for whom</strong>, <strong className="text-zinc-400">why now</strong>, and{' '}
+                                        <strong className="text-zinc-400">what success looks like in the next 6–12 months</strong>. This becomes the
+                                        north star for every desk and the assistant.
+                                    </p>
+                                    <textarea
+                                        value={formData.strategicIntent}
+                                        onChange={(e) => setFormData({ ...formData, strategicIntent: e.target.value })}
+                                        placeholder="e.g. We’re building a compliance-first AI cockpit for solo GPs in the UK to run deal flow and LP reporting in one place — launching a closed beta in Q2 with 10 design partners and revenue by Q4."
+                                        className="w-full bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 text-lg text-zinc-100 placeholder-zinc-700 focus:outline-none focus:border-zinc-500 transition-all font-medium min-h-[140px] resize-y shadow-inner leading-relaxed"
+                                    />
+                                </div>
                             </div>
                         )}
 
@@ -190,12 +209,15 @@ export function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) 
                         {step === 3 && (
                             <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
                                 <div className="space-y-3">
-                                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Primary Objective</label>
+                                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">
+                                        Primary objective <span className="font-normal text-zinc-600 normal-case">(measurable)</span>
+                                    </label>
+                                    <p className="text-[13px] text-zinc-500">Concrete outcome or milestone — different from strategic intent above.</p>
                                     <input
                                         type="text"
                                         value={formData.primaryGoal}
                                         onChange={(e) => setFormData({ ...formData, primaryGoal: e.target.value })}
-                                        placeholder="e.g. Capture 5% market share in Q1"
+                                        placeholder="e.g. 10 paying pilots by Q3, £X MRR, or first regulatory filing submitted"
                                         className="w-full bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 text-xl text-zinc-100 placeholder-zinc-800 focus:outline-none focus:border-zinc-500 transition-all font-medium shadow-inner"
                                     />
                                 </div>

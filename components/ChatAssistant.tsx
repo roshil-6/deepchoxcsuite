@@ -181,7 +181,7 @@ export function ChatAssistant({
             }`}
         >
             {isBottomDock && !dockThreadEmpty ? (
-                <div className="flex shrink-0 items-center justify-between gap-3 border-b border-brand-border/40 px-4 pb-2 pt-3 sm:px-5">
+                <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/[0.08] px-4 pb-2 pt-3 sm:px-5">
                     <p className="min-w-0 text-[12px] leading-snug text-brand-muted">
                         <span className="font-medium text-brand-text">{currentAgent.name}</span>
                         <span className="text-brand-muted"> · {currentAgent.title}</span>
@@ -196,7 +196,7 @@ export function ChatAssistant({
                     </button>
                 </div>
             ) : variant === 'drawer' ? (
-                <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between gap-2 border-b border-brand-border/80 bg-brand-card/95 px-3 py-2.5">
+                <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between gap-2 border-b border-white/[0.08] bg-brand-card/90 px-3 py-2.5 backdrop-blur-sm">
                     <div className="flex min-w-0 items-center gap-2">
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-zinc-600 bg-zinc-800 text-zinc-300">
                             <Bot className="h-4 w-4" aria-hidden />
@@ -232,7 +232,7 @@ export function ChatAssistant({
                     className={`sticky top-0 z-10 flex items-start justify-between gap-3 border-b p-5 ${chatTheme.headerClass}`}
                 >
                     <div className="flex min-w-0 items-start gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-brand-border bg-brand-input text-brand-text">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/[0.1] bg-white/[0.04] text-brand-text shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
                             {currentAgent.icon}
                         </div>
                         <div className="min-w-0">
@@ -252,7 +252,7 @@ export function ChatAssistant({
                     <button
                         type="button"
                         onClick={() => setMessages([])}
-                        className="shrink-0 rounded-xl border border-brand-border/60 bg-brand-bg/60 p-2 text-brand-muted transition-colors hover:bg-brand-input hover:text-white"
+                        className="shrink-0 rounded-xl border border-white/[0.1] bg-white/[0.04] p-2 text-brand-muted transition-colors hover:bg-brand-input hover:text-white"
                         title="Clear thread"
                     >
                         <Sparkles className="h-4 w-4" aria-hidden />
@@ -268,7 +268,7 @@ export function ChatAssistant({
             >
                 {messages.length === 0 && (
                     <div
-                        className={`flex select-none flex-col items-start rounded-xl border border-brand-border/50 bg-brand-bg/50 p-4 text-left sm:p-6 ${
+                        className={`flex select-none flex-col items-start rounded-2xl border border-white/[0.07] bg-white/[0.02] p-4 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:p-6 ${
                             variant === 'drawer' ? 'min-h-[120px]' : 'min-h-[160px]'
                         }`}
                     >
@@ -322,7 +322,7 @@ export function ChatAssistant({
                     className={`flex flex-wrap gap-2 border-t px-4 py-2 sm:px-5 ${
                         isBottomDock
                             ? 'border-zinc-800/35 bg-transparent'
-                            : 'border-brand-border/60 bg-brand-panel/80 px-6 py-3'
+                            : 'border-white/[0.07] bg-brand-panel/60 px-6 py-3 backdrop-blur-sm'
                     }`}
                 >
                     {activeProject.files.map(f => (
@@ -337,15 +337,15 @@ export function ChatAssistant({
             <div
                 className={`shrink-0 ${
                     isBottomDock
-                        ? 'border-t border-brand-border/50 bg-brand-bg px-4 pb-3 pt-2 sm:px-5 sm:pb-4'
-                        : 'border-t border-brand-border bg-brand-panel p-4 sm:p-5'
+                        ? 'border-t border-white/[0.06] bg-brand-bg/90 px-4 pb-3 pt-2 backdrop-blur-md sm:px-5 sm:pb-4'
+                        : 'border-t border-white/[0.07] bg-brand-panel/80 p-4 backdrop-blur-sm sm:p-5'
                 }`}
             >
                 <div
                     className={`group relative overflow-hidden transition-colors ${
                         isBottomDock
-                            ? 'rounded-2xl border border-brand-border bg-brand-panel/70 focus-within:border-brand-teal/35'
-                            : 'rounded-xl border border-brand-border bg-brand-bg focus-within:border-brand-teal/40'
+                            ? 'rounded-3xl border border-white/[0.08] bg-brand-panel/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] focus-within:ring-1 focus-within:ring-brand-teal/25'
+                            : 'rounded-2xl border border-white/[0.08] bg-brand-bg/80 focus-within:ring-1 focus-within:ring-brand-teal/30'
                     }`}
                 >
                     <textarea
@@ -369,9 +369,9 @@ export function ChatAssistant({
                         type="button"
                         onClick={handleSendMessage}
                         disabled={!inputValue.trim() || isLoading}
-                        className={`absolute bottom-2 right-2 z-10 rounded-md p-2 transition-colors active:scale-[0.98] disabled:translate-y-2 disabled:opacity-0 sm:bottom-2.5 sm:right-2.5 sm:p-2 ${
+                        className={`absolute bottom-2 right-2 z-10 rounded-xl p-2 transition-colors active:scale-[0.98] disabled:translate-y-2 disabled:opacity-0 sm:bottom-2.5 sm:right-2.5 sm:p-2 ${
                             isBottomDock
-                                ? 'border border-brand-border bg-brand-input text-brand-text hover:bg-brand-card'
+                                ? 'border border-white/[0.1] bg-brand-input/90 text-brand-text hover:bg-brand-card'
                                 : 'bg-brand-teal text-[#131314] hover:bg-brand-teal/90'
                         }`}
                     >

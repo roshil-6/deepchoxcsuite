@@ -5,6 +5,7 @@ const SYSTEM = `You are helping founders onboard into a venture workspace. From 
 
 Return ONE JSON object only (no markdown fence) with exactly these keys:
 - projectName: string (concise venture name)
+- strategicIntent: string (2–4 sentences: what they are building, for whom, why now, what success looks like in 6–12 months — empty if not inferable)
 - industry: string
 - problemStatement: string (the core problem / friction)
 - targetAudience: string (who it's for)
@@ -62,6 +63,7 @@ export async function POST(req: Request) {
 
     const keys = [
       'projectName',
+      'strategicIntent',
       'industry',
       'problemStatement',
       'targetAudience',

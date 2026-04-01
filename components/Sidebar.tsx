@@ -6,7 +6,6 @@ import { getAllProjects, Project } from '@/lib/db';
 import { TeamHuddle } from '@/components/TeamHuddle';
 import { motion } from 'framer-motion';
 import {
-  Target,
   LayoutGrid,
   Bot,
   FileText,
@@ -21,13 +20,14 @@ import { StaffNotificationCenter } from '@/components/StaffNotificationCenter';
 
 interface SidebarProps {
   onLogout: () => void;
-  onTriggerOnboarding: () => void;
+  /** Chat-first: create shell venture and open Personal Assistant */
+  onNewVenture: () => void;
 }
 
 /** Order: five officer desks (CEO→CSO), then staff / suite tools */
 const C_SUITE_ORDER = ['ceo', 'accountant', 'pm', 'cmo', 'scout', 'chief_of_staff', 'dexo', 'shark'] as const;
 
-export function Sidebar({ onLogout, onTriggerOnboarding }: SidebarProps) {
+export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
   const { activeRoom, switchRoom, agents, activeProject, setActiveProject, setAllProjects, staffAttentionPending } = useOffice();
 
   const [projects, setProjects] = useState<Project[]>([]);
@@ -53,9 +53,9 @@ export function Sidebar({ onLogout, onTriggerOnboarding }: SidebarProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2 }}
-      className="relative z-50 flex h-full w-[260px] shrink-0 flex-col overflow-hidden border-r border-brand-border bg-brand-bg"
+      className="relative z-50 flex h-full w-[260px] shrink-0 flex-col overflow-hidden border-r border-white/[0.06] bg-brand-bg"
     >
-      <div className="relative flex min-h-[3.5rem] shrink-0 items-center justify-between gap-2 border-b border-brand-border px-4 py-3">
+      <div className="relative flex min-h-[3.5rem] shrink-0 items-center justify-between gap-2 border-b border-white/[0.06] px-4 py-3">
         <div className="min-w-0">
           <h1 className="text-[15px] font-medium tracking-tight text-brand-text">DeepChox</h1>
           <p className="mt-0.5 text-[11px] text-brand-muted">Workspace</p>
@@ -74,8 +74,13 @@ export function Sidebar({ onLogout, onTriggerOnboarding }: SidebarProps) {
         {/* Main Workspace */}
         <NavSection label="Command & Control">
           <NavItem icon={<LayoutGrid className="w-4 h-4" />} label="Executive Overview" isActive={activeRoom === 'dashboard'} onClick={() => { setActiveProject(null); switchRoom('dashboard'); }} />
-          <NavItem icon={<MessageSquare className="w-4 h-4" />} label="Personal Assistant" isActive={activeRoom === 'personal_assistant'} onClick={() => switchRoom('personal_assistant')} />
-          <NavItem icon={<Target className="w-4 h-4" />} label="Strategic Intent" isActive={false} onClick={onTriggerOnboarding} />
+          <NavItem
+            icon={<MessageSquare className="w-4 h-4" />}
+            label="Personal Assistant"
+            isActive={activeRoom === 'personal_assistant'}
+            onClick={() => switchRoom('personal_assistant')}
+            title="Venture setup, intent, and ongoing updates — chat-first"
+          />
         </NavSection>
 
         {/* Intelligence Layers */}
@@ -136,10 +141,10 @@ export function Sidebar({ onLogout, onTriggerOnboarding }: SidebarProps) {
             type="button"
             onClick={() => {
               switchRoom('dashboard');
-              onTriggerOnboarding();
+              onNewVenture();
             }}
             className="mb-2 flex h-8 w-full items-center gap-2 px-2 text-xs font-bold uppercase tracking-widest text-zinc-500 transition-colors hover:text-zinc-300"
-            title="Same flow as Strategic Intent — full venture onboarding with goals, problem, audience, and timeline"
+            title="Creates a venture and opens Personal Assistant to describe your idea and goals in chat"
           >
             <Plus className="h-3 w-3" aria-hidden />
             New Venture
@@ -150,9 +155,9 @@ export function Sidebar({ onLogout, onTriggerOnboarding }: SidebarProps) {
               <div
                 key={p.id}
                 onClick={() => handleSelectProject(p)}
-                className={`group relative flex h-10 w-full cursor-pointer items-center rounded-lg px-4 transition-colors ${activeProject?.id === p.id
-                  ? 'border border-zinc-600 bg-zinc-800 text-white'
-                  : 'border border-transparent text-zinc-500 hover:bg-zinc-800/50 hover:text-zinc-300'
+                className={`group relative flex h-10 w-full cursor-pointer items-center rounded-xl px-4 transition-colors ${activeProject?.id === p.id
+                  ? 'bg-white/[0.07] text-white ring-1 ring-white/[0.1]'
+                  : 'text-zinc-500 hover:bg-white/[0.04] hover:text-zinc-300'
                   }`}
               >
                 <div className={`h-2 w-2 shrink-0 rounded-full ${activeProject?.id === p.id ? 'bg-brand-teal' : 'bg-zinc-600'}`} />
@@ -185,11 +190,24 @@ function NavSection({ label, children }: { label: string; children: React.ReactN
   );
 }
 
-function NavItem({ icon, label, isActive, onClick }: { icon: React.ReactNode; label: string; isActive: boolean; onClick: () => void }) {
+function NavItem({
+  icon,
+  label,
+  isActive,
+  onClick,
+  title,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  isActive: boolean;
+  onClick: () => void;
+  title?: string;
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
+      title={title}
       className={`group flex min-h-9 w-full items-center gap-3 rounded-lg py-2 pl-3 pr-3 text-left text-sm transition-colors ${isActive ? 'bg-white/[0.08] text-brand-text' : 'text-brand-muted hover:bg-white/[0.05] hover:text-brand-text'}`}
     >
       <span className={`flex h-7 w-7 shrink-0 items-center justify-center ${isActive ? 'text-brand-teal' : 'text-brand-muted group-hover:text-brand-text'}`} aria-hidden>

@@ -7,10 +7,12 @@ type ChatTurn = { role: 'user' | 'assistant'; content: string };
 const PA_JSON_SYSTEM = `You are the Personal Assistant for DeepChox — the user’s AI chief of staff. You can MODIFY the venture record when they ask you to plan, reprioritize, update progression, add tasks, or change sections.
 
 RULES:
-- The venture JSON includes "ventureOnboarding": goals, problem, audience, timeline, industry, etc. from their setup wizard. Treat that object as authoritative ground truth. Do NOT ask them to repeat venture basics, goals, or audience if those fields are already filled — build on them and only ask for genuinely new or missing detail.
+- The venture JSON includes "ventureOnboarding": goals, problem, audience, timeline, industry, etc. It merges the setup wizard with the live venture (name, strategy narrative, phases, product plan, market intel, budget, directives) whenever wizard fields were empty. Treat every non-empty field as authoritative ground truth. Do NOT ask the user to repeat goals, problem, audience, timeline, or industry if they already appear here or elsewhere in the venture JSON — build on them and only ask for genuinely missing or ambiguous detail.
+- **Venture discovery (new or sparse ventures):** When onboarding/strategy is mostly empty, your job is to understand the startup in conversation: what they sell, for whom, stage, constraints, and how they measure success. Ask ONE focused question at a time. When a question works well with pickable answers, include "followUpOptions" (2–6 short strings, each a complete answer the user can tap). Omit followUpOptions for open-ended prompts. This mirrors “tap to answer” chat UX.
 - Always return ONE JSON object only (no markdown fences). Use response shape exactly below.
 - "reply": natural language to show the user — explain what you changed or advise when no DB change is needed.
-- "updates": optional. Include it whenever the user’s request implies concrete edits (priorities, phases, strategy text, product plan, budget, market intel, directives, notes, kanban, calendar). If you only answer a question with no edits, use "updates": {}.
+- "followUpOptions": optional string array (max 6). Only when you are asking a question that benefits from selectable answers; otherwise omit or use [].
+- "updates": optional. Include it whenever the user’s request implies concrete edits (priorities, phases, strategy text, product plan, budget, market intel, directives, notes, kanban, calendar). If you only answer a question with no edits, use "updates": {}. During discovery, still use updates to save structured onboarding (e.g. setStrategicIntent, appendContent, mergePriorities) when the user’s message clearly warrants it.
 - Do NOT invent financial numbers or metrics not supported by the venture JSON. If data is missing, say so in "reply" and avoid fake numbers in fields.
 - strategy.mergePriorities: when replacing priorities, send the FULL new array (max 40 items). Each item: { "id": string, "title": string, "done": boolean }.
 - strategy.mergePhases: when adjusting timeline/progression, send the FULL new phases array (max 24). Each: { "id", "title", "start", "end", "notes", "status": "planned"|"in_progress"|"done" }. At most one phase should be "in_progress".
@@ -20,6 +22,7 @@ RULES:
 OUTPUT SHAPE:
 {
   "reply": "string",
+  "followUpOptions": ["optional short answer 1", "optional short answer 2"],
   "updates": {
     "appendUserNotes": "",
     "appendTeamDirectives": "",
@@ -38,7 +41,7 @@ OUTPUT SHAPE:
   }
 }
 
-Omit empty strings and empty arrays — use {} for updates if nothing to apply.`;
+Omit empty strings and empty arrays — use {} for updates if nothing to apply. Omit followUpOptions entirely when not used.`;
 
 function stripJsonFence(raw: string): string {
   let s = raw.trim();
@@ -80,9 +83,9 @@ export async function POST(req: Request) {
 
     const raw = await chatWithGroq(msgs, 'llama3', { responseJsonObject: true, temperature: 0.4 });
     const text = raw.message?.content || '{}';
-    let parsed: { reply?: string; updates?: unknown };
+    let parsed: { reply?: string; followUpOptions?: unknown; updates?: unknown };
     try {
-      parsed = JSON.parse(stripJsonFence(text)) as { reply?: string; updates?: unknown };
+      parsed = JSON.parse(stripJsonFence(text)) as { reply?: string; followUpOptions?: unknown; updates?: unknown };
     } catch {
       return NextResponse.json(
         {
@@ -96,8 +99,14 @@ export async function POST(req: Request) {
 
     const reply = typeof parsed.reply === 'string' ? parsed.reply : 'Done.';
     const updates = parsePersonalAssistantUpdatesFromModel(parsed.updates);
+    const followUpOptions = Array.isArray(parsed.followUpOptions)
+      ? parsed.followUpOptions
+          .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
+          .map((s) => s.trim().slice(0, 400))
+          .slice(0, 6)
+      : [];
 
-    return NextResponse.json({ ok: true, reply, updates });
+    return NextResponse.json({ ok: true, reply, updates, followUpOptions });
   } catch (e) {
     console.error('personal-assistant', e);
     const msg = e instanceof Error ? e.message : 'request failed';

@@ -11,11 +11,12 @@
   --color-brand-muted: #9aa0a6;
   --color-brand-teal: #8ab4f8;
   --color-brand-purple: #669df6;
-  --color-brand-border: #3c4043;
+  /* Hairline UI — less “boxed” than solid #3c4043 */
+  --color-brand-border: rgba(255, 255, 255, 0.075);
 
   --color-office-bg: #131314;
   --color-office-card: #2d2e30;
-  --color-office-border: #3c4043;
+  --color-office-border: rgba(255, 255, 255, 0.075);
   --color-office-text: #e8eaed;
   --color-office-text-dim: #9aa0a6;
   --color-office-accent: #8ab4f8;
@@ -66,12 +67,12 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: var(--color-brand-border);
+    background: rgba(255, 255, 255, 0.12);
     border-radius: 99px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #3a4249;
+    background: rgba(255, 255, 255, 0.18);
   }
 }
 
@@ -109,25 +110,26 @@
     flex-shrink: 0;
     width: 2.5rem;
     height: 2.5rem;
-    border-radius: 0.5rem;
-    border: 1px solid var(--color-brand-border);
-    background: var(--color-brand-input);
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
     color: var(--color-office-accent);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
 
-  /* Flat panels — no glass / blur */
+  /* Soft panels — rounded, light edge */
   .surface-flow {
-    border-radius: 0.75rem;
-    border: 1px solid var(--color-brand-border);
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
     background: var(--color-brand-card);
-    box-shadow: var(--shadow-panel);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
 
   .surface-wave {
-    border-radius: 0.75rem;
-    border: 1px solid var(--color-brand-border);
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
     background: var(--color-brand-card);
-    box-shadow: var(--shadow-panel);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
 
   .input-office {
@@ -177,24 +179,33 @@
 
   .card-glass {
     background-color: var(--color-brand-card);
-    border-radius: 0.75rem;
-    box-shadow: var(--shadow-panel);
-    border: 1px solid var(--color-brand-border);
-    transition: border-color 0.2s ease;
+    border-radius: 1rem;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
   }
 
   .card-glass:hover {
-    border-color: rgba(138, 180, 248, 0.22);
+    border-color: rgba(138, 180, 248, 0.2);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
   }
 
   .sidebar-float {
     background-color: var(--color-brand-panel);
     border-radius: 0;
     box-shadow: none;
-    border: 1px solid var(--color-brand-border);
+    border: 1px solid rgba(255, 255, 255, 0.06);
     border-top: none;
     border-bottom: none;
     border-left: none;
+  }
+
+  /** Utility: soft floating panel (use with Tailwind @apply in components or class string) */
+  .surface-soft-edge {
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
 
   .page-enter {

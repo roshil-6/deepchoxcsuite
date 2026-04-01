@@ -23,7 +23,7 @@ export function OperationalDesk({
         return (
             <div className="relative flex h-full w-full flex-col overflow-hidden bg-brand-bg">
                 {waiting.length > 0 && (
-                    <div className="shrink-0 border-b border-amber-500/25 bg-amber-950/40 px-4 py-2.5">
+                    <div className="shrink-0 border-b border-amber-500/20 bg-amber-950/30 px-4 py-2.5 backdrop-blur-sm">
                         <div className="flex items-start gap-2">
                             <Bell className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" aria-hidden />
                             <div className="min-w-0 flex-1 space-y-2">
@@ -53,7 +53,7 @@ export function OperationalDesk({
         <div className="group/desk relative flex h-full w-full overflow-hidden bg-brand-bg">
             <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-brand-bg">
                 {waiting.length > 0 && (
-                    <div className="shrink-0 border-b border-amber-500/25 bg-amber-950/40 px-4 py-2.5">
+                    <div className="shrink-0 border-b border-amber-500/20 bg-amber-950/30 px-4 py-2.5 backdrop-blur-sm">
                         <div className="flex items-start gap-2">
                             <Bell className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" aria-hidden />
                             <div className="min-w-0 flex-1 space-y-2">
@@ -78,7 +78,7 @@ export function OperationalDesk({
             </div>
 
             <div
-                className={`relative z-20 flex h-full shrink-0 flex-col border-l border-brand-border bg-brand-bg transition-all duration-300 ease-out ${
+                className={`relative z-20 flex h-full shrink-0 flex-col border-l border-white/[0.06] bg-brand-bg transition-all duration-300 ease-out ${
                     isChatOpen ? 'w-[min(100%,400px)]' : 'w-[52px]'
                 }`}
             >

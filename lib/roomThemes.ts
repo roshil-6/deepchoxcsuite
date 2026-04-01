@@ -28,9 +28,9 @@ const DEFAULT_CHAT: ChatRailTheme = {
   roleLabel: 'your Chief of Staff',
   subtitle: 'Coordinating your office.',
   emptyPrompt: 'Tell me what you need orchestrated across the team.',
-  headerClass: 'border-b border-brand-border bg-brand-panel',
-  railClass: 'border-r border-brand-border bg-brand-panel',
-  userBubbleClass: 'border border-brand-border bg-brand-input text-brand-text',
+  headerClass: 'border-b border-white/[0.07] bg-brand-panel/70 backdrop-blur-sm',
+  railClass: 'border-r border-white/[0.07] bg-brand-panel/70',
+  userBubbleClass: 'border border-white/[0.1] bg-brand-input/90 text-brand-text shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
   accentDot: 'bg-brand-teal',
   placeholder: 'Issue a directive…',
 };
@@ -193,8 +193,8 @@ export interface WorkspaceShellTheme {
 
 const SHELL_DEFAULT: WorkspaceShellTheme = {
   wash: 'from-brand-bg to-brand-bg',
-  gridColor: '#3c4043',
-  gridOpacity: '0.025',
+  gridColor: 'rgba(255,255,255,0.06)',
+  gridOpacity: '0.035',
   /** No inner “card” frame — avoids a second panel overlaying each room */
   chrome: '',
   immersive: false,

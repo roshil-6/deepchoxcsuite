@@ -96,7 +96,7 @@ const DASH = {
     activity: ['#22d3ee', '#a78bfa', '#34d399', '#fbbf24', '#fb7185', '#818cf8', '#2dd4bf', '#f472b6', '#c084fc'],
 } as const;
 
-export function Dashboard({ onTriggerOnboarding }: { onTriggerOnboarding?: () => void }) {
+export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     const {
         activeRoom,
         switchRoom,
@@ -310,18 +310,18 @@ export function Dashboard({ onTriggerOnboarding }: { onTriggerOnboarding?: () =>
                                     </p>
                                 </div>
                             </button>
-                            {onTriggerOnboarding && (
+                            {onNewVenture && (
                                 <button
                                     type="button"
-                                    onClick={onTriggerOnboarding}
+                                    onClick={onNewVenture}
                                     className="flex flex-col items-start gap-3 rounded-2xl border border-brand-border bg-brand-panel/50 p-5 text-left transition hover:border-brand-border hover:bg-brand-panel"
                                 >
                                     <Target className="h-6 w-6 text-brand-muted" aria-hidden />
                                     <div>
                                         <h2 className="text-base font-semibold text-brand-text">New venture</h2>
                                         <p className="mt-1.5 text-sm leading-relaxed text-brand-muted">
-                                            Full onboarding — same flow as Strategic Intent or New venture in the sidebar (goals,
-                                            problem, audience, timeline, industry).
+                                            Opens Personal Assistant — describe your idea in chat; the assistant asks follow-ups
+                                            (tap-to-answer) and updates your venture record as you go.
                                         </p>
                                     </div>
                                 </button>
@@ -451,7 +451,7 @@ export function Dashboard({ onTriggerOnboarding }: { onTriggerOnboarding?: () =>
                             <p className="mt-1 text-sm text-brand-muted">
                                 {ventureCount > 0
                                     ? 'Open one to continue in this workspace — Chief of Staff stays below.'
-                                    : 'Use New venture (card or left sidebar) — one onboarding flow for every new venture.'}
+                                    : 'Use New venture (card or sidebar) — chat-first setup in Personal Assistant.'}
                             </p>
                         </div>
 
@@ -490,7 +490,7 @@ export function Dashboard({ onTriggerOnboarding }: { onTriggerOnboarding?: () =>
                             <div className="rounded-xl border border-dashed border-brand-border bg-brand-panel/25 px-6 py-10 text-center">
                                 <p className="mx-auto max-w-sm text-sm leading-relaxed text-brand-muted">
                                     No ventures yet — use <span className="text-brand-muted">New venture</span> on the left or the
-                                    card above (same onboarding).
+                                    card above (opens Personal Assistant).
                                 </p>
                             </div>
                         )}

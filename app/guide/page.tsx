@@ -77,7 +77,7 @@ export default function GuidePage() {
                         {[
                             {
                                 title: 'Anchor a venture',
-                                body: 'Onboarding captures name, intent, and constraints so every desk writes against the same north star.',
+                                body: 'New ventures open in Personal Assistant: you describe the idea in chat; the assistant asks follow-ups (including tap-to-answer options) and writes into your venture record so every desk shares the same ground truth.',
                             },
                             {
                                 title: 'Work desks, not tabs',

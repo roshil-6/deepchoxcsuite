@@ -5,6 +5,7 @@ import { FileUp, Loader2, Mic, Sparkles, AlertCircle } from 'lucide-react';
 
 export type VentureExtracted = {
   projectName: string;
+  strategicIntent: string;
   industry: string;
   problemStatement: string;
   targetAudience: string;
