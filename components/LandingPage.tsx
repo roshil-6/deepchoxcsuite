@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Mail, Lock, Play, User, Shield } from 'lucide-react';
 
-/** Default hero still — drop `landing-hero-suite-intelligence.png` into `/public` (Intelligence Suite screenshot). */
+/** Default hero still — add `public/landing-hero-suite-intelligence.png` or set `NEXT_PUBLIC_LANDING_HERO_IMAGE_URL`. */
 export const LANDING_HERO_STILL = '/landing-hero-suite-intelligence.png';
 
 interface LandingPageProps {
@@ -15,6 +15,7 @@ interface LandingPageProps {
 }
 
 export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
+    /** Optional demo video — shown *below* the hero image, never replaces it. */
     const resolvedHeroVideo = (() => {
         const fromProp =
             heroVideoSrc != null && String(heroVideoSrc).trim() !== '' ? String(heroVideoSrc).trim() : null;
@@ -22,6 +23,18 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
         const env = process.env.NEXT_PUBLIC_LANDING_HERO_VIDEO_URL;
         return typeof env === 'string' && env.trim() !== '' ? env.trim() : null;
     })();
+
+    /** Hero screenshot: env URL first, then `/landing-hero-suite-intelligence.png` in `public/`. */
+    const heroImageSrc = useMemo(() => {
+        const fromEnv =
+            process.env.NEXT_PUBLIC_LANDING_HERO_IMAGE_URL?.trim() ||
+            process.env.NEXT_PUBLIC_LANDING_HERO_STILL_URL?.trim();
+        if (fromEnv) return fromEnv;
+        return LANDING_HERO_STILL;
+    }, []);
+
+    const isExternalHeroImage =
+        heroImageSrc.startsWith('http://') || heroImageSrc.startsWith('https://');
     const [isVisible, setIsVisible] = useState(false);
     const [signupOpen, setSignupOpen] = useState(false);
     const [signupEmail, setSignupEmail] = useState('');
@@ -179,26 +192,28 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                             className="relative mt-5 w-full max-w-5xl overflow-hidden rounded-2xl border border-zinc-800/90 bg-zinc-950/80 shadow-[0_24px_80px_-20px_rgba(0,0,0,0.85)] sm:mt-6"
                             style={{ aspectRatio: '16/9', maxHeight: 'min(46vh, 520px)' }}
                         >
-                            {resolvedHeroVideo ? (
-                                <video
-                                    className="absolute inset-0 h-full w-full object-cover"
-                                    controls
-                                    playsInline
-                                    preload="metadata"
-                                    poster={LANDING_HERO_STILL}
-                                    src={resolvedHeroVideo}
-                                />
-                            ) : !heroStillError ? (
+                            {!heroStillError ? (
                                 <div className="absolute inset-0">
-                                    <Image
-                                        src={LANDING_HERO_STILL}
-                                        alt="DeepChox Intelligence Suite — staff network, venture record, and officer desks"
-                                        fill
-                                        className="object-cover object-top"
-                                        priority
-                                        sizes="(max-width: 1280px) 100vw, 1280px"
-                                        onError={() => setHeroStillError(true)}
-                                    />
+                                    {isExternalHeroImage ? (
+                                        <img
+                                            src={heroImageSrc}
+                                            alt="DeepChox Intelligence Suite — staff network, venture record, and officer desks"
+                                            className="absolute inset-0 h-full w-full object-cover object-top"
+                                            onError={() => setHeroStillError(true)}
+                                        />
+                                    ) : (
+                                        <div className="relative h-full w-full">
+                                            <Image
+                                                src={heroImageSrc}
+                                                alt="DeepChox Intelligence Suite — staff network, venture record, and officer desks"
+                                                fill
+                                                className="object-cover object-top"
+                                                priority
+                                                sizes="(max-width: 1280px) 100vw, 1280px"
+                                                onError={() => setHeroStillError(true)}
+                                            />
+                                        </div>
+                                    )}
                                     <div
                                         className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent"
                                         aria-hidden
@@ -227,19 +242,40 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                                     <div className="relative flex h-12 w-12 items-center justify-center rounded-full border border-zinc-700/80 bg-zinc-900/90 text-zinc-300">
                                         <Play className="ml-0.5 h-5 w-5 fill-current" aria-hidden />
                                     </div>
-                                    <p className="relative max-w-[20rem] text-center font-sans text-[11px] leading-relaxed text-zinc-500 sm:text-xs">
+                                    <p className="relative max-w-[22rem] text-center font-sans text-[11px] leading-relaxed text-zinc-500 sm:text-xs">
                                         Add{' '}
                                         <code className="rounded bg-zinc-900 px-1.5 py-0.5 font-mono text-[10px] text-zinc-400">
                                             public/landing-hero-suite-intelligence.png
                                         </code>{' '}
-                                        (your screenshot) or set{' '}
+                                        or set{' '}
+                                        <code className="rounded bg-zinc-900 px-1.5 py-0.5 font-mono text-[10px] text-zinc-400">
+                                            NEXT_PUBLIC_LANDING_HERO_IMAGE_URL
+                                        </code>{' '}
+                                        (full URL). Optional:{' '}
                                         <code className="rounded bg-zinc-900 px-1.5 py-0.5 font-mono text-[10px] text-zinc-400">
                                             NEXT_PUBLIC_LANDING_HERO_VIDEO_URL
-                                        </code>
+                                        </code>{' '}
+                                        shows a demo video below this frame.
                                     </p>
                                 </div>
                             )}
                         </div>
+
+                        {resolvedHeroVideo ? (
+                            <div className="relative mt-4 w-full max-w-5xl overflow-hidden rounded-xl border border-zinc-800/80 bg-black/40 shadow-lg">
+                                <video
+                                    className="max-h-[min(40vh,360px)] w-full object-contain"
+                                    controls
+                                    playsInline
+                                    preload="metadata"
+                                    poster={isExternalHeroImage ? heroImageSrc : LANDING_HERO_STILL}
+                                    src={resolvedHeroVideo}
+                                />
+                                <p className="border-t border-zinc-800/80 px-3 py-2 text-center font-sans text-[10px] text-zinc-500">
+                                    Demo video — hero above stays your product screenshot
+                                </p>
+                            </div>
+                        ) : null}
 
                         <h1 className="font-serif mx-auto mt-5 max-w-[22ch] text-balance text-[clamp(2.15rem,6vw,4.25rem)] font-semibold leading-[1.08] tracking-[0.015em] text-white sm:mt-6 sm:max-w-[24ch] [text-shadow:0_4px_40px_rgba(0,0,0,0.55)]">
                             Where venture and intelligence meet
