@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useOffice } from '@/lib/OfficeContext';
-import { getAllProjects, Project, saveProject } from '@/lib/db';
+import { getAllProjects, Project } from '@/lib/db';
 import { TeamHuddle } from '@/components/TeamHuddle';
 import { motion } from 'framer-motion';
 import {
@@ -13,7 +13,6 @@ import {
   Notebook,
   Plus,
   LogOut,
-  X,
   MessageSquare,
   Inbox,
   GitBranch,
@@ -32,8 +31,6 @@ export function Sidebar({ onLogout, onTriggerOnboarding }: SidebarProps) {
   const { activeRoom, switchRoom, agents, activeProject, setActiveProject, setAllProjects, staffAttentionPending } = useOffice();
 
   const [projects, setProjects] = useState<Project[]>([]);
-  const [showNewProjectForm, setShowNewProjectForm] = useState(false);
-  const [newProjectName, setNewProjectName] = useState('');
 
   // Load projects on mount
   useEffect(() => {
@@ -44,38 +41,6 @@ export function Sidebar({ onLogout, onTriggerOnboarding }: SidebarProps) {
     const allProjects = await getAllProjects();
     setProjects(allProjects);
     setAllProjects(allProjects);
-  };
-
-  const handleCreateProject = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newProjectName.trim()) return;
-
-    const newProjectData: Omit<Project, 'id'> = {
-      name: newProjectName.trim(),
-      strategy: '',
-      productPlan: '',
-      budget: '',
-      marketInsights: '',
-      userNotes: '',
-      teamDirectives: '',
-      onboardingData: '',
-      journal: [],
-      events: [],
-      files: [],
-      orgStructure: [],
-      kanban: [],
-      diary: [],
-      deskDocuments: [],
-      timestamp: Date.now(),
-    };
-
-    const id = await saveProject(newProjectData as any);
-    const savedProject = { ...newProjectData, id };
-    setProjects([savedProject as Project, ...projects]);
-    setActiveProject(savedProject as Project);
-    setNewProjectName('');
-    setShowNewProjectForm(false);
-    setAllProjects([savedProject as Project, ...projects]);
   };
 
   const handleSelectProject = (project: Project) => {
@@ -167,25 +132,18 @@ export function Sidebar({ onLogout, onTriggerOnboarding }: SidebarProps) {
 
         {/* Projects */}
         <NavSection label="Active Ventures">
-          <button onClick={() => setShowNewProjectForm(true)} className="w-full h-8 flex items-center gap-2 px-2 text-zinc-500 hover:text-zinc-300 transition-colors mb-2 text-xs font-bold uppercase tracking-widest">
-            <Plus className="w-3 h-3" /> New Venture
+          <button
+            type="button"
+            onClick={() => {
+              switchRoom('dashboard');
+              onTriggerOnboarding();
+            }}
+            className="mb-2 flex h-8 w-full items-center gap-2 px-2 text-xs font-bold uppercase tracking-widest text-zinc-500 transition-colors hover:text-zinc-300"
+            title="Same flow as Strategic Intent — full venture onboarding with goals, problem, audience, and timeline"
+          >
+            <Plus className="h-3 w-3" aria-hidden />
+            New Venture
           </button>
-
-          {showNewProjectForm && (
-            <div className="mb-2 rounded-lg border border-zinc-700 bg-zinc-800 p-3 animate-in fade-in slide-in-from-left-2">
-              <input
-                className="mb-2 w-full rounded-md border border-zinc-600 bg-zinc-900 px-2 py-1.5 text-xs text-zinc-200 outline-none focus:ring-1 focus:ring-zinc-500"
-                placeholder="Venture Name..."
-                value={newProjectName}
-                onChange={e => setNewProjectName(e.target.value)}
-                autoFocus
-              />
-              <div className="flex gap-2">
-                <button onClick={handleCreateProject} className="flex-1 rounded-lg bg-brand-teal py-1.5 text-[10px] font-semibold text-[#131314] transition-colors hover:bg-brand-teal/90">CREATE</button>
-                <button onClick={() => setShowNewProjectForm(false)} className="px-2 bg-zinc-700 text-zinc-400 rounded-lg"><X className="w-3 h-3" /></button>
-              </div>
-            </div>
-          )}
 
           <div className="space-y-1">
             {projects.map(p => (

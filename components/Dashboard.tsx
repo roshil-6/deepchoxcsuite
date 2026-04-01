@@ -320,7 +320,8 @@ export function Dashboard({ onTriggerOnboarding }: { onTriggerOnboarding?: () =>
                                     <div>
                                         <h2 className="text-base font-semibold text-brand-text">New venture</h2>
                                         <p className="mt-1.5 text-sm leading-relaxed text-brand-muted">
-                                            Run onboarding and create a venture record.
+                                            Full onboarding — same flow as Strategic Intent or New venture in the sidebar (goals,
+                                            problem, audience, timeline, industry).
                                         </p>
                                     </div>
                                 </button>
@@ -450,7 +451,7 @@ export function Dashboard({ onTriggerOnboarding }: { onTriggerOnboarding?: () =>
                             <p className="mt-1 text-sm text-brand-muted">
                                 {ventureCount > 0
                                     ? 'Open one to continue in this workspace — Chief of Staff stays below.'
-                                    : 'Use New venture above or run onboarding when you are ready.'}
+                                    : 'Use New venture (card or left sidebar) — one onboarding flow for every new venture.'}
                             </p>
                         </div>
 
@@ -488,7 +489,8 @@ export function Dashboard({ onTriggerOnboarding }: { onTriggerOnboarding?: () =>
                         ) : (
                             <div className="rounded-xl border border-dashed border-brand-border bg-brand-panel/25 px-6 py-10 text-center">
                                 <p className="mx-auto max-w-sm text-sm leading-relaxed text-brand-muted">
-                                    No ventures yet — start with <span className="text-brand-muted">New venture</span> when you are ready.
+                                    No ventures yet — use <span className="text-brand-muted">New venture</span> on the left or the
+                                    card above (same onboarding).
                                 </p>
                             </div>
                         )}
