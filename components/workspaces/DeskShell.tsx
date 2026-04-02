@@ -43,13 +43,13 @@ export function DeskShell({
 }: DeskShellProps) {
     return (
         <div className={shellClass('flex h-full min-h-0 flex-col overflow-hidden bg-brand-bg', className)}>
-            <header className={shellClass('shrink-0 border-b border-zinc-700', HEADER_PAD)}>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">{eyebrow}</p>
-                <h1 className="mt-1 text-xl font-semibold tracking-tight text-zinc-100 sm:text-2xl">{title}</h1>
+            <header className={shellClass('shrink-0 border-b border-brand-border', HEADER_PAD)}>
+                <p className="text-[11px] font-medium text-brand-muted">{eyebrow}</p>
+                <h1 className="mt-1 text-lg font-medium tracking-tight text-brand-text sm:text-xl">{title}</h1>
                 {description ? (
-                    <p className="mt-2 max-w-3xl text-sm leading-relaxed text-zinc-500">{description}</p>
+                    <p className="mt-2 max-w-3xl text-sm leading-relaxed text-brand-muted">{description}</p>
                 ) : null}
-                {tabs ? <div className="mt-6 flex flex-wrap gap-2 border-t border-zinc-800 pt-4">{tabs}</div> : null}
+                {tabs ? <div className="mt-5 flex flex-wrap gap-1.5 border-t border-brand-border pt-4">{tabs}</div> : null}
             </header>
             <div
                 className={`custom-scrollbar min-h-0 flex-1 overflow-y-auto ${bodyFlush ? 'p-0' : BODY_PAD} ${bodyClassName ?? ''}`}
@@ -57,7 +57,7 @@ export function DeskShell({
                 {children}
             </div>
             {footer ? (
-                <div className="shrink-0 border-t border-zinc-800 bg-zinc-900/40 px-6 py-3 sm:px-8">{footer}</div>
+                <div className="shrink-0 border-t border-brand-border bg-brand-panel/50 px-6 py-3 sm:px-8">{footer}</div>
             ) : null}
         </div>
     );
@@ -81,10 +81,10 @@ export function DeskTabButton({
         <button
             type={type}
             onClick={onClick}
-            className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition-colors ${
+            className={`inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${
                 active
-                    ? 'border-zinc-500 bg-zinc-800 text-zinc-100'
-                    : 'border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-600'
+                    ? 'border-brand-border bg-brand-input text-brand-text'
+                    : 'border-transparent bg-transparent text-brand-muted hover:border-brand-border hover:bg-brand-input/60 hover:text-brand-text'
             }`}
         >
             {icon}
@@ -95,7 +95,7 @@ export function DeskTabButton({
 
 export function DeskEmpty({ children, className }: { children: React.ReactNode; className?: string }) {
     return (
-        <div className={shellClass('flex h-full items-center justify-center p-8 text-sm text-zinc-500', className)}>
+        <div className={shellClass('flex h-full items-center justify-center p-8 text-sm text-brand-muted', className)}>
             {children}
         </div>
     );

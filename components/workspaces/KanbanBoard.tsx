@@ -34,14 +34,14 @@ export function KanbanBoard() {
     ) || [];
 
     return (
-        <div className="h-full font-sans overflow-hidden p-6 flex flex-col">
+        <div className="flex h-full flex-col overflow-hidden p-4 font-sans sm:p-5">
             <div className="max-w-[1600px] w-full mx-auto h-full flex flex-col">
 
                 {/* Header */}
-                <div className="flex items-center justify-between mb-8 shrink-0">
-                    <div>
-                        <p className="mb-1 text-[11px] font-medium text-zinc-500">Product</p>
-                        <h2 className="text-2xl font-semibold tracking-tight text-white">Roadmap</h2>
+                <div className="mb-5 flex shrink-0 items-end justify-between gap-4">
+                    <div className="min-w-0">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Product</p>
+                        <h2 className="mt-0.5 text-lg font-semibold leading-tight tracking-tight text-zinc-100">Roadmap</h2>
                     </div>
                     <div className="flex gap-3">
                         <button type="button" className="flex items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-2 text-xs font-medium text-zinc-400 transition-all hover:bg-zinc-800 hover:text-white">
@@ -56,13 +56,13 @@ export function KanbanBoard() {
                 </div>
 
                 {/* Objective Card */}
-                <div className="group relative mb-8 flex shrink-0 items-center justify-between overflow-hidden rounded-[1.5rem] border border-zinc-800 bg-black/40 p-6 shadow-lg backdrop-blur-md">
+                <div className="group relative mb-5 flex shrink-0 items-start justify-between overflow-hidden rounded-2xl border border-zinc-800 bg-black/40 px-4 py-3 shadow-lg backdrop-blur-md sm:px-5 sm:py-4">
                     <div className="pointer-events-none absolute -right-12 -top-12 rounded-full bg-indigo-500/5 p-24 blur-3xl transition-colors group-hover:bg-indigo-500/10"></div>
-                    <div className="relative z-10 w-full">
-                        <div className="mb-2 flex items-center gap-2 text-xs font-medium text-zinc-500">
-                            <Target className="h-4 w-4 text-indigo-400" /> Focus
+                    <div className="relative z-10 w-full min-w-0">
+                        <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                            <Target className="h-3.5 w-3.5 shrink-0 text-indigo-400" aria-hidden /> Focus
                         </div>
-                        <p className="max-w-4xl text-lg font-medium leading-relaxed text-zinc-200">
+                        <p className="max-w-4xl text-sm font-medium leading-relaxed text-zinc-300">
                             {product?.coreValueProp || 'No product summary yet — add one in the product plan.'}
                         </p>
                     </div>
@@ -73,18 +73,20 @@ export function KanbanBoard() {
                     <div className="flex h-full gap-6 min-w-full">
                         {columns.map(col => (
                             <div key={col.id} className="flex-1 min-w-[350px] bg-zinc-900/20 backdrop-blur-md border border-zinc-800/50 rounded-[2rem] flex flex-col h-full relative group/col hover:bg-zinc-900/30 transition-colors">
-                                <div className="p-6 shrink-0 flex items-center justify-between border-b border-white/5">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 rounded-lg bg-black/50 border border-white/5 text-zinc-400 group-hover/col:text-white transition-colors">
+                                <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/5 px-4 py-2.5">
+                                    <div className="flex min-w-0 items-center gap-2">
+                                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-white/5 bg-black/50 text-zinc-400 transition-colors group-hover/col:text-white">
                                             {col.icon}
                                         </div>
-                                        <div>
-                                            <h3 className="text-sm font-medium text-zinc-300">{col.title}</h3>
-                                            <span className="text-[10px] text-zinc-500">{allTasks.filter((t: any) => t.status === col.id).length} cards</span>
+                                        <div className="min-w-0 leading-tight">
+                                            <h3 className="text-xs font-semibold text-zinc-200">{col.title}</h3>
+                                            <span className="text-[10px] leading-none text-zinc-500">
+                                                {allTasks.filter((t: any) => t.status === col.id).length} cards
+                                            </span>
                                         </div>
                                     </div>
-                                    <button className="text-zinc-600 hover:text-white transition-colors">
-                                        <MoreVertical className="w-4 h-4" />
+                                    <button type="button" className="shrink-0 text-zinc-600 transition-colors hover:text-white" aria-label="Column options">
+                                        <MoreVertical className="h-4 w-4" />
                                     </button>
                                 </div>
 

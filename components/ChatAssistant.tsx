@@ -196,7 +196,7 @@ export function ChatAssistant({
                     </button>
                 </div>
             ) : variant === 'drawer' ? (
-                <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between gap-2 border-b border-white/[0.08] bg-brand-card/90 px-3 py-2.5 backdrop-blur-sm">
+                <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between gap-2 border-b border-brand-border bg-brand-panel/95 px-3 py-2.5">
                     <div className="flex min-w-0 items-center gap-2">
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-zinc-600 bg-zinc-800 text-zinc-300">
                             <Bot className="h-4 w-4" aria-hidden />
@@ -317,7 +317,7 @@ export function ChatAssistant({
                     className={`flex flex-wrap gap-2 px-1 py-1.5 sm:px-2 ${
                         isBottomDock
                             ? 'border-0 bg-transparent'
-                            : 'border-t border-white/[0.07] bg-brand-panel/60 px-6 py-3 backdrop-blur-sm'
+                            : 'border-t border-brand-border bg-brand-panel/80 px-6 py-3'
                     }`}
                 >
                     {activeProject.files.map(f => (
@@ -333,14 +333,14 @@ export function ChatAssistant({
                 className={`shrink-0 ${
                     isBottomDock
                         ? 'border-0 bg-transparent pb-0 pt-1'
-                        : 'border-t border-white/[0.07] bg-brand-panel/80 p-4 backdrop-blur-sm sm:p-5'
+                        : 'border-t border-brand-border bg-brand-panel/90 p-4 sm:p-5'
                 }`}
             >
                 <div
                     className={`group relative overflow-hidden transition-colors ${
                         isBottomDock
                             ? 'rounded-xl bg-white/[0.04] ring-1 ring-white/[0.06] focus-within:bg-white/[0.06] focus-within:ring-white/[0.1]'
-                            : 'rounded-2xl border border-white/[0.08] bg-brand-bg/80 focus-within:ring-1 focus-within:ring-brand-teal/30'
+                            : 'rounded-xl border border-brand-border bg-brand-bg/90 focus-within:ring-1 focus-within:ring-brand-teal/25'
                     }`}
                 >
                     <textarea

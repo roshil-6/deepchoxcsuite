@@ -53,9 +53,9 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2 }}
-      className="relative z-50 flex h-full w-[260px] shrink-0 flex-col overflow-hidden border-r border-white/[0.06] bg-brand-bg"
+      className="relative z-50 flex h-full w-[260px] shrink-0 flex-col overflow-hidden border-r border-brand-border bg-brand-bg"
     >
-      <div className="relative flex min-h-[3.5rem] shrink-0 items-center justify-between gap-2 border-b border-white/[0.06] px-4 py-3">
+      <div className="relative flex min-h-[3.5rem] shrink-0 items-center justify-between gap-2 border-b border-brand-border px-4 py-3">
         <div className="min-w-0">
           <h1 className="text-[15px] font-medium tracking-tight text-brand-text">DeepChox</h1>
           <p className="mt-0.5 text-[11px] text-brand-muted">Workspace</p>
@@ -155,8 +155,8 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
               <div
                 key={p.id}
                 onClick={() => handleSelectProject(p)}
-                className={`group relative flex h-10 w-full cursor-pointer items-center rounded-xl px-4 transition-colors ${activeProject?.id === p.id
-                  ? 'bg-white/[0.07] text-white ring-1 ring-white/[0.1]'
+                className={`group relative flex h-10 w-full cursor-pointer items-center rounded-lg px-4 transition-colors ${activeProject?.id === p.id
+                  ? 'bg-white/[0.06] text-white ring-1 ring-white/[0.08]'
                   : 'text-zinc-500 hover:bg-white/[0.04] hover:text-zinc-300'
                   }`}
               >
@@ -184,7 +184,7 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
 function NavSection({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <section className="mb-1" aria-label={label}>
-      <h2 className="mb-1.5 px-3 text-[11px] font-medium text-brand-muted">{label}</h2>
+      <h2 className="section-label mb-1.5 px-3">{label}</h2>
       <div className="space-y-0.5">{children}</div>
     </section>
   );
@@ -208,7 +208,7 @@ function NavItem({
       type="button"
       onClick={onClick}
       title={title}
-      className={`group flex min-h-9 w-full items-center gap-3 rounded-lg py-2 pl-3 pr-3 text-left text-sm transition-colors ${isActive ? 'bg-white/[0.08] text-brand-text' : 'text-brand-muted hover:bg-white/[0.05] hover:text-brand-text'}`}
+      className={`group flex min-h-9 w-full items-center gap-3 rounded-md py-2 pl-3 pr-3 text-left text-sm transition-colors ${isActive ? 'bg-white/[0.06] text-brand-text' : 'text-brand-muted hover:bg-white/[0.04] hover:text-brand-text'}`}
     >
       <span className={`flex h-7 w-7 shrink-0 items-center justify-center ${isActive ? 'text-brand-teal' : 'text-brand-muted group-hover:text-brand-text'}`} aria-hidden>
         {icon}

@@ -85,7 +85,7 @@ export function StaffNotificationCenter({ className = '' }: { className?: string
       ref={panelRef}
       role="dialog"
       aria-modal="true"
-      className="fixed z-[200] max-h-[min(85vh,calc(100vh-16px))] flex flex-col rounded-xl border border-brand-border bg-brand-panel shadow-xl"
+      className="fixed z-[200] max-h-[min(85vh,calc(100vh-16px))] flex flex-col overflow-hidden rounded-lg border border-brand-border bg-brand-panel shadow-[0_2px_8px_rgba(0,0,0,0.35)]"
       style={{
         top: panelPos.top,
         left: panelPos.left,
@@ -108,7 +108,7 @@ export function StaffNotificationCenter({ className = '' }: { className?: string
           <ul className="divide-y divide-brand-border">
             {staffAttentionPending.map((item) => (
               <li key={item.id} className="px-3 py-3">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-teal">{item.role.replace('_', ' ')}</p>
+                <p className="text-[11px] font-medium text-brand-muted">{item.role.replace('_', ' ')}</p>
                 <p className="mt-1 text-[13px] font-medium text-brand-text">{item.title}</p>
                 <p className="mt-1 text-[12px] leading-snug text-brand-muted">{item.message}</p>
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -152,7 +152,7 @@ export function StaffNotificationCenter({ className = '' }: { className?: string
       >
         <Bell className="h-5 w-5" aria-hidden />
         {count > 0 && (
-          <span className="absolute right-1 top-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-bold text-white">
+          <span className="absolute right-1 top-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-[#c5221f] px-1 text-[9px] font-medium text-white">
             {count > 9 ? '9+' : count}
           </span>
         )}

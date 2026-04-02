@@ -35,12 +35,12 @@ export function SyncToastHost() {
         onClick={() => setTraceOpen(false)}
       >
         <div
-          className="max-h-[min(70vh,520px)] w-full max-w-md overflow-y-auto rounded-xl border border-teal-500/25 bg-brand-panel p-4 shadow-2xl"
+          className="studio-notice max-h-[min(70vh,520px)] w-full max-w-md overflow-y-auto p-4"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-2">
-              <ListOrdered className="h-5 w-5 shrink-0 text-teal-400" aria-hidden />
+              <ListOrdered className="h-5 w-5 shrink-0 text-brand-teal" aria-hidden />
               <h2 id="sync-trace-title" className="text-sm font-semibold text-brand-text">
                 What ran on this sync
               </h2>
@@ -57,7 +57,7 @@ export function SyncToastHost() {
           <ol className="mt-4 space-y-3 text-sm">
             {lastAiSyncTrace!.map((step, i) => (
               <li key={step.id} className="flex gap-3">
-                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-500/15 text-[11px] font-semibold text-teal-300">
+                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-teal/12 text-[11px] font-medium text-brand-teal">
                   {i + 1}
                 </span>
                 <div className="min-w-0">
@@ -80,11 +80,11 @@ export function SyncToastHost() {
         role="status"
         className="pointer-events-auto fixed bottom-6 left-1/2 z-[100] flex max-w-lg -translate-x-1/2 animate-in fade-in slide-in-from-bottom-4 duration-300"
       >
-        <div className="flex flex-col gap-2 rounded-xl border border-teal-500/30 bg-brand-panel px-4 py-3 shadow-2xl shadow-black/40">
+        <div className="studio-notice flex flex-col gap-2 px-4 py-3">
           <div className="flex items-start gap-3">
-            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-teal-400" aria-hidden />
+            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand-teal" aria-hidden />
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-teal-400/90">
+              <p className="text-[11px] font-medium text-brand-teal">
                 Staff sync complete
               </p>
               <p className="mt-1 text-sm leading-snug text-brand-text">{syncToastMessage}</p>
@@ -92,7 +92,7 @@ export function SyncToastHost() {
                 <button
                   type="button"
                   onClick={() => setTraceOpen(true)}
-                  className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-teal-400/95 underline-offset-2 hover:underline"
+                  className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-brand-teal underline-offset-2 hover:underline"
                 >
                   <ListOrdered className="h-3.5 w-3.5" aria-hidden />
                   What ran on this sync

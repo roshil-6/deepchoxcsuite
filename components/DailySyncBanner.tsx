@@ -32,9 +32,10 @@ export function DailySyncBanner() {
   };
 
   return (
-    <div className="pointer-events-auto flex shrink-0 items-center justify-between gap-3 border-b border-white/[0.08] bg-teal-950/25 px-4 py-2.5 backdrop-blur-sm sm:px-5">
+    <div className="pointer-events-auto flex shrink-0 items-center justify-between gap-3 border-b border-brand-border bg-brand-panel/80 px-4 py-2.5 sm:px-5">
       <p className="min-w-0 text-[12px] leading-snug text-brand-text/95">
-        <span className="font-medium text-teal-300">Daily staff check-in:</span> run sync for fresh analysis and “focus today” — your desks will queue notifications for you.
+        <span className="font-medium text-brand-teal">Daily staff check-in:</span>{' '}
+        run sync for fresh analysis and “focus today” — your desks will queue notifications for you.
       </p>
       <div className="flex shrink-0 items-center gap-2">
         <button
@@ -44,7 +45,7 @@ export function DailySyncBanner() {
             if (r.ok) setVisible(false);
           }}
           disabled={agentSyncRunning}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-teal-500/40 bg-teal-500/20 px-3 py-1.5 text-[11px] font-semibold text-teal-100 hover:bg-teal-500/30 disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded-md border border-brand-border bg-brand-input px-3 py-1.5 text-[11px] font-medium text-brand-text hover:bg-brand-card disabled:opacity-50"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${agentSyncRunning ? 'animate-spin' : ''}`} aria-hidden />
           Sync now

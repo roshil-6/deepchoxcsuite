@@ -2,33 +2,33 @@
 @import "tailwindcss";
 
 @theme {
-  /* Studio-style shell (Google AI Studio–like): flat dark greys + subtle blue accent */
+  /* Google AI Studio–like dark: flat layers, hairline edges, blue accent (no heavy chrome) */
   --color-brand-bg: #131314;
   --color-brand-panel: #1e1e1e;
-  --color-brand-card: #2d2e30;
+  --color-brand-card: #2d2d2d;
   --color-brand-input: #303134;
   --color-brand-text: #e8eaed;
   --color-brand-muted: #9aa0a6;
   --color-brand-teal: #8ab4f8;
   --color-brand-purple: #669df6;
-  /* Hairline UI — less “boxed” than solid #3c4043 */
-  --color-brand-border: rgba(255, 255, 255, 0.075);
+  /* Single hairline — surfaces differ by fill, not thick outlines */
+  --color-brand-border: rgba(255, 255, 255, 0.065);
 
   --color-office-bg: #131314;
-  --color-office-card: #2d2e30;
-  --color-office-border: rgba(255, 255, 255, 0.075);
+  --color-office-card: #2d2d2d;
+  --color-office-border: rgba(255, 255, 255, 0.065);
   --color-office-text: #e8eaed;
   --color-office-text-dim: #9aa0a6;
   --color-office-accent: #8ab4f8;
-  --color-office-accent-muted: rgba(138, 180, 248, 0.14);
+  --color-office-accent-muted: rgba(138, 180, 248, 0.12);
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  /* Playfair loaded via next/font on <body> as --font-playfair */
   --font-serif: var(--font-playfair), ui-serif, Georgia, "Times New Roman", serif;
   --font-mono: "JetBrains Mono", "monospace";
 
-  --shadow-panel: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+  --shadow-panel: none;
   --radius-organic: 12px;
+  --radius-studio-sm: 8px;
 
   --ease-elastic: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -86,21 +86,21 @@
 @layer components {
 
   .section-label {
-    font-size: 0.625rem;
-    line-height: 1.25rem;
-    font-weight: 700;
-    letter-spacing: 0.2em;
+    font-size: 0.6875rem;
+    line-height: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--color-office-text-dim);
   }
 
   .section-heading {
-    font-size: 0.75rem;
-    line-height: 1rem;
-    font-weight: 500;
-    letter-spacing: 0.02em;
+    font-size: 0.8125rem;
+    line-height: 1.25rem;
+    font-weight: 400;
+    letter-spacing: 0.01em;
     text-transform: none;
-    color: rgba(154, 160, 166, 0.95);
+    color: rgba(154, 160, 166, 0.92);
   }
 
   .icon-tile {
@@ -110,26 +110,34 @@
     flex-shrink: 0;
     width: 2.5rem;
     height: 2.5rem;
-    border-radius: 0.75rem;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-studio-sm);
+    border: 1px solid rgba(255, 255, 255, 0.06);
     background: rgba(255, 255, 255, 0.03);
     color: var(--color-office-accent);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    box-shadow: none;
   }
 
-  /* Soft panels — rounded, light edge */
+  /* Flat cards — border + fill only (AI Studio / Gemini surfaces) */
   .surface-flow {
-    border-radius: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-organic);
+    border: 1px solid rgba(255, 255, 255, 0.065);
     background: var(--color-brand-card);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    box-shadow: none;
   }
 
   .surface-wave {
-    border-radius: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-organic);
+    border: 1px solid rgba(255, 255, 255, 0.065);
     background: var(--color-brand-card);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    box-shadow: none;
+  }
+
+  /** Toasts / inline notices — minimal outline */
+  .studio-notice {
+    border-radius: var(--radius-studio-sm);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--color-brand-panel);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
   }
 
   .input-office {
@@ -150,8 +158,8 @@
   }
 
   .input-office:focus {
-    border-color: rgba(138, 180, 248, 0.45);
-    box-shadow: none;
+    border-color: rgba(138, 180, 248, 0.35);
+    box-shadow: 0 0 0 1px rgba(138, 180, 248, 0.14);
   }
 
   .textarea-office {
@@ -171,23 +179,23 @@
   }
 
   .glass-panel {
-    background: rgba(21, 25, 28, 0.65);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: rgba(30, 30, 30, 0.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.06);
   }
 
   .card-glass {
     background-color: var(--color-brand-card);
-    border-radius: 1rem;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    border-radius: var(--radius-organic);
+    border: 1px solid rgba(255, 255, 255, 0.065);
+    box-shadow: none;
+    transition: border-color 0.15s ease;
   }
 
   .card-glass:hover {
-    border-color: rgba(138, 180, 248, 0.2);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    border-color: rgba(138, 180, 248, 0.22);
+    box-shadow: none;
   }
 
   .sidebar-float {
@@ -200,12 +208,11 @@
     border-left: none;
   }
 
-  /** Utility: soft floating panel (use with Tailwind @apply in components or class string) */
   .surface-soft-edge {
-    border-radius: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-organic);
+    border: 1px solid rgba(255, 255, 255, 0.065);
     background: rgba(255, 255, 255, 0.02);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    box-shadow: none;
   }
 
   .page-enter {

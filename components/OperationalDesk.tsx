@@ -23,13 +23,13 @@ export function OperationalDesk({
         return (
             <div className="relative flex h-full w-full flex-col overflow-hidden bg-brand-bg">
                 {waiting.length > 0 && (
-                    <div className="shrink-0 border-b border-amber-500/20 bg-amber-950/30 px-4 py-2.5 backdrop-blur-sm">
+                    <div className="shrink-0 border-b border-brand-border bg-brand-panel/85 px-4 py-2.5">
                         <div className="flex items-start gap-2">
-                            <Bell className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" aria-hidden />
+                            <Bell className="mt-0.5 h-4 w-4 shrink-0 text-brand-teal" aria-hidden />
                             <div className="min-w-0 flex-1 space-y-2">
                                 {waiting.map((w) => (
                                     <div key={w.id} className="text-[12px] leading-snug text-zinc-200">
-                                        <span className="font-medium text-amber-200/95">{w.title}</span>
+                                        <span className="font-medium text-brand-text">{w.title}</span>
                                         <span className="text-zinc-400"> — {w.message}</span>
                                         <button
                                             type="button"
@@ -53,13 +53,13 @@ export function OperationalDesk({
         <div className="group/desk relative flex h-full w-full overflow-hidden bg-brand-bg">
             <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-brand-bg">
                 {waiting.length > 0 && (
-                    <div className="shrink-0 border-b border-amber-500/20 bg-amber-950/30 px-4 py-2.5 backdrop-blur-sm">
+                    <div className="shrink-0 border-b border-brand-border bg-brand-panel/85 px-4 py-2.5">
                         <div className="flex items-start gap-2">
-                            <Bell className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" aria-hidden />
+                            <Bell className="mt-0.5 h-4 w-4 shrink-0 text-brand-teal" aria-hidden />
                             <div className="min-w-0 flex-1 space-y-2">
                                 {waiting.map((w) => (
                                     <div key={w.id} className="text-[12px] leading-snug text-zinc-200">
-                                        <span className="font-medium text-amber-200/95">{w.title}</span>
+                                        <span className="font-medium text-brand-text">{w.title}</span>
                                         <span className="text-zinc-400"> — {w.message}</span>
                                         <button
                                             type="button"

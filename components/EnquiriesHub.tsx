@@ -2,9 +2,11 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { useOffice } from '@/lib/OfficeContext';
-import { Inbox, Mail, MessageCircle, Facebook, Rss, Filter, RefreshCw, Plus } from 'lucide-react';
+import { Inbox, Mail, MessageCircle, Facebook, Rss, RefreshCw, Loader2 } from 'lucide-react';
 
 type Importance = 'all' | 'high' | 'normal' | 'low';
+type SimSource = 'whatsapp' | 'email' | 'facebook' | 'reddit';
+type SimImportance = 'high' | 'normal' | 'low';
 
 type EnquiryRow = {
   id: string;
@@ -24,12 +26,22 @@ const SOURCE_ICONS: Record<string, React.ReactNode> = {
   reddit: <Rss className="h-4 w-4" aria-hidden />,
 };
 
+const SIM_LABEL: Record<SimSource, string> = {
+  whatsapp: 'WhatsApp',
+  email: 'Email',
+  facebook: 'Facebook',
+  reddit: 'Reddit',
+};
+
 export function EnquiriesHub() {
   const { activeProject, switchRoom } = useOffice();
   const [connected, setConnected] = useState<boolean | null>(null);
   const [items, setItems] = useState<EnquiryRow[]>([]);
   const [importance, setImportance] = useState<Importance>('all');
+  const [simImportance, setSimImportance] = useState<SimImportance>('normal');
   const [loading, setLoading] = useState(false);
+  const [posting, setPosting] = useState<SimSource | null>(null);
+  const [postErr, setPostErr] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -70,20 +82,40 @@ export function EnquiriesHub() {
 
   const selected = items.find((i) => i.id === selectedId) || null;
 
-  const addDemo = async () => {
-    if (!activeProject?.id) return;
-    await fetch('/api/enquiries', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        source: 'email',
-        subject: 'Demo inbound — connect WhatsApp / Meta / Reddit webhooks next',
-        body: 'This is a sample enquiry stored in Postgres. Production will ingest from your channels automatically.',
-        importance: 'high',
-        ventureId: activeProject.id,
-      }),
-    });
-    load();
+  const canPost = connected === true && activeProject?.id != null;
+
+  const postFromSource = async (source: SimSource) => {
+    if (!activeProject?.id || !canPost) return;
+    setPostErr(null);
+    setPosting(source);
+    try {
+      const label = SIM_LABEL[source];
+      const res = await fetch('/api/enquiries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          source,
+          subject: `${label} — inbound`,
+          body: [
+            `Channel: ${label}. Importance: ${simImportance}.`,
+            '',
+            'In production, point each channel’s webhook or worker to POST /api/enquiries with JSON:',
+            '{ "source": "whatsapp"|"email"|"facebook"|"reddit", "subject", "body", "importance": "high"|"normal"|"low", "ventureId", "externalId"?, "rawMeta"? }.',
+          ].join('\n'),
+          importance: simImportance,
+          ventureId: activeProject.id,
+          externalId: `sim-${source}-${Date.now()}`,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setPostErr(typeof data.error === 'string' ? data.error : 'Could not save enquiry');
+        return;
+      }
+      await load();
+    } finally {
+      setPosting(null);
+    }
   };
 
   if (!activeProject) {
@@ -112,48 +144,81 @@ export function EnquiriesHub() {
             <Inbox className="h-4 w-4 text-brand-teal" aria-hidden />
             <h2 className="text-sm font-medium text-brand-text">Enquiries</h2>
           </div>
-          <p className="mt-1 text-[11px] text-brand-muted">
-            WhatsApp, email, Facebook, Reddit — wire each source to POST /api/enquiries. Important items can be flagged{' '}
-            <span className="text-amber-400/90">high</span>.
+          <p className="mt-1 text-[11px] leading-snug text-brand-muted">
+            Wire WhatsApp, email, Facebook, and Reddit to <code className="text-[10px] text-brand-text/90">POST /api/enquiries</code>. Set{' '}
+            <span className="text-brand-text/90">importance</span> to <span className="text-amber-400/90">high</span> for urgent items.
           </p>
           {connected === false && (
-            <p className="mt-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1.5 text-[10px] text-amber-200/90">
-              Database not connected. Add DATABASE_URL on Render and redeploy — list will populate from the server.
+            <p className="mt-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1.5 text-[10px] leading-relaxed text-amber-200/90">
+              Database not connected. Add <code className="text-amber-100/90">DATABASE_URL</code> on Render and redeploy — the list will populate
+              from the server.
             </p>
           )}
-          <div className="mt-3 flex flex-wrap items-center gap-2">
+
+          <div className="mt-3 flex flex-wrap items-center gap-1.5">
             <button
               type="button"
               onClick={() => load()}
               disabled={loading}
-              className="inline-flex items-center gap-1 rounded-md border border-brand-border bg-brand-input px-2 py-1 text-[11px] text-brand-text hover:bg-brand-card disabled:opacity-50"
+              className="inline-flex items-center gap-1 rounded-md border border-brand-border bg-brand-input px-2.5 py-1 text-[11px] font-medium text-brand-text hover:bg-brand-card disabled:opacity-50"
             >
-              <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} aria-hidden />
+              <RefreshCw className={`h-3 w-3 shrink-0 ${loading ? 'animate-spin' : ''}`} aria-hidden />
               Refresh
             </button>
-            {connected && (
-              <button
-                type="button"
-                onClick={addDemo}
-                className="inline-flex items-center gap-1 rounded-md border border-brand-teal/30 bg-brand-input px-2 py-1 text-[11px] font-medium text-brand-text hover:bg-brand-card"
-              >
-                <Plus className="h-3 w-3" aria-hidden />
-                Sample message
-              </button>
-            )}
-          </div>
-          <div className="mt-3 flex items-center gap-1 text-[10px] text-brand-muted">
-            <Filter className="h-3 w-3" aria-hidden />
+            <span className="text-[10px] text-brand-muted/70">·</span>
+            <span className="text-[10px] uppercase tracking-wide text-brand-muted">View</span>
             {(['all', 'high', 'normal', 'low'] as const).map((f) => (
               <button
                 key={f}
                 type="button"
                 onClick={() => setImportance(f)}
-                className={`rounded px-2 py-0.5 capitalize ${importance === f ? 'bg-brand-teal/20 text-brand-teal' : 'hover:bg-white/5'}`}
+                className={`rounded px-2 py-0.5 text-[11px] capitalize transition-colors ${
+                  importance === f ? 'bg-brand-teal/25 font-medium text-brand-teal' : 'text-brand-muted hover:bg-white/5 hover:text-brand-text'
+                }`}
               >
                 {f}
               </button>
             ))}
+          </div>
+
+          <div className="mt-4 border-t border-brand-border pt-3">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-brand-muted">Test POST (same as webhooks)</p>
+            <p className="mt-1 text-[10px] text-brand-muted">Next message importance</p>
+            <div className="mt-1.5 flex flex-wrap gap-1">
+              {(['high', 'normal', 'low'] as const).map((lvl) => (
+                <button
+                  key={lvl}
+                  type="button"
+                  disabled={!canPost}
+                  onClick={() => setSimImportance(lvl)}
+                  className={`rounded px-2 py-0.5 text-[10px] capitalize disabled:opacity-40 ${
+                    simImportance === lvl
+                      ? lvl === 'high'
+                        ? 'bg-amber-500/20 font-medium text-amber-200'
+                        : 'bg-brand-teal/20 font-medium text-brand-teal'
+                      : 'text-brand-muted hover:bg-white/5'
+                  }`}
+                >
+                  {lvl}
+                </button>
+              ))}
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-1.5">
+              {(['whatsapp', 'email', 'facebook', 'reddit'] as const).map((src) => (
+                <button
+                  key={src}
+                  type="button"
+                  disabled={!canPost || posting !== null}
+                  onClick={() => postFromSource(src)}
+                  title={canPost ? `POST as ${SIM_LABEL[src]}` : 'Requires DATABASE_URL'}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-md border border-brand-border bg-brand-input py-2 text-[11px] font-medium text-brand-text hover:bg-brand-card disabled:cursor-not-allowed disabled:opacity-45"
+                >
+                  {posting === src ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : SOURCE_ICONS[src]}
+                  {SIM_LABEL[src]}
+                </button>
+              ))}
+            </div>
+            {postErr && <p className="mt-2 text-[10px] text-rose-400/90">{postErr}</p>}
           </div>
         </div>
         <div className="custom-scrollbar flex-1 overflow-y-auto">
@@ -184,11 +249,17 @@ export function EnquiriesHub() {
                           <span className="truncate text-[12px] font-medium text-brand-text">
                             {row.subject || row.source}
                           </span>
-                          {row.importance === 'high' && (
-                            <span className="shrink-0 rounded bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-amber-300">
-                              Important
-                            </span>
-                          )}
+                          <span
+                            className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase ${
+                              row.importance === 'high'
+                                ? 'bg-amber-500/20 text-amber-300'
+                                : row.importance === 'low'
+                                  ? 'bg-zinc-700/50 text-zinc-400'
+                                  : 'bg-zinc-600/30 text-zinc-400'
+                            }`}
+                          >
+                            {row.importance === 'high' ? 'High' : row.importance === 'low' ? 'Low' : 'Normal'}
+                          </span>
                         </span>
                         <span className="mt-0.5 block truncate text-[11px] text-brand-muted">{row.body}</span>
                         <span className="mt-1 block font-mono text-[10px] text-brand-muted/80">{dateLabel}</span>
@@ -211,9 +282,20 @@ export function EnquiriesHub() {
               <p className="mt-2 font-mono text-[12px] text-brand-muted">
                 {new Date(selected.receivedAt).toLocaleString()} · Venture #{activeProject.id}
               </p>
-              {selected.importance === 'high' && (
-                <p className="mt-2 text-[12px] text-amber-300/90">Flagged important — prioritise in staff sync or Personal Assistant.</p>
-              )}
+              <p className="mt-2 text-[12px] text-brand-muted">
+                Importance:{' '}
+                <span
+                  className={
+                    selected.importance === 'high'
+                      ? 'font-medium text-amber-300/90'
+                      : selected.importance === 'low'
+                        ? 'text-zinc-400'
+                        : 'text-brand-text/80'
+                  }
+                >
+                  {selected.importance === 'high' ? 'High — prioritise in staff sync or Personal Assistant.' : selected.importance === 'low' ? 'Low' : 'Normal'}
+                </span>
+              </p>
             </header>
             <div className="whitespace-pre-wrap text-sm leading-relaxed text-brand-text/90">{selected.body}</div>
           </article>

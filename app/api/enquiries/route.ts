@@ -1,6 +1,15 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+const ENQUIRY_SOURCES = new Set(['whatsapp', 'email', 'facebook', 'reddit', 'other']);
+
+function normalizeSource(raw: unknown): string {
+  const s = String(raw ?? 'other')
+    .toLowerCase()
+    .trim();
+  return ENQUIRY_SOURCES.has(s) ? s : 'other';
+}
+
 /**
  * Unified enquiries inbox (WhatsApp, email, social, etc.).
  * Populate via POST (webhooks / integrations) or Prisma Studio while connectors are built.
@@ -46,7 +55,7 @@ export async function POST(req: Request) {
     };
     const row = await prisma.enquiry.create({
       data: {
-        source: String(body.source || 'other'),
+        source: normalizeSource(body.source),
         externalId: body.externalId != null ? String(body.externalId) : null,
         subject: body.subject != null ? String(body.subject) : null,
         body: String(body.body ?? ''),

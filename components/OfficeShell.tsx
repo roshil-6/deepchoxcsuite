@@ -12,7 +12,7 @@ export function OfficeShell({ children }: { children: React.ReactNode }) {
         <div className={`relative h-screen w-full overflow-hidden bg-brand-bg font-sans text-brand-text transition-all duration-700 ${systemState.isDeepWork ? 'brightness-75 saturate-0' : ''
             }`}>
             <div
-                className="pointer-events-none absolute inset-0 z-0 opacity-[0.03]"
+                className="pointer-events-none absolute inset-0 z-0 opacity-[0.012]"
                 style={{ backgroundImage: `url("${NOISE_DATA_URL}")`, mixBlendMode: 'overlay' }}
             />
 

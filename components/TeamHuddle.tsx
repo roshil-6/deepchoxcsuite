@@ -24,7 +24,7 @@ export const TeamHuddle = () => {
     }, []);
 
     return (
-        <div className="group relative mb-4 overflow-hidden rounded-lg border border-brand-border bg-brand-card/80 p-3">
+        <div className="group relative mb-4 overflow-hidden rounded-md border border-brand-border bg-brand-card p-3">
             <div className="relative mb-2 flex items-center gap-2">
                 <Users className="h-3.5 w-3.5 shrink-0 text-brand-muted" strokeWidth={2} aria-hidden />
                 <p className="text-[11px] font-medium text-brand-muted">Activity</p>

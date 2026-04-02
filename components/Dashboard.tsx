@@ -50,8 +50,8 @@ const CHART_CURSOR_DARK = {
 
 const CHART_TOOLTIP = {
     contentStyle: {
-        background: '#1e1e1e',
-        border: '1px solid #3f3f46',
+        background: '#2d2d2d',
+        border: '1px solid rgba(255,255,255,0.08)',
         borderRadius: '8px',
         fontSize: '11px',
     },
@@ -291,7 +291,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             <button
                                 type="button"
                                 onClick={() => setPortfolioDashExpanded((o) => !o)}
-                                className={`flex flex-col items-start gap-3 rounded-2xl border p-5 text-left transition ${
+                                className={`flex flex-col items-start gap-3 rounded-xl border p-5 text-left transition ${
                                     portfolioDashExpanded
                                         ? 'border-brand-teal/35 bg-brand-teal/10 ring-1 ring-brand-teal/20'
                                         : 'border-brand-border bg-brand-panel/50 hover:border-brand-border'
@@ -314,7 +314,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 <button
                                     type="button"
                                     onClick={onNewVenture}
-                                    className="flex flex-col items-start gap-3 rounded-2xl border border-brand-border bg-brand-panel/50 p-5 text-left transition hover:border-brand-border hover:bg-brand-panel"
+                                    className="flex flex-col items-start gap-3 rounded-xl border border-brand-border bg-brand-panel/50 p-5 text-left transition hover:border-brand-border hover:bg-brand-panel"
                                 >
                                     <Target className="h-6 w-6 text-brand-muted" aria-hidden />
                                     <div>
@@ -339,7 +339,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                     </section>
 
                     {portfolioDashExpanded && (
-                        <div className="mb-8 animate-in fade-in slide-in-from-bottom-2 duration-300 overflow-hidden rounded-2xl border border-brand-border bg-brand-panel/30">
+                        <div className="mb-8 animate-in fade-in slide-in-from-bottom-2 duration-300 overflow-hidden rounded-xl border border-brand-border bg-brand-panel/30">
                             <div className="flex items-center justify-between border-b border-brand-border/90 bg-brand-panel/90 px-4 py-3">
                                 <p className="text-sm font-semibold text-brand-text">Portfolio analytics</p>
                                 <button
@@ -570,7 +570,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             <button
                                 type="button"
                                 onClick={() => openDashboard('dash-staff-snapshot')}
-                                className="group flex w-full flex-col gap-3 rounded-2xl border border-brand-teal/25 bg-brand-teal/12 p-6 text-left transition hover:border-brand-teal/40 hover:bg-brand-teal/15 sm:flex-row sm:items-center sm:justify-between"
+                                className="group flex w-full flex-col gap-3 rounded-xl border border-brand-teal/25 bg-brand-teal/12 p-6 text-left transition hover:border-brand-teal/40 hover:bg-brand-teal/15 sm:flex-row sm:items-center sm:justify-between"
                             >
                                 <div className="flex min-w-0 items-start gap-3">
                                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-brand-teal/30 bg-teal-950/40">
@@ -605,7 +605,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         setDashboardExpanded((open) => !open);
                                         setPendingScrollId(null);
                                     }}
-                                    className={`flex flex-col items-start gap-4 rounded-2xl border p-6 text-left transition ${
+                                    className={`flex flex-col items-start gap-4 rounded-xl border p-6 text-left transition ${
                                         dashboardExpanded
                                             ? 'border-brand-teal/40 bg-brand-teal/12 ring-1 ring-brand-teal/25'
                                             : 'border-brand-border bg-brand-panel/60 hover:border-brand-border hover:bg-brand-panel'
@@ -629,7 +629,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 <button
                                     type="button"
                                     onClick={() => openDashboard('dash-signal')}
-                                    className="flex flex-col items-start gap-4 rounded-2xl border border-brand-border bg-brand-panel/60 p-6 text-left transition hover:border-brand-border hover:bg-brand-panel"
+                                    className="flex flex-col items-start gap-4 rounded-xl border border-brand-border bg-brand-panel/60 p-6 text-left transition hover:border-brand-border hover:bg-brand-panel"
                                 >
                                     <Activity className="h-6 w-6 text-brand-muted" aria-hidden />
                                     <div>
@@ -642,7 +642,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 <button
                                     type="button"
                                     onClick={() => openDashboard('dash-desks')}
-                                    className="flex flex-col items-start gap-4 rounded-2xl border border-brand-border bg-brand-panel/60 p-6 text-left transition hover:border-brand-border hover:bg-brand-panel"
+                                    className="flex flex-col items-start gap-4 rounded-xl border border-brand-border bg-brand-panel/60 p-6 text-left transition hover:border-brand-border hover:bg-brand-panel"
                                 >
                                     <LayoutGrid className="h-6 w-6 text-brand-muted" aria-hidden />
                                     <div>
@@ -655,7 +655,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 <button
                                     type="button"
                                     onClick={() => switchRoom('reports')}
-                                    className="flex flex-col items-start gap-4 rounded-2xl border border-brand-border bg-brand-panel/60 p-6 text-left transition hover:border-brand-border hover:bg-brand-panel"
+                                    className="flex flex-col items-start gap-4 rounded-xl border border-brand-border bg-brand-panel/60 p-6 text-left transition hover:border-brand-border hover:bg-brand-panel"
                                 >
                                     <FileText className="h-6 w-6 text-brand-muted" aria-hidden />
                                     <div>
@@ -668,7 +668,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 <button
                                     type="button"
                                     onClick={() => switchRoom('calendar')}
-                                    className="flex flex-col items-start gap-4 rounded-2xl border border-brand-border bg-brand-panel/60 p-6 text-left transition hover:border-brand-border hover:bg-brand-panel"
+                                    className="flex flex-col items-start gap-4 rounded-xl border border-brand-border bg-brand-panel/60 p-6 text-left transition hover:border-brand-border hover:bg-brand-panel"
                                 >
                                     <Calendar className="h-6 w-6 text-brand-muted" aria-hidden />
                                     <div>
@@ -681,7 +681,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 <button
                                     type="button"
                                     onClick={() => switchRoom('boardroom')}
-                                    className="flex flex-col items-start gap-4 rounded-2xl border border-brand-border bg-brand-panel/60 p-6 text-left transition hover:border-brand-border hover:bg-brand-panel"
+                                    className="flex flex-col items-start gap-4 rounded-xl border border-brand-border bg-brand-panel/60 p-6 text-left transition hover:border-brand-border hover:bg-brand-panel"
                                 >
                                     <Building2 className="h-6 w-6 text-brand-muted" aria-hidden />
                                     <div>
@@ -697,7 +697,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         {dashboardExpanded && (
                             <div
                                 id="exec-dashboard-panel"
-                                className="animate-in fade-in slide-in-from-bottom-2 duration-300 overflow-hidden rounded-2xl border border-brand-border bg-brand-panel/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                                className="animate-in fade-in slide-in-from-bottom-2 duration-300 overflow-hidden rounded-xl border border-brand-border bg-brand-panel/70"
                             >
                                 <div className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-b border-brand-border/90 bg-brand-panel/95 px-4 py-3 backdrop-blur-sm sm:px-5">
                                     <div>
@@ -1149,7 +1149,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             </div>
                         )}
 
-                        <p className="rounded-2xl border border-brand-border/90 bg-brand-panel/40 px-5 py-4 text-center text-sm leading-relaxed text-brand-muted sm:text-left">
+                        <p className="rounded-xl border border-brand-border/90 bg-brand-panel/40 px-5 py-4 text-center text-sm leading-relaxed text-brand-muted sm:text-left">
                             <span className="font-semibold text-brand-muted">Chief of Staff</span> lives in the workspace bar below — same intelligence
                             thread for every tile and the expanded dashboard.
                         </p>
