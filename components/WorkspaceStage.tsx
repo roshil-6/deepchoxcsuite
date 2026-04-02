@@ -18,7 +18,6 @@ import { WargameNexus } from './WargameNexus';
 import { OperationalDesk } from './OperationalDesk';
 import { IntelligenceDiary } from './IntelligenceDiary';
 import { PersonalAssistant } from './PersonalAssistant';
-import { EnquiriesHub } from './EnquiriesHub';
 import { CsuiteIntelligenceGuide } from './CsuiteIntelligenceGuide';
 import { RoomChrome } from './RoomChrome';
 import { getWorkspaceShellTheme } from '@/lib/roomThemes';
@@ -41,7 +40,6 @@ const WORKSPACE_TITLES: Record<string, string> = {
     dexo: 'Dexo Core',
     org_structure: 'Org structure',
     personal_assistant: 'Assistant',
-    enquiries: 'Enquiries',
     suite_intelligence: 'Suite intelligence',
 };
 
@@ -75,8 +73,6 @@ export function WorkspaceStage({ onNewVenture }: { onNewVenture?: () => void }) 
                 return <IntelligenceDiary />;
             case 'personal_assistant':
                 return <PersonalAssistant />;
-            case 'enquiries':
-                return <EnquiriesHub />;
             case 'suite_intelligence':
                 return <CsuiteIntelligenceGuide />;
             case 'ceo':

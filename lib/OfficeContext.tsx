@@ -56,7 +56,7 @@ export interface SystemState {
 
 export interface OfficeContextType {
   // State
-  activeRoom: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'boardroom' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'enquiries' | 'suite_intelligence';
+  activeRoom: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'boardroom' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence';
   activeProject: Project | null;
   allProjects: Project[];
   systemState: SystemState;
@@ -67,7 +67,7 @@ export interface OfficeContextType {
   setPendingChat: (val: { role: AgentRole; message: string } | null) => void;
 
   // Actions
-  switchRoom: (room: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'boardroom' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'enquiries' | 'suite_intelligence') => void;
+  switchRoom: (room: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'boardroom' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence') => void;
 
   /** Multi-desk AI staff run: merges research into venture sections (requires GROQ on server). */
   agentSyncRunning: boolean;
@@ -205,7 +205,7 @@ const OfficeContext = createContext<OfficeContextType | undefined>(undefined);
 // Context Provider Component
 export function OfficeProvider({ children }: { children: ReactNode }) {
   const [activeRoom, setActiveRoom] = useState<
-    AgentRole | 'dashboard' | 'calendar' | 'reports' | 'boardroom' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'enquiries' | 'suite_intelligence'
+    AgentRole | 'dashboard' | 'calendar' | 'reports' | 'boardroom' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence'
   >('dashboard');
   const [agentSyncRunning, setAgentSyncRunning] = useState(false);
   const [syncToastMessage, setSyncToastMessage] = useState<string | null>(null);
@@ -269,7 +269,7 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
    * Switch between different agent rooms or views
    */
   const switchRoom = (
-    room: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'boardroom' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'enquiries' | 'suite_intelligence'
+    room: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'boardroom' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence'
   ) => {
     setActiveRoom(room);
   };

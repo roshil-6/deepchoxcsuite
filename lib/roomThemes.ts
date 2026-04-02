@@ -150,13 +150,6 @@ export function getChatRailTheme(activeRoom: string): ChatRailTheme {
       emptyPrompt: 'Capture actions, briefings, or what to prep for.',
       placeholder: 'Ask your assistant…',
     },
-    enquiries: {
-      agentRole: 'chief_of_staff',
-      roleLabel: 'your Chief of Staff',
-      subtitle: 'Enquiries — inbound and responses.',
-      emptyPrompt: 'Draft replies, triage inbound, or summarize threads.',
-      placeholder: 'Handle enquiries…',
-    },
     suite_intelligence: {
       agentRole: 'chief_of_staff',
       roleLabel: 'your Chief of Staff',
@@ -212,7 +205,6 @@ export function getWorkspaceShellTheme(activeRoom: string): WorkspaceShellTheme 
     'scout',
     'cmo',
     'personal_assistant',
-    'enquiries',
   ]);
 
   const p: Partial<WorkspaceShellTheme> = immersiveRooms.has(activeRoom)

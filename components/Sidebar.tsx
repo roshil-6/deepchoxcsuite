@@ -13,7 +13,6 @@ import {
   Plus,
   LogOut,
   MessageSquare,
-  Inbox,
   GitBranch,
 } from 'lucide-react';
 import { StaffNotificationCenter } from '@/components/StaffNotificationCenter';
@@ -94,7 +93,6 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
           <NavItem icon={<Bot className="w-4 h-4" />} label="Dexo Core" isActive={activeRoom === 'dexo'} onClick={() => switchRoom('dexo')} />
           <NavItem icon={<Notebook className="w-4 h-4" />} label="Neural Diary" isActive={activeRoom === 'intelligence_diary'} onClick={() => switchRoom('intelligence_diary')} />
           <NavItem icon={<FileText className="w-4 h-4" />} label="Knowledge Base" isActive={activeRoom === 'reports'} onClick={() => switchRoom('reports')} />
-          <NavItem icon={<Inbox className="w-4 h-4" />} label="Enquiries" isActive={activeRoom === 'enquiries'} onClick={() => switchRoom('enquiries')} />
         </NavSection>
 
         {/* Agents */}
