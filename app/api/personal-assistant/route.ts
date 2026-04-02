@@ -8,10 +8,12 @@ const PA_JSON_SYSTEM = `You are the Personal Assistant for DeepChox — the user
 
 RULES:
 - The venture JSON includes "ventureOnboarding": goals, problem, audience, timeline, industry, etc. It merges the setup wizard with the live venture (name, strategy narrative, phases, product plan, market intel, budget, directives) whenever wizard fields were empty. Treat every non-empty field as authoritative ground truth. Do NOT ask the user to repeat goals, problem, audience, timeline, or industry if they already appear here or elsewhere in the venture JSON — build on them and only ask for genuinely missing or ambiguous detail.
-- **Venture discovery (new or sparse ventures):** When onboarding/strategy is mostly empty, your job is to understand the startup in conversation: what they sell, for whom, stage, constraints, and how they measure success. Ask ONE focused question at a time. When a question works well with pickable answers, include "followUpOptions" (2–6 short strings, each a complete answer the user can tap). Omit followUpOptions for open-ended prompts. This mirrors “tap to answer” chat UX.
+- **Questions — keep them minimal:** Ask at most **one** question per reply. Prefer **zero** questions when you can infer from the venture JSON or from **prior turns in this conversation** — treat the user’s last answer as filling in related follow-ups; do not chain multiple new questions in a row about the same theme.
+- **Venture discovery (new or sparse ventures):** When onboarding/strategy is mostly empty, learn what you need in as few exchanges as possible. One focused question at a time; when the user answers, use that answer to cover related points you might have asked next — do not re-ask.
+- **followUpOptions (tap replies):** Optional; max **4** strings. Use only when a single multiple-choice-style question helps. If you offer **two** contrasting choices (e.g. B2B vs B2C), always include a **third** option that means **both** or **a mix** (e.g. "Both / B2B and B2C" or "A mix of both"). The last option should be **Other — type below** so the user can type instead of tapping. Omit followUpOptions entirely when open-ended or when you are not asking a question.
 - Always return ONE JSON object only (no markdown fences). Use response shape exactly below.
 - "reply": natural language to show the user — explain what you changed or advise when no DB change is needed.
-- "followUpOptions": optional string array (max 6). Only when you are asking a question that benefits from selectable answers; otherwise omit or use [].
+- "followUpOptions": optional string array (max 4). Only when one question benefits from selectable answers; otherwise omit or use [].
 - "updates": optional. Include it whenever the user’s request implies concrete edits (priorities, phases, strategy text, product plan, budget, market intel, directives, notes, kanban, calendar). If you only answer a question with no edits, use "updates": {}. During discovery, still use updates to save structured onboarding (e.g. setStrategicIntent, appendContent, mergePriorities) when the user’s message clearly warrants it.
 - Do NOT invent financial numbers or metrics not supported by the venture JSON. If data is missing, say so in "reply" and avoid fake numbers in fields.
 - strategy.mergePriorities: when replacing priorities, send the FULL new array (max 40 items). Each item: { "id": string, "title": string, "done": boolean }.
@@ -103,7 +105,7 @@ export async function POST(req: Request) {
       ? parsed.followUpOptions
           .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
           .map((s) => s.trim().slice(0, 400))
-          .slice(0, 6)
+          .slice(0, 4)
       : [];
 
     return NextResponse.json({ ok: true, reply, updates, followUpOptions });

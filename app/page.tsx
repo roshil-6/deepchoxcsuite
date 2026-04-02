@@ -5,6 +5,7 @@ import { Sidebar } from '@/components/Sidebar';
 import { ChatAssistant } from '@/components/ChatAssistant';
 import { WorkspaceStage } from '@/components/WorkspaceStage';
 import { LandingPage } from '@/components/LandingPage';
+import { NameVentureModal } from '@/components/NameVentureModal';
 
 import { useOffice } from '@/lib/OfficeContext';
 import { Project, saveProject, getAllProjects } from '@/lib/db';
@@ -15,17 +16,19 @@ import { SyncToastHost } from '@/components/SyncToastHost';
 
 export default function Home() {
   const [hasStarted, setHasStarted] = useState(false);
+  const [nameVentureOpen, setNameVentureOpen] = useState(false);
   const { setActiveProject, setAllProjects, switchRoom, activeRoom } = useOffice();
 
-  /** Create a shell venture and open Personal Assistant for chat-first setup (replaces wizard). */
-  const createVentureAndOpenAssistant = async () => {
+  /** Create a shell venture (optional name) and open Personal Assistant for chat-first setup. */
+  const createVentureWithName = async (name: string) => {
     try {
-      const shell = emptyVentureShell();
+      const shell = emptyVentureShell(name || undefined);
       const id = await saveProject(shell as Project);
       const saved = { ...shell, id, timestamp: Date.now() } as Project;
       const list = await getAllProjects();
       setAllProjects(list);
       setActiveProject(saved);
+      setNameVentureOpen(false);
       switchRoom('personal_assistant');
     } catch (e) {
       console.error('Failed to create venture:', e);
@@ -34,8 +37,10 @@ export default function Home() {
 
   const handleStart = () => {
     setHasStarted(true);
-    void createVentureAndOpenAssistant();
+    setNameVentureOpen(true);
   };
+
+  const openNameVentureModal = () => setNameVentureOpen(true);
 
   // Show landing page
   if (!hasStarted) {
@@ -45,13 +50,19 @@ export default function Home() {
   // Show main workspace
   return (
     <div className="flex h-screen w-full overflow-hidden bg-brand-bg animate-in fade-in duration-500">
+      <NameVentureModal
+        open={nameVentureOpen}
+        onClose={() => setNameVentureOpen(false)}
+        onConfirm={(name) => void createVentureWithName(name)}
+      />
       <OfficeShell>
         <div className="relative z-20 flex h-full w-full min-h-0">
           <Sidebar
             onLogout={() => {
               setHasStarted(false);
+              setNameVentureOpen(false);
             }}
-            onNewVenture={() => void createVentureAndOpenAssistant()}
+            onNewVenture={openNameVentureModal}
           />
 
           <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden">
@@ -60,7 +71,7 @@ export default function Home() {
               {/* One padded column: workspace + chat share the same inset — no separate “dock card” */}
               <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 sm:px-5">
                 <div className="relative min-h-0 flex-1 basis-0 overflow-hidden">
-                  <WorkspaceStage onNewVenture={() => void createVentureAndOpenAssistant()} />
+                  <WorkspaceStage onNewVenture={openNameVentureModal} />
                 </div>
                 {activeRoom !== 'dexo' && activeRoom !== 'personal_assistant' && (
                   <div className="mt-auto w-full shrink-0 border-t border-white/[0.04] pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">

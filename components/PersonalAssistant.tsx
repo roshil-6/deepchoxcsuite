@@ -22,6 +22,12 @@ type Msg = {
     followUpOptions?: string[];
 };
 
+/** Model may include "Other — type below"; user can also use the composer. */
+function isOtherFollowUpLabel(s: string): boolean {
+    const t = s.toLowerCase().trim();
+    return t.startsWith('other') || t.includes('type below') || t.includes("i'll type") || t.includes('type my answer');
+}
+
 export function PersonalAssistant() {
     const { activeProject, switchRoom, setActiveProject, setAllProjects } = useOffice();
     const [messages, setMessages] = useState<Msg[]>([]);
@@ -35,6 +41,8 @@ export function PersonalAssistant() {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const recognitionRef = useRef<{ stop: () => void; start: () => void } | null>(null);
+    /** Multi-select for the latest assistant message’s followUpOptions (combine or “both”). */
+    const [followUpSelection, setFollowUpSelection] = useState<Set<string>>(new Set());
 
     const strategyDoc = useMemo(() => parseStrategy(activeProject?.strategy || ''), [activeProject?.strategy]);
     const priorities = strategyDoc.priorities || [];
@@ -55,6 +63,18 @@ export function PersonalAssistant() {
         };
         setVoiceSupported(Boolean(w.SpeechRecognition || w.webkitSpeechRecognition));
     }, []);
+
+    const lastFollowUpMsg = useMemo(() => {
+        for (let i = messages.length - 1; i >= 0; i--) {
+            const m = messages[i];
+            if (m.role === 'assistant' && m.followUpOptions && m.followUpOptions.length > 0) return m;
+        }
+        return null;
+    }, [messages]);
+
+    useEffect(() => {
+        setFollowUpSelection(new Set());
+    }, [lastFollowUpMsg?.id]);
 
     useEffect(() => {
         setMessages([]);
@@ -168,6 +188,10 @@ export function PersonalAssistant() {
         reader.readAsText(file);
         e.target.value = '';
     };
+
+    const focusComposer = useCallback(() => {
+        textareaRef.current?.focus();
+    }, []);
 
     const sendMessage = async (userText: string, opts?: { displayText?: string }) => {
         const modelUserContent = userText.trim();
@@ -368,25 +392,85 @@ export function PersonalAssistant() {
                                     }`}
                                 >
                                     <p className="whitespace-pre-wrap">{m.content}</p>
-                                    {m.role === 'assistant' && m.followUpOptions && m.followUpOptions.length > 0 && (
-                                        <div
-                                            className="mt-3.5 flex flex-wrap gap-2 border-t border-white/[0.06] pt-3"
-                                            role="group"
-                                            aria-label="Quick replies"
-                                        >
-                                            {m.followUpOptions.map((opt, i) => (
-                                                <button
-                                                    key={`${m.id}-opt-${i}`}
-                                                    type="button"
-                                                    disabled={loading}
-                                                    onClick={() => sendMessage(opt)}
-                                                    className="rounded-full bg-brand-teal/[0.08] px-3 py-2 text-left text-[12px] font-medium leading-snug text-brand-text ring-1 ring-brand-teal/25 transition-colors hover:bg-brand-teal/15 disabled:opacity-40"
-                                                >
-                                                    {opt}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
+                                    {m.role === 'assistant' &&
+                                        m.followUpOptions &&
+                                        m.followUpOptions.length > 0 &&
+                                        m.id === lastFollowUpMsg?.id && (
+                                            <div
+                                                className="mt-3.5 space-y-2.5 border-t border-white/[0.06] pt-3"
+                                                role="group"
+                                                aria-label="Quick replies — select one or more, then send"
+                                            >
+                                                <p className="text-[10px] text-brand-muted/90">
+                                                    Tap one or more, then send — or type your own below.
+                                                </p>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {m.followUpOptions.map((opt, i) => {
+                                                        const isOther = isOtherFollowUpLabel(opt);
+                                                        const selected = followUpSelection.has(opt);
+                                                        return (
+                                                            <button
+                                                                key={`${m.id}-opt-${i}`}
+                                                                type="button"
+                                                                disabled={loading}
+                                                                aria-pressed={selected}
+                                                                onClick={() => {
+                                                                    if (isOther) {
+                                                                        setFollowUpSelection(new Set());
+                                                                        focusComposer();
+                                                                        return;
+                                                                    }
+                                                                    setFollowUpSelection((prev) => {
+                                                                        const next = new Set(prev);
+                                                                        if (next.has(opt)) next.delete(opt);
+                                                                        else next.add(opt);
+                                                                        return next;
+                                                                    });
+                                                                }}
+                                                                className={`rounded-full px-3 py-2 text-left text-[12px] font-medium leading-snug ring-1 transition-colors disabled:opacity-40 ${
+                                                                    selected
+                                                                        ? 'bg-brand-teal/25 text-brand-text ring-brand-teal/50'
+                                                                        : 'bg-brand-teal/[0.08] text-brand-text ring-brand-teal/25 hover:bg-brand-teal/15'
+                                                                }`}
+                                                            >
+                                                                {opt}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                                <div className="flex flex-wrap items-center gap-2">
+                                                    {followUpSelection.size > 0 && (
+                                                        <button
+                                                            type="button"
+                                                            disabled={loading}
+                                                            onClick={() => {
+                                                                const parts = [...followUpSelection];
+                                                                const combined =
+                                                                    parts.length === 1
+                                                                        ? parts[0]
+                                                                        : `Selected: ${parts.join(' · ')}`;
+                                                                setFollowUpSelection(new Set());
+                                                                sendMessage(combined);
+                                                            }}
+                                                            className="rounded-full bg-brand-teal/90 px-3 py-1.5 text-[11px] font-semibold text-[#131314] transition-colors hover:bg-brand-teal disabled:opacity-40"
+                                                        >
+                                                            Send selected ({followUpSelection.size})
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        type="button"
+                                                        disabled={loading}
+                                                        onClick={() => {
+                                                            setFollowUpSelection(new Set());
+                                                            focusComposer();
+                                                        }}
+                                                        className="rounded-full bg-white/[0.06] px-3 py-1.5 text-[11px] font-medium text-brand-text ring-1 ring-white/[0.1] transition-colors hover:bg-white/[0.1] disabled:opacity-40"
+                                                    >
+                                                        Type my own answer
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
                                 </div>
                             </div>
                         ))}
