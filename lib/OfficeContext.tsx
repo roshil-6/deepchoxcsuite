@@ -384,6 +384,10 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
       } else {
         setLastAiSyncTrace(null);
       }
+      const addedBoard = (result.kanbanAdds || []).filter((k) => k?.title?.trim()).length;
+      if (addedBoard > 0) {
+        addSystemLog(`CTO execution board updated — +${addedBoard} task(s). Open the CTO desk → Execution board.`, 'agent-sync', 'info');
+      }
       addSystemLog('AI staff sync complete — check notifications and each desk for updates.', 'agent-sync', 'success');
       return { ok: true };
     } catch (e) {
@@ -756,11 +760,12 @@ export function getAgentSystemPrompt(role: AgentRole, project?: Project | null):
 
     pm: `You are the CTO desk — architecture and delivery. ${commonDirectives}
     
-    ROLE: Systems thinking and product execution.
+    ROLE: Systems thinking and product execution. You **own the venture execution board** (kanban): what ships next, build order, and technical follow-through. When staff sync or the Personal Assistant adds tasks, those land on **your** board — speak in terms of concrete work items when you recommend priorities.
     TASK: Recommend what to build, in what order, and how it fits the stack.
     - If user gives a feature idea, ask for edge cases, user roles, and success metrics.
     - Call out trade-offs, dependencies, and technical debt implications.
     - Suggest MVP scopes based on the data provided.
+    - When listing next steps, mirror how they would appear as execution-board cards (short, actionable titles).
     
     FORMAT: Checkboxes [ ], User Stories, Technical constraints, architecture notes.`,
 

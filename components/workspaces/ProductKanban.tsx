@@ -192,9 +192,9 @@ export function ProductKanban() {
             <div className="flex min-h-0 min-w-0 flex-1 flex-col">
                 <DeskShell
                     className="min-h-0 flex-1"
-                    eyebrow="CTO · Architecture recommendation"
+                    eyebrow="CTO · Architecture & execution"
                     title="Chief Technology Officer"
-                    description="Systems view, trade-offs, and what to build or change first. War room persists per venture; planning mirrors the CEO flow; documents capture client and meeting notes in one vault."
+                    description="You own the execution board — backlog through done. Staff sync and the Personal Assistant add tasks here as the CTO plan updates. War room, roadmap brief, planning room, and desk docs live on the other tabs."
                     tabs={
                         <>
                             {nav.map((item) => (

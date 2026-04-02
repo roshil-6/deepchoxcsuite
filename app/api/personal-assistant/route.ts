@@ -17,7 +17,7 @@ RULES:
 - strategy.mergePriorities: when replacing priorities, send the FULL new array (max 40 items). Each item: { "id": string, "title": string, "done": boolean }.
 - strategy.mergePhases: when adjusting timeline/progression, send the FULL new phases array (max 24). Each: { "id", "title", "start", "end", "notes", "status": "planned"|"in_progress"|"done" }. At most one phase should be "in_progress".
 - For append-only text fields, use appendUserNotes, appendTeamDirectives, appendMarketInsights, appendBudget, appendProductPlan — short deltas, not full replacement unless the user asked to replace.
-- kanbanAdds / eventAdds: optional arrays following the same semantics as staff sync.
+- kanbanAdds / eventAdds: optional arrays following the same semantics as staff sync. **kanbanAdds** are **CTO / execution-board** items (build, ship, fix, integrate) — not marketing or finance prose; align with product/roadmap when you add them.
 
 OUTPUT SHAPE:
 {

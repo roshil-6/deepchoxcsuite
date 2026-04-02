@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { useOffice } from '@/lib/OfficeContext';
+import type { LocalEnquiry } from '@/lib/db';
 import { Inbox, Mail, MessageCircle, Facebook, Rss, RefreshCw, Loader2 } from 'lucide-react';
 
 type Importance = 'all' | 'high' | 'normal' | 'low';
@@ -33,9 +34,26 @@ const SIM_LABEL: Record<SimSource, string> = {
   reddit: 'Reddit',
 };
 
+function filterLocalEnquiries(
+  rows: LocalEnquiry[] | undefined,
+  ventureId: number,
+  importance: Importance
+): EnquiryRow[] {
+  const list = (rows || []).filter((e) => e.ventureId === ventureId);
+  const impFiltered =
+    importance === 'all' ? list : list.filter((e) => (e.importance || 'normal') === importance);
+  return impFiltered
+    .map((r) => ({
+      ...r,
+      receivedAt: typeof r.receivedAt === 'string' ? r.receivedAt : new Date(r.receivedAt).toISOString(),
+    }))
+    .sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime());
+}
+
 export function EnquiriesHub() {
-  const { activeProject, switchRoom } = useOffice();
-  const [connected, setConnected] = useState<boolean | null>(null);
+  const { activeProject, switchRoom, updateProjectField, patchActiveProject } = useOffice();
+  /** True when Postgres is available on the server; false means we use per-venture local inbox (Dexie). */
+  const [serverDb, setServerDb] = useState<boolean | null>(null);
   const [items, setItems] = useState<EnquiryRow[]>([]);
   const [importance, setImportance] = useState<Importance>('all');
   const [simImportance, setSimImportance] = useState<SimImportance>('normal');
@@ -43,6 +61,23 @@ export function EnquiriesHub() {
   const [posting, setPosting] = useState<SimSource | null>(null);
   const [postErr, setPostErr] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  /** From GET /api/health — true only if DATABASE_URL is set and `SELECT 1` succeeds (actual connectivity). */
+  const [postgresReachable, setPostgresReachable] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/health')
+      .then((r) => r.json())
+      .then((d: { database?: boolean }) => {
+        if (!cancelled) setPostgresReachable(d.database === true);
+      })
+      .catch(() => {
+        if (!cancelled) setPostgresReachable(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -52,19 +87,36 @@ export function EnquiriesHub() {
       if (importance !== 'all') q.set('importance', importance);
       const res = await fetch(`/api/enquiries?${q.toString()}`);
       const data = await res.json();
-      setConnected(data.connected === true);
-      const list = (data.items || []).map((r: EnquiryRow & { receivedAt: string | Date }) => ({
-        ...r,
-        receivedAt: typeof r.receivedAt === 'string' ? r.receivedAt : new Date(r.receivedAt).toISOString(),
-      }));
-      setItems(list);
+      const apiOk = data.connected === true;
+
+      if (apiOk) {
+        setServerDb(true);
+        const list = (data.items || []).map((r: EnquiryRow & { receivedAt: string | Date }) => ({
+          ...r,
+          receivedAt: typeof r.receivedAt === 'string' ? r.receivedAt : new Date(r.receivedAt).toISOString(),
+        }));
+        setItems(list);
+        return;
+      }
+
+      // No Postgres (or DB error): inbox still works from this venture’s local storage
+      setServerDb(false);
+      if (activeProject?.id != null) {
+        setItems(filterLocalEnquiries(activeProject.enquiriesLocal, activeProject.id, importance));
+      } else {
+        setItems([]);
+      }
     } catch {
-      setConnected(false);
-      setItems([]);
+      setServerDb(false);
+      if (activeProject?.id != null) {
+        setItems(filterLocalEnquiries(activeProject.enquiriesLocal, activeProject.id, importance));
+      } else {
+        setItems([]);
+      }
     } finally {
       setLoading(false);
     }
-  }, [activeProject?.id, importance]);
+  }, [activeProject?.id, activeProject?.enquiriesLocal, importance]);
 
   useEffect(() => {
     load();
@@ -82,36 +134,58 @@ export function EnquiriesHub() {
 
   const selected = items.find((i) => i.id === selectedId) || null;
 
-  const canPost = connected === true && activeProject?.id != null;
+  const canPost = activeProject?.id != null;
 
   const postFromSource = async (source: SimSource) => {
-    if (!activeProject?.id || !canPost) return;
+    if (!activeProject?.id) return;
     setPostErr(null);
     setPosting(source);
     try {
       const label = SIM_LABEL[source];
-      const res = await fetch('/api/enquiries', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          source,
-          subject: `${label} — inbound`,
-          body: [
-            `Channel: ${label}. Importance: ${simImportance}.`,
-            '',
-            'In production, point each channel’s webhook or worker to POST /api/enquiries with JSON:',
-            '{ "source": "whatsapp"|"email"|"facebook"|"reddit", "subject", "body", "importance": "high"|"normal"|"low", "ventureId", "externalId"?, "rawMeta"? }.',
-          ].join('\n'),
-          importance: simImportance,
-          ventureId: activeProject.id,
-          externalId: `sim-${source}-${Date.now()}`,
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setPostErr(typeof data.error === 'string' ? data.error : 'Could not save enquiry');
+      const bodyText = [
+        `Channel: ${label}. Importance: ${simImportance}.`,
+        '',
+        serverDb
+          ? 'In production, point each channel’s webhook or worker to POST /api/enquiries with JSON:'
+          : 'Saved on this device. When DATABASE_URL is set on the server, use POST /api/enquiries with JSON:',
+        '{ "source": "whatsapp"|"email"|"facebook"|"reddit", "subject", "body", "importance": "high"|"normal"|"low", "ventureId", "externalId"?, "rawMeta"? }.',
+      ].join('\n');
+
+      if (serverDb) {
+        const res = await fetch('/api/enquiries', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            source,
+            subject: `${label} — inbound`,
+            body: bodyText,
+            importance: simImportance,
+            ventureId: activeProject.id,
+            externalId: `sim-${source}-${Date.now()}`,
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          setPostErr(typeof data.error === 'string' ? data.error : 'Could not save enquiry');
+          return;
+        }
+        await load();
         return;
       }
+
+      const row: LocalEnquiry = {
+        id: `local-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+        source,
+        subject: `${label} — inbound`,
+        body: bodyText,
+        importance: simImportance,
+        ventureId: activeProject.id,
+        receivedAt: new Date().toISOString(),
+        isRead: false,
+      };
+      const next = [...(activeProject.enquiriesLocal || []), row];
+      await updateProjectField('enquiriesLocal', next);
+      patchActiveProject({ enquiriesLocal: next });
       await load();
     } finally {
       setPosting(null);
@@ -123,7 +197,7 @@ export function EnquiriesHub() {
       <div className="flex h-full flex-col items-center justify-center gap-4 bg-brand-bg px-6 text-center">
         <Inbox className="h-10 w-10 text-brand-muted" aria-hidden />
         <p className="max-w-md text-sm text-brand-muted">
-          Select a venture to tag enquiries. The inbox uses your Render Postgres when <code className="text-brand-text">DATABASE_URL</code> is set.
+          Select a venture to tag enquiries. Each venture has its own inbox — saved on this device, and on the server when <code className="text-brand-text">DATABASE_URL</code> is configured.
         </p>
         <button
           type="button"
@@ -148,11 +222,44 @@ export function EnquiriesHub() {
             Wire WhatsApp, email, Facebook, and Reddit to <code className="text-[10px] text-brand-text/90">POST /api/enquiries</code>. Set{' '}
             <span className="text-brand-text/90">importance</span> to <span className="text-amber-400/90">high</span> for urgent items.
           </p>
-          {connected === false && (
-            <p className="mt-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1.5 text-[10px] leading-relaxed text-amber-200/90">
-              Database not connected. Add <code className="text-amber-100/90">DATABASE_URL</code> on Render and redeploy — the list will populate
-              from the server.
+          <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-brand-muted">
+            <span className="font-medium text-brand-text/80">Server database</span>
+            <span className="inline-flex items-center gap-1.5">
+              <span
+                className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+                  postgresReachable === null
+                    ? 'bg-zinc-500'
+                    : postgresReachable
+                      ? 'bg-emerald-500'
+                      : 'bg-zinc-500'
+                }`}
+                aria-hidden
+              />
+              {postgresReachable === null
+                ? 'Checking…'
+                : postgresReachable
+                  ? 'Connected (Postgres reachable)'
+                  : 'Not connected — set DATABASE_URL and run migrations'}
+            </span>
+            <span className="text-brand-muted/70">·</span>
+            <span>
+              Inbox source:{' '}
+              <span className="text-brand-text/90">{serverDb ? 'server' : serverDb === false ? 'this device' : '…'}</span>
+            </span>
+          </p>
+          {postgresReachable === true && serverDb === false && !loading && (
+            <p className="mt-1.5 text-[10px] leading-snug text-amber-200/85">
+              Postgres is up, but the enquiries query failed — confirm Prisma migrations are applied (<code className="text-amber-100/90">npx prisma migrate deploy</code> on the host).
             </p>
+          )}
+          {serverDb === false && (
+            <div className="mt-2 rounded-md border border-brand-border bg-brand-input/60 px-2.5 py-2 text-[10px] leading-relaxed text-brand-muted">
+              <p className="font-medium text-brand-text/90">Using inbox on this device (saved with the venture).</p>
+              <p className="mt-1">
+                Add <code className="rounded bg-brand-bg/80 px-1 py-0.5 text-[10px] text-brand-text">DATABASE_URL</code> on the server
+                (e.g. Render Postgres) and redeploy to sync enquiries from the cloud — then tap <span className="text-brand-text">Refresh</span>.
+              </p>
+            </div>
           )}
 
           <div className="mt-3 flex flex-wrap items-center gap-1.5">
@@ -189,7 +296,7 @@ export function EnquiriesHub() {
                 <button
                   key={lvl}
                   type="button"
-                  disabled={!canPost}
+                  disabled={!canPost || serverDb === null}
                   onClick={() => setSimImportance(lvl)}
                   className={`rounded px-2 py-0.5 text-[10px] capitalize disabled:opacity-40 ${
                     simImportance === lvl
@@ -208,7 +315,7 @@ export function EnquiriesHub() {
                 <button
                   key={src}
                   type="button"
-                  disabled={!canPost || posting !== null}
+                  disabled={!canPost || posting !== null || serverDb === null}
                   onClick={() => postFromSource(src)}
                   title={canPost ? `POST as ${SIM_LABEL[src]}` : 'Requires DATABASE_URL'}
                   className="inline-flex items-center justify-center gap-1.5 rounded-md border border-brand-border bg-brand-input py-2 text-[11px] font-medium text-brand-text hover:bg-brand-card disabled:cursor-not-allowed disabled:opacity-45"
@@ -223,7 +330,9 @@ export function EnquiriesHub() {
         </div>
         <div className="custom-scrollbar flex-1 overflow-y-auto">
           {items.length === 0 && !loading ? (
-            <p className="p-4 text-[12px] text-brand-muted">No messages yet.</p>
+            <p className="p-4 text-[12px] text-brand-muted">
+              {serverDb === false ? 'No enquiries yet — add one with Test POST below.' : 'No messages yet.'}
+            </p>
           ) : (
             <ul className="divide-y divide-brand-border">
               {items.map((row) => {

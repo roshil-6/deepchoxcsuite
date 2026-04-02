@@ -28,6 +28,18 @@ export interface StaffAttentionItem {
   dismissed?: boolean;
 }
 
+/** Inbox row — mirrors Prisma Enquiry fields used in the UI (local fallback when no Postgres). */
+export interface LocalEnquiry {
+  id: string;
+  source: string;
+  ventureId: number | null;
+  subject: string | null;
+  body: string;
+  receivedAt: string;
+  importance: string;
+  isRead: boolean;
+}
+
 export interface Project {
   id?: number;
   name: string;
@@ -66,6 +78,9 @@ export interface Project {
   diary: any[];
   /** Cross-desk documents (clients, meetings, notes) */
   deskDocuments?: DeskDocument[];
+
+  /** Enquiries stored locally when the server has no Postgres (same shape as API rows). */
+  enquiriesLocal?: LocalEnquiry[];
 }
 
 export interface DeskDocument {

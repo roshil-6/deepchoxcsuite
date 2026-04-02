@@ -2,14 +2,19 @@ import { NextResponse } from 'next/server';
 import { chatWithGroq } from '@/lib/ai/chatProviders';
 import type { AgentSyncPayload, AiSyncTraceStep, SyncProjectDTO } from '@/lib/agentStaffTypes';
 
-const SYNC_SYSTEM = `You are the combined AI staff of a growing startup: CEO strategy, CTO product, CFO finance, CSO market intel, and CMO GTM. The user pressed "Sync" — you must research across the venture snapshot and public news context, then output ONE JSON object only (no markdown fence).
+const SYNC_SYSTEM = `You are the combined AI staff of a growing startup: CEO strategy, CTO product & execution, CFO finance, CSO market intel, and CMO GTM. The user pressed "Sync" — you must research across the venture snapshot and public news context, then output ONE JSON object only (no markdown fence).
 
 RULES:
 - The venture snapshot may include "ventureOnboarding" (wizard fields merged with name, strategy, phases, product plan, market, budget, directives). Use it as baseline truth; do not ask the user to restate what is already there.
 - Ground everything in the provided venture data and news headlines. Do not invent funding amounts, customer counts, or KPIs not implied by the input.
 - If data is missing for a desk, say what is missing in that desk's string (short).
 - Propose concrete, dated-feeling next steps where possible.
-- kanbanAdds: max 5 new tasks with clear titles; status usually "todo".
+
+EXECUTION BOARD (CTO OWNS THIS):
+- The CTO desk is "pm" in desks — product, architecture, and **delivery**. The venture **execution board** (kanban in the app) is the CTO’s surface: what to build, ship, or fix next.
+- **kanbanAdds** MUST be tasks the CTO would own: implementation, releases, integrations, technical milestones, spikes, debt paydown — not generic CEO/CFO/CMO prose. Titles must align with the story in desks.pm (same priorities, ordered for execution).
+- Include **1–5** kanbanAdds whenever product, roadmap, tech, or delivery is in scope. The snapshot includes existing **kanban** — add tasks that **extend or update the execution plan**; do not duplicate titles already on the board. status usually "todo"; use "in_progress" or "next" only when the snapshot clearly implies active work.
+- max 5 new tasks per sync; clear, actionable titles.
 - eventAdds: max 5 suggestions; daysFromNow 0 means today; type one of: milestone, meeting, launch, deadline, task.
 - append* fields: only non-empty when you have additive intel; keep each under ~600 words; plain text or light markdown bullets.
 - attentionItems: 3–8 items. Each is a human notification like a colleague waiting: role MUST be one of: ceo, pm, accountant, scout, cmo, chief_of_staff. Title is short (e.g. "CFO — discuss runway"). Message is one or two sentences (e.g. waiting to discuss latest market moves and funding sensitivity).
@@ -93,6 +98,8 @@ ${JSON.stringify(project, null, 2)}
 RECENT HEADLINES (automated RSS — verify mentally):
 ${headlines || '(none fetched)'}
 
+The JSON "kanban" array in the snapshot is the CTO **execution board** today — new kanbanAdds should align with desks.pm and complement that list.
+
 Respond with the JSON object only.`;
 
     const raw = await chatWithGroq(
@@ -163,7 +170,7 @@ Respond with the JSON object only.`;
         id: 'groq',
         label: 'Combined staff model — one structured pass',
         detail:
-          'All officer perspectives are produced together (CEO, CTO, CFO, CSO, CMO) so the plan stays internally consistent before merge.',
+          'All officer perspectives are produced together (CEO, CTO, CFO, CSO, CMO) so the plan stays internally consistent; CTO ties kanbanAdds to the execution board.',
       },
       {
         id: 'merge',
@@ -189,7 +196,7 @@ Respond with the JSON object only.`;
       id: 'handoff',
       label: 'Merge into venture record',
       detail:
-        'Applying append-only intel, directives, notes, kanban tasks, calendar events, bell notifications, and your focus list.',
+        'Applying append-only intel, directives, notes; CTO execution-board tasks (kanban), calendar events, bell notifications, and your focus list.',
     });
 
     return NextResponse.json({ ok: true, result: normalized, trace });
