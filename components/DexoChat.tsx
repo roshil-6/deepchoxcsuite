@@ -4,12 +4,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useOffice } from '@/lib/OfficeContext';
 import { Bot, Youtube, Sparkles, Send, Copy, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { safeJsonParse } from '@/lib/utils';
+import { ModelAttribution } from '@/components/ModelAttribution';
 
 interface Message {
     id: string;
     role: 'user' | 'assistant';
     content: string;
     timestamp: number;
+    model?: string;
 }
 
 export function DexoChat() {
@@ -71,7 +73,8 @@ export function DexoChat() {
                 id: (Date.now() + 1).toString(),
                 role: 'assistant',
                 content: data.message?.content || "Processing complete.",
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                model: typeof data.model === 'string' ? data.model : undefined,
             };
 
             setMessages(prev => [...prev, assistantMessage]);
@@ -121,6 +124,7 @@ export function DexoChat() {
                                 : 'bg-zinc-900 border border-zinc-800 text-zinc-300 rounded-tl-sm'
                             }`}>
                             <div className="whitespace-pre-wrap font-sans">{msg.content}</div>
+                            {msg.role === 'assistant' ? <ModelAttribution model={msg.model} /> : null}
                         </div>
 
                         {msg.role === 'user' && (

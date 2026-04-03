@@ -5,12 +5,15 @@ import { useOffice } from '@/lib/OfficeContext';
 import { parseStrategy } from '@/lib/strategyDoc';
 import { isVentureUnsettled, PA_WELCOME_MESSAGE } from '@/lib/ventureSetupState';
 import { ArrowUp, Bot, ClipboardList, FileUp, Lightbulb, Mic } from 'lucide-react';
+import { ModelAttribution } from '@/components/ModelAttribution';
 
 type Msg = {
     id: string;
     role: 'user' | 'assistant';
     content: string;
     ts: number;
+    /** Display label from API (e.g. Gemma 2B (HuggingFace)) */
+    model?: string;
     /** Tap-to-answer suggestions from the model (last assistant message only). */
     followUpOptions?: string[];
 };
@@ -234,6 +237,7 @@ export function PersonalAssistant() {
             } else {
                 const text =
                     typeof data.response === 'string' ? data.response : 'No response generated.';
+                const modelLabel = typeof data.model === 'string' ? data.model : undefined;
                 setMessages((prev) => [
                     ...prev,
                     {
@@ -241,6 +245,7 @@ export function PersonalAssistant() {
                         role: 'assistant',
                         content: text,
                         ts: Date.now(),
+                        model: modelLabel,
                     },
                 ]);
             }
@@ -381,6 +386,7 @@ export function PersonalAssistant() {
                                     }`}
                                 >
                                     <p className="whitespace-pre-wrap">{m.content}</p>
+                                    {m.role === 'assistant' ? <ModelAttribution model={m.model} /> : null}
                                     {m.role === 'assistant' &&
                                         m.followUpOptions &&
                                         m.followUpOptions.length > 0 &&

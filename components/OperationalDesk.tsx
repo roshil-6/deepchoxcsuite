@@ -5,6 +5,7 @@ import { MiniChat } from './MiniChat';
 import { GripVertical, MessageSquare, Bell, RefreshCw } from 'lucide-react';
 import { useOffice, type AgentRole } from '@/lib/OfficeContext';
 import { useHfRoleSync, type HfDeskRole } from '@/lib/useHfRoleSync';
+import { ModelAttribution } from '@/components/ModelAttribution';
 
 function hfRoleForRoom(room: string): HfDeskRole | null {
     const m: Record<string, HfDeskRole> = {
@@ -19,7 +20,7 @@ function hfRoleForRoom(room: string): HfDeskRole | null {
 
 function HfDeskSyncStrip({ room }: { room: string }) {
     const hfRole = useMemo(() => hfRoleForRoom(room), [room]);
-    const { syncing, syncResult, setSyncResult, syncRole } = useHfRoleSync();
+    const { syncing, syncResult, syncModel, setSyncResult, syncRole } = useHfRoleSync();
     if (!hfRole) return null;
     return (
         <div className="shrink-0 border-b border-brand-border bg-brand-bg/90 px-4 py-2">
@@ -38,7 +39,10 @@ function HfDeskSyncStrip({ room }: { room: string }) {
                 </button>
             </div>
             {syncResult ? (
-                <p className="mt-2 max-h-32 overflow-y-auto text-[11px] leading-relaxed text-brand-muted">{syncResult}</p>
+                <div className="mt-2">
+                    <p className="max-h-32 overflow-y-auto text-[11px] leading-relaxed text-brand-muted">{syncResult}</p>
+                    <ModelAttribution model={syncModel} />
+                </div>
             ) : null}
         </div>
     );

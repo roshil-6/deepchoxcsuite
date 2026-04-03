@@ -22,6 +22,7 @@ import {
 import { useOffice } from '@/lib/OfficeContext';
 import type { AgentStaffSnapshot } from '@/lib/db';
 import { useHfRoleSync, type HfDeskRole } from '@/lib/useHfRoleSync';
+import { ModelAttribution } from '@/components/ModelAttribution';
 
 const DESK_ORDER: { key: keyof AgentStaffSnapshot['desks']; title: string; subtitle: string }[] = [
     { key: 'ceo', title: 'CEO', subtitle: 'Strategy & narrative' },
@@ -75,8 +76,13 @@ export function CsuiteIntelligenceGuide() {
     const [pulseIdx, setPulseIdx] = useState(0);
     const [openDesk, setOpenDesk] = useState<string | null>('ceo');
     const [traceOpen, setTraceOpen] = useState(true);
-    const { syncing: hfSyncing, syncResult: hfSyncResult, setSyncResult: setHfSyncResult, syncRole: hfSyncRole } =
-        useHfRoleSync();
+    const {
+        syncing: hfSyncing,
+        syncResult: hfSyncResult,
+        syncModel: hfSyncModel,
+        setSyncResult: setHfSyncResult,
+        syncRole: hfSyncRole,
+    } = useHfRoleSync();
 
     useEffect(() => {
         if (!agentSyncRunning) return;
@@ -209,6 +215,7 @@ export function CsuiteIntelligenceGuide() {
                         {hfSyncResult ? (
                             <div className="relative mt-4 rounded-lg border border-brand-border/60 bg-brand-bg/80 p-3 text-[11px] leading-relaxed text-brand-muted">
                                 {hfSyncResult}
+                                <ModelAttribution model={hfSyncModel} />
                             </div>
                         ) : null}
 

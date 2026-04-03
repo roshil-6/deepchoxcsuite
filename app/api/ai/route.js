@@ -61,7 +61,11 @@ ${message}
     }
 
     const text = data[0]?.generated_text || "No response generated.";
-    return NextResponse.json({ response: text, loading: false });
+    return NextResponse.json({
+      response: text,
+      loading: false,
+      model: "Gemma 2B (HuggingFace)"
+    });
 
   } catch (error) {
     return NextResponse.json(

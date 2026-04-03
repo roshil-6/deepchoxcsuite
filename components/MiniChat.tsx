@@ -4,12 +4,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useOffice, getAgentSystemPrompt, AgentRole } from '@/lib/OfficeContext';
 import { ArrowUp, Bot, MoreHorizontal } from 'lucide-react';
 import { DESK_AI_MODELS, type DeskModelId } from '@/lib/deskConstants';
+import { ModelAttribution } from '@/components/ModelAttribution';
 
 interface Message {
     id: string;
     role: 'user' | 'assistant';
     content: string;
     timestamp: number;
+    model?: string;
 }
 
 export function MiniChat() {
@@ -93,6 +95,7 @@ export function MiniChat() {
                     role: 'assistant',
                     content: assistantContent,
                     timestamp: Date.now(),
+                    model: typeof data.model === 'string' ? data.model : undefined,
                 },
             ]);
             addSystemLog(`Desk reply · ${currentAgent.role}`, 'NETWORK', 'success');
@@ -178,6 +181,7 @@ export function MiniChat() {
                             }`}
                         >
                             <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                            {msg.role === 'assistant' ? <ModelAttribution model={msg.model} /> : null}
                         </div>
                         <span className="text-[9px] text-zinc-600">
                             {new Date(msg.timestamp).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' })}

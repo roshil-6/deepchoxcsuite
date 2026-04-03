@@ -108,7 +108,13 @@ export async function POST(req: Request) {
           .slice(0, 4)
       : [];
 
-    return NextResponse.json({ ok: true, reply, updates, followUpOptions });
+    return NextResponse.json({
+      ok: true,
+      reply,
+      updates,
+      followUpOptions,
+      model: 'Llama 3.3 70B (Groq)',
+    });
   } catch (e) {
     console.error('personal-assistant', e);
     const msg = e instanceof Error ? e.message : 'request failed';

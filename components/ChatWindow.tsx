@@ -5,12 +5,14 @@ import ReactMarkdown from 'react-markdown';
 import { useOffice, getAgentSystemPrompt, AgentRole } from '@/lib/OfficeContext';
 import { updateProjectField } from '@/lib/db';
 import { Send, User, Sparkles, Paperclip, ArrowUp, Bot, Terminal, Shield, Wifi, Cpu, Activity, Lock, Smartphone, Settings, MoreVertical } from 'lucide-react';
+import { ModelAttribution } from '@/components/ModelAttribution';
 
 interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   timestamp: number;
+  model?: string;
 }
 
 interface ChatWindowProps {
@@ -175,13 +177,17 @@ ${fileContext}
       if (!response.ok) throw new Error(`API error: ${response.statusText}`);
 
       const data = await response.json();
-      const assistantContent = data.choices?.[0]?.message?.content || 'No response received - Check Signal';
+      const assistantContent =
+        data.message?.content ??
+        data.choices?.[0]?.message?.content ??
+        'No response received - Check Signal';
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
         content: assistantContent,
         timestamp: Date.now(),
+        model: typeof data.model === 'string' ? data.model : undefined,
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
@@ -276,6 +282,7 @@ ${fileContext}
                   }}>
                     {msg.content}
                   </ReactMarkdown>
+                  {msg.role === 'assistant' ? <ModelAttribution model={msg.model} /> : null}
                 </div>
                 <span className="text-[9px] text-zinc-600 mt-2 font-mono px-1 opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-widest">
                   {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

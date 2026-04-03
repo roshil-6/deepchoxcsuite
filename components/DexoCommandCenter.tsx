@@ -3,12 +3,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useOffice, getAgentSystemPrompt } from '@/lib/OfficeContext';
 import { Send, Sparkles } from 'lucide-react';
+import { ModelAttribution } from '@/components/ModelAttribution';
 
 interface Message {
     id: string;
     role: 'user' | 'assistant';
     content: string;
     timestamp: number;
+    model?: string;
 }
 
 /** Distinctive Dexo mark — flat geometry, aligned with suite brand tokens */
@@ -135,6 +137,7 @@ export function DexoCommandCenter() {
                     role: 'assistant',
                     content,
                     timestamp: Date.now(),
+                    model: typeof data.model === 'string' ? data.model : undefined,
                 },
             ]);
         } catch {
@@ -191,6 +194,7 @@ export function DexoCommandCenter() {
                                 }`}
                             >
                                 <p className="whitespace-pre-wrap">{msg.content}</p>
+                                {msg.role === 'assistant' ? <ModelAttribution model={msg.model} /> : null}
                             </div>
                         </div>
                     ))}

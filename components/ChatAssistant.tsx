@@ -4,12 +4,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useOffice, getAgentSystemPrompt, AgentRole } from '@/lib/OfficeContext';
 import { getChatRailTheme, getChatAgentRoleForRoom } from '@/lib/roomThemes';
 import { Paperclip, ArrowUp, Bot, X, Eraser, Mic } from 'lucide-react';
+import { ModelAttribution } from '@/components/ModelAttribution';
 
 interface Message {
     id: string;
     role: 'user' | 'assistant';
     content: string;
     timestamp: number;
+    model?: string;
 }
 
 export type ChatAssistantVariant = 'default' | 'drawer' | 'bottomDock' | 'aiOs';
@@ -151,7 +153,8 @@ export function ChatAssistant({
                 id: (Date.now() + 1).toString(),
                 role: 'assistant',
                 content: assistantContent,
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                model: typeof data.model === 'string' ? data.model : undefined,
             };
 
             setMessages(prev => [...prev, assistantMessage]);
@@ -298,6 +301,7 @@ export function ChatAssistant({
                               : 'rounded-lg rounded-tl-sm border border-zinc-600 bg-zinc-800 p-4 font-sans text-zinc-300'
                             }`}>
                             <p className="whitespace-pre-wrap">{msg.content}</p>
+                            {msg.role === 'assistant' ? <ModelAttribution model={msg.model} /> : null}
                         </div>
                     </div>
                 ))}

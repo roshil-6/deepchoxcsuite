@@ -3,12 +3,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useOffice, AgentRole } from '@/lib/OfficeContext';
 import { Gavel, Mic, ThumbsDown, ThumbsUp, AlertTriangle, XCircle } from 'lucide-react';
+import { ModelAttribution } from '@/components/ModelAttribution';
 
 interface Message {
     id: string;
     role: 'user' | 'assistant';
     content: string;
     rating?: 'pass' | 'fail' | 'neutral';
+    model?: string;
 }
 
 export function VCGauntlet() {
@@ -77,7 +79,8 @@ export function VCGauntlet() {
                 id: Date.now().toString(),
                 role: 'assistant',
                 content,
-                rating
+                rating,
+                model: typeof data.model === 'string' ? data.model : undefined,
             }]);
 
         } catch (e) {
@@ -132,6 +135,7 @@ export function VCGauntlet() {
                                 : 'bg-gradient-to-br from-red-950 to-[#2a0a0a] border border-red-900/50 text-red-100 font-serif italic'
                             }`}>
                             {msg.content}
+                            {msg.role === 'assistant' ? <ModelAttribution model={msg.model} /> : null}
 
                             {/* Rating Stamp */}
                             {msg.role === 'assistant' && msg.rating !== 'neutral' && (

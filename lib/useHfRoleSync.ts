@@ -10,6 +10,7 @@ export type HfDeskRole = 'ceo' | 'cfo' | 'cto' | 'cmo' | 'cso';
 export function useHfRoleSync(companyContext: string = DEFAULT_CTX) {
     const [syncing, setSyncing] = useState(false);
     const [syncResult, setSyncResult] = useState<string | null>(null);
+    const [syncModel, setSyncModel] = useState<string | null>(null);
 
     const syncRole = useCallback(
         async (role: HfDeskRole) => {
@@ -26,13 +27,17 @@ export function useHfRoleSync(companyContext: string = DEFAULT_CTX) {
                 const data = await res.json();
                 if (data.loading) {
                     setSyncResult('AI is warming up, please wait 20 seconds and try again.');
+                    setSyncModel(null);
                 } else if (data.error) {
                     setSyncResult(typeof data.error === 'string' ? data.error : 'Sync failed.');
+                    setSyncModel(null);
                 } else {
                     setSyncResult(data.result ?? '');
+                    setSyncModel(typeof data.model === 'string' ? data.model : null);
                 }
             } catch {
                 setSyncResult('Sync failed. Please try again.');
+                setSyncModel(null);
             } finally {
                 setSyncing(false);
             }
@@ -40,5 +45,5 @@ export function useHfRoleSync(companyContext: string = DEFAULT_CTX) {
         [companyContext]
     );
 
-    return { syncing, syncResult, setSyncResult, syncRole };
+    return { syncing, syncResult, syncModel, setSyncResult, syncRole };
 }

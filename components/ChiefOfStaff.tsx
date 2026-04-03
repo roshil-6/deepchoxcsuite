@@ -4,12 +4,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useOffice, AgentRole } from '@/lib/OfficeContext';
 import { safeJsonParse } from '@/lib/utils';
 import { Send, LayoutDashboard, ArrowUp, Loader2, CheckCircle2, Bot, Command } from 'lucide-react';
+import { ModelAttribution } from '@/components/ModelAttribution';
 
 interface Message {
     id: string;
     role: 'user' | 'assistant';
     content: string;
     timestamp: number;
+    model?: string;
     delegation?: {
         targetAgent: AgentRole;
         task: string;
@@ -115,7 +117,8 @@ export function ChiefOfStaff() {
                 role: 'assistant',
                 content: parsedData.response || "I've processed that.",
                 timestamp: Date.now(),
-                delegation: parsedData.delegation
+                delegation: parsedData.delegation,
+                model: typeof data.model === 'string' ? data.model : undefined,
             };
 
             setMessages(prev => [...prev, assistantMessage]);
@@ -161,6 +164,7 @@ export function ChiefOfStaff() {
                             : 'bg-zinc-900/60 text-zinc-200 border-zinc-800/50 rounded-tl-sm'
                             }`}>
                             {msg.content}
+                            {msg.role === 'assistant' ? <ModelAttribution model={msg.model} /> : null}
                         </div>
 
                         {/* Delegation Card */}

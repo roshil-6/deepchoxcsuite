@@ -17,13 +17,15 @@ export async function POST(req: Request) {
     if (process.env.GROQ_API_KEY?.trim()) {
       try {
         const out = await chatWithGroq(messages, model);
-        return NextResponse.json(out);
+        return NextResponse.json({
+          ...out,
+          model: 'Llama 3.3 70B (Groq)',
+        });
       } catch (e) {
         console.error('Groq error:', e);
         const msg = e instanceof Error ? e.message : 'Groq error';
         // 200 so existing clients (they only read body.message) still show the error in-thread
         return NextResponse.json({
-          model: 'groq-error',
           created_at: new Date().toISOString(),
           message: {
             role: 'assistant',
@@ -37,14 +39,17 @@ export async function POST(req: Request) {
     // 2) Local / remote Ollama
     try {
       const out = await chatWithOllama(messages, model);
-      return NextResponse.json(out);
+      return NextResponse.json({
+        ...out,
+        model: out.model ? `Ollama · ${out.model}` : 'Ollama',
+      });
     } catch (fetchError) {
       console.warn('Ollama unavailable, using simulation.', fetchError);
     }
 
     // 3) Demo fallback
     const out = simulationResponse(messages, model);
-    return NextResponse.json(out);
+    return NextResponse.json({ ...out, model: 'Simulation' });
   } catch (error) {
     console.error('API Route Critical Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

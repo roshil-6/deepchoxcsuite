@@ -47,7 +47,11 @@ ${promptText}
     }
 
     const text = data[0]?.generated_text || "Analysis unavailable.";
-    return NextResponse.json({ result: text, loading: false });
+    return NextResponse.json({
+      result: text,
+      loading: false,
+      model: "Gemma 2B (HuggingFace)"
+    });
 
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
