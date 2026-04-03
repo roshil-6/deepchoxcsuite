@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useOffice } from '@/lib/OfficeContext';
 import type { AgentStaffSnapshot } from '@/lib/db';
+import { useHfRoleSync, type HfDeskRole } from '@/lib/useHfRoleSync';
 
 const DESK_ORDER: { key: keyof AgentStaffSnapshot['desks']; title: string; subtitle: string }[] = [
     { key: 'ceo', title: 'CEO', subtitle: 'Strategy & narrative' },
@@ -29,6 +30,14 @@ const DESK_ORDER: { key: keyof AgentStaffSnapshot['desks']; title: string; subti
     { key: 'scout', title: 'CSO', subtitle: 'Market & intel' },
     { key: 'cmo', title: 'CMO', subtitle: 'GTM & motion' },
 ];
+
+const DESK_HF_ROLE: Record<(typeof DESK_ORDER)[number]['key'], HfDeskRole> = {
+    ceo: 'ceo',
+    pm: 'cto',
+    accountant: 'cfo',
+    scout: 'cso',
+    cmo: 'cmo',
+};
 
 function FlowArrow() {
     return (
@@ -66,6 +75,8 @@ export function CsuiteIntelligenceGuide() {
     const [pulseIdx, setPulseIdx] = useState(0);
     const [openDesk, setOpenDesk] = useState<string | null>('ceo');
     const [traceOpen, setTraceOpen] = useState(true);
+    const { syncing: hfSyncing, syncResult: hfSyncResult, setSyncResult: setHfSyncResult, syncRole: hfSyncRole } =
+        useHfRoleSync();
 
     useEffect(() => {
         if (!agentSyncRunning) return;
@@ -84,7 +95,7 @@ export function CsuiteIntelligenceGuide() {
     if (!activeProject?.id) {
         return (
             <div className="flex h-full min-h-0 flex-col items-center justify-center gap-4 bg-brand-bg px-6 text-center">
-                <Radio className="h-10 w-10 text-brand-teal/80" aria-hidden />
+                <Radio className="h-10 w-10 text-brand-muted" aria-hidden />
                 <p className="max-w-md text-sm text-brand-muted">
                     Select a venture to open the Intelligence Suite — staff coordination and last sync outputs are tied to your
                     active project record.
@@ -127,14 +138,14 @@ export function CsuiteIntelligenceGuide() {
                     </p>
 
                     <div className="relative overflow-hidden rounded-2xl border border-brand-border/80 bg-gradient-to-b from-brand-panel/50 to-brand-bg/90 p-4 sm:p-6">
-                        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(13,148,136,0.08),transparent_65%)]" aria-hidden />
+                        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(255,255,255,0.04),transparent_65%)]" aria-hidden />
 
                         {/* Center hub */}
                         <div className="relative mx-auto mb-6 flex max-w-md flex-col items-center">
                             <div
                                 className={`flex items-center gap-3 rounded-2xl border px-4 py-3 ${
                                     agentSyncRunning && pulseIdx === 0
-                                        ? 'border-brand-teal/60 bg-brand-teal/10 shadow-[0_0_24px_rgba(13,148,136,0.2)]'
+                                        ? 'border-white/[0.14] bg-white/[0.05]'
                                         : 'border-brand-border/70 bg-brand-bg/90'
                                 }`}
                             >
@@ -166,7 +177,7 @@ export function CsuiteIntelligenceGuide() {
                                         key={d.key}
                                         className={`rounded-xl border px-3 py-3 text-center transition-all ${
                                             active
-                                                ? 'border-brand-teal/55 bg-brand-teal/10 shadow-[0_0_16px_rgba(13,148,136,0.15)]'
+                                                ? 'border-white/[0.14] bg-white/[0.05]'
                                                 : 'border-brand-border/60 bg-brand-bg/70'
                                         }`}
                                     >
@@ -179,17 +190,34 @@ export function CsuiteIntelligenceGuide() {
                                         ) : (
                                             <p className="mt-2 text-[9px] text-brand-muted/80">Desk brief</p>
                                         )}
+                                        <button
+                                            type="button"
+                                            disabled={hfSyncing}
+                                            onClick={() => {
+                                                setHfSyncResult(null);
+                                                void hfSyncRole(DESK_HF_ROLE[d.key]);
+                                            }}
+                                            className="mt-2 w-full rounded-md border border-brand-border/80 bg-brand-bg/80 py-1 text-[10px] font-medium text-brand-muted transition hover:border-brand-border hover:text-brand-text disabled:opacity-50"
+                                        >
+                                            {hfSyncing ? '…' : 'Sync'}
+                                        </button>
                                     </div>
                                 );
                             })}
                         </div>
+
+                        {hfSyncResult ? (
+                            <div className="relative mt-4 rounded-lg border border-brand-border/60 bg-brand-bg/80 p-3 text-[11px] leading-relaxed text-brand-muted">
+                                {hfSyncResult}
+                            </div>
+                        ) : null}
 
                         <div className="relative mt-6 flex flex-wrap items-center justify-center gap-3 border-t border-brand-border/40 pt-5">
                             <button
                                 type="button"
                                 onClick={() => runAgentStaffSync()}
                                 disabled={agentSyncRunning}
-                                className="inline-flex items-center gap-2 rounded-xl border border-brand-teal/40 bg-brand-teal/15 px-4 py-2.5 text-[12px] font-semibold text-brand-text transition hover:bg-brand-teal/25 disabled:opacity-50"
+                                className="inline-flex items-center gap-2 rounded-xl border border-white/[0.12] bg-white/[0.05] px-4 py-2.5 text-[12px] font-semibold text-brand-text transition hover:bg-white/[0.08] disabled:opacity-50"
                             >
                                 <RefreshCw className={`h-4 w-4 ${agentSyncRunning ? 'animate-spin' : ''}`} aria-hidden />
                                 {agentSyncRunning ? 'Running staff sync…' : 'Run staff sync now'}
@@ -213,8 +241,8 @@ export function CsuiteIntelligenceGuide() {
                             record; the summary below is the cross-desk synthesis.
                         </p>
                         {snapshot.summary?.trim() ? (
-                            <div className="mb-5 rounded-xl border border-brand-teal/35 bg-gradient-to-br from-brand-teal/10 to-transparent p-4 sm:p-5">
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-teal">Staff synthesis</p>
+                            <div className="mb-5 rounded-xl border border-white/[0.08] bg-white/[0.03] p-4 sm:p-5">
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-muted">Staff synthesis</p>
                                 <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-brand-text">{snapshot.summary}</p>
                             </div>
                         ) : null}

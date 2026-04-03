@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useOffice, getAgentSystemPrompt, AgentRole } from '@/lib/OfficeContext';
 import { getChatRailTheme, getChatAgentRoleForRoom } from '@/lib/roomThemes';
-import { Paperclip, ArrowUp, Bot, X, Eraser } from 'lucide-react';
+import { Paperclip, ArrowUp, Bot, X, Eraser, Mic } from 'lucide-react';
 
 interface Message {
     id: string;
@@ -12,7 +12,7 @@ interface Message {
     timestamp: number;
 }
 
-export type ChatAssistantVariant = 'default' | 'drawer' | 'bottomDock';
+export type ChatAssistantVariant = 'default' | 'drawer' | 'bottomDock' | 'aiOs';
 
 export function ChatAssistant({
     variant = 'default',
@@ -165,9 +165,14 @@ export function ChatAssistant({
     };
 
     const fileInputId =
-        variant === 'drawer' ? 'chat-file-upload-drawer' : variant === 'bottomDock' ? 'chat-file-upload-dock' : 'file-upload';
+        variant === 'drawer'
+            ? 'chat-file-upload-drawer'
+            : variant === 'bottomDock' || variant === 'aiOs'
+              ? 'chat-file-upload-dock'
+              : 'file-upload';
 
-    const isBottomDock = variant === 'bottomDock';
+    const isBottomDock = variant === 'bottomDock' || variant === 'aiOs';
+    const isAiOs = variant === 'aiOs';
     const dockThreadEmpty = isBottomDock && messages.length === 0 && !isLoading;
 
     return (
@@ -286,7 +291,7 @@ export function ChatAssistant({
 
                         <div className={`max-w-[88%] text-sm leading-relaxed ${msg.role === 'user'
                             ? isBottomDock
-                                ? `rounded-2xl rounded-br-md bg-brand-teal/[0.12] px-3 py-2.5 text-brand-text ring-1 ring-white/[0.06]`
+                                ? `rounded-2xl rounded-br-md bg-white/[0.06] px-3 py-2.5 text-brand-text ring-1 ring-white/[0.06]`
                                 : `rounded-lg rounded-tr-sm border p-4 text-zinc-50 ${chatTheme.userBubbleClass}`
                             : isBottomDock
                               ? 'rounded-2xl rounded-bl-md bg-white/[0.04] px-3 py-2.5 text-brand-text/95'
@@ -337,10 +342,12 @@ export function ChatAssistant({
                 }`}
             >
                 <div
-                    className={`group relative overflow-hidden transition-colors ${
-                        isBottomDock
-                            ? 'rounded-xl bg-white/[0.04] ring-1 ring-white/[0.06] focus-within:bg-white/[0.06] focus-within:ring-white/[0.1]'
-                            : 'rounded-xl border border-brand-border bg-brand-bg/90 focus-within:ring-1 focus-within:ring-brand-teal/25'
+                    className={`group relative overflow-hidden transition-all duration-300 ${
+                        isAiOs
+                            ? 'rounded-full border border-white/[0.06] bg-white/[0.04] backdrop-blur-md focus-within:border-white/[0.1] focus-within:bg-white/[0.06]'
+                            : isBottomDock
+                              ? 'rounded-xl bg-white/[0.04] ring-1 ring-white/[0.06] focus-within:bg-white/[0.06] focus-within:ring-white/[0.1]'
+                              : 'rounded-xl border border-brand-border bg-brand-bg/90 focus-within:ring-1 focus-within:ring-white/[0.1]'
                     }`}
                 >
                     <textarea
@@ -353,25 +360,45 @@ export function ChatAssistant({
                                 handleSendMessage();
                             }
                         }}
-                        placeholder={chatTheme.placeholder}
+                        placeholder={isAiOs ? 'Ask your executive team anything…' : chatTheme.placeholder}
                         disabled={isLoading}
-                        className={`relative z-10 max-h-40 w-full resize-none border-none bg-transparent pr-12 text-sm leading-relaxed text-brand-text placeholder:text-brand-muted focus:ring-0 sm:pr-14 ${
-                            isBottomDock ? 'min-h-[44px] p-3 sm:min-h-[48px] sm:p-3.5' : 'min-h-[52px] p-3 sm:p-4'
+                        className={`relative z-10 max-h-40 w-full resize-none border-none bg-transparent text-sm leading-relaxed text-brand-text placeholder:text-brand-muted focus:ring-0 ${
+                            isAiOs
+                                ? 'min-h-[52px] py-4 pl-5 pr-[7.5rem] sm:min-h-[56px] sm:pl-6 sm:pr-28'
+                                : isBottomDock
+                                  ? 'min-h-[44px] p-3 pr-12 sm:min-h-[48px] sm:p-3.5 sm:pr-14'
+                                  : 'min-h-[52px] p-3 pr-12 sm:p-4 sm:pr-14'
                         }`}
                         rows={1}
                     />
-                    <button
-                        type="button"
-                        onClick={handleSendMessage}
-                        disabled={!inputValue.trim() || isLoading}
-                        className={`absolute bottom-2 right-2 z-10 rounded-lg p-2 transition-colors active:scale-[0.98] disabled:translate-y-2 disabled:opacity-0 sm:bottom-2.5 sm:right-2.5 sm:p-2 ${
-                            isBottomDock
-                                ? 'bg-brand-teal/90 text-[#131314] hover:bg-brand-teal'
-                                : 'bg-brand-teal text-[#131314] hover:bg-brand-teal/90'
-                        }`}
+                    <div
+                        className={`absolute bottom-2 right-2 z-10 flex items-center gap-1 sm:bottom-2.5 sm:right-3 ${isAiOs ? 'sm:gap-2' : ''}`}
                     >
-                        <ArrowUp className="h-4 w-4" aria-hidden />
-                    </button>
+                        {isAiOs && (
+                            <button
+                                type="button"
+                                className="rounded-full p-2 text-[var(--muted)] transition-colors hover:bg-white/[0.06] hover:text-[var(--text)]"
+                                title="Voice (browser)"
+                                aria-label="Voice input"
+                            >
+                                <Mic className="h-4 w-4" />
+                            </button>
+                        )}
+                        <button
+                            type="button"
+                            onClick={handleSendMessage}
+                            disabled={!inputValue.trim() || isLoading}
+                            className={`rounded-full p-2 transition-colors active:scale-[0.98] disabled:opacity-40 ${
+                                isAiOs
+                                    ? 'bg-[var(--text)] text-[#0f1115] hover:bg-white/90'
+                                    : isBottomDock
+                                      ? 'bg-zinc-300/90 text-[#131314] hover:bg-zinc-200'
+                                      : 'bg-zinc-300 text-[#131314] hover:bg-zinc-200'
+                            }`}
+                        >
+                            <ArrowUp className="h-4 w-4" aria-hidden />
+                        </button>
+                    </div>
                 </div>
 
                 <div className={`mt-2 flex items-center justify-between ${isBottomDock ? 'px-0.5' : 'px-1 sm:mt-3 sm:px-2'}`}>
@@ -393,7 +420,7 @@ export function ChatAssistant({
                             }`}
                         >
                             <Paperclip className="h-3.5 w-3.5" aria-hidden />
-                            <span>Add context</span>
+                            <span>{isAiOs ? 'Attach' : 'Add context'}</span>
                         </button>
                     </div>
                 </div>

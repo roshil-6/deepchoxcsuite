@@ -273,21 +273,24 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
         return (
             <div className="h-full min-h-0 overflow-y-auto custom-scrollbar bg-brand-bg">
                 <div className="mx-auto flex w-full max-w-3xl flex-col px-4 py-5 sm:px-6 sm:py-7">
-                    <header className="mb-6 flex flex-col gap-4 border-b border-brand-border/70 pb-6 sm:flex-row sm:items-center sm:justify-between">
+                    <header className="mb-8 flex flex-col gap-5 pb-2 sm:flex-row sm:items-end sm:justify-between">
                         <div className="min-w-0">
                             <p className="section-heading text-brand-muted">Office · Portfolio</p>
-                            <h1 className="mt-1 text-xl font-semibold tracking-tight text-brand-text sm:text-2xl">Executive overview</h1>
-                            <p className="mt-2 max-w-lg text-sm leading-relaxed text-brand-muted">
+                            <h1 className="mt-1.5 text-2xl font-semibold tracking-tight text-brand-text sm:text-3xl">Executive overview</h1>
+                            <p className="mt-3 max-w-lg text-sm leading-relaxed text-brand-muted">
                                 Pick a tile — analytics stay folded until you want them. The Chief of Staff bar below is the main control surface.
                             </p>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                            <span className="inline-flex items-center gap-2 rounded-lg border border-brand-border bg-brand-panel/90 px-3 py-2 text-[11px] text-brand-muted">
-                                <Shield className="h-3.5 w-3.5 text-brand-muted" aria-hidden />
+                        <div className="flex flex-wrap items-center gap-3 text-[11px] text-brand-muted">
+                            <span className="inline-flex items-center gap-1.5">
+                                <Shield className="h-3.5 w-3.5 opacity-70" aria-hidden />
                                 {systemState.networkStatus === 'secure' ? 'Secure' : 'Review'}
                             </span>
-                            <span className="inline-flex items-center gap-2 rounded-lg border border-brand-border bg-brand-panel/90 px-3 py-2 text-[11px] text-brand-muted">
-                                <Clock className="h-3.5 w-3.5 text-brand-muted" aria-hidden />
+                            <span className="text-white/15" aria-hidden>
+                                ·
+                            </span>
+                            <span className="inline-flex items-center gap-1.5">
+                                <Clock className="h-3.5 w-3.5 opacity-70" aria-hidden />
                                 {new Date().toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
                             </span>
                         </div>
@@ -299,16 +302,16 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             <button
                                 type="button"
                                 onClick={() => setPortfolioDashExpanded((o) => !o)}
-                                className={`flex flex-col items-start gap-3 rounded-xl border p-5 text-left transition ${
+                                className={`flex flex-col items-start gap-3 rounded-2xl p-5 text-left transition ${
                                     portfolioDashExpanded
-                                        ? 'border-brand-teal/35 bg-brand-teal/10 ring-1 ring-brand-teal/20'
-                                        : 'border-brand-border bg-brand-panel/50 hover:border-brand-border'
+                                        ? 'bg-white/[0.06] ring-1 ring-white/[0.08]'
+                                        : 'bg-white/[0.03] hover:bg-white/[0.05]'
                                 }`}
                             >
                                 <div className="flex w-full items-center justify-between gap-2">
                                     <LayoutDashboard className="h-6 w-6 text-brand-muted" aria-hidden />
                                     {portfolioDashExpanded ? (
-                                        <ChevronUp className="h-5 w-5 text-brand-teal" aria-hidden />
+                                        <ChevronUp className="h-5 w-5 text-brand-muted" aria-hidden />
                                     ) : null}
                                 </div>
                                 <div>
@@ -322,7 +325,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 <button
                                     type="button"
                                     onClick={onNewVenture}
-                                    className="flex flex-col items-start gap-3 rounded-xl border border-brand-border bg-brand-panel/50 p-5 text-left transition hover:border-brand-border hover:bg-brand-panel"
+                                    className="flex flex-col items-start gap-3 rounded-2xl bg-white/[0.03] p-5 text-left transition hover:bg-white/[0.05]"
                                 >
                                     <Target className="h-6 w-6 text-brand-muted" aria-hidden />
                                     <div>
@@ -339,7 +342,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             <button
                                 type="button"
                                 onClick={() => document.getElementById('portfolio-ventures')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-                                className="mt-4 w-full rounded-xl border border-dashed border-brand-border bg-brand-panel/25 py-3 text-sm font-medium text-brand-muted transition hover:border-brand-border hover:bg-brand-panel/50 hover:text-brand-text"
+                                className="mt-4 w-full rounded-2xl bg-white/[0.02] py-3.5 text-sm font-medium text-brand-muted transition hover:bg-white/[0.04] hover:text-brand-text"
                             >
                                 Jump to saved ventures ({ventureCount})
                             </button>
@@ -347,8 +350,8 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                     </section>
 
                     {portfolioDashExpanded && (
-                        <div className="mb-8 animate-in fade-in slide-in-from-bottom-2 duration-300 overflow-hidden rounded-xl border border-brand-border bg-brand-panel/30">
-                            <div className="flex items-center justify-between border-b border-brand-border/90 bg-brand-panel/90 px-4 py-3">
+                        <div className="mb-8 animate-in fade-in slide-in-from-bottom-2 duration-300 overflow-hidden rounded-2xl bg-white/[0.03]">
+                            <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3">
                                 <p className="text-sm font-semibold text-brand-text">Portfolio analytics</p>
                                 <button
                                     type="button"
@@ -528,17 +531,17 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
         <div className="h-full overflow-y-auto custom-scrollbar bg-brand-bg px-0 py-5 pb-8 font-sans sm:py-6">
             <div className="mx-auto w-full max-w-[1200px]">
                     <div className="space-y-10 pb-12 animate-in fade-in duration-500">
-                        <header className="flex flex-col gap-6 border-b border-brand-border/80 pb-8 sm:flex-row sm:items-end sm:justify-between">
+                        <header className="flex flex-col gap-6 pb-2 sm:flex-row sm:items-end sm:justify-between">
                             <div className="min-w-0">
                                 <div className="mb-2 flex items-center gap-2.5">
                                     <span
-                                        className={`h-2 w-2 shrink-0 rounded-full ${systemState.networkStatus === 'secure' ? 'bg-brand-teal/80' : 'bg-brand-muted/60'}`}
+                                        className={`h-2 w-2 shrink-0 rounded-full ${systemState.networkStatus === 'secure' ? 'bg-zinc-400' : 'bg-brand-muted/60'}`}
                                         aria-hidden
                                     />
                                     <span className="section-heading !text-brand-muted">Executive overview</span>
                                 </div>
-                                <h1 className="text-2xl font-bold tracking-tight text-brand-text sm:text-3xl">{activeProject.name}</h1>
-                                <p className="mt-2 max-w-2xl text-sm leading-relaxed text-brand-muted">
+                                <h1 className="text-2xl font-semibold tracking-tight text-brand-text sm:text-3xl">{activeProject.name}</h1>
+                                <p className="mt-3 max-w-2xl text-sm leading-relaxed text-brand-muted">
                                     Start from the tiles below — open <span className="text-brand-muted">Dashboard</span> to expand venture metrics in
                                     this same workspace. The Chief of Staff bar stays fixed underneath; nothing lives in a separate chat page.
                                 </p>
@@ -549,27 +552,27 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     onClick={() => runAgentStaffSync()}
                                     disabled={agentSyncRunning}
                                     title="Run all AI desks: research + merge into market intel, finance notes, directives, kanban, calendar"
-                                    className="inline-flex items-center justify-center gap-2 rounded-lg border border-brand-teal/40 bg-teal-500/15 px-3 py-2 text-xs font-semibold text-brand-teal transition hover:bg-brand-teal/20 disabled:opacity-50"
+                                    className="inline-flex items-center justify-center gap-2 rounded-full bg-white/[0.08] px-4 py-2 text-xs font-medium text-brand-text transition hover:bg-white/[0.12] disabled:opacity-50"
                                 >
                                     <RefreshCw className={`h-3.5 w-3.5 ${agentSyncRunning ? 'animate-spin' : ''}`} aria-hidden />
                                     {agentSyncRunning ? 'Staff syncing…' : 'Sync AI staff'}
                                 </button>
                                 <WorkspaceAiButton label="Dexo AI" />
-                                <div
-                                    className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium text-brand-muted ${systemState.networkStatus === 'secure' ? 'border-brand-border bg-brand-input' : 'border-brand-border bg-brand-input/90'}`}
-                                >
-                                    <Shield className="h-3.5 w-3.5 text-brand-muted" aria-hidden />
-                                    {systemState.networkStatus === 'secure' ? 'Secure' : 'Review'}
-                                </div>
-                                <div className="flex items-center gap-2 rounded-lg border border-brand-border bg-brand-input px-3 py-2 text-xs font-medium text-brand-muted">
-                                    <Clock className="h-3.5 w-3.5 text-brand-muted" aria-hidden />
-                                    {(() => {
-                                        const m = Math.floor((Date.now() - systemState.lastSync) / 60000);
-                                        if (m < 1) return 'Staff sync just now';
-                                        if (m < 120) return `${m}m since staff sync`;
-                                        const h = Math.floor(m / 60);
-                                        return `${h}h since staff sync`;
-                                    })()}
+                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-brand-muted">
+                                    <span className="inline-flex items-center gap-1.5">
+                                        <Shield className="h-3.5 w-3.5 opacity-70" aria-hidden />
+                                        {systemState.networkStatus === 'secure' ? 'Secure' : 'Review'}
+                                    </span>
+                                    <span className="inline-flex items-center gap-1.5">
+                                        <Clock className="h-3.5 w-3.5 opacity-70" aria-hidden />
+                                        {(() => {
+                                            const m = Math.floor((Date.now() - systemState.lastSync) / 60000);
+                                            if (m < 1) return 'Staff sync just now';
+                                            if (m < 120) return `${m}m since staff sync`;
+                                            const h = Math.floor(m / 60);
+                                            return `${h}h since staff sync`;
+                                        })()}
+                                    </span>
                                 </div>
                             </div>
                         </header>
@@ -578,21 +581,21 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             <button
                                 type="button"
                                 onClick={() => openDashboard('dash-staff-snapshot')}
-                                className="group flex w-full flex-col gap-3 rounded-xl border border-brand-teal/25 bg-brand-teal/12 p-6 text-left transition hover:border-brand-teal/40 hover:bg-brand-teal/15 sm:flex-row sm:items-center sm:justify-between"
+                                className="group flex w-full flex-col gap-3 rounded-2xl bg-white/[0.04] p-6 text-left transition hover:bg-white/[0.06] sm:flex-row sm:items-center sm:justify-between"
                             >
                                 <div className="flex min-w-0 items-start gap-3">
-                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-brand-teal/30 bg-teal-950/40">
-                                        <Sparkles className="h-5 w-5 text-teal-400" aria-hidden />
+                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/[0.06]">
+                                        <Sparkles className="h-5 w-5 text-brand-muted" aria-hidden />
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="text-[11px] font-medium text-brand-teal/90">Featured</p>
+                                        <p className="text-[11px] font-medium text-brand-muted">Featured</p>
                                         <h2 className="mt-1 text-base font-semibold text-brand-text">Latest AI staff research</h2>
                                         <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-brand-muted">
                                             {activeProject.agentStaffSnapshot.summary}
                                         </p>
                                     </div>
                                 </div>
-                                <span className="shrink-0 text-sm font-semibold text-brand-teal/90 group-hover:text-teal-100">
+                                <span className="shrink-0 text-sm font-medium text-brand-muted group-hover:text-brand-text">
                                     Open in dashboard →
                                 </span>
                             </button>
@@ -613,10 +616,10 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         setDashboardExpanded((open) => !open);
                                         setPendingScrollId(null);
                                     }}
-                                    className={`flex flex-col items-start gap-4 rounded-xl border p-6 text-left transition ${
+                                    className={`flex flex-col items-start gap-4 rounded-2xl p-6 text-left transition ${
                                         dashboardExpanded
-                                            ? 'border-brand-teal/40 bg-brand-teal/12 ring-1 ring-brand-teal/25'
-                                            : 'border-brand-border bg-brand-panel/60 hover:border-brand-border hover:bg-brand-panel'
+                                            ? 'bg-white/[0.06] ring-1 ring-white/[0.08]'
+                                            : 'bg-white/[0.03] hover:bg-white/[0.05]'
                                     }`}
                                     aria-expanded={dashboardExpanded}
                                 >

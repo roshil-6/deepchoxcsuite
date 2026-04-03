@@ -375,17 +375,27 @@ export function ProductKanban() {
                     )}
 
                     {tool === 'planning' && (
-                        <section className="mx-auto max-w-5xl space-y-3">
-                            <h2 className="text-sm font-semibold text-zinc-300">Planning room</h2>
-                            <p className="text-xs text-zinc-500">
-                                Read-only mirror of the CEO strategy flow. Edit the flow on the CEO desk; it updates here automatically.
-                            </p>
+                        <section className="mx-auto max-w-5xl space-y-4">
+                            <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] px-4 py-3 sm:px-5">
+                                <h2 className="text-sm font-medium text-zinc-200">Planning room · Strategy flow</h2>
+                                <p className="mt-1 text-xs leading-relaxed text-zinc-500">
+                                    Read-only mirror of CEO → Visualise your plan. Edits save with the venture strategy — this view refreshes when
+                                    the flow changes.
+                                </p>
+                                {ceoFlow.nodes.length > 0 ? (
+                                    <p className="mt-2 text-[11px] tabular-nums text-zinc-600">
+                                        {ceoFlow.nodes.length} step{ceoFlow.nodes.length === 1 ? '' : 's'} · {ceoFlow.edges.length} link
+                                        {ceoFlow.edges.length === 1 ? '' : 's'}
+                                    </p>
+                                ) : null}
+                            </div>
                             {ceoFlow.nodes.length === 0 ? (
-                                <p className="rounded-lg border border-dashed border-brand-border px-4 py-8 text-center text-sm text-zinc-600">
+                                <p className="rounded-2xl border border-dashed border-white/[0.08] bg-white/[0.02] px-4 py-10 text-center text-sm text-zinc-500">
                                     No flow yet. Build it under CEO → Visualise your plan.
                                 </p>
                             ) : (
                                 <StrategyFlowCanvas
+                                    key={activeProject.strategy ?? ''}
                                     readOnly
                                     nodes={ceoFlow.nodes}
                                     edges={ceoFlow.edges}

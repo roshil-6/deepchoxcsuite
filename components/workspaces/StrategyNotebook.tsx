@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useOffice } from '@/lib/OfficeContext';
 import {
     Save,
@@ -41,11 +41,20 @@ export function StrategyNotebook() {
     const [memberDraft, setMemberDraft] = useState({ name: '', role: '' });
     const [chatLine, setChatLine] = useState('');
     const timelineBootstrapRef = useRef<Set<number>>(new Set());
+    /** Context exposes a new updateStrategy function each render — do not put it in useCallback deps or effects loop. */
+    const updateStrategyRef = useRef(updateStrategy);
+    updateStrategyRef.current = updateStrategy;
+
+    const strategySyncKey = activeProject?.id ?? null;
+    const strategyRaw = activeProject?.strategy ?? '';
+    const activeProjectRef = useRef(activeProject);
+    activeProjectRef.current = activeProject;
 
     const loadFromProject = useCallback(() => {
-        if (!activeProject) return;
-        const parsed = parseStrategy(activeProject.strategy || '');
-        const id = activeProject.id;
+        const ap = activeProjectRef.current;
+        if (!ap) return;
+        const parsed = parseStrategy(ap.strategy || '');
+        const id = ap.id;
         if (
             id != null &&
             needsTimelineAndFlowBootstrap(parsed) &&
@@ -55,12 +64,12 @@ export function StrategyNotebook() {
             const enriched = enrichLegacyStrategyDoc(parsed);
             setDoc(enriched);
             setIsSaving(true);
-            updateStrategy(serializeStrategy(enriched));
+            updateStrategyRef.current(serializeStrategy(enriched));
             setTimeout(() => setIsSaving(false), 450);
             return;
         }
         setDoc(parsed);
-    }, [activeProject, updateStrategy]);
+    }, [strategySyncKey, strategyRaw]);
 
     useEffect(() => {
         loadFromProject();
@@ -84,6 +93,11 @@ export function StrategyNotebook() {
         'Define your strategic intent in one or two lines.';
 
     const flow = doc.flow || { nodes: [], edges: [] };
+    const flowStats = useMemo(() => {
+        const nodes = flow.nodes ?? [];
+        const edges = flow.edges ?? [];
+        return { steps: nodes.length, links: edges.length };
+    }, [flow.nodes, flow.edges]);
     const phases = doc.phases || [];
     const team = doc.team || { members: [], thread: [] };
 
@@ -254,28 +268,41 @@ export function StrategyNotebook() {
                             />
                         </div>
 
-                        <div className="overflow-hidden rounded-xl border border-zinc-700/90">
-                            <div className="border-b border-zinc-800 bg-zinc-900/40 px-4 py-2.5">
-                                <p className="text-xs font-medium text-zinc-500">Planning surfaces</p>
+                        <div className="space-y-3">
+                            <div className="flex items-baseline justify-between gap-2 px-0.5">
+                                <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-500">Planning surfaces</p>
+                                <p className="text-[10px] text-zinc-600">Updates save to the venture · Product mirrors the flow</p>
                             </div>
-                            <ul className="divide-y divide-zinc-800">
-                                {navItems.map((item) => (
-                                    <li key={item.id}>
-                                        <button
-                                            type="button"
-                                            onClick={() => openSurface(item.id)}
-                                            className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition hover:bg-zinc-800/50"
-                                        >
-                                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-zinc-600 bg-zinc-900/80 text-zinc-400">
-                                                {modeIcon(item.id)}
-                                            </span>
-                                            <span className="min-w-0 flex-1">
-                                                <span className="block text-sm font-medium text-zinc-200">{item.label}</span>
-                                                <span className="mt-0.5 block text-xs text-zinc-500">{item.sub}</span>
-                                            </span>
-                                        </button>
-                                    </li>
-                                ))}
+                            <ul className="grid gap-3">
+                                {navItems.map((item) => {
+                                    const isFlow = item.id === 'flow';
+                                    return (
+                                        <li key={item.id}>
+                                            <button
+                                                type="button"
+                                                onClick={() => openSurface(item.id)}
+                                                className="group flex w-full items-start gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4 text-left transition hover:border-white/[0.1] hover:bg-white/[0.05]"
+                                            >
+                                                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/[0.05] text-zinc-400 transition group-hover:text-zinc-200">
+                                                    {modeIcon(item.id)}
+                                                </span>
+                                                <span className="min-w-0 flex-1">
+                                                    <span className="block text-sm font-medium text-zinc-100">{item.label}</span>
+                                                    <span className="mt-0.5 block text-xs text-zinc-500">{item.sub}</span>
+                                                    {isFlow ? (
+                                                        <span className="mt-2 flex flex-wrap items-center gap-2">
+                                                            <span className="inline-flex items-center rounded-full bg-white/[0.06] px-2.5 py-0.5 text-[10px] font-medium tabular-nums text-zinc-400">
+                                                                {flowStats.steps} step{flowStats.steps === 1 ? '' : 's'} · {flowStats.links}{' '}
+                                                                link{flowStats.links === 1 ? '' : 's'}
+                                                            </span>
+                                                            <span className="text-[10px] text-zinc-600">Live · same graph in Product → Planning</span>
+                                                        </span>
+                                                    ) : null}
+                                                </span>
+                                            </button>
+                                        </li>
+                                    );
+                                })}
                             </ul>
                         </div>
                     </div>
@@ -283,7 +310,7 @@ export function StrategyNotebook() {
             ) : (
                 <>
                     {surfaceToolbar}
-                    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                    <div className="flex min-h-0 min-h-[70vh] flex-1 flex-col overflow-hidden sm:min-h-[75vh]">
                         {tool === 'narrative' && (
                             <section className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden bg-brand-bg p-4 sm:p-6">
                                 <p className="shrink-0 text-xs text-zinc-500">
@@ -299,12 +326,23 @@ export function StrategyNotebook() {
                         )}
 
                         {tool === 'flow' && (
-                            <section className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden bg-brand-bg px-4 pb-4 pt-3 sm:px-6">
-                                <p className="shrink-0 text-xs leading-relaxed text-zinc-500">
-                                    <span className={ceo.accent}>Strategy flow</span> — add steps, arrange them, and draw links between boxes. Drag
-                                    the dot on a line to reshape it. The same graph appears in Product&apos;s planning room.
-                                </p>
-                                <div className="flex min-h-0 flex-1 flex-col">
+                            <section className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-[var(--bg)]">
+                                <div className="shrink-0 border-b border-[var(--border)] px-4 py-3 sm:px-6">
+                                    <div className="flex flex-wrap items-end justify-between gap-3">
+                                        <div className="min-w-0">
+                                            <h3 className="text-sm font-medium text-[var(--text)]">Strategy flow</h3>
+                                            <p className="mt-1 max-w-xl text-xs leading-relaxed text-[var(--muted)]">
+                                                Add steps, drag to arrange, and link between boxes. Drag the mid-line dot to bend. Saved with your
+                                                strategy — the Product desk shows a read-only mirror under Planning.
+                                            </p>
+                                        </div>
+                                        <div className="flex flex-wrap items-center gap-2 text-[11px] text-[var(--muted)]">
+                                            <span className="rounded-full bg-white/[0.06] px-2.5 py-1 tabular-nums">{flow.nodes.length} steps</span>
+                                            <span className="rounded-full bg-white/[0.06] px-2.5 py-1 tabular-nums">{flow.edges.length} links</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex min-h-0 min-h-[55vh] flex-1 flex-col px-4 pb-4 pt-3 sm:min-h-[60vh] sm:px-6">
                                     <StrategyFlowCanvas
                                         expanded
                                         fillHeight

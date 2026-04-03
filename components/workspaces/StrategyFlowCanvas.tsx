@@ -378,8 +378,13 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
 
     const nodeById = (id: string) => nodes.find((n) => n.id === id);
 
+    /** fillHeight: parent is flex column — use a real min-height so the canvas never collapses to a strip */
     const canvasBoxClass =
-        expanded && fillHeight ? 'min-h-0 flex-1' : expanded ? 'min-h-[min(72vh,820px)] flex-1' : 'min-h-[420px]';
+        expanded && fillHeight
+            ? 'min-h-[min(68vh,820px)] flex-1'
+            : expanded
+              ? 'min-h-[min(72vh,820px)] flex-1'
+              : 'min-h-[420px]';
 
     const gradStrokeId = `edge-grad-${safeSvgId}`;
     const markerFillId = `marker-fill-${safeSvgId}`;
@@ -413,27 +418,27 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
                         <button
                             type="button"
                             onClick={addNode}
-                            className="inline-flex items-center gap-2 rounded-lg border border-brand-teal/35 bg-brand-card px-4 py-2 text-xs font-semibold text-zinc-100 shadow-sm shadow-black/20 transition hover:border-brand-teal/55 hover:bg-brand-input"
+                            className="inline-flex items-center gap-2 rounded-full bg-white/[0.08] px-4 py-2 text-xs font-medium text-zinc-100 transition hover:bg-white/[0.12]"
                         >
-                            <Plus className="h-3.5 w-3.5 text-brand-teal" aria-hidden />
+                            <Plus className="h-3.5 w-3.5 text-zinc-400" aria-hidden />
                             Add step
                         </button>
                         <button
                             type="button"
                             onClick={autoLayout}
                             disabled={isEmpty}
-                            className="inline-flex items-center gap-2 rounded-lg border border-brand-border bg-brand-bg px-3 py-2 text-xs font-semibold text-zinc-300 transition hover:border-brand-teal/25 hover:text-brand-teal disabled:cursor-not-allowed disabled:opacity-40"
+                            className="inline-flex items-center gap-2 rounded-full bg-white/[0.04] px-3 py-2 text-xs font-medium text-zinc-400 transition hover:bg-white/[0.08] hover:text-zinc-200 disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             <LayoutGrid className="h-3.5 w-3.5" aria-hidden />
                             Tidy grid
                         </button>
                     </div>
                     <div className="flex flex-wrap items-center gap-3 text-[11px] text-zinc-500">
-                        <span className="inline-flex items-center gap-1.5 rounded-md border border-brand-border bg-brand-panel/80 px-2 py-1 tabular-nums text-zinc-400">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.05] px-2.5 py-1 tabular-nums text-zinc-400">
                             {nodes.length} step{nodes.length === 1 ? '' : 's'}
                         </span>
-                        <span className="inline-flex items-center gap-1.5 rounded-md border border-brand-border bg-brand-panel/80 px-2 py-1 tabular-nums text-zinc-400">
-                            <Link2 className="h-3 w-3 text-brand-purple/90" aria-hidden />
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.05] px-2.5 py-1 tabular-nums text-zinc-400">
+                            <Link2 className="h-3 w-3 opacity-70" aria-hidden />
                             {edges.length} link{edges.length === 1 ? '' : 's'}
                         </span>
                     </div>
@@ -442,27 +447,25 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
 
             {!readOnly && (
                 <p className="text-[11px] leading-relaxed text-zinc-500">
-                    <span className="font-medium text-brand-teal/90">Link:</span> drag from a step&apos;s surface (not the grip or label) onto
-                    another step. <span className="font-medium text-brand-purple/90">Bend:</span> drag the dot mid-line.
+                    <span className="font-medium text-zinc-400">Link</span> — drag from a step&apos;s surface onto another.{' '}
+                    <span className="font-medium text-zinc-400">Bend</span> — drag the dot on the line.
                 </p>
             )}
 
             <div
                 ref={wrapRef}
-                className={`relative w-full cursor-default overflow-hidden rounded-xl border transition-colors duration-300 ${
-                    connectFrom
-                        ? 'border-brand-teal/45 bg-[#0a0d10]'
-                        : 'border-brand-border bg-[#0c1014]'
+                className={`relative w-full cursor-default overflow-hidden rounded-2xl border transition-colors duration-300 ${
+                    connectFrom ? 'border-white/[0.14] bg-white/[0.04]' : 'border-white/[0.06] bg-[#141416]'
                 } ${connectFrom ? 'cursor-crosshair' : ''} ${canvasBoxClass}`}
                 style={{
-                    backgroundImage: `radial-gradient(ellipse 90% 55% at 50% 35%, rgba(45, 226, 211, 0.07), transparent 58%), radial-gradient(ellipse 60% 40% at 80% 80%, rgba(168, 85, 247, 0.05), transparent 50%), linear-gradient(rgba(42,48,54,0.55) 1px, transparent 1px), linear-gradient(90deg, rgba(42,48,54,0.55) 1px, transparent 1px)`,
-                    backgroundSize: '100% 100%, 100% 100%, 32px 32px, 32px 32px',
+                    backgroundImage: `linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)`,
+                    backgroundSize: '28px 28px',
                 }}
             >
                 <div
-                    className="pointer-events-none absolute inset-0 z-[1] opacity-[0.14]"
+                    className="pointer-events-none absolute inset-0 z-[1] opacity-[0.06]"
                     style={{
-                        backgroundImage: `radial-gradient(circle at 1px 1px, rgba(45,226,211,0.4) 1px, transparent 0)`,
+                        backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.35) 1px, transparent 0)`,
                         backgroundSize: '22px 22px',
                     }}
                 />
@@ -470,13 +473,12 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
                 <svg className="pointer-events-none absolute inset-0 z-[2] h-full w-full">
                     <defs>
                         <linearGradient id={gradStrokeId} x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#2de2d3" stopOpacity="1" />
-                            <stop offset="55%" stopColor="#5eead4" stopOpacity="0.95" />
-                            <stop offset="100%" stopColor="#a855f7" stopOpacity="1" />
+                            <stop offset="0%" stopColor="#a1a1aa" stopOpacity="0.95" />
+                            <stop offset="100%" stopColor="#d4d4d8" stopOpacity="0.85" />
                         </linearGradient>
                         <linearGradient id={markerFillId} x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0%" stopColor="#2de2d3" />
-                            <stop offset="100%" stopColor="#a855f7" />
+                            <stop offset="0%" stopColor="#a1a1aa" />
+                            <stop offset="100%" stopColor="#e4e4e7" />
                         </linearGradient>
                         <marker id={markerId} markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto" markerUnits="userSpaceOnUse">
                             <path d="M0,0 L5,2.5 L0,5 Z" fill={`url(#${markerFillId})`} />
@@ -494,10 +496,10 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
                                 <path
                                     d={d}
                                     fill="none"
-                                    stroke="rgba(42,48,54,0.9)"
+                                    stroke="rgba(255,255,255,0.06)"
                                     strokeWidth="0.85"
                                     strokeLinecap="round"
-                                    opacity={0.75}
+                                    opacity={0.9}
                                 />
                                 <path
                                     d={d}
@@ -527,27 +529,24 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
                                 if (t.closest('button') || t.closest('input') || t.closest('textarea')) return;
                                 beginConnect(e, n.id);
                             }}
-                            className={`group/node absolute z-[10] flex items-stretch overflow-hidden rounded-xl border bg-brand-card/95 shadow-lg shadow-black/30 backdrop-blur-sm transition-[box-shadow,transform,border-color] duration-200 will-change-transform ${
+                            className={`group/node absolute z-[10] flex items-stretch overflow-hidden rounded-xl border bg-[var(--surface)]/95 shadow-sm backdrop-blur-sm transition-[box-shadow,transform,border-color] duration-200 will-change-transform ${
                                 isDragging
-                                    ? 'z-[30] scale-[1.02] border-brand-teal/50 shadow-xl shadow-black/40'
+                                    ? 'z-[30] scale-[1.02] border-white/[0.18] shadow-md shadow-black/20'
                                     : isLinkSource
-                                      ? 'border-brand-teal/60'
+                                      ? 'border-white/[0.2]'
                                       : isLinkTarget
-                                        ? 'border-brand-purple/55'
-                                        : 'border-brand-border hover:border-brand-teal/25'
+                                        ? 'border-white/[0.14]'
+                                        : 'border-white/[0.08] hover:border-white/[0.12]'
                             }`}
                             style={{ left: n.x, top: n.y, width: NODE_W, minHeight: NODE_H }}
                         >
-                            <span
-                                className="pointer-events-none absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-brand-teal/80 to-brand-purple/50"
-                                aria-hidden
-                            />
+                            <span className="pointer-events-none absolute left-0 top-0 h-full w-px bg-white/[0.12]" aria-hidden />
                             {!readOnly && (
                                 <button
                                     type="button"
                                     aria-label="Drag to move step"
                                     title="Drag to move"
-                                    className="flex w-8 shrink-0 cursor-grab items-center justify-center border-r border-brand-border bg-brand-bg/80 text-zinc-500 active:cursor-grabbing hover:text-brand-teal"
+                                    className="flex w-8 shrink-0 cursor-grab items-center justify-center border-r border-white/[0.06] bg-white/[0.03] text-zinc-500 active:cursor-grabbing hover:text-zinc-300"
                                     onMouseDown={(e) => onMoveNodeStart(e, n.id)}
                                 >
                                     <GripVertical className="h-4 w-4" aria-hidden />
@@ -562,7 +561,7 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
                             <div className="relative flex min-w-0 flex-1 items-center gap-2 px-2.5 py-2 pl-3">
                                 <label className="sr-only">Step label</label>
                                 {!readOnly && (
-                                    <span className="shrink-0 rounded bg-brand-input px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-brand-teal/90">
+                                    <span className="shrink-0 rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-zinc-400">
                                         {index + 1}
                                     </span>
                                 )}
@@ -601,16 +600,16 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
 
                 {!readOnly && isEmpty && (
                     <div className="pointer-events-none absolute inset-0 z-[25] flex items-center justify-center p-6">
-                        <div className="pointer-events-auto max-w-sm rounded-2xl border border-brand-border bg-brand-panel/95 px-6 py-8 text-center shadow-xl shadow-black/40 backdrop-blur-md">
+                        <div className="pointer-events-auto max-w-sm rounded-2xl border border-white/[0.08] bg-[var(--surface)]/95 px-6 py-8 text-center backdrop-blur-md">
                             <p className="text-sm font-semibold text-zinc-100">Start your strategy flow</p>
                             <p className="mt-2 text-xs leading-relaxed text-zinc-500">
-                                Add steps for each milestone or decision, then link them in order. Use <span className="text-brand-teal">Tidy grid</span>{' '}
+                                Add steps for each milestone or decision, then link them in order. Use <span className="text-zinc-300">Tidy grid</span>{' '}
                                 any time to neaten the canvas.
                             </p>
                             <button
                                 type="button"
                                 onClick={addNode}
-                                className="mt-5 inline-flex items-center justify-center gap-2 rounded-lg border border-brand-teal/40 bg-brand-card px-4 py-2.5 text-xs font-semibold text-brand-teal transition hover:bg-brand-input"
+                                className="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-white/[0.1] px-4 py-2.5 text-xs font-medium text-zinc-100 transition hover:bg-white/[0.14]"
                             >
                                 <Plus className="h-4 w-4" aria-hidden />
                                 Add first step
@@ -638,8 +637,8 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
                                     type="button"
                                     aria-label="Drag to bend line"
                                     title="Bend line"
-                                    className={`pointer-events-auto absolute h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-brand-teal bg-[#0c1014] shadow-md shadow-black/30 transition hover:scale-110 hover:border-brand-purple/80 focus:outline-none focus:ring-2 focus:ring-brand-purple/35 ${
-                                        isActive ? 'scale-125 cursor-grabbing ring-2 ring-brand-purple/50' : 'cursor-grab'
+                                    className={`pointer-events-auto absolute h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-zinc-500 bg-[#141416] shadow-sm transition hover:scale-110 hover:border-zinc-400 focus:outline-none focus:ring-2 focus:ring-white/15 ${
+                                        isActive ? 'scale-125 cursor-grabbing ring-2 ring-white/20' : 'cursor-grab'
                                     }`}
                                     style={{ left: hx, top: hy }}
                                     onMouseDown={(ev) => {
@@ -661,11 +660,11 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
                     {edges.map((e, i) => (
                         <div
                             key={i}
-                            className="inline-flex max-w-full items-center gap-2 rounded-full border border-brand-border bg-brand-panel/90 px-3 py-1 text-[11px] text-zinc-400"
+                            className="inline-flex max-w-full items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1 text-[11px] text-zinc-400"
                         >
                             <span className="min-w-0 truncate text-zinc-300">
                                 {nodeById(e.from)?.label || e.from}
-                                <span className="mx-1 text-brand-teal/80">→</span>
+                                <span className="mx-1 text-zinc-500">→</span>
                                 {nodeById(e.to)?.label || e.to}
                             </span>
                             {!readOnly && (

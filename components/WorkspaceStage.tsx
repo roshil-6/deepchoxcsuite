@@ -47,7 +47,14 @@ function workspaceTitle(room: string) {
     return WORKSPACE_TITLES[room] ?? 'Workspace';
 }
 
-export function WorkspaceStage({ onNewVenture }: { onNewVenture?: () => void }) {
+export function WorkspaceStage({
+    onNewVenture,
+    hideWorkspaceHeader,
+}: {
+    onNewVenture?: () => void;
+    /** Hide the built-in room title row when the app shell provides a global header */
+    hideWorkspaceHeader?: boolean;
+}) {
     const { activeRoom } = useOffice();
     const shell = getWorkspaceShellTheme(activeRoom);
 
@@ -129,7 +136,7 @@ export function WorkspaceStage({ onNewVenture }: { onNewVenture?: () => void }) 
                         : 'relative z-10 flex min-h-0 flex-1 flex-col py-3 animate-in fade-in duration-300 sm:py-4'
                 }
             >
-                {!shell.immersive && (
+                {!shell.immersive && !hideWorkspaceHeader && (
                     <header className="mb-3 flex shrink-0 items-center justify-between gap-3">
                         <h1 className="text-[15px] font-medium tracking-tight text-brand-text">{workspaceTitle(activeRoom)}</h1>
                         <div className="flex items-center gap-1 sm:gap-2">

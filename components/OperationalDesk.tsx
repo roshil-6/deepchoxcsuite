@@ -1,9 +1,48 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { MiniChat } from './MiniChat';
-import { GripVertical, MessageSquare, Bell } from 'lucide-react';
+import { GripVertical, MessageSquare, Bell, RefreshCw } from 'lucide-react';
 import { useOffice, type AgentRole } from '@/lib/OfficeContext';
+import { useHfRoleSync, type HfDeskRole } from '@/lib/useHfRoleSync';
+
+function hfRoleForRoom(room: string): HfDeskRole | null {
+    const m: Record<string, HfDeskRole> = {
+        ceo: 'ceo',
+        pm: 'cto',
+        accountant: 'cfo',
+        scout: 'cso',
+        cmo: 'cmo',
+    };
+    return m[room] ?? null;
+}
+
+function HfDeskSyncStrip({ room }: { room: string }) {
+    const hfRole = useMemo(() => hfRoleForRoom(room), [room]);
+    const { syncing, syncResult, setSyncResult, syncRole } = useHfRoleSync();
+    if (!hfRole) return null;
+    return (
+        <div className="shrink-0 border-b border-brand-border bg-brand-bg/90 px-4 py-2">
+            <div className="flex flex-wrap items-center gap-2">
+                <button
+                    type="button"
+                    disabled={syncing}
+                    onClick={() => {
+                        setSyncResult(null);
+                        void syncRole(hfRole);
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-brand-border bg-brand-card px-2.5 py-1.5 text-[11px] font-medium text-brand-text hover:bg-brand-input disabled:opacity-50"
+                >
+                    <RefreshCw className={`h-3.5 w-3.5 ${syncing ? 'animate-spin' : ''}`} aria-hidden />
+                    {syncing ? 'Syncing…' : 'Desk sync (HF)'}
+                </button>
+            </div>
+            {syncResult ? (
+                <p className="mt-2 max-h-32 overflow-y-auto text-[11px] leading-relaxed text-brand-muted">{syncResult}</p>
+            ) : null}
+        </div>
+    );
+}
 
 export function OperationalDesk({
     children,
@@ -22,6 +61,7 @@ export function OperationalDesk({
     if (hideSideChat) {
         return (
             <div className="relative flex h-full w-full flex-col overflow-hidden bg-brand-bg">
+                <HfDeskSyncStrip room={activeRoom} />
                 {waiting.length > 0 && (
                     <div className="shrink-0 border-b border-brand-border bg-brand-panel/85 px-4 py-2.5">
                         <div className="flex items-start gap-2">
@@ -52,6 +92,7 @@ export function OperationalDesk({
     return (
         <div className="group/desk relative flex h-full w-full overflow-hidden bg-brand-bg">
             <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-brand-bg">
+                <HfDeskSyncStrip room={activeRoom} />
                 {waiting.length > 0 && (
                     <div className="shrink-0 border-b border-brand-border bg-brand-panel/85 px-4 py-2.5">
                         <div className="flex items-start gap-2">

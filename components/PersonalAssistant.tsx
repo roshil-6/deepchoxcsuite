@@ -3,13 +3,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useOffice } from '@/lib/OfficeContext';
 import { parseStrategy } from '@/lib/strategyDoc';
-import {
-    mergeProjectWithPAUpdates,
-    projectPayloadForPA,
-    summarizeAppliedUpdates,
-    type PersonalAssistantUpdates,
-} from '@/lib/paApplyUpdates';
-import { getAllProjects, saveProject } from '@/lib/db';
 import { isVentureUnsettled, PA_WELCOME_MESSAGE } from '@/lib/ventureSetupState';
 import { ArrowUp, Bot, ClipboardList, FileUp, Lightbulb, Mic } from 'lucide-react';
 
@@ -29,7 +22,7 @@ function isOtherFollowUpLabel(s: string): boolean {
 }
 
 export function PersonalAssistant() {
-    const { activeProject, switchRoom, setActiveProject, setAllProjects } = useOffice();
+    const { activeProject, switchRoom } = useOffice();
     const [messages, setMessages] = useState<Msg[]>([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
@@ -204,64 +197,60 @@ export function PersonalAssistant() {
         setLoading(true);
 
         try {
-            const conversation = [
-                ...messages.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
-                { role: 'user' as const, content: modelUserContent },
-            ];
-
-            const response = await fetch('/api/personal-assistant', {
+            const res = await fetch('/api/ai', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    project: projectPayloadForPA(activeProject),
-                    conversation,
+                    role: 'assistant',
+                    message: modelUserContent,
+                    companyContext:
+                        'Early stage startup, solo founder, building AI C-suite platform called DeepChox',
                 }),
             });
-            const data = await response.json();
-            if (!data.ok) {
+            const data = await res.json();
+            if (!res.ok) {
                 const err =
-                    typeof data.error === 'string'
-                        ? data.error
-                        : 'Personal Assistant unavailable. Set GROQ_API_KEY on the server.';
+                    typeof data.details === 'string'
+                        ? data.details
+                        : typeof data.error === 'string'
+                          ? data.error
+                          : 'Personal Assistant unavailable.';
                 setMessages((prev) => [
                     ...prev,
                     { id: (Date.now() + 1).toString(), role: 'assistant', content: err, ts: Date.now() },
                 ]);
                 return;
             }
-
-            let assistantContent = typeof data.reply === 'string' ? data.reply : '';
-            const followUpOptions = Array.isArray(data.followUpOptions)
-                ? (data.followUpOptions as unknown[]).filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
-                : [];
-            const updates = data.updates as PersonalAssistantUpdates | undefined;
-            if (updates && Object.keys(updates).length > 0) {
-                const merged = mergeProjectWithPAUpdates(activeProject, updates);
-                await saveProject(merged);
-                setActiveProject(merged);
-                const list = await getAllProjects();
-                setAllProjects(list);
-                assistantContent += summarizeAppliedUpdates(updates);
+            if (data.loading) {
+                setMessages((prev) => [
+                    ...prev,
+                    {
+                        id: (Date.now() + 1).toString(),
+                        role: 'assistant',
+                        content: 'AI is warming up, please wait 20 seconds and try again.',
+                        ts: Date.now(),
+                    },
+                ]);
+            } else {
+                const text =
+                    typeof data.response === 'string' ? data.response : 'No response generated.';
+                setMessages((prev) => [
+                    ...prev,
+                    {
+                        id: (Date.now() + 1).toString(),
+                        role: 'assistant',
+                        content: text,
+                        ts: Date.now(),
+                    },
+                ]);
             }
-
-            setMessages((prev) => [
-                ...prev,
-                {
-                    id: (Date.now() + 1).toString(),
-                    role: 'assistant',
-                    content: assistantContent || 'Done.',
-                    ts: Date.now(),
-                    ...(followUpOptions.length ? { followUpOptions } : {}),
-                },
-            ]);
         } catch {
             setMessages((prev) => [
                 ...prev,
                 {
                     id: Date.now().toString(),
                     role: 'assistant',
-                    content:
-                        'Connection error. Ensure the app is running with GROQ_API_KEY (e.g. on Render) for Personal Assistant actions.',
+                    content: 'Something went wrong. Please try again.',
                     ts: Date.now(),
                 },
             ]);
@@ -387,7 +376,7 @@ export function PersonalAssistant() {
                                 <div
                                     className={`max-w-[min(100%,720px)] px-3.5 py-2.5 text-sm leading-relaxed sm:px-4 sm:py-3 ${
                                         m.role === 'user'
-                                            ? 'rounded-2xl rounded-br-md bg-brand-teal/[0.12] text-brand-text ring-1 ring-white/[0.08]'
+                                            ? 'rounded-2xl rounded-br-md bg-white/[0.06] text-brand-text ring-1 ring-white/[0.08]'
                                             : 'rounded-2xl rounded-bl-md bg-white/[0.04] text-brand-text/95 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] ring-1 ring-white/[0.06]'
                                     }`}
                                 >
@@ -429,8 +418,8 @@ export function PersonalAssistant() {
                                                                 }}
                                                                 className={`rounded-full px-3 py-2 text-left text-[12px] font-medium leading-snug ring-1 transition-colors disabled:opacity-40 ${
                                                                     selected
-                                                                        ? 'bg-brand-teal/25 text-brand-text ring-brand-teal/50'
-                                                                        : 'bg-brand-teal/[0.08] text-brand-text ring-brand-teal/25 hover:bg-brand-teal/15'
+                                                                        ? 'bg-white/[0.12] text-brand-text ring-white/[0.2]'
+                                                                        : 'bg-white/[0.05] text-brand-text ring-white/[0.08] hover:bg-white/[0.08]'
                                                                 }`}
                                                             >
                                                                 {opt}
@@ -452,7 +441,7 @@ export function PersonalAssistant() {
                                                                 setFollowUpSelection(new Set());
                                                                 sendMessage(combined);
                                                             }}
-                                                            className="rounded-full bg-brand-teal/90 px-3 py-1.5 text-[11px] font-semibold text-[#131314] transition-colors hover:bg-brand-teal disabled:opacity-40"
+                                                            className="rounded-full bg-zinc-300 px-3 py-1.5 text-[11px] font-semibold text-[#131314] transition-colors hover:bg-zinc-200 disabled:opacity-40"
                                                         >
                                                             Send selected ({followUpSelection.size})
                                                         </button>
@@ -491,7 +480,7 @@ export function PersonalAssistant() {
                 {/* Bottom dock — pinned to viewport bottom of this column (studio-style) */}
                 <div className="shrink-0 border-t border-white/[0.05] bg-gradient-to-t from-brand-bg via-brand-bg/98 to-transparent px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 sm:px-5 sm:pb-5">
                     <div className="mx-auto max-w-3xl">
-                        <div className="relative rounded-3xl bg-white/[0.04] shadow-[0_12px_48px_rgba(0,0,0,0.28)] ring-1 ring-white/[0.08] backdrop-blur-md focus-within:ring-brand-teal/30">
+                        <div className="relative rounded-3xl bg-white/[0.04] shadow-[0_12px_48px_rgba(0,0,0,0.28)] ring-1 ring-white/[0.08] backdrop-blur-md focus-within:ring-white/[0.12]">
                             <div className="relative">
                                 <textarea
                                     ref={textareaRef}
@@ -512,7 +501,7 @@ export function PersonalAssistant() {
                                     type="button"
                                     onClick={() => sendMessage(input)}
                                     disabled={loading || !input.trim()}
-                                    className="absolute bottom-2.5 right-2.5 flex h-9 w-9 items-center justify-center rounded-2xl bg-brand-teal text-[#131314] shadow-md shadow-black/20 transition-colors hover:bg-brand-teal/90 disabled:opacity-40"
+                                    className="absolute bottom-2.5 right-2.5 flex h-9 w-9 items-center justify-center rounded-2xl bg-zinc-300 text-[#131314] shadow-md shadow-black/20 transition-colors hover:bg-zinc-200 disabled:opacity-40"
                                     aria-label="Send"
                                 >
                                     <ArrowUp className="h-4 w-4" />

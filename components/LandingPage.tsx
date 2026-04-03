@@ -172,19 +172,19 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                 {/* Above-the-fold hero — Google AI Studio–style stack (fits in one viewport) */}
                 <section className="flex min-h-[calc(100dvh-3.75rem)] shrink-0 flex-col items-center justify-center px-4 py-4 sm:px-6 sm:py-6 lg:px-10">
                     <div className="mx-auto flex w-full max-w-[min(100%,72rem)] flex-col items-center text-center lg:max-w-[min(100%,80rem)]">
-                        {/* Wordmark — no logo; accent matches --color-brand-teal (blue) */}
+                        {/* Wordmark — no logo; neutral grey accent */}
                         <div className="flex w-full justify-center px-1">
                             <div className="flex w-full max-w-xl flex-col items-center text-center sm:max-w-2xl lg:max-w-3xl">
                                 <p className="font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-brand-teal sm:text-[11px]">
                                     Virtual C-Suite
                                 </p>
                                 <span
-                                    className="mt-2 font-[family-name:var(--font-brand-display)] text-[clamp(2.5rem,8vw,4.5rem)] font-semibold leading-[1.02] tracking-[-0.02em] text-white [text-shadow:0_2px_40px_rgba(0,0,0,0.5),0_0_72px_rgba(138,180,248,0.14)]"
+                                    className="mt-2 font-[family-name:var(--font-brand-display)] text-[clamp(2.5rem,8vw,4.5rem)] font-semibold leading-[1.02] tracking-[-0.02em] text-white [text-shadow:0_2px_40px_rgba(0,0,0,0.5),0_0_48px_rgba(255,255,255,0.04)]"
                                 >
                                     DeepChox
                                 </span>
                                 <span
-                                    className="mt-3 block h-px w-12 bg-gradient-to-r from-brand-teal/85 to-transparent"
+                                    className="mt-3 block h-px w-12 bg-gradient-to-r from-white/30 to-transparent"
                                     aria-hidden
                                 />
                                 <p className="mt-4 max-w-[22rem] font-sans text-[14px] font-normal leading-[1.55] text-zinc-400 sm:max-w-[26rem] sm:text-[15px] sm:leading-relaxed">

@@ -32,9 +32,9 @@ export function DailySyncBanner() {
   };
 
   return (
-    <div className="pointer-events-auto flex shrink-0 items-center justify-between gap-3 border-b border-brand-border bg-brand-panel/80 px-4 py-2.5 sm:px-5">
+    <div className="pointer-events-auto flex shrink-0 items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--bg)] px-4 py-2.5 sm:px-5">
       <p className="min-w-0 text-[12px] leading-snug text-brand-text/95">
-        <span className="font-medium text-brand-teal">Daily staff check-in:</span>{' '}
+        <span className="font-medium text-[var(--text)]">Daily staff check-in:</span>{' '}
         run sync for fresh analysis and “focus today” — your desks will queue notifications for you.
       </p>
       <div className="flex shrink-0 items-center gap-2">

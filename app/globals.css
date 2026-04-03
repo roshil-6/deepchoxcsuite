@@ -1,26 +1,39 @@
 
 @import "tailwindcss";
 
+/* Single warm charcoal canvas — sidebar, center, and rails read as one surface */
+:root {
+  --bg: #131314;
+  --surface: #161618;
+  --surface-soft: #1c1c1f;
+  --border: rgba(255, 255, 255, 0.06);
+  --text: #f5f7fa;
+  --muted: #a0a7b4;
+  /* Neutral executive grey — no blue cast */
+  --accent: #c4c9d4;
+  --accent-soft: rgba(196, 201, 212, 0.12);
+}
+
 @theme {
-  /* Google AI Studio–like dark: flat layers, hairline edges, blue accent (no heavy chrome) */
+  /* Same hue as :root --bg/--surface (no blue cast on rails) */
   --color-brand-bg: #131314;
-  --color-brand-panel: #1e1e1e;
-  --color-brand-card: #2d2d2d;
-  --color-brand-input: #303134;
+  --color-brand-panel: #161618;
+  --color-brand-card: #1e1e21;
+  --color-brand-input: #242428;
   --color-brand-text: #e8eaed;
   --color-brand-muted: #9aa0a6;
-  --color-brand-teal: #8ab4f8;
-  --color-brand-purple: #669df6;
+  --color-brand-teal: #c4c9d4;
+  --color-brand-purple: #9ca3af;
   /* Single hairline — surfaces differ by fill, not thick outlines */
   --color-brand-border: rgba(255, 255, 255, 0.065);
 
   --color-office-bg: #131314;
-  --color-office-card: #2d2d2d;
+  --color-office-card: #1e1e21;
   --color-office-border: rgba(255, 255, 255, 0.065);
   --color-office-text: #e8eaed;
   --color-office-text-dim: #9aa0a6;
-  --color-office-accent: #8ab4f8;
-  --color-office-accent-muted: rgba(138, 180, 248, 0.12);
+  --color-office-accent: #c4c9d4;
+  --color-office-accent-muted: rgba(196, 201, 212, 0.12);
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-playfair), ui-serif, Georgia, "Times New Roman", serif;
@@ -53,7 +66,7 @@
   }
 
   ::selection {
-    background: rgba(138, 180, 248, 0.35);
+    background: rgba(196, 201, 212, 0.35);
     color: #0a0a0a;
   }
 
@@ -158,8 +171,8 @@
   }
 
   .input-office:focus {
-    border-color: rgba(138, 180, 248, 0.35);
-    box-shadow: 0 0 0 1px rgba(138, 180, 248, 0.14);
+    border-color: rgba(255, 255, 255, 0.14);
+    box-shadow: none;
   }
 
   .textarea-office {
@@ -194,7 +207,7 @@
   }
 
   .card-glass:hover {
-    border-color: rgba(138, 180, 248, 0.22);
+    border-color: rgba(255, 255, 255, 0.12);
     box-shadow: none;
   }
 
