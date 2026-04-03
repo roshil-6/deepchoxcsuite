@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useOffice } from '@/lib/OfficeContext';
 import {
     Save,
@@ -18,6 +18,7 @@ import {
 import type { ProjectEvent } from '@/lib/db';
 import type { StrategyDoc } from '@/lib/strategyDoc';
 import { parseStrategy, serializeStrategy } from '@/lib/strategyDoc';
+import { enrichLegacyStrategyDoc, needsTimelineAndFlowBootstrap } from '@/lib/defaultStrategyTimeline';
 import { ceo } from '@/lib/ceoTheme';
 import { StrategyFlowCanvas } from '@/components/workspaces/StrategyFlowCanvas';
 import { TimelinePhaseSetter } from '@/components/workspaces/TimelinePhaseSetter';
@@ -39,11 +40,27 @@ export function StrategyNotebook() {
     const [calType, setCalType] = useState<ProjectEvent['type']>('milestone');
     const [memberDraft, setMemberDraft] = useState({ name: '', role: '' });
     const [chatLine, setChatLine] = useState('');
+    const timelineBootstrapRef = useRef<Set<number>>(new Set());
 
     const loadFromProject = useCallback(() => {
         if (!activeProject) return;
-        setDoc(parseStrategy(activeProject.strategy || ''));
-    }, [activeProject]);
+        const parsed = parseStrategy(activeProject.strategy || '');
+        const id = activeProject.id;
+        if (
+            id != null &&
+            needsTimelineAndFlowBootstrap(parsed) &&
+            !timelineBootstrapRef.current.has(id)
+        ) {
+            timelineBootstrapRef.current.add(id);
+            const enriched = enrichLegacyStrategyDoc(parsed);
+            setDoc(enriched);
+            setIsSaving(true);
+            updateStrategy(serializeStrategy(enriched));
+            setTimeout(() => setIsSaving(false), 450);
+            return;
+        }
+        setDoc(parsed);
+    }, [activeProject, updateStrategy]);
 
     useEffect(() => {
         loadFromProject();

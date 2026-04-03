@@ -18,7 +18,7 @@ export function isVentureUnsettled(p: Project): boolean {
     const doc = parseStrategy(s);
     if (doc.strategicIntent?.trim() || doc.vision?.trim() || doc.content?.trim()) return false;
     if (doc.priorities && doc.priorities.length > 0) return false;
-    if (doc.phases && doc.phases.length > 0) return false;
+    /** Timeline phases / flow can be auto-seeded — they do not alone mean onboarding is complete. */
     return true;
 }
 

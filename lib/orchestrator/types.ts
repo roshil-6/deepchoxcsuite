@@ -69,4 +69,6 @@ export interface ExecutiveLoopState {
     conflicts: ConflictReport[];
     finalized: boolean;
     finalOutput?: string;
+    /** Unified impact layer: desk routing from CFO signal (optional). */
+    recommendedDeskRoute?: string[];
 }

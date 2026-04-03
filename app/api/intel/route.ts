@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { XMLParser } from 'fast-xml-parser';
+import { intelLegacyLabelFromTitle, intelTitleToImpactResult } from '@/lib/impact/adapters/intelAdapter';
 
 export async function POST(req: Request) {
     try {
@@ -28,13 +29,15 @@ export async function POST(req: Request) {
                 source = sourceMatch[2];
             }
 
+            const legacyImpact = intelLegacyLabelFromTitle(title);
             return {
                 title: title,
                 source: source,
                 time: new Date(item.pubDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 link: item.link,
-                impact: calculateImpact(title), // Simulated impact analysis
-                type: categorizeNews(title)
+                impact: legacyImpact,
+                impactResult: intelTitleToImpactResult(title, source),
+                type: categorizeNews(title),
             };
         });
 
@@ -44,19 +47,6 @@ export async function POST(req: Request) {
         console.error('Intel Feed Error:', error);
         return NextResponse.json({ items: [] }, { status: 500 });
     }
-}
-
-function calculateImpact(title: string): 'Critical' | 'High' | 'Medium' | 'Low' {
-    const criticalKeywords = ['funding', 'acquisition', 'lawsuit', 'regulations', 'breach', 'security', 'collapse'];
-    const highKeywords = ['launch', 'partnership', 'growth', 'revenue', 'record', 'new feature'];
-    const mediumKeywords = ['update', 'release', 'hire', 'change'];
-
-    const lowerTitle = title.toLowerCase();
-
-    if (criticalKeywords.some(k => lowerTitle.includes(k))) return 'Critical';
-    if (highKeywords.some(k => lowerTitle.includes(k))) return 'High';
-    if (mediumKeywords.some(k => lowerTitle.includes(k))) return 'Medium';
-    return 'Low';
 }
 
 function categorizeNews(title: string): 'funding' | 'legal' | 'market' | 'tech' | 'general' {

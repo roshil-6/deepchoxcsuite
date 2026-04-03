@@ -1,12 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useOffice } from '@/lib/OfficeContext';
-import { ShieldAlert, Activity, TrendingUp, Zap, BarChart4, Play } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { ShieldAlert, Play } from 'lucide-react';
+import { aggregateImpact, getAffectedDesks } from '@/lib/impact/impactEngine';
+import { wargameStatsToImpactResult } from '@/lib/impact/adapters/wargameAdapter';
 
 export function WargameNexus() {
-    const { activeProject } = useOffice();
-
     // Stats (0-100)
     const [stats, setStats] = useState({
         resilience: 75,
@@ -17,6 +16,9 @@ export function WargameNexus() {
 
     const [isSimulating, setIsSimulating] = useState(false);
     const [log, setLog] = useState<string[]>([]);
+
+    const unifiedImpact = useMemo(() => aggregateImpact([wargameStatsToImpactResult(stats)]), [stats]);
+    const wargameDesks = useMemo(() => getAffectedDesks(unifiedImpact), [unifiedImpact]);
 
     const runSimulation = () => {
         setIsSimulating(true);
@@ -72,8 +74,13 @@ export function WargameNexus() {
                     <ShieldAlert className="h-6 w-6 animate-pulse text-violet-400" />
                     <h1 className="text-2xl font-bold uppercase tracking-widest text-violet-300">Wargame Nexus</h1>
                 </div>
-                <div className="rounded border border-brand-border bg-brand-panel/90 px-3 py-1 text-xs text-brand-muted">
-                    SIMULATION STATUS: {isSimulating ? "RUNNING" : "IDLE"}
+                <div className="flex flex-col items-end gap-1 text-right">
+                    <div className="rounded border border-brand-border bg-brand-panel/90 px-3 py-1 text-xs text-brand-muted">
+                        SIMULATION STATUS: {isSimulating ? 'RUNNING' : 'IDLE'}
+                    </div>
+                    <p className="max-w-[14rem] text-[10px] leading-snug text-zinc-500">
+                        Impact core: {unifiedImpact.severity} · {wargameDesks.join(', ') || '—'}
+                    </p>
                 </div>
             </div>
 
@@ -125,8 +132,12 @@ export function WargameNexus() {
                         </div>
                     ))}
                     {!isSimulating && log.length > 0 && (
-                        <div className="mt-4 border-t border-zinc-800 pt-2 text-zinc-500">
-                            Simulation Complete. Report saved.
+                        <div className="mt-4 space-y-2 border-t border-zinc-800 pt-2 text-zinc-500">
+                            <p>Simulation Complete. Report saved.</p>
+                            <p className="text-[10px] leading-relaxed text-zinc-400">
+                                Unified impact: {unifiedImpact.severity} · desks {wargameDesks.join(', ') || '—'} · escalation{' '}
+                                {unifiedImpact.requiresEscalation ? 'yes' : 'no'}
+                            </p>
                         </div>
                     )}
                 </div>

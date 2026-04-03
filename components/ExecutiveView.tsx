@@ -339,6 +339,13 @@ export function ExecutiveView() {
                                 </div>
                             )}
 
+                            {loopState?.recommendedDeskRoute && loopState.recommendedDeskRoute.length > 0 && (
+                                <div className="mb-5 rounded-xl border border-brand-border/50 bg-brand-bg/50 px-4 py-3 text-[12px] text-brand-muted">
+                                    <span className="font-medium text-brand-text">Impact desk route: </span>
+                                    {loopState.recommendedDeskRoute.join(', ')}
+                                </div>
+                            )}
+
                             {loopState ? (
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                                     {ROLE_ORDER.map((role) => {

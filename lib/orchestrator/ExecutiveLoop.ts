@@ -1,8 +1,9 @@
-import { ExecutiveLoopState, ExecutiveRole } from './types';
+import { ExecutiveLoopState, ExecutiveRole, type CFOResponse } from './types';
 import { ContextBuilder } from './ContextBuilder';
 import { invokeAgent } from './AgentFunction';
 import { ConflictEngine } from './ConflictEngine';
 import { Project } from '../db';
+import { deskRoutingFromCfo } from '@/lib/impact/orchestratorBridge';
 
 export class ExecutiveLoop {
     private project: Project;
@@ -15,7 +16,8 @@ export class ExecutiveLoop {
             iteration: 0,
             responses: { CEO: null, CFO: null, CMO: null, CTO: null, CSO: null },
             conflicts: [],
-            finalized: false
+            finalized: false,
+            recommendedDeskRoute: undefined,
         };
     }
 
@@ -45,6 +47,9 @@ export class ExecutiveLoop {
                 this.state.responses[r.role] = r.response;
             }
         });
+
+        const cfo = this.state.responses['CFO'] as CFOResponse | undefined;
+        this.state.recommendedDeskRoute = cfo ? deskRoutingFromCfo(cfo) : undefined;
 
         // Conflict Detection
         const conflict = ConflictEngine.analyze(this.state.responses);

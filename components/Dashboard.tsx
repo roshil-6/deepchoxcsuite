@@ -36,6 +36,8 @@ import {
     Cell,
     Legend,
 } from 'recharts';
+import { aggregateImpact, getAffectedDesks } from '@/lib/impact/impactEngine';
+import { fromExecutionScore } from '@/lib/impact/adapters/dashboardAdapter';
 
 /**
  * Recharts Tooltip defaults omit cursor.fill, so the hover rectangle uses a light gray/white band
@@ -153,6 +155,12 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
         const raw = (intentW + narW + phaseW + priW) / 4;
         return Math.round(raw * 1000) / 10;
     }, [hasIntent, narrativeRich, phaseDone, phaseTotal, priDone, priTotal]);
+
+    const businessImpact = useMemo(
+        () => aggregateImpact([fromExecutionScore(executionScore)]),
+        [executionScore]
+    );
+    const impactDeskRoute = useMemo(() => getAffectedDesks(businessImpact), [businessImpact]);
 
     /** Same inputs as execution score — shown as bars (snapshot, not a time series). */
     const executionBreakdown = useMemo(
@@ -805,6 +813,19 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     <p className="mt-1 font-serif text-2xl font-semibold tabular-nums text-brand-text">{executionScore}%</p>
                                     <p className="mt-1 text-[10px] leading-snug text-brand-muted">
                                         Heuristic checklist index (0–100), not revenue or financial performance.
+                                    </p>
+                                    <p className="mt-2 text-[10px] leading-snug text-brand-muted/90">
+                                        Decision layer: severity{' '}
+                                        <span className="font-medium text-brand-text/90">{businessImpact.severity}</span>
+                                        {businessImpact.requiresEscalation ? (
+                                            <span className="text-amber-400/90"> · escalation suggested</span>
+                                        ) : null}
+                                        {impactDeskRoute.length ? (
+                                            <>
+                                                {' '}
+                                                · desks: {impactDeskRoute.join(', ')}
+                                            </>
+                                        ) : null}
                                     </p>
                                 </div>
                             </div>

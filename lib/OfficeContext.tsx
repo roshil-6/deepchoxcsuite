@@ -23,6 +23,7 @@ import {
 } from './agentStaffTypes';
 import { Target, ClipboardList, Calculator, ScanSearch, LayoutDashboard, Bot, Gavel, Megaphone } from 'lucide-react';
 import { EXEC_OUTPUT_ROLES } from '@/lib/execOutputFormats';
+import { emptyVentureShell } from '@/lib/minimalVenture';
 
 const EO = Object.fromEntries(EXEC_OUTPUT_ROLES.map((r) => [r.id, r])) as Record<
   (typeof EXEC_OUTPUT_ROLES)[number]['id'],
@@ -440,25 +441,12 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
   };
 
   /**
-   * Create a new blank project
+   * Create a new blank project (timeline + flow prefilled via `emptyVentureShell`).
    */
   const createNewProject = () => {
+    const shell = emptyVentureShell(`Project ${new Date().toLocaleDateString()}`);
     const newProject: Project = {
-      name: `Project ${new Date().toLocaleDateString()}`,
-      onboardingData: '',
-      strategy: '',
-      productPlan: '',
-      budget: '',
-      marketInsights: '',
-      userNotes: '',
-      teamDirectives: '',
-      journal: [],
-      events: [],
-      files: [], // Init empty files
-      orgStructure: [],
-      kanban: [],
-      diary: [],
-      deskDocuments: [],
+      ...shell,
       timestamp: Date.now(),
     };
     setActiveProjectState(newProject);

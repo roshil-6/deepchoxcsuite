@@ -1,4 +1,4 @@
-interface OnboardingData {
+export interface OnboardingData {
     projectName: string;
     problemStatement: string;
     targetAudience: string;
@@ -18,18 +18,18 @@ interface StrategyPlan {
     actionItems: ActionItem[];
 }
 
-interface RoadmapItem {
+export interface RoadmapItem {
     quarter: string;
     milestones: string[];
 }
 
-interface ActionItem {
+export interface ActionItem {
     title: string;
     priority: 'High' | 'Medium' | 'Low';
     timeline: string;
 }
 
-interface CompetitorAnalysis {
+export interface CompetitorAnalysis {
     name: string;
     strengths: string[];
     weaknesses: string[];
@@ -37,7 +37,7 @@ interface CompetitorAnalysis {
     threats: string[];
 }
 
-interface MarketIntelligence {
+export interface MarketIntelligence {
     competitors: CompetitorAnalysis[];
     marketTrends: string[];
     opportunities: string[];
@@ -46,20 +46,20 @@ interface MarketIntelligence {
     weaknesses: string[];
 }
 
-interface FinancialAnalysis {
+export interface FinancialAnalysis {
     expenses: ExpenseBreakdown;
     revenue: RevenueProjection;
     scalingAnalysis: ScalingAnalysis;
     metrics: FinancialMetrics;
 }
 
-interface ExpenseBreakdown {
+export interface ExpenseBreakdown {
     startup: ExpenseItem[];
     monthly: ExpenseItem[];
     total: number;
 }
 
-interface ExpenseItem {
+export interface ExpenseItem {
     category: string;
     amount: number;
     description: string;
@@ -72,25 +72,25 @@ interface RevenueProjection {
     breakEvenMonth: number;
 }
 
-interface ScalingAnalysis {
+export interface ScalingAnalysis {
     score: number;
     stages: ScalingStage[];
     capitalRequirements: CapitalRequirement[];
 }
 
-interface ScalingStage {
+export interface ScalingStage {
     name: string;
     userRange: string;
     requirements: string[];
 }
 
-interface CapitalRequirement {
+export interface CapitalRequirement {
     stage: string;
     amount: number;
     purpose: string;
 }
 
-interface FinancialMetrics {
+export interface FinancialMetrics {
     burnRate: number;
     runway: number;
     cac: number;
@@ -98,7 +98,7 @@ interface FinancialMetrics {
     grossMargin: number;
 }
 
-interface AnalysisResult {
+export interface AnalysisResult {
     strategy: StrategyPlan;
     market: MarketIntelligence;
     financial: FinancialAnalysis;
