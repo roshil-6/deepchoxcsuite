@@ -192,6 +192,7 @@ export function ProductKanban() {
             <div className="flex min-h-0 min-w-0 flex-1 flex-col">
                 <DeskShell
                     className="min-h-0 flex-1"
+                    bodyClassName="pb-8"
                     eyebrow="CTO · Architecture & execution"
                     title="Chief Technology Officer"
                     description="You own the execution board — backlog through done. Staff sync and the Personal Assistant add tasks here as the CTO plan updates. War room, roadmap brief, planning room, and desk docs live on the other tabs."
@@ -460,7 +461,8 @@ export function ProductKanban() {
             </div>
 
             <aside className="flex w-[min(100%,280px)] shrink-0 flex-col border-l border-zinc-800 bg-zinc-900/30">
-                <div className="border-b border-zinc-800 p-4">
+                {/** Headroom on narrow viewports: sync pill stays top-right until sm breakpoint. */}
+                <div className="border-b border-zinc-800 p-4 pt-14 sm:pt-4">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">Product intent · pinned</p>
                     <textarea
                         value={pd.intent ?? ''}

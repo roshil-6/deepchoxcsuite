@@ -84,31 +84,31 @@ export function WorkspaceStage({
                 return <CsuiteIntelligenceGuide />;
             case 'ceo':
                 return (
-                    <OperationalDesk hideSideChat>
+                    <OperationalDesk>
                         <StrategyNotebook />
                     </OperationalDesk>
                 );
             case 'pm':
                 return (
-                    <OperationalDesk hideSideChat>
+                    <OperationalDesk>
                         <ProductKanban />
                     </OperationalDesk>
                 );
             case 'accountant':
                 return (
-                    <OperationalDesk hideSideChat>
+                    <OperationalDesk>
                         <FinancialLedger />
                     </OperationalDesk>
                 );
             case 'scout':
                 return (
-                    <OperationalDesk hideSideChat>
+                    <OperationalDesk>
                         <ScoutTerminal />
                     </OperationalDesk>
                 );
             case 'cmo':
                 return (
-                    <OperationalDesk hideSideChat>
+                    <OperationalDesk>
                         <PitchDeckForge />
                     </OperationalDesk>
                 );

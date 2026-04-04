@@ -11,9 +11,7 @@ import {
     Bookmark,
     Lightbulb,
     HeartPulse,
-    MessageSquare,
 } from 'lucide-react';
-import { ChatAssistant } from '@/components/ChatAssistant';
 
 export type DiaryEntry = {
     id: string;
@@ -38,7 +36,6 @@ export function IntelligenceDiary() {
     const [isEditing, setIsEditing] = useState(false);
     const [filterTag, setFilterTag] = useState<string | null>(null);
     const [simulatingAnalysis, setSimulatingAnalysis] = useState(false);
-    const [aiOpen, setAiOpen] = useState(false);
 
     useEffect(() => {
         if (activeProject?.diary) {
@@ -236,24 +233,9 @@ export function IntelligenceDiary() {
                 </div>
 
                 <div className="mt-auto shrink-0 border-t border-zinc-800 p-3">
-                    {!aiOpen ? (
-                        <button
-                            type="button"
-                            onClick={() => setAiOpen(true)}
-                            className="flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-600 bg-zinc-800 py-2.5 text-xs font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-700"
-                        >
-                            <MessageSquare className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-                            Open AI thread
-                        </button>
-                    ) : (
-                        <button
-                            type="button"
-                            onClick={() => setAiOpen(false)}
-                            className="w-full rounded-xl border border-zinc-700 bg-zinc-900/80 py-2.5 text-xs font-medium text-zinc-400 transition hover:text-zinc-200"
-                        >
-                            Hide AI thread
-                        </button>
-                    )}
+                    <p className="text-center text-[10px] leading-relaxed text-zinc-500">
+                        Desk AI lives in the floating chat below — same as other desks.
+                    </p>
                 </div>
             </aside>
 
@@ -444,12 +426,6 @@ export function IntelligenceDiary() {
                 )}
             </main>
             </div>
-
-            {aiOpen && (
-                <div className="flex h-full w-[min(100%,420px)] shrink-0 flex-col border-l border-zinc-700 bg-zinc-900 shadow-[-12px_0_40px_-12px_rgba(9,9,11,0.5)]">
-                    <ChatAssistant variant="drawer" onClose={() => setAiOpen(false)} />
-                </div>
-            )}
         </div>
     );
 }

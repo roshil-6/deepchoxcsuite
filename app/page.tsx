@@ -62,12 +62,14 @@ export default function Home() {
             setNameVentureOpen(false);
           }}
           onNewVenture={openNameVentureModal}
+          /** Floating chat box for every desk except Personal Assistant (PA uses full-page chat). */
           bottomBar={
-            activeRoom !== 'dexo' &&
-            activeRoom !== 'personal_assistant' &&
-            activeRoom !== 'ceo' ? (
+            activeRoom !== 'personal_assistant' ? (
               <AIInputBarShell>
-                <ChatAssistant variant="aiOs" />
+                <ChatAssistant
+                  variant="ceoSplit"
+                  useExecutiveThread={activeRoom === 'ceo'}
+                />
               </AIInputBarShell>
             ) : null
           }

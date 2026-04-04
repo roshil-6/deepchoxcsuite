@@ -1,14 +1,15 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useCallback, useState, useRef, useEffect, useMemo } from 'react';
 import { useOffice, getAgentSystemPrompt, AgentRole } from '@/lib/OfficeContext';
 import { getChatRailTheme, getChatAgentRoleForRoom } from '@/lib/roomThemes';
-import { Paperclip, ArrowUp, Bot, X, Eraser, Mic, Cpu } from 'lucide-react';
+import { Paperclip, ArrowUp, Bot, X, Eraser, Mic, ChevronDown, ChevronUp, MessageSquare } from 'lucide-react';
 import { ModelAttribution } from '@/components/ModelAttribution';
+import { ExecModelPicker } from '@/components/ui/ExecModelPicker';
 import {
-    EXEC_CHAT_MODEL_OPTIONS,
     EXEC_CHAT_MODEL_STORAGE_KEY,
     isExecChatModelId,
+    type ExecChatModelId,
 } from '@/lib/deskConstants';
 
 function readStoredExecModel(): string {
@@ -28,16 +29,33 @@ interface Message {
     content: string;
     timestamp: number;
     model?: string;
+    channel?: 'pa' | 'cos';
 }
 
-export type ChatAssistantVariant = 'default' | 'drawer' | 'bottomDock' | 'aiOs' | 'inlineDesk';
+export type ChatAssistantVariant =
+    | 'default'
+    | 'drawer'
+    | 'bottomDock'
+    | 'aiOs'
+    | 'inlineDesk'
+    /** CEO desk: composer stays in the global bottom bar; thread floats above it. */
+    | 'ceoSplit';
 
 export function ChatAssistant({
     variant = 'default',
     onClose,
+    useExecutiveThread = false,
+    embedInShell = false,
+    onComposerInteract,
 }: {
     variant?: ChatAssistantVariant;
     onClose?: () => void;
+    /** Use shared venture thread (Personal Assistant + CEO desk); persisted per project. */
+    useExecutiveThread?: boolean;
+    /** Strip outer card when wrapped in a parent shell (e.g. inline desk embed). */
+    embedInShell?: boolean;
+    /** Called when user focuses composer or sends — e.g. expand minimized float. */
+    onComposerInteract?: () => void;
 }) {
     const {
         activeRoom,
@@ -46,11 +64,29 @@ export function ChatAssistant({
         addFile,
         pendingChat,
         setPendingChat,
+        executiveThread,
+        appendExecutiveThread,
+        clearExecutiveThread,
     } = useOffice();
 
-    const [messages, setMessages] = useState<Message[]>([]);
+    const [localMessages, setLocalMessages] = useState<Message[]>([]);
     const [inputValue, setInputValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    /** CEO split: thread panel above composer (same shell as aiOs). */
+    const [ceoThreadExpanded, setCeoThreadExpanded] = useState(true);
+    const expandCeoThread = useCallback(() => setCeoThreadExpanded(true), []);
+
+    const messages: Message[] = useMemo(() => {
+        if (!useExecutiveThread) return localMessages;
+        return executiveThread.map((m) => ({
+            id: m.id,
+            role: m.role,
+            content: m.content,
+            timestamp: m.ts,
+            model: m.model,
+            channel: m.channel,
+        }));
+    }, [useExecutiveThread, executiveThread, localMessages]);
 
     // Handle programmatic chat triggers
     useEffect(() => {
@@ -84,10 +120,11 @@ export function ChatAssistant({
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, isLoading]);
 
-    // Room switch reset
+    // Room switch reset (local thread only)
     useEffect(() => {
-        setMessages([]);
-    }, [activeRoom]);
+        if (useExecutiveThread) return;
+        setLocalMessages([]);
+    }, [activeRoom, useExecutiveThread]);
 
     const [selectedModel, setSelectedModel] = useState('llama3');
 
@@ -104,12 +141,23 @@ export function ChatAssistant({
             const content = event.target?.result as string;
             if (content) {
                 addFile(file.name, content, file.type);
-                setMessages(prev => [...prev, {
+                const fileNote: Message = {
                     id: Date.now().toString(),
                     role: 'assistant',
                     content: `I've analyzed **${file.name}**. I'm ready to answer questions about it.`,
-                    timestamp: Date.now()
-                }]);
+                    timestamp: Date.now(),
+                };
+                if (useExecutiveThread) {
+                    appendExecutiveThread({
+                        id: fileNote.id,
+                        role: 'assistant',
+                        content: fileNote.content,
+                        ts: fileNote.timestamp,
+                        channel: 'cos',
+                    });
+                } else {
+                    setLocalMessages((prev) => [...prev, fileNote]);
+                }
             }
         };
         reader.readAsText(file);
@@ -118,14 +166,31 @@ export function ChatAssistant({
     const handleSendMessage = async () => {
         if ((!inputValue.trim() && !pendingChat) || isLoading || !activeProject) return;
 
+        onComposerInteract?.();
+        if (variant === 'ceoSplit') setCeoThreadExpanded(true);
+
         const userMessage: Message = {
             id: Date.now().toString(),
             role: 'user',
             content: inputValue.trim(),
-            timestamp: Date.now()
+            timestamp: Date.now(),
         };
 
-        setMessages(prev => [...prev, userMessage]);
+        const priorForApi = useExecutiveThread
+            ? executiveThread.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }))
+            : localMessages.map((m) => ({ role: m.role, content: m.content }));
+
+        if (useExecutiveThread) {
+            appendExecutiveThread({
+                id: userMessage.id,
+                role: 'user',
+                content: userMessage.content,
+                ts: userMessage.timestamp,
+                channel: 'cos',
+            });
+        } else {
+            setLocalMessages((prev) => [...prev, userMessage]);
+        }
         setInputValue('');
         setIsLoading(true);
 
@@ -151,8 +216,8 @@ export function ChatAssistant({
 
             const fullMessages = [
                 { role: 'system', content: systemPrompt + '\n\nContext:\n' + projectContext },
-                ...messages.map(m => ({ role: m.role, content: m.content })),
-                { role: 'user', content: userMessage.content }
+                ...priorForApi,
+                { role: 'user', content: userMessage.content },
             ];
 
             const response = await fetch('/api/chat', {
@@ -177,11 +242,37 @@ export function ChatAssistant({
                 model: typeof data.model === 'string' ? data.model : undefined,
             };
 
-            setMessages(prev => [...prev, assistantMessage]);
-
+            if (useExecutiveThread) {
+                appendExecutiveThread({
+                    id: assistantMessage.id,
+                    role: 'assistant',
+                    content: assistantMessage.content,
+                    ts: assistantMessage.timestamp,
+                    model: assistantMessage.model,
+                    channel: 'cos',
+                });
+            } else {
+                setLocalMessages((prev) => [...prev, assistantMessage]);
+            }
         } catch (err) {
             console.error(err);
-            setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: 'Connection error. Ensure the intelligence engine (Ollama) is active.', timestamp: Date.now() }]);
+            const errMsg: Message = {
+                id: Date.now().toString(),
+                role: 'assistant',
+                content: 'Connection error. Ensure the intelligence engine (Ollama) is active.',
+                timestamp: Date.now(),
+            };
+            if (useExecutiveThread) {
+                appendExecutiveThread({
+                    id: errMsg.id,
+                    role: 'assistant',
+                    content: errMsg.content,
+                    ts: errMsg.timestamp,
+                    channel: 'cos',
+                });
+            } else {
+                setLocalMessages((prev) => [...prev, errMsg]);
+            }
         } finally {
             setIsLoading(false);
         }
@@ -192,32 +283,177 @@ export function ChatAssistant({
             ? 'chat-file-upload-drawer'
             : variant === 'inlineDesk'
               ? 'chat-file-upload-inline-desk'
-              : variant === 'bottomDock' || variant === 'aiOs'
+              : variant === 'bottomDock' || variant === 'aiOs' || variant === 'ceoSplit'
                 ? 'chat-file-upload-dock'
-                : 'file-upload';
+                : 'chat-file-upload-default';
 
     const isBottomDock = variant === 'bottomDock' || variant === 'aiOs';
     const isInlineDesk = variant === 'inlineDesk';
-    const isDockChrome = isBottomDock || isInlineDesk;
+    const isCeoSplit = variant === 'ceoSplit';
+    /** Shell context: floating bottom bar / desk embed — model menu opens upward */
+    const isDockChrome = isBottomDock || isInlineDesk || isCeoSplit;
     const isAiOs = variant === 'aiOs';
-    const dockThreadEmpty = isDockChrome && messages.length === 0 && !isLoading;
+    const dockThreadEmpty = isDockChrome && messages.length === 0 && !isLoading && !isCeoSplit;
     const dockThreadActive = isDockChrome && !dockThreadEmpty;
+
+    const threadBody = (
+        <>
+            {messages.length === 0 && (
+                <div
+                    className={`flex select-none flex-col ${
+                        isCeoSplit
+                            ? 'items-center justify-center rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.06] to-white/[0.02] px-5 py-10 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
+                            : 'items-start rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-left sm:px-5 sm:py-4'
+                    }`}
+                >
+                    {isCeoSplit ? (
+                        <>
+                            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-white/[0.06] ring-1 ring-white/[0.1]">
+                                <MessageSquare className="h-5 w-5 text-zinc-400" aria-hidden />
+                            </div>
+                            <p className="max-w-sm text-[13px] leading-relaxed text-zinc-400">{chatTheme.emptyPrompt}</p>
+                            <p className="mt-4 text-[11px] text-zinc-600">
+                                {useExecutiveThread
+                                    ? 'Type below — same thread as the Assistant desk.'
+                                    : 'Type below — this thread is for this desk only.'}
+                            </p>
+                        </>
+                    ) : (
+                        <>
+                            <p className="max-w-[280px] text-sm leading-relaxed text-zinc-300">{chatTheme.emptyPrompt}</p>
+                            {variant !== 'drawer' && (
+                                <p className="mt-3 text-xs text-zinc-600">Use the box below.</p>
+                            )}
+                        </>
+                    )}
+                </div>
+            )}
+
+            {messages.map((msg) => (
+                <div
+                    key={msg.id}
+                    className={`flex gap-2.5 sm:gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
+                >
+                    {msg.role === 'assistant' && (
+                        <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/[0.04] text-brand-muted">
+                            <Bot className="h-3.5 w-3.5 text-brand-muted" />
+                        </div>
+                    )}
+
+                    <div
+                        className={`max-w-[88%] text-sm leading-relaxed ${
+                            msg.role === 'user'
+                                ? 'rounded-2xl rounded-br-md bg-white/[0.06] px-3 py-2.5 text-brand-text ring-1 ring-white/[0.06]'
+                                : 'rounded-2xl rounded-bl-md bg-white/[0.04] px-3 py-2.5 text-brand-text/95'
+                        }`}
+                    >
+                        {useExecutiveThread ? (
+                            <p className="mb-1 text-[9px] font-semibold uppercase tracking-[0.1em] text-brand-muted/80">
+                                {msg.channel === 'cos'
+                                    ? 'CEO desk'
+                                    : msg.role === 'user'
+                                      ? 'Assistant thread'
+                                      : 'Personal Assistant'}
+                            </p>
+                        ) : null}
+                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                        {msg.role === 'assistant' ? <ModelAttribution model={msg.model} /> : null}
+                    </div>
+                </div>
+            ))}
+
+            {isLoading && (
+                <div className="flex gap-2.5">
+                    <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/[0.04]">
+                        <Bot className="h-3.5 w-3.5 text-brand-muted" />
+                    </div>
+                    <div className="flex items-center rounded-2xl rounded-bl-md bg-white/[0.04] px-3 py-2.5">
+                        <span className="text-sm text-brand-muted">…</span>
+                    </div>
+                </div>
+            )}
+            <div ref={messagesEndRef} />
+        </>
+    );
 
     return (
         <div
-            className={`flex min-h-0 flex-col overflow-hidden shadow-none transition-all duration-300 ${
-                isInlineDesk
-                    ? dockThreadEmpty
-                        ? 'h-auto w-full rounded-xl border border-white/[0.08] bg-[#131314]/90'
-                        : 'w-full rounded-xl border border-white/[0.08] bg-[#131314]/90'
-                    : isBottomDock && dockThreadEmpty
-                      ? `h-auto w-full ${isAiOs ? 'rounded-2xl border border-white/[0.08] bg-[#131314]/95 shadow-[0_-16px_48px_rgba(0,0,0,0.55)] backdrop-blur-md' : 'rounded-none border-0 bg-transparent'}`
-                      : isBottomDock
-                        ? `min-h-0 w-full max-h-full flex-1 ${isAiOs ? 'rounded-2xl border border-white/[0.08] bg-[#131314]/95 shadow-[0_-16px_48px_rgba(0,0,0,0.55)] backdrop-blur-md' : 'rounded-none border-0 bg-transparent'}`
-                        : chatTheme.railClass
-            }`}
+            className={
+                isCeoSplit
+                    ? 'flex min-h-0 w-full flex-col gap-4 overflow-visible rounded-none border-0 bg-transparent shadow-none transition-all duration-300'
+                    : `flex min-h-0 flex-col overflow-hidden shadow-none transition-all duration-300 ${
+                          isInlineDesk && embedInShell
+                              ? dockThreadEmpty
+                                  ? 'h-auto w-full rounded-none border-0 bg-transparent shadow-none'
+                                  : 'w-full rounded-none border-0 bg-transparent shadow-none'
+                              : isInlineDesk
+                                ? dockThreadEmpty
+                                    ? 'h-auto w-full rounded-xl border border-white/[0.08] bg-[#131314]/90'
+                                    : 'w-full rounded-xl border border-white/[0.08] bg-[#131314]/90'
+                                : isBottomDock && dockThreadEmpty
+                                  ? `h-auto w-full ${isAiOs ? 'rounded-2xl border border-white/[0.08] bg-[#131314]/95 shadow-[0_-16px_48px_rgba(0,0,0,0.55)] backdrop-blur-md' : 'rounded-none border-0 bg-transparent'}`
+                                  : isBottomDock
+                                    ? `min-h-0 w-full max-h-full flex-1 ${isAiOs ? 'rounded-2xl border border-white/[0.08] bg-[#131314]/95 shadow-[0_-16px_48px_rgba(0,0,0,0.55)] backdrop-blur-md' : 'rounded-none border-0 bg-transparent'}`
+                                    : chatTheme.railClass
+                      }`
+            }
         >
-            {isDockChrome && dockThreadActive ? (
+            {isCeoSplit && !ceoThreadExpanded ? (
+                <button
+                    type="button"
+                    onClick={expandCeoThread}
+                    className="flex w-full items-center justify-center gap-2 rounded-full border border-white/[0.12] bg-[#131314]/95 px-4 py-2.5 text-left text-xs font-medium text-zinc-200 shadow-[0_8px_28px_rgba(0,0,0,0.4)] backdrop-blur-md transition hover:border-white/[0.18] hover:bg-[#1a1b1f]"
+                >
+                    <MessageSquare className="h-4 w-4 shrink-0 text-zinc-400" aria-hidden />
+                    <span className="min-w-0 truncate">
+                        {useExecutiveThread ? 'Chief of staff thread' : `${chatTheme.roleLabel} thread`}
+                    </span>
+                    <ChevronUp className="h-4 w-4 shrink-0 text-zinc-500" aria-hidden />
+                </button>
+            ) : null}
+
+            {isCeoSplit && ceoThreadExpanded ? (
+                <div className="flex max-h-[min(40vh,400px)] min-h-[120px] w-full flex-col overflow-hidden rounded-2xl border border-white/[0.1] bg-[#131314]/98 shadow-[0_20px_56px_rgba(0,0,0,0.55)] ring-1 ring-white/[0.04] backdrop-blur-md">
+                    <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/[0.08] px-3 py-2.5 sm:px-4">
+                        <div className="min-w-0 flex-1">
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                                {useExecutiveThread ? 'Chief of staff' : chatTheme.roleLabel}
+                            </p>
+                            <p className="mt-0.5 truncate text-[11px] text-zinc-300">
+                                {useExecutiveThread
+                                    ? 'Same thread as Personal Assistant'
+                                    : chatTheme.subtitle}
+                            </p>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-1">
+                            <button
+                                type="button"
+                                onClick={() => (useExecutiveThread ? clearExecutiveThread() : setLocalMessages([]))}
+                                className="rounded-lg px-2.5 py-1.5 text-[11px] text-zinc-500 transition-colors hover:bg-white/[0.06] hover:text-zinc-200"
+                                title="Clear thread"
+                            >
+                                Clear
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setCeoThreadExpanded(false)}
+                                className="rounded-lg p-2 text-zinc-400 transition hover:bg-white/[0.06] hover:text-zinc-200"
+                                aria-label="Minimize thread"
+                                title="Hide thread (focus the box below or send to show again)"
+                            >
+                                <ChevronDown className="h-4 w-4" aria-hidden />
+                            </button>
+                        </div>
+                    </div>
+                    <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
+                        <div className="mx-auto w-full max-w-xl space-y-3 px-4 pb-3 pt-3 sm:px-5">
+                            {threadBody}
+                        </div>
+                    </div>
+                </div>
+            ) : null}
+
+            {isDockChrome && dockThreadActive && !embedInShell && !isCeoSplit ? (
                 <div className="flex shrink-0 items-baseline justify-between gap-2 border-b border-white/[0.04] px-1 py-2 sm:px-0">
                     <p className="min-w-0 text-[11px] leading-snug text-brand-muted/90">
                         <span className="text-brand-text/90">{currentAgent.name}</span>
@@ -225,11 +461,22 @@ export function ChatAssistant({
                     </p>
                     <button
                         type="button"
-                        onClick={() => setMessages([])}
+                        onClick={() => (useExecutiveThread ? clearExecutiveThread() : setLocalMessages([]))}
                         className="shrink-0 text-[11px] text-brand-muted/80 transition-colors hover:text-brand-text"
                         title="Clear thread"
                     >
                         Clear
+                    </button>
+                </div>
+            ) : isDockChrome && dockThreadActive && embedInShell ? (
+                <div className="flex shrink-0 justify-end border-b border-white/[0.06] px-1 py-1.5">
+                    <button
+                        type="button"
+                        onClick={() => (useExecutiveThread ? clearExecutiveThread() : setLocalMessages([]))}
+                        className="shrink-0 text-[11px] text-brand-muted/80 transition-colors hover:text-brand-text"
+                        title="Clear thread"
+                    >
+                        Clear thread
                     </button>
                 </div>
             ) : variant === 'drawer' ? (
@@ -246,7 +493,7 @@ export function ChatAssistant({
                     <div className="flex shrink-0 items-center gap-1">
                         <button
                             type="button"
-                            onClick={() => setMessages([])}
+                            onClick={() => (useExecutiveThread ? clearExecutiveThread() : setLocalMessages([]))}
                             className="rounded-lg border border-zinc-700/60 bg-zinc-900/50 p-2 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
                             title="Clear thread"
                         >
@@ -283,7 +530,7 @@ export function ChatAssistant({
                     </div>
                     <button
                         type="button"
-                        onClick={() => setMessages([])}
+                        onClick={() => (useExecutiveThread ? clearExecutiveThread() : setLocalMessages([]))}
                         className="shrink-0 rounded-xl border border-white/[0.1] bg-white/[0.04] p-2 text-brand-muted transition-colors hover:bg-brand-input hover:text-white"
                         title="Clear thread"
                     >
@@ -292,63 +539,16 @@ export function ChatAssistant({
                 </div>
             )}
 
-            {!dockThreadEmpty && (
-            <div
-                className={`custom-scrollbar space-y-3 overflow-y-auto overflow-x-hidden ${
-                    isInlineDesk && dockThreadActive
-                        ? 'max-h-[min(44vh,420px)] min-h-0 shrink-0'
-                        : 'min-h-0 flex-1'
-                } ${isDockChrome ? 'bg-transparent px-3 pb-2 pt-1 sm:px-4' : 'bg-brand-bg p-4 sm:p-5'}`}
-            >
-                {messages.length === 0 && (
-                    <div
-                        className={`flex select-none flex-col items-start text-left ${
-                            isDockChrome
-                                ? 'py-1'
-                                : `rounded-2xl border border-white/[0.07] bg-white/[0.02] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:p-6 ${variant === 'drawer' ? 'min-h-[120px]' : 'min-h-[160px]'}`
-                        }`}
-                    >
-                        <p className="max-w-[280px] text-sm leading-relaxed text-zinc-300">{chatTheme.emptyPrompt}</p>
-                        {variant !== 'drawer' && (
-                            <p className="mt-3 text-xs text-zinc-600">Use the box below.</p>
-                        )}
-                    </div>
-                )}
-
-                {messages.map((msg) => (
-                    <div key={msg.id} className={`flex gap-2.5 sm:gap-3 ${isDockChrome ? '' : 'animate-in fade-in slide-in-from-bottom-4 duration-500'} ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                        {msg.role === 'assistant' && (
-                            <div className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${isDockChrome ? 'bg-white/[0.04] text-brand-muted' : 'border border-zinc-600 bg-zinc-800'}`}>
-                                <Bot className={`h-3.5 w-3.5 ${isDockChrome ? 'text-brand-muted' : 'text-zinc-400'}`} />
-                            </div>
-                        )}
-
-                        <div className={`max-w-[88%] text-sm leading-relaxed ${msg.role === 'user'
-                            ? isDockChrome
-                                ? `rounded-2xl rounded-br-md bg-white/[0.06] px-3 py-2.5 text-brand-text ring-1 ring-white/[0.06]`
-                                : `rounded-lg rounded-tr-sm border p-4 text-zinc-50 ${chatTheme.userBubbleClass}`
-                            : isDockChrome
-                              ? 'rounded-2xl rounded-bl-md bg-white/[0.04] px-3 py-2.5 text-brand-text/95'
-                              : 'rounded-lg rounded-tl-sm border border-zinc-600 bg-zinc-800 p-4 font-sans text-zinc-300'
-                            }`}>
-                            <p className="whitespace-pre-wrap">{msg.content}</p>
-                            {msg.role === 'assistant' ? <ModelAttribution model={msg.model} /> : null}
-                        </div>
-                    </div>
-                ))}
-
-                {isLoading && (
-                    <div className={isDockChrome ? 'flex gap-2.5' : 'flex gap-4 p-2'}>
-                        <div className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${isDockChrome ? 'bg-white/[0.04]' : 'border border-zinc-600 bg-zinc-800'}`}>
-                            <Bot className={`h-3.5 w-3.5 ${isDockChrome ? 'text-brand-muted' : 'text-zinc-400'}`} />
-                        </div>
-                        <div className={`flex items-center ${isDockChrome ? 'rounded-2xl rounded-bl-md bg-white/[0.04] px-3 py-2.5' : 'rounded-lg rounded-tl-sm border border-zinc-700 bg-zinc-800 px-5 py-3'}`}>
-                            <span className={`text-sm ${isDockChrome ? 'text-brand-muted' : 'text-zinc-500'}`}>…</span>
-                        </div>
-                    </div>
-                )}
-                <div ref={messagesEndRef} />
-            </div>
+            {!isCeoSplit && !dockThreadEmpty && (
+                <div
+                    className={`custom-scrollbar space-y-3 overflow-y-auto overflow-x-hidden bg-transparent px-3 pb-2 pt-3 sm:px-4 sm:pt-4 ${
+                        isInlineDesk && dockThreadActive
+                            ? 'max-h-[min(44vh,420px)] min-h-0 shrink-0'
+                            : 'min-h-0 flex-1'
+                    }`}
+                >
+                    {threadBody}
+                </div>
             )}
 
             {/* File Context Chips */}
@@ -370,56 +570,34 @@ export function ChatAssistant({
             )}
 
             <div
-                className={`shrink-0 ${
-                    isDockChrome
-                        ? 'border-0 bg-transparent pb-0 pt-1'
-                        : 'border-t border-brand-border bg-brand-panel/90 p-4 sm:p-5'
-                }`}
+                className={
+                    isCeoSplit
+                        ? 'shrink-0 overflow-hidden rounded-2xl border border-white/[0.12] bg-[#131314]/95 shadow-[0_-12px_40px_rgba(0,0,0,0.45)] ring-1 ring-white/[0.06] backdrop-blur-xl'
+                        : 'shrink-0 border-0 bg-transparent pb-0 pt-1'
+                }
             >
                 <div
-                    className={`group relative overflow-hidden transition-all duration-300 ${
-                        isAiOs
-                            ? 'rounded-2xl border border-white/[0.06] bg-white/[0.04] backdrop-blur-md focus-within:border-white/[0.1] focus-within:bg-white/[0.06]'
-                            : isDockChrome
-                              ? 'rounded-2xl bg-white/[0.04] ring-1 ring-white/[0.06] focus-within:bg-white/[0.06] focus-within:ring-white/[0.1]'
-                              : 'rounded-xl border border-brand-border bg-brand-bg/90 focus-within:ring-1 focus-within:ring-white/[0.1]'
-                    }`}
+                    className={
+                        isCeoSplit
+                            ? 'group relative overflow-hidden bg-white/[0.04] transition-all duration-300 focus-within:bg-white/[0.06]'
+                            : 'group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.04] backdrop-blur-md transition-all duration-300 focus-within:border-white/[0.1] focus-within:bg-white/[0.06]'
+                    }
                 >
-                    {isDockChrome ? (
-                        <div className="flex items-center gap-1.5 border-b border-white/[0.06] px-2.5 py-1 sm:px-3.5">
-                            <Cpu className="h-3 w-3 shrink-0 text-brand-muted/60" aria-hidden />
-                            <select
-                                value={selectedModel}
-                                onChange={(e) => {
-                                    const v = e.target.value;
-                                    setSelectedModel(v);
-                                    try {
-                                        localStorage.setItem(EXEC_CHAT_MODEL_STORAGE_KEY, v);
-                                    } catch {
-                                        /* noop */
-                                    }
-                                }}
-                                className="min-w-0 max-w-full flex-1 cursor-pointer appearance-none border-0 bg-transparent py-0.5 pr-5 text-[10px] font-medium leading-tight text-brand-muted/90 [-webkit-appearance:none] focus:outline-none focus:ring-0 sm:text-[11px]"
-                                style={{
-                                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
-                                    backgroundRepeat: 'no-repeat',
-                                    backgroundPosition: 'right 0 center',
-                                }}
-                                title="Model for this thread (saved locally)"
-                                aria-label="Chat model"
-                            >
-                                {EXEC_CHAT_MODEL_OPTIONS.map((opt) => (
-                                    <option key={opt.id} value={opt.id}>
-                                        {opt.label}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    ) : null}
                     <textarea
                         ref={textareaRef}
                         value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
+                        onChange={(e) => {
+                            setInputValue(e.target.value);
+                            const t = e.target.value.trim();
+                            if (t) {
+                                onComposerInteract?.();
+                                if (variant === 'ceoSplit') setCeoThreadExpanded(true);
+                            }
+                        }}
+                        onFocus={() => {
+                            onComposerInteract?.();
+                            if (variant === 'ceoSplit') setCeoThreadExpanded(true);
+                        }}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter' && !e.shiftKey) {
                                 e.preventDefault();
@@ -427,54 +605,21 @@ export function ChatAssistant({
                             }
                         }}
                         placeholder={
-                            isAiOs
-                                ? 'Ask your executive team anything…'
-                                : isInlineDesk
-                                  ? 'Message this desk…'
-                                  : chatTheme.placeholder
+                            isCeoSplit
+                                ? useExecutiveThread
+                                    ? 'Message Chief of staff…'
+                                    : chatTheme.placeholder
+                                : isAiOs
+                                  ? 'Ask your executive team anything…'
+                                  : isInlineDesk
+                                    ? 'Message this desk…'
+                                    : chatTheme.placeholder
                         }
                         disabled={isLoading}
-                        className={`relative z-10 max-h-40 w-full resize-none border-none bg-transparent text-sm leading-relaxed text-brand-text placeholder:text-brand-muted focus:ring-0 ${
-                            isAiOs
-                                ? 'min-h-[48px] px-4 py-3 pr-[7.5rem] sm:min-h-[52px] sm:px-5 sm:pr-28'
-                                : isDockChrome
-                                  ? 'min-h-[40px] px-3 py-2.5 pr-12 sm:min-h-[44px] sm:px-3.5 sm:pr-14'
-                                  : 'min-h-[52px] p-3 pr-12 sm:p-4 sm:pr-14'
-                        }`}
+                        className="relative z-10 max-h-40 min-h-[44px] w-full resize-none border-none bg-transparent px-3.5 py-2.5 text-sm leading-relaxed text-brand-text placeholder:text-zinc-500 focus:ring-0 sm:min-h-[48px] sm:px-4 sm:py-3"
                         rows={1}
                     />
-                    <div
-                        className={`absolute bottom-2 right-2 z-10 flex items-center gap-1 sm:bottom-2.5 sm:right-3 ${isAiOs ? 'sm:gap-2' : ''}`}
-                    >
-                        {isAiOs && (
-                            <button
-                                type="button"
-                                className="rounded-full p-2 text-[var(--muted)] transition-colors hover:bg-white/[0.06] hover:text-[var(--text)]"
-                                title="Voice (browser)"
-                                aria-label="Voice input"
-                            >
-                                <Mic className="h-4 w-4" />
-                            </button>
-                        )}
-                        <button
-                            type="button"
-                            onClick={handleSendMessage}
-                            disabled={!inputValue.trim() || isLoading}
-                            className={`rounded-full p-2 transition-colors active:scale-[0.98] disabled:opacity-40 ${
-                                isAiOs
-                                    ? 'bg-[var(--text)] text-[#0f1115] hover:bg-white/90'
-                                    : isDockChrome
-                                      ? 'bg-zinc-300/90 text-[#131314] hover:bg-zinc-200'
-                                      : 'bg-zinc-300 text-[#131314] hover:bg-zinc-200'
-                            }`}
-                        >
-                            <ArrowUp className="h-4 w-4" aria-hidden />
-                        </button>
-                    </div>
-                </div>
-
-                <div className={`mt-2 flex items-center justify-between ${isDockChrome ? 'px-0.5' : 'px-1 sm:mt-3 sm:px-2'}`}>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1.5 border-t border-white/[0.06] bg-white/[0.02] px-2 py-1.5 sm:gap-2 sm:px-3">
                         <input
                             type="file"
                             id={fileInputId}
@@ -482,18 +627,51 @@ export function ChatAssistant({
                             onChange={handleFileUpload}
                             accept=".txt,.md,.csv,.json"
                         />
+                        <ExecModelPicker
+                            menuAbove={isDockChrome}
+                            value={selectedModel}
+                            onChange={(id: ExecChatModelId) => {
+                                setSelectedModel(id);
+                                try {
+                                    localStorage.setItem(EXEC_CHAT_MODEL_STORAGE_KEY, id);
+                                } catch {
+                                    /* noop */
+                                }
+                            }}
+                        />
                         <button
                             type="button"
                             onClick={() => document.getElementById(fileInputId)?.click()}
-                            className={`flex items-center gap-1.5 transition-colors hover:text-brand-text ${
-                                isDockChrome
-                                    ? 'text-[12px] font-medium text-brand-muted'
-                                    : 'text-[12px] font-medium text-zinc-500 hover:text-zinc-300'
-                            }`}
+                            className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-[12px] font-medium text-zinc-500 transition-colors hover:bg-white/[0.06] hover:text-zinc-200"
                         >
                             <Paperclip className="h-3.5 w-3.5" aria-hidden />
-                            <span>{isAiOs ? 'Attach' : 'Add context'}</span>
+                            <span className="hidden sm:inline">{isAiOs || isCeoSplit ? 'Attach' : 'Add context'}</span>
                         </button>
+                        {isCeoSplit ? (
+                            <span className="hidden min-w-0 flex-1 truncate text-center text-[10px] text-zinc-600 md:block">
+                                Enter to send
+                            </span>
+                        ) : (
+                            <span className="min-w-0 flex-1" aria-hidden />
+                        )}
+                        <div className="ml-auto flex shrink-0 items-center gap-0.5 sm:gap-1">
+                            <button
+                                type="button"
+                                className="rounded-full p-2 text-zinc-500 transition-colors hover:bg-white/[0.06] hover:text-zinc-200"
+                                title="Voice (browser)"
+                                aria-label="Voice input"
+                            >
+                                <Mic className="h-4 w-4" />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleSendMessage}
+                                disabled={!inputValue.trim() || isLoading}
+                                className="rounded-full bg-[var(--text)] p-2 text-[#0f1115] transition-colors hover:bg-white/90 active:scale-[0.98] disabled:opacity-40"
+                            >
+                                <ArrowUp className="h-4 w-4" aria-hidden />
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

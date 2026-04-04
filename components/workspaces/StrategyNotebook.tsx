@@ -23,8 +23,6 @@ import { ceo } from '@/lib/ceoTheme';
 import { StrategyFlowCanvas } from '@/components/workspaces/StrategyFlowCanvas';
 import { TimelinePhaseSetter } from '@/components/workspaces/TimelinePhaseSetter';
 import { DeskEmpty } from '@/components/workspaces/DeskShell';
-import { ChatAssistant } from '@/components/ChatAssistant';
-
 type ToolId = 'narrative' | 'flow' | 'phases' | 'team' | 'schedule' | 'priorities';
 
 type DeskView = 'hub' | 'surface';
@@ -234,6 +232,7 @@ export function StrategyNotebook() {
     );
 
     return (
+        <>
         <div className="flex h-full min-h-0 flex-col overflow-hidden bg-brand-bg">
             {deskView === 'hub' ? (
                 <div className="flex h-full min-h-0 flex-col overflow-hidden bg-brand-bg">
@@ -292,7 +291,7 @@ export function StrategyNotebook() {
                                 </ul>
                             </div>
 
-                            <div className="flex flex-wrap gap-3 pt-1">
+                            <div className="flex flex-wrap gap-3 pt-1 pb-8">
                                 <button
                                     type="button"
                                     onClick={() => persist(doc)}
@@ -302,13 +301,6 @@ export function StrategyNotebook() {
                                     Save strategy
                                 </button>
                             </div>
-
-                            <section className="border-t border-white/[0.08] pt-8 pb-4" aria-labelledby="ceo-chief-chat">
-                                <h2 id="ceo-chief-chat" className="mb-3 text-[11px] font-medium text-zinc-500">
-                                    Chief of staff
-                                </h2>
-                                <ChatAssistant variant="inlineDesk" />
-                            </section>
                         </div>
                     </div>
                 </div>
@@ -497,5 +489,6 @@ export function StrategyNotebook() {
                 </>
             )}
         </div>
+        </>
     );
 }

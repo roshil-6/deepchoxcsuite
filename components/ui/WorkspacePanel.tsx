@@ -19,7 +19,11 @@ export function WorkspacePanel({
             className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[var(--bg)]"
         >
             <div
-                className={`mx-auto flex h-full w-full max-w-[min(100%,72rem)] min-h-0 flex-1 flex-col px-4 sm:px-6 ${reserveBottom ? 'pb-40 sm:pb-44 lg:pb-40' : ''}`}
+                className={`mx-auto flex h-full w-full max-w-[min(100%,72rem)] min-h-0 flex-1 flex-col px-4 sm:px-6 ${
+                    reserveBottom
+                        ? 'pb-[max(12rem,min(44vh,26rem))] sm:pb-[max(13rem,min(44vh,26rem))] lg:pb-[max(14rem,min(42vh,26rem))]'
+                        : ''
+                }`}
             >
                 {children}
             </div>

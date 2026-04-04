@@ -6,17 +6,15 @@ import { parseStrategy } from '@/lib/strategyDoc';
 import { isVentureUnsettled, PA_WELCOME_MESSAGE } from '@/lib/ventureSetupState';
 import { ArrowUp, Bot, ClipboardList, FileUp, Lightbulb, Mic } from 'lucide-react';
 import { ModelAttribution } from '@/components/ModelAttribution';
+import { ExecModelPicker } from '@/components/ui/ExecModelPicker';
+import {
+    EXEC_CHAT_MODEL_STORAGE_KEY,
+    isExecChatModelId,
+    type ExecChatModelId,
+} from '@/lib/deskConstants';
+import type { ExecutiveThreadMessage } from '@/lib/executiveThread';
 
-type Msg = {
-    id: string;
-    role: 'user' | 'assistant';
-    content: string;
-    ts: number;
-    /** Display label from API (e.g. Gemma 2B (HuggingFace)) */
-    model?: string;
-    /** Tap-to-answer suggestions from the model (last assistant message only). */
-    followUpOptions?: string[];
-};
+type Msg = ExecutiveThreadMessage;
 
 /** Model may include "Other — type below"; user can also use the composer. */
 function isOtherFollowUpLabel(s: string): boolean {
@@ -24,19 +22,32 @@ function isOtherFollowUpLabel(s: string): boolean {
     return t.startsWith('other') || t.includes('type below') || t.includes("i'll type") || t.includes('type my answer');
 }
 
+function readStoredExecModel(): string {
+    if (typeof window === 'undefined') return 'llama3';
+    try {
+        const v = localStorage.getItem(EXEC_CHAT_MODEL_STORAGE_KEY);
+        if (v && isExecChatModelId(v)) return v;
+    } catch {
+        /* noop */
+    }
+    return 'llama3';
+}
+
 export function PersonalAssistant() {
-    const { activeProject, switchRoom } = useOffice();
-    const [messages, setMessages] = useState<Msg[]>([]);
+    const { activeProject, switchRoom, executiveThread, appendExecutiveThread } = useOffice();
+    const messages = executiveThread;
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [listening, setListening] = useState(false);
     const [voiceSupported, setVoiceSupported] = useState(false);
     const [fileLabel, setFileLabel] = useState<string | null>(null);
     const [fileError, setFileError] = useState<string | null>(null);
+    const [selectedModel, setSelectedModel] = useState('llama3');
     const endRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const recognitionRef = useRef<{ stop: () => void; start: () => void } | null>(null);
+    const welcomeSeededForProject = useRef<string | number | null>(null);
     /** Multi-select for the latest assistant message’s followUpOptions (combine or “both”). */
     const [followUpSelection, setFollowUpSelection] = useState<Set<string>>(new Set());
 
@@ -52,6 +63,10 @@ export function PersonalAssistant() {
     }, [messages, loading]);
 
     useEffect(() => {
+        setSelectedModel(readStoredExecModel());
+    }, []);
+
+    useEffect(() => {
         if (typeof window === 'undefined') return;
         const w = window as unknown as {
             SpeechRecognition?: new () => { stop: () => void; start: () => void };
@@ -63,7 +78,13 @@ export function PersonalAssistant() {
     const lastFollowUpMsg = useMemo(() => {
         for (let i = messages.length - 1; i >= 0; i--) {
             const m = messages[i];
-            if (m.role === 'assistant' && m.followUpOptions && m.followUpOptions.length > 0) return m;
+            if (
+                m.role === 'assistant' &&
+                m.channel === 'pa' &&
+                m.followUpOptions &&
+                m.followUpOptions.length > 0
+            )
+                return m;
         }
         return null;
     }, [messages]);
@@ -73,22 +94,26 @@ export function PersonalAssistant() {
     }, [lastFollowUpMsg?.id]);
 
     useEffect(() => {
-        setMessages([]);
         setInput('');
         setFileLabel(null);
         setFileError(null);
-        if (!activeProject?.id) return;
-        if (isVentureUnsettled(activeProject)) {
-            setMessages([
-                {
-                    id: 'pa-welcome',
-                    role: 'assistant',
-                    content: PA_WELCOME_MESSAGE,
-                    ts: Date.now(),
-                },
-            ]);
-        }
+        welcomeSeededForProject.current = null;
     }, [activeProject?.id]);
+
+    useEffect(() => {
+        const id = activeProject?.id;
+        if (!id || !isVentureUnsettled(activeProject)) return;
+        if (welcomeSeededForProject.current === id) return;
+        if (executiveThread.length > 0) return;
+        welcomeSeededForProject.current = id;
+        appendExecutiveThread({
+            id: `pa-welcome-${String(id)}`,
+            role: 'assistant',
+            content: PA_WELCOME_MESSAGE,
+            ts: Date.now(),
+            channel: 'pa',
+        });
+    }, [activeProject, executiveThread.length, appendExecutiveThread]);
 
     useEffect(() => {
         if (textareaRef.current) {
@@ -194,8 +219,14 @@ export function PersonalAssistant() {
         const displayContent = (opts?.displayText ?? userText).trim();
         if (!modelUserContent || loading || !activeProject?.id) return;
 
-        const userMsg: Msg = { id: Date.now().toString(), role: 'user', content: displayContent, ts: Date.now() };
-        setMessages((prev) => [...prev, userMsg]);
+        const userMsg: Msg = {
+            id: Date.now().toString(),
+            role: 'user',
+            content: displayContent,
+            ts: Date.now(),
+            channel: 'pa',
+        };
+        appendExecutiveThread(userMsg);
         setInput('');
         setLoading(true);
 
@@ -206,6 +237,7 @@ export function PersonalAssistant() {
                 body: JSON.stringify({
                     role: 'assistant',
                     message: modelUserContent,
+                    model: selectedModel,
                     companyContext:
                         'Early stage startup, solo founder, building AI C-suite platform called DeepChox',
                 }),
@@ -218,47 +250,44 @@ export function PersonalAssistant() {
                         : typeof data.error === 'string'
                           ? data.error
                           : 'Personal Assistant unavailable.';
-                setMessages((prev) => [
-                    ...prev,
-                    { id: (Date.now() + 1).toString(), role: 'assistant', content: err, ts: Date.now() },
-                ]);
+                appendExecutiveThread({
+                    id: (Date.now() + 1).toString(),
+                    role: 'assistant',
+                    content: err,
+                    ts: Date.now(),
+                    channel: 'pa',
+                });
                 return;
             }
             if (data.loading) {
-                setMessages((prev) => [
-                    ...prev,
-                    {
-                        id: (Date.now() + 1).toString(),
-                        role: 'assistant',
-                        content: 'AI is warming up, please wait 20 seconds and try again.',
-                        ts: Date.now(),
-                    },
-                ]);
+                appendExecutiveThread({
+                    id: (Date.now() + 1).toString(),
+                    role: 'assistant',
+                    content: 'AI is warming up, please wait 20 seconds and try again.',
+                    ts: Date.now(),
+                    channel: 'pa',
+                });
             } else {
                 const text =
                     typeof data.response === 'string' ? data.response : 'No response generated.';
                 const modelLabel = typeof data.model === 'string' ? data.model : undefined;
-                setMessages((prev) => [
-                    ...prev,
-                    {
-                        id: (Date.now() + 1).toString(),
-                        role: 'assistant',
-                        content: text,
-                        ts: Date.now(),
-                        model: modelLabel,
-                    },
-                ]);
+                appendExecutiveThread({
+                    id: (Date.now() + 1).toString(),
+                    role: 'assistant',
+                    content: text,
+                    ts: Date.now(),
+                    model: modelLabel,
+                    channel: 'pa',
+                });
             }
         } catch {
-            setMessages((prev) => [
-                ...prev,
-                {
-                    id: Date.now().toString(),
-                    role: 'assistant',
-                    content: 'Something went wrong. Please try again.',
-                    ts: Date.now(),
-                },
-            ]);
+            appendExecutiveThread({
+                id: Date.now().toString(),
+                role: 'assistant',
+                content: 'Something went wrong. Please try again.',
+                ts: Date.now(),
+                channel: 'pa',
+            });
         } finally {
             setLoading(false);
         }
@@ -328,8 +357,8 @@ export function PersonalAssistant() {
                 </div>
             </aside>
 
-            {/* Main: messages fill the middle; composer pinned to bottom */}
-            <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+            {/* Main: scrollable thread + fixed, centered composer (studio-style) */}
+            <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
                 <header className="shrink-0 border-b border-white/[0.06] bg-brand-bg/55 px-4 py-3 backdrop-blur-md sm:px-5">
                     <div className="mx-auto flex max-w-3xl flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
                         <div className="min-w-0">
@@ -358,8 +387,9 @@ export function PersonalAssistant() {
                     </button>
                 </div>
 
-                <div className="custom-scrollbar relative min-h-0 flex-1 overflow-y-auto">
-                    <div className="mx-auto max-w-3xl space-y-5 px-4 py-6 pb-8 sm:px-5">
+                {/* Only messages scroll; padding clears the fixed composer */}
+                <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
+                    <div className="mx-auto w-full max-w-3xl space-y-5 px-4 py-6 pb-[min(42vh,16rem)] sm:px-5 sm:pb-[min(38vh,15rem)]">
                         {messages.length === 0 && activeProject && !isVentureUnsettled(activeProject) && (
                             <div className="rounded-2xl bg-white/[0.03] p-4 text-sm text-brand-muted/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] ring-1 ring-white/[0.06]">
                                 <p className="font-medium text-brand-text">Continue</p>
@@ -385,9 +415,15 @@ export function PersonalAssistant() {
                                             : 'rounded-2xl rounded-bl-md bg-white/[0.04] text-brand-text/95 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] ring-1 ring-white/[0.06]'
                                     }`}
                                 >
+                                    {m.channel === 'cos' ? (
+                                        <p className="mb-1.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-brand-muted/90">
+                                            CEO desk
+                                        </p>
+                                    ) : null}
                                     <p className="whitespace-pre-wrap">{m.content}</p>
                                     {m.role === 'assistant' ? <ModelAttribution model={m.model} /> : null}
                                     {m.role === 'assistant' &&
+                                        m.channel === 'pa' &&
                                         m.followUpOptions &&
                                         m.followUpOptions.length > 0 &&
                                         m.id === lastFollowUpMsg?.id && (
@@ -483,36 +519,25 @@ export function PersonalAssistant() {
                     </div>
                 </div>
 
-                {/* Bottom dock — pinned to viewport bottom of this column (studio-style) */}
-                <div className="shrink-0 border-t border-white/[0.05] bg-gradient-to-t from-brand-bg via-brand-bg/98 to-transparent px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 sm:px-5 sm:pb-5">
-                    <div className="mx-auto max-w-3xl">
-                        <div className="relative rounded-3xl bg-white/[0.04] shadow-[0_12px_48px_rgba(0,0,0,0.28)] ring-1 ring-white/[0.08] backdrop-blur-md focus-within:ring-white/[0.12]">
-                            <div className="relative">
-                                <textarea
-                                    ref={textareaRef}
-                                    value={input}
-                                    onChange={(e) => setInput(e.target.value)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' && !e.shiftKey) {
-                                            e.preventDefault();
-                                            sendMessage(input);
-                                        }
-                                    }}
-                                    placeholder="Message…"
-                                    rows={1}
-                                    disabled={loading}
-                                    className="max-h-40 min-h-[52px] w-full resize-none rounded-t-3xl border-none bg-transparent px-4 py-3.5 pr-14 text-sm text-brand-text placeholder:text-brand-muted/70 focus:ring-0 sm:min-h-[56px] sm:px-5 sm:py-4"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => sendMessage(input)}
-                                    disabled={loading || !input.trim()}
-                                    className="absolute bottom-2.5 right-2.5 flex h-9 w-9 items-center justify-center rounded-2xl bg-zinc-300 text-[#131314] shadow-md shadow-black/20 transition-colors hover:bg-zinc-200 disabled:opacity-40"
-                                    aria-label="Send"
-                                >
-                                    <ArrowUp className="h-4 w-4" />
-                                </button>
-                            </div>
+                {/* Fixed, centered message bar — does not scroll with thread */}
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center bg-gradient-to-t from-brand-bg via-brand-bg/95 to-transparent px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-10 sm:px-5">
+                    <div className="pointer-events-auto w-full max-w-3xl">
+                        <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.04] shadow-[0_12px_48px_rgba(0,0,0,0.28)] ring-1 ring-white/[0.06] backdrop-blur-md focus-within:border-white/[0.12]">
+                            <textarea
+                                ref={textareaRef}
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                        e.preventDefault();
+                                        sendMessage(input);
+                                    }
+                                }}
+                                placeholder="Message…"
+                                rows={1}
+                                disabled={loading}
+                                className="max-h-40 min-h-[48px] w-full resize-none border-none bg-transparent px-4 py-3 text-sm text-brand-text placeholder:text-brand-muted/70 focus:ring-0 sm:min-h-[52px] sm:px-5 sm:py-3.5"
+                            />
                             <input
                                 ref={fileInputRef}
                                 type="file"
@@ -520,40 +545,62 @@ export function PersonalAssistant() {
                                 className="hidden"
                                 onChange={handleFileInput}
                             />
-                            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.06] px-3 py-2.5 sm:px-4">
-                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                            <div className="flex flex-wrap items-center gap-1.5 border-t border-white/[0.06] bg-white/[0.02] px-2 py-1.5 sm:gap-2 sm:px-3">
+                                <ExecModelPicker
+                                    menuAbove
+                                    value={selectedModel}
+                                    onChange={(id: ExecChatModelId) => {
+                                        setSelectedModel(id);
+                                        try {
+                                            localStorage.setItem(EXEC_CHAT_MODEL_STORAGE_KEY, id);
+                                        } catch {
+                                            /* noop */
+                                        }
+                                    }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={loading}
+                                    className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-[12px] font-medium text-brand-muted transition-colors hover:bg-white/[0.06] hover:text-brand-text disabled:opacity-50"
+                                >
+                                    <FileUp className="h-3.5 w-3.5 opacity-70" aria-hidden />
+                                    <span className="hidden sm:inline">File</span>
+                                </button>
+                                {voiceSupported ? (
                                     <button
                                         type="button"
-                                        onClick={() => fileInputRef.current?.click()}
+                                        onClick={() => (listening ? stopListening() : startListening())}
                                         disabled={loading}
-                                        className="inline-flex items-center gap-1.5 text-[12px] font-medium text-brand-muted transition-colors hover:text-brand-text disabled:opacity-50"
+                                        className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-[12px] font-medium transition-colors disabled:opacity-50 ${
+                                            listening ? 'text-brand-teal' : 'text-brand-muted hover:text-brand-text'
+                                        }`}
+                                        aria-pressed={listening}
                                     >
-                                        <FileUp className="h-3.5 w-3.5 opacity-70" aria-hidden />
-                                        File
+                                        <Mic className="h-3.5 w-3.5 opacity-70" aria-hidden />
+                                        <span className="hidden sm:inline">{listening ? 'Stop' : 'Voice'}</span>
                                     </button>
-                                    {voiceSupported ? (
-                                        <button
-                                            type="button"
-                                            onClick={() => (listening ? stopListening() : startListening())}
-                                            disabled={loading}
-                                            className={`inline-flex items-center gap-1.5 text-[12px] font-medium transition-colors disabled:opacity-50 ${
-                                                listening ? 'text-brand-teal' : 'text-brand-muted hover:text-brand-text'
-                                            }`}
-                                            aria-pressed={listening}
-                                        >
-                                            <Mic className="h-3.5 w-3.5 opacity-70" aria-hidden />
-                                            {listening ? 'Stop' : 'Voice'}
-                                        </button>
-                                    ) : (
-                                        <span className="text-[11px] text-brand-muted/70">Voice needs Chrome or Edge</span>
-                                    )}
-                                    {listening ? (
-                                        <span className="text-[11px] text-brand-teal" aria-live="polite">
-                                            Listening
-                                        </span>
-                                    ) : null}
-                                    {fileLabel ? <span className="max-w-[140px] truncate text-[10px] text-brand-muted">{fileLabel}</span> : null}
-                                </div>
+                                ) : (
+                                    <span className="text-[10px] text-brand-muted/70 sm:text-[11px]">Voice: Chrome/Edge</span>
+                                )}
+                                {listening ? (
+                                    <span className="text-[10px] text-brand-teal sm:text-[11px]" aria-live="polite">
+                                        Listening
+                                    </span>
+                                ) : null}
+                                {fileLabel ? (
+                                    <span className="max-w-[100px] truncate text-[10px] text-brand-muted sm:max-w-[140px]">{fileLabel}</span>
+                                ) : null}
+                                <span className="min-w-0 flex-1" aria-hidden />
+                                <button
+                                    type="button"
+                                    onClick={() => sendMessage(input)}
+                                    disabled={loading || !input.trim()}
+                                    className="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-[#131314] transition-colors hover:bg-white disabled:opacity-40"
+                                    aria-label="Send"
+                                >
+                                    <ArrowUp className="h-4 w-4" />
+                                </button>
                             </div>
                             {fileError ? (
                                 <p className="border-t border-white/[0.06] px-3 pb-2.5 text-[11px] text-rose-400/90 sm:px-4">{fileError}</p>

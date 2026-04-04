@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useMemo, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useMemo, useEffect, useCallback, ReactNode } from 'react';
 import {
   Project,
   StaffAttentionItem,
@@ -24,6 +24,11 @@ import {
 import { Target, ClipboardList, Calculator, ScanSearch, LayoutDashboard, Bot, Gavel, Megaphone } from 'lucide-react';
 import { EXEC_OUTPUT_ROLES } from '@/lib/execOutputFormats';
 import { emptyVentureShell } from '@/lib/minimalVenture';
+import {
+  type ExecutiveThreadMessage,
+  loadExecutiveThread,
+  saveExecutiveThread,
+} from '@/lib/executiveThread';
 
 const EO = Object.fromEntries(EXEC_OUTPUT_ROLES.map((r) => [r.id, r])) as Record<
   (typeof EXEC_OUTPUT_ROLES)[number]['id'],
@@ -66,6 +71,12 @@ export interface OfficeContextType {
   agents: Record<AgentRole, AgentPersona>;
   pendingChat: { role: AgentRole; message: string } | null;
   setPendingChat: (val: { role: AgentRole; message: string } | null) => void;
+
+  /** Shared PA + Chief-of-staff messages for the active venture (localStorage per project). */
+  executiveThread: ExecutiveThreadMessage[];
+  appendExecutiveThread: (msg: ExecutiveThreadMessage) => void;
+  setExecutiveThread: (messages: ExecutiveThreadMessage[]) => void;
+  clearExecutiveThread: () => void;
 
   // Actions
   switchRoom: (room: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'boardroom' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence') => void;
@@ -214,6 +225,7 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
   const [activeProject, setActiveProjectState] = useState<Project | null>(null);
   const [allProjects, setAllProjects] = useState<Project[]>([]);
   const [pendingChat, setPendingChat] = useState<{ role: AgentRole; message: string } | null>(null);
+  const [executiveThread, setExecutiveThread] = useState<ExecutiveThreadMessage[]>([]);
   const [systemState, setSystemState] = useState<SystemState>({
     alertLevel: 'stable',
     networkStatus: 'secure',
@@ -229,6 +241,30 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
     () => (activeProject?.staffAttentionItems || []).filter((a) => !a.dismissed),
     [activeProject?.staffAttentionItems]
   );
+
+  useEffect(() => {
+    const id = activeProject?.id;
+    if (!id) {
+      setExecutiveThread([]);
+      return;
+    }
+    setExecutiveThread(loadExecutiveThread(id));
+  }, [activeProject?.id]);
+
+  useEffect(() => {
+    const id = activeProject?.id;
+    if (!id) return;
+    const t = window.setTimeout(() => saveExecutiveThread(id, executiveThread), 280);
+    return () => window.clearTimeout(t);
+  }, [executiveThread, activeProject?.id]);
+
+  const appendExecutiveThread = useCallback((msg: ExecutiveThreadMessage) => {
+    setExecutiveThread((prev) => [...prev, msg]);
+  }, []);
+
+  const clearExecutiveThread = useCallback(() => {
+    setExecutiveThread([]);
+  }, []);
 
   useEffect(() => {
     if (!syncToastMessage) return;
@@ -600,6 +636,7 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
     await secureWipeDatabase();
     setAllProjects([]);
     setActiveProjectState(null);
+    setExecutiveThread([]);
     setActiveRoom('dashboard');
     setSystemState(prev => ({ ...prev, alertLevel: 'stable', isDeepWork: false }));
   };
@@ -622,6 +659,10 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
     allProjects,
     pendingChat,
     setPendingChat,
+    executiveThread,
+    appendExecutiveThread,
+    setExecutiveThread,
+    clearExecutiveThread,
     agents: AGENT_PERSONAS,
     switchRoom,
     setActiveProject,
