@@ -24,6 +24,7 @@ import {
 import { Target, ClipboardList, Calculator, ScanSearch, LayoutDashboard, Bot, Gavel, Megaphone } from 'lucide-react';
 import { EXEC_OUTPUT_ROLES } from '@/lib/execOutputFormats';
 import { emptyVentureShell } from '@/lib/minimalVenture';
+import { parseStrategy, serializeStrategy } from '@/lib/strategyDoc';
 import {
   type ExecutiveThreadMessage,
   loadExecutiveThread,
@@ -402,8 +403,25 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
         dismissed: false,
       }));
 
+      /** Merge CEO desk narrative from sync into saved strategy so the CEO workspace stays current without manual copy-paste. */
+      let mergedStrategy = p.strategy || '';
+      const ceoDesk = typeof result.desks?.ceo === 'string' ? result.desks.ceo.trim() : '';
+      if (ceoDesk.length > 20) {
+        try {
+          const sDoc = parseStrategy(mergedStrategy);
+          const fingerprint = ceoDesk.slice(0, Math.min(120, ceoDesk.length));
+          if (!sDoc.content?.includes(fingerprint)) {
+            sDoc.content = `${(sDoc.content || '').trim()}\n\n### Staff sync — CEO desk\n${ceoDesk}\n`.trim();
+            mergedStrategy = serializeStrategy(sDoc);
+          }
+        } catch {
+          /* keep previous strategy string */
+        }
+      }
+
       const next: Project = {
         ...p,
+        strategy: mergedStrategy,
         marketInsights,
         budget,
         teamDirectives,

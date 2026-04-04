@@ -145,6 +145,44 @@
     box-shadow: none;
   }
 
+  /** Dashboard — ChatGPT-like thread: narrow column, soft bubbles, no rigid chrome */
+  .dash-thread {
+    width: 100%;
+    max-width: 42rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .dash-section-label {
+    margin-bottom: 0.75rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-brand-muted);
+    opacity: 0.9;
+  }
+
+  .dash-msg {
+    border-radius: 1.25rem;
+    background: rgba(39, 39, 42, 0.42);
+    padding: 1.25rem 1.375rem;
+    border: none;
+  }
+
+  @media (min-width: 640px) {
+    .dash-msg {
+      padding: 1.375rem 1.5rem;
+    }
+  }
+
+  /** Fluid chart height — avoids fixed px walls */
+  .dash-chart-h {
+    width: 100%;
+    min-height: 11rem;
+    height: min(32vh, 16rem);
+  }
+
   /** Toasts / inline notices — minimal outline */
   .studio-notice {
     border-radius: var(--radius-studio-sm);

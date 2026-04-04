@@ -2,9 +2,9 @@ import { AGENT_DEFINITIONS } from './AgentDefinitions';
 import { AnyAgentResponse, ExecutiveRole } from './types';
 import { safeJsonParse } from '../utils';
 
-// Mock LLM Call - In production this calls OpenAI/Anthropic
+// Mock LLM — used when /api/boardroom is unavailable or returns useMock
 async function mockLLMCall(role: ExecutiveRole, context: string): Promise<string> {
-    await new Promise((resolve) => setTimeout(resolve, 800)); // Simulate latency
+    await new Promise((resolve) => setTimeout(resolve, 450));
 
     const isExpensive =
         context.toLowerCase().includes('global') ||
@@ -65,12 +65,36 @@ async function mockLLMCall(role: ExecutiveRole, context: string): Promise<string
     return '{}';
 }
 
+async function invokeLiveAgent(role: ExecutiveRole, context: string): Promise<AnyAgentResponse | null> {
+    try {
+        const res = await fetch('/api/boardroom', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ role, context }),
+        });
+        const data = (await res.json()) as {
+            ok?: boolean;
+            response?: AnyAgentResponse;
+            useMock?: boolean;
+        };
+        if (data.ok && data.response && typeof data.response === 'object') {
+            return { ...data.response, timestamp: Date.now() };
+        }
+    } catch {
+        /* fall through to mock */
+    }
+    return null;
+}
+
 export async function invokeAgent(role: ExecutiveRole, context: string): Promise<AnyAgentResponse | null> {
+    const live = await invokeLiveAgent(role, context);
+    if (live) return live;
+
     try {
         const rawResponse = await mockLLMCall(role, context);
         const parsed = safeJsonParse(rawResponse);
-        if (parsed) {
-            return { ...parsed, timestamp: Date.now() };
+        if (parsed && typeof parsed === 'object') {
+            return { ...parsed, timestamp: Date.now() } as AnyAgentResponse;
         }
         return null;
     } catch (e) {

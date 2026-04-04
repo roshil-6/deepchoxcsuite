@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import type { PhaseStatus, StrategyPhase } from '@/lib/strategyDoc';
 import { ensureSingleActivePhase } from '@/lib/strategyDoc';
 import { ceo } from '@/lib/ceoTheme';
-import { Plus, Clock, GripVertical, ChevronDown, ChevronUp, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Clock, GripVertical, ChevronDown, ChevronUp, Trash2, ArrowUp, ArrowDown, CheckCircle2 } from 'lucide-react';
 
 type Props = {
     projectName: string;
@@ -241,11 +241,22 @@ export function TimelinePhaseSetter({ projectName, phases, onPhasesChange }: Pro
                                                 </div>
                                                 <div className="flex shrink-0 flex-col items-end gap-2">
                                                     {badge(p.status)}
-                                                    <div className="flex items-center gap-1">
+                                                    <div className="flex flex-wrap items-center gap-1">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setStatus(p.id, 'done')}
+                                                            disabled={p.status === 'done'}
+                                                            title="Mark this phase complete"
+                                                            className="inline-flex items-center gap-1 rounded-lg border border-violet-500/40 bg-violet-950/40 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-violet-200/95 hover:bg-violet-950/55 disabled:pointer-events-none disabled:opacity-35"
+                                                        >
+                                                            <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
+                                                            Done
+                                                        </button>
                                                         <select
                                                             value={p.status || 'planned'}
                                                             onChange={(e) => setStatus(p.id, e.target.value as PhaseStatus)}
                                                             className="rounded-lg border border-zinc-700 bg-zinc-900 px-2 py-1 text-[10px] font-medium uppercase text-zinc-400"
+                                                            aria-label={`Status for ${p.title || 'phase'}`}
                                                         >
                                                             <option value="planned">Planned</option>
                                                             <option value="in_progress">In progress</option>

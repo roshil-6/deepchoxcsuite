@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useOffice } from '@/lib/OfficeContext';
-import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Trash2, CheckCircle2 } from 'lucide-react';
 import { KanbanTask } from '@/lib/db';
 
 const KANBAN_STATUSES: KanbanTask['status'][] = ['todo', 'in_progress', 'next', 'completed'];
@@ -126,6 +126,11 @@ export function CalendarView() {
             const updatedTask = { ...task, status: order[nextIndex] };
             saveKanban(kanbanTasks.map((t) => (t.id === task.id ? updatedTask : t)));
         }
+    };
+
+    const markTaskDone = (task: KanbanTask) => {
+        if (normalizeKanbanTask(task).status === 'completed') return;
+        saveKanban(kanbanTasks.map((t) => (t.id === task.id ? { ...t, status: 'completed' as const } : t)));
     };
 
     const deleteTask = (id: string) => {
@@ -284,36 +289,48 @@ export function CalendarView() {
                                             className="group relative min-h-[4.25rem] rounded-lg border border-brand-border bg-brand-panel p-3 transition-colors hover:border-brand-teal/35"
                                         >
                                             <p className="text-xs font-medium leading-snug text-brand-text sm:text-[13px]">{task.title}</p>
-                                            <div className="mt-2 flex items-center justify-between opacity-0 transition-opacity group-hover:opacity-100">
+                                            <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                                                 <button
                                                     type="button"
-                                                    onClick={() => deleteTask(task.id)}
-                                                    className="rounded p-1 text-red-400/90 hover:bg-brand-input hover:text-red-300"
-                                                    title="Delete"
+                                                    onClick={() => markTaskDone(task)}
+                                                    disabled={normalizeKanbanTask(task).status === 'completed'}
+                                                    title="Mark done"
+                                                    className="inline-flex items-center gap-1 rounded-md border border-emerald-500/35 bg-emerald-950/20 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-200/90 hover:bg-emerald-950/35 disabled:pointer-events-none disabled:opacity-40"
                                                 >
-                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                    <CheckCircle2 className="h-3 w-3" aria-hidden />
+                                                    Done
                                                 </button>
-                                                <div className="flex gap-0.5">
-                                                    {col.id !== 'todo' && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => moveTask(task, 'prev')}
-                                                            className="rounded p-1 hover:bg-brand-input"
-                                                            aria-label="Move back"
-                                                        >
-                                                            <ChevronLeft className="h-3.5 w-3.5 text-brand-muted" />
-                                                        </button>
-                                                    )}
-                                                    {col.id !== 'completed' && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => moveTask(task, 'next')}
-                                                            className="rounded p-1 hover:bg-brand-input"
-                                                            aria-label="Move forward"
-                                                        >
-                                                            <ChevronRight className="h-3.5 w-3.5 text-brand-muted" />
-                                                        </button>
-                                                    )}
+                                                <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => deleteTask(task.id)}
+                                                        className="rounded p-1 text-red-400/90 hover:bg-brand-input hover:text-red-300"
+                                                        title="Delete"
+                                                    >
+                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                    </button>
+                                                    <div className="flex gap-0.5">
+                                                        {col.id !== 'todo' && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => moveTask(task, 'prev')}
+                                                                className="rounded p-1 hover:bg-brand-input"
+                                                                aria-label="Move back"
+                                                            >
+                                                                <ChevronLeft className="h-3.5 w-3.5 text-brand-muted" />
+                                                            </button>
+                                                        )}
+                                                        {col.id !== 'completed' && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => moveTask(task, 'next')}
+                                                                className="rounded p-1 hover:bg-brand-input"
+                                                                aria-label="Move forward"
+                                                            >
+                                                                <ChevronRight className="h-3.5 w-3.5 text-brand-muted" />
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

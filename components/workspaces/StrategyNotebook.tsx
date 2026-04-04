@@ -253,6 +253,61 @@ export function StrategyNotebook() {
                                 />
                             </div>
 
+                            <div className="space-y-2">
+                                <label className="text-xs font-medium text-zinc-500" htmlFor="ceo-vision">
+                                    Vision / north star
+                                </label>
+                                <textarea
+                                    id="ceo-vision"
+                                    value={doc.vision ?? ''}
+                                    onChange={(e) => setDoc({ ...doc, vision: e.target.value })}
+                                    onBlur={(e) => persist({ ...doc, vision: e.target.value })}
+                                    placeholder="Longer-horizon picture — where this venture is headed in 12–36 months."
+                                    rows={2}
+                                    className="w-full resize-none rounded-lg border border-zinc-700 bg-zinc-900/60 px-3 py-3 text-sm leading-relaxed text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-zinc-500/30"
+                                />
+                                <p className="text-[10px] text-zinc-600">Saved when you leave the field — same as strategic intent.</p>
+                            </div>
+
+                            <section className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4" aria-label="Executive priorities quick checklist">
+                                <div className="flex items-center justify-between gap-2">
+                                    <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-500">Executive priorities</p>
+                                    <button
+                                        type="button"
+                                        onClick={() => openSurface('priorities')}
+                                        className="text-[10px] font-semibold text-zinc-400 hover:text-zinc-200"
+                                    >
+                                        Open full list
+                                    </button>
+                                </div>
+                                {(doc.priorities || []).length === 0 ? (
+                                    <p className="mt-2 text-xs text-zinc-600">
+                                        No priorities yet —{' '}
+                                        <button type="button" onClick={() => openSurface('priorities')} className="text-zinc-300 underline">
+                                            add some
+                                        </button>
+                                        .
+                                    </p>
+                                ) : (
+                                    <ul className="mt-3 space-y-2">
+                                        {(doc.priorities || []).slice(0, 8).map((pr) => (
+                                            <li key={pr.id} className="flex items-start gap-3 rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={pr.done}
+                                                    onChange={() => togglePriority(pr.id)}
+                                                    className="mt-1"
+                                                    aria-label={pr.done ? `Mark not done: ${pr.title}` : `Mark done: ${pr.title}`}
+                                                />
+                                                <span className={`flex-1 text-sm ${pr.done ? 'text-zinc-500 line-through' : 'text-zinc-200'}`}>
+                                                    {pr.title}
+                                                </span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </section>
+
                             <div className="space-y-3">
                                 <div className="flex items-baseline justify-between gap-2 px-0.5">
                                     <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-500">Planning surfaces</p>
@@ -311,11 +366,13 @@ export function StrategyNotebook() {
                         {tool === 'narrative' && (
                             <section className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden bg-brand-bg p-4 sm:p-6">
                                 <p className="shrink-0 text-xs text-zinc-500">
-                                    Full strategic thesis — north star, where you play, how you win, and what is explicitly out of scope.
+                                    Full strategic thesis — north star, where you play, how you win, and what is explicitly out of scope. Saves when you
+                                    leave this field (or use Save above).
                                 </p>
                                 <textarea
                                     value={doc.content}
                                     onChange={(e) => setDoc({ ...doc, content: e.target.value })}
+                                    onBlur={(e) => persist({ ...doc, content: e.target.value })}
                                     placeholder="North star, where you play, how you win, and what is out of scope…"
                                     className="min-h-0 w-full flex-1 rounded-xl border border-brand-border bg-brand-card p-4 text-[15px] leading-relaxed text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand-teal/30"
                                 />

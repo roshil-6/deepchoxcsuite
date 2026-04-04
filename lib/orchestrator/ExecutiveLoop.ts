@@ -1,4 +1,4 @@
-import { ExecutiveLoopState, ExecutiveRole, type CFOResponse } from './types';
+import { ExecutiveLoopState, ExecutiveRole, type CEOResponse, type CFOResponse } from './types';
 import { ContextBuilder } from './ContextBuilder';
 import { invokeAgent } from './AgentFunction';
 import { ConflictEngine } from './ConflictEngine';
@@ -61,7 +61,10 @@ export class ExecutiveLoop {
             // We stop if it's a hard block that hasn't changed
         } else {
             this.state.finalized = true;
-            this.state.finalOutput = "Consensus Achieved. All executive departments are aligned.";
+            const ceo = this.state.responses.CEO as CEOResponse | null;
+            this.state.finalOutput = ceo?.decision?.trim()
+                ? `Aligned — ${ceo.decision.trim()}`
+                : 'Consensus achieved: no material conflict across finance, product, GTM, and competitive signals for this directive.';
         }
 
         return { ...this.state };

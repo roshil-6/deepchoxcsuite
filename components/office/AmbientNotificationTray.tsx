@@ -7,11 +7,11 @@ import type { OfficeNotification } from '@/types/office';
 function severityStyles(s: OfficeNotification['severity']): string {
     switch (s) {
         case 'critical':
-            return 'border-rose-500/30 bg-rose-950/25 text-rose-100';
+            return 'bg-rose-950/30 text-rose-100';
         case 'warning':
-            return 'border-amber-500/25 bg-amber-950/20 text-amber-100';
+            return 'bg-amber-950/25 text-amber-100';
         default:
-            return 'border-white/[0.08] bg-white/[0.03] text-zinc-200';
+            return 'bg-white/[0.05] text-zinc-200';
     }
 }
 
@@ -28,16 +28,16 @@ export function AmbientNotificationTray({
     if (show.length === 0) return null;
 
     return (
-        <div className={`rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 ${className}`}>
-            <div className="mb-3 flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.1em] text-zinc-500">
+        <div className={`dash-msg bg-zinc-800/40 ${className}`}>
+            <div className="mb-4 flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.1em] text-zinc-500">
                 <Bell className="h-3.5 w-3.5 text-zinc-400" aria-hidden />
                 Office pulse
             </div>
-            <ul className="space-y-2">
+            <ul className="space-y-3">
                 {show.map((n, i) => (
                     <li
                         key={`${n.timestamp}-${i}`}
-                        className={`rounded-xl border px-3 py-2 text-xs leading-relaxed ${severityStyles(n.severity)}`}
+                        className={`rounded-xl px-3 py-2.5 text-xs leading-relaxed ${severityStyles(n.severity)}`}
                     >
                         <span className="font-semibold text-zinc-300">{n.desk}</span>
                         <span className="text-zinc-500"> · </span>

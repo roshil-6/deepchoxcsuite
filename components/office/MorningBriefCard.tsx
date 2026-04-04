@@ -18,7 +18,7 @@ export function MorningBriefCard({
 
     return (
         <div
-            className={`rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] ${className}`}
+            className={`dash-msg bg-zinc-800/45 ${className}`}
         >
             <div className="flex items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-200/90">

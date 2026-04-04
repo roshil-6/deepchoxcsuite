@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
     Database,
     ArrowRight,
@@ -17,12 +18,15 @@ import {
     ChevronRight,
     Radio,
     ListOrdered,
-    Zap,
+    Maximize2,
+    X,
 } from 'lucide-react';
 import { useOffice } from '@/lib/OfficeContext';
 import type { AgentStaffSnapshot } from '@/lib/db';
 import { useHfRoleSync, type HfDeskRole } from '@/lib/useHfRoleSync';
 import { ModelAttribution } from '@/components/ModelAttribution';
+import { SuiteIntelligenceNeuralFlow } from '@/components/SuiteIntelligenceNeuralFlow';
+import type { IntelligenceNavRoom } from '@/lib/suiteIntelligenceFlowGraph';
 
 const DESK_ORDER: { key: keyof AgentStaffSnapshot['desks']; title: string; subtitle: string }[] = [
     { key: 'ceo', title: 'CEO', subtitle: 'Strategy & narrative' },
@@ -73,9 +77,26 @@ export function CsuiteIntelligenceGuide() {
     const focus = activeProject?.staffFocusToday ?? [];
     const syncLogs = systemLogs.filter((l) => l.source === 'agent-sync').slice(0, 12);
 
-    const [pulseIdx, setPulseIdx] = useState(0);
     const [openDesk, setOpenDesk] = useState<string | null>('ceo');
     const [traceOpen, setTraceOpen] = useState(true);
+    const [flowStructureFullView, setFlowStructureFullView] = useState(false);
+    const [flowPortalReady, setFlowPortalReady] = useState(false);
+
+    useEffect(() => setFlowPortalReady(true), []);
+
+    useEffect(() => {
+        if (!flowStructureFullView) return;
+        const prev = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setFlowStructureFullView(false);
+        };
+        window.addEventListener('keydown', onKey);
+        return () => {
+            document.body.style.overflow = prev;
+            window.removeEventListener('keydown', onKey);
+        };
+    }, [flowStructureFullView]);
     const {
         syncing: hfSyncing,
         syncResult: hfSyncResult,
@@ -83,12 +104,6 @@ export function CsuiteIntelligenceGuide() {
         setSyncResult: setHfSyncResult,
         syncRole: hfSyncRole,
     } = useHfRoleSync();
-
-    useEffect(() => {
-        if (!agentSyncRunning) return;
-        const t = setInterval(() => setPulseIdx((i) => (i + 1) % 6), 550);
-        return () => clearInterval(t);
-    }, [agentSyncRunning]);
 
     const deskEntries = useMemo(() => {
         if (!snapshot?.desks) return [];
@@ -117,7 +132,68 @@ export function CsuiteIntelligenceGuide() {
         );
     }
 
+    const flowProps = {
+        ventureName: activeProject.name,
+        lastSyncAtLabel: snapshot?.at ? formatSyncTime(snapshot.at) : null,
+        trace: lastAiSyncTrace,
+        agentSyncRunning,
+        switchRoom: (room: IntelligenceNavRoom) => switchRoom(room),
+    } as const;
+
+    const flowFullScreenLayer =
+        flowStructureFullView && flowPortalReady ? (
+            <div
+                className="fixed inset-0 z-[10000] flex flex-col bg-brand-bg"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="flow-full-title"
+            >
+                <header className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-brand-border/70 bg-brand-bg/95 px-4 py-3 backdrop-blur-sm sm:px-6">
+                    <div className="min-w-0">
+                        <p
+                            id="flow-full-title"
+                            className="text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-muted"
+                        >
+                            Suite intelligence · flow only
+                        </p>
+                        <p className="truncate text-sm font-semibold text-brand-text">{activeProject.name}</p>
+                        <p className="text-[11px] text-brand-muted">
+                            Venture → one staff-sync response updates all five roles; desk AI between syncs edits the same record. Press{' '}
+                            <kbd className="rounded border border-brand-border px-1 font-mono text-[10px]">Esc</kbd> to exit.
+                        </p>
+                    </div>
+                    <div className="flex shrink-0 flex-wrap items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={() => runAgentStaffSync()}
+                            disabled={agentSyncRunning}
+                            className="inline-flex items-center gap-2 rounded-lg border border-white/[0.12] bg-white/[0.06] px-3 py-2 text-xs font-semibold text-brand-text transition hover:bg-white/[0.1] disabled:opacity-50"
+                        >
+                            <RefreshCw className={`h-3.5 w-3.5 ${agentSyncRunning ? 'animate-spin' : ''}`} aria-hidden />
+                            {agentSyncRunning ? 'Syncing…' : 'Run staff sync'}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setFlowStructureFullView(false)}
+                            className="inline-flex items-center gap-2 rounded-lg border border-brand-border bg-brand-card px-3 py-2 text-xs font-semibold text-brand-text transition hover:bg-brand-input"
+                        >
+                            <X className="h-3.5 w-3.5" aria-hidden />
+                            Show all sections
+                        </button>
+                    </div>
+                </header>
+                <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overflow-x-auto px-4 py-5 sm:px-6 sm:py-6">
+                    <div className="mx-auto w-full min-w-0 max-w-[1600px]">
+                        <SuiteIntelligenceNeuralFlow {...flowProps} variant="fullscreen" />
+                    </div>
+                </div>
+            </div>
+        ) : null;
+
     return (
+        <>
+            {flowPortalReady && flowFullScreenLayer ? createPortal(flowFullScreenLayer, document.body) : null}
+
         <div className="h-full min-h-0 overflow-y-auto bg-brand-bg custom-scrollbar">
             <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8 lg:max-w-5xl">
                 <header className="mb-8 border-b border-brand-border/60 pb-8">
@@ -127,112 +203,109 @@ export function CsuiteIntelligenceGuide() {
                     </div>
                     <h1 className="text-2xl font-semibold tracking-tight text-brand-text sm:text-3xl">Staff network &amp; process</h1>
                     <p className="mt-3 max-w-3xl text-[15px] leading-relaxed text-brand-muted">
-                        See how officer roles connect to your venture record, watch a sync run, and read each desk&apos;s last
-                        contribution — the same outputs merged into strategy, intel, finance, and your notification bell.
+                        This suite explains <strong className="font-medium text-brand-text">how coordinated staff sync</strong> refreshes
+                        every officer lane at once from your venture snapshot, and how <strong className="font-medium text-brand-text">day-to-day AI</strong> in each desk feeds the same record so the next run stays aligned.
                     </p>
                 </header>
 
-                {/* Live network */}
+                {/* Live network — neural flow + venture-aware graph */}
                 <section className="mb-10" aria-labelledby="live-net">
-                    <h2 id="live-net" className="mb-4 flex items-center gap-2 text-lg font-semibold text-brand-text">
-                        <GitBranch className="h-5 w-5 text-brand-teal" aria-hidden />
-                        Live coordination map
-                    </h2>
-                    <p className="mb-5 text-sm leading-relaxed text-brand-muted">
-                        When you run <strong className="font-medium text-brand-text">Sync AI staff</strong>, one model pass
-                        produces all desk briefs together, then the app merges them into your record — nothing hidden.
+                    <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+                        <h2 id="live-net" className="flex items-center gap-2 text-lg font-semibold text-brand-text">
+                            <GitBranch className="h-5 w-5 shrink-0 text-brand-teal" aria-hidden />
+                            Live coordination map
+                        </h2>
+                        <button
+                            type="button"
+                            onClick={() => setFlowStructureFullView(true)}
+                            className="inline-flex items-center gap-2 rounded-lg border border-brand-teal/35 bg-brand-teal/10 px-3 py-2 text-xs font-semibold text-brand-text transition hover:bg-brand-teal/18"
+                        >
+                            <Maximize2 className="h-3.5 w-3.5 text-brand-teal" aria-hidden />
+                            View full structure
+                            <span className="hidden text-[10px] font-normal text-brand-muted sm:inline">(flow only)</span>
+                        </button>
+                    </div>
+                    <p className="mb-4 text-sm leading-relaxed text-brand-muted">
+                        The map below shows <strong className="font-medium text-brand-text">venture record → staff-sync API → each role → linked workspaces</strong>.
+                        Run <strong className="font-medium text-brand-text">Sync AI staff</strong> to populate the pipeline strip and step trace.
                     </p>
 
-                    <div className="relative overflow-hidden rounded-2xl border border-brand-border/80 bg-gradient-to-b from-brand-panel/50 to-brand-bg/90 p-4 sm:p-6">
-                        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(255,255,255,0.04),transparent_65%)]" aria-hidden />
+                    <section
+                        className="mb-6 rounded-2xl border border-brand-border/70 bg-brand-panel/25 p-4 sm:p-5"
+                        aria-labelledby="how-ai-updates"
+                    >
+                        <h3 id="how-ai-updates" className="mb-3 text-sm font-semibold text-brand-text">
+                            How AI works on each role — and how updates propagate
+                        </h3>
+                        <ol className="list-decimal space-y-2.5 pl-4 text-sm leading-relaxed text-brand-muted marker:text-brand-teal/90">
+                            <li>
+                                <strong className="font-medium text-brand-text">Shared venture record.</strong> All officers use the same
+                                IndexedDB project: strategy, product plan, budget, market intel, execution board (kanban), calendar, notes,
+                                and the last staff snapshot.
+                            </li>
+                            <li>
+                                <strong className="font-medium text-brand-text">Staff sync — one coordinated model pass.</strong> Each time
+                                you run sync, the server sends that <em>entire</em> snapshot (plus news headlines) through a single structured
+                                request. The model outputs CEO, CTO, CFO, CSO, and CMO briefs <em>together</em> so narratives and execution
+                                tasks do not contradict each other. The app merges those strings into{' '}
+                                <span className="font-mono text-[11px] text-brand-text/90">agentStaffSnapshot.desks.*</span>, adds optional
+                                kanban tasks and events, updates focus today, and queues bell notifications.
+                            </li>
+                            <li>
+                                <strong className="font-medium text-brand-text">Working with AI between syncs.</strong> Desk chat rails,
+                                notebooks, Boardroom, Dexo, and Personal Assistant can change the same fields when you save or apply. Those
+                                edits become part of the snapshot — so the <em>next</em> staff sync sees your latest context and regenerates
+                                all five role briefs from it.
+                            </li>
+                            <li>
+                                <strong className="font-medium text-brand-text">Per-role panels on the map.</strong> Each column lists what
+                                that officer&apos;s sync output is for, which venture fields it touches, and which suite screens read it. Use{' '}
+                                <strong className="font-medium text-brand-text">Open desk workspace</strong> or a linked surface to drill in.
+                            </li>
+                        </ol>
+                    </section>
 
-                        {/* Center hub */}
-                        <div className="relative mx-auto mb-6 flex max-w-md flex-col items-center">
-                            <div
-                                className={`flex items-center gap-3 rounded-2xl border px-4 py-3 ${
-                                    agentSyncRunning && pulseIdx === 0
-                                        ? 'border-white/[0.14] bg-white/[0.05]'
-                                        : 'border-brand-border/70 bg-brand-bg/90'
-                                }`}
-                            >
-                                <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-brand-border bg-brand-input">
-                                    <Database className="h-5 w-5 text-brand-teal" aria-hidden />
-                                </div>
-                                <div>
-                                    <p className="text-[11px] font-semibold uppercase tracking-wider text-brand-muted">Venture record</p>
-                                    <p className="text-sm font-medium text-brand-text">{activeProject.name}</p>
-                                    {snapshot?.at ? (
-                                        <p className="text-[10px] text-brand-muted/90">Last staff sync: {formatSyncTime(snapshot.at)}</p>
-                                    ) : (
-                                        <p className="text-[10px] text-amber-400/90">No staff sync yet — run one below.</p>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="mt-2 flex items-center gap-2 text-[10px] font-medium uppercase tracking-wider text-brand-muted">
-                                <Zap className="h-3.5 w-3.5 text-brand-teal" aria-hidden />
-                                {agentSyncRunning ? 'Staff run in progress…' : 'Officers read & write through controlled merge'}
-                            </div>
-                        </div>
+                    <SuiteIntelligenceNeuralFlow {...flowProps} variant="inline" />
 
-                        {/* Role ring */}
-                        <div className="relative grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 lg:gap-2">
-                            {DESK_ORDER.map((d, i) => {
-                                const active = agentSyncRunning && pulseIdx === i + 1;
-                                return (
-                                    <div
-                                        key={d.key}
-                                        className={`rounded-xl border px-3 py-3 text-center transition-all ${
-                                            active
-                                                ? 'border-white/[0.14] bg-white/[0.05]'
-                                                : 'border-brand-border/60 bg-brand-bg/70'
-                                        }`}
-                                    >
-                                        <p className="text-[11px] font-bold text-brand-text">{d.title}</p>
-                                        <p className="mt-0.5 text-[10px] text-brand-muted">{d.subtitle}</p>
-                                        {agentSyncRunning ? (
-                                            <p className="mt-2 text-[9px] font-medium uppercase tracking-wide text-brand-teal/90">
-                                                {active ? 'In loop…' : 'Queued'}
-                                            </p>
-                                        ) : (
-                                            <p className="mt-2 text-[9px] text-brand-muted/80">Desk brief</p>
-                                        )}
-                                        <button
-                                            type="button"
-                                            disabled={hfSyncing}
-                                            onClick={() => {
-                                                setHfSyncResult(null);
-                                                void hfSyncRole(DESK_HF_ROLE[d.key]);
-                                            }}
-                                            className="mt-2 w-full rounded-md border border-brand-border/80 bg-brand-bg/80 py-1 text-[10px] font-medium text-brand-muted transition hover:border-brand-border hover:text-brand-text disabled:opacity-50"
-                                        >
-                                            {hfSyncing ? '…' : 'Sync'}
-                                        </button>
-                                    </div>
-                                );
-                            })}
-                        </div>
-
-                        {hfSyncResult ? (
-                            <div className="relative mt-4 rounded-lg border border-brand-border/60 bg-brand-bg/80 p-3 text-[11px] leading-relaxed text-brand-muted">
-                                {hfSyncResult}
-                                <ModelAttribution model={hfSyncModel} />
-                            </div>
-                        ) : null}
-
-                        <div className="relative mt-6 flex flex-wrap items-center justify-center gap-3 border-t border-brand-border/40 pt-5">
+                    <div className="mt-6 flex flex-wrap items-center gap-2 rounded-xl border border-brand-border/60 bg-brand-panel/30 px-3 py-3">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">HF desk (optional)</span>
+                        {DESK_ORDER.map((d) => (
                             <button
+                                key={d.key}
                                 type="button"
-                                onClick={() => runAgentStaffSync()}
-                                disabled={agentSyncRunning}
-                                className="inline-flex items-center gap-2 rounded-xl border border-white/[0.12] bg-white/[0.05] px-4 py-2.5 text-[12px] font-semibold text-brand-text transition hover:bg-white/[0.08] disabled:opacity-50"
+                                disabled={hfSyncing}
+                                onClick={() => {
+                                    setHfSyncResult(null);
+                                    void hfSyncRole(DESK_HF_ROLE[d.key]);
+                                }}
+                                className="rounded-md border border-brand-border/80 bg-brand-bg/80 px-2 py-1 text-[10px] font-medium text-brand-muted transition hover:border-brand-border hover:text-brand-text disabled:opacity-50"
                             >
-                                <RefreshCw className={`h-4 w-4 ${agentSyncRunning ? 'animate-spin' : ''}`} aria-hidden />
-                                {agentSyncRunning ? 'Running staff sync…' : 'Run staff sync now'}
+                                {d.title}
                             </button>
-                            <p className="max-w-sm text-center text-[11px] leading-snug text-brand-muted sm:text-left">
-                                Uses your venture snapshot + headlines. Results appear here, in desk sections, and in notifications.
-                            </p>
+                        ))}
+                    </div>
+
+                    {hfSyncResult ? (
+                        <div className="relative mt-4 rounded-lg border border-brand-border/60 bg-brand-bg/80 p-3 text-[11px] leading-relaxed text-brand-muted">
+                            {hfSyncResult}
+                            <ModelAttribution model={hfSyncModel} />
                         </div>
+                    ) : null}
+
+                    <div className="relative mt-6 flex flex-wrap items-center justify-center gap-3 border-t border-brand-border/40 pt-5">
+                        <button
+                            type="button"
+                            onClick={() => runAgentStaffSync()}
+                            disabled={agentSyncRunning}
+                            className="inline-flex items-center gap-2 rounded-xl border border-white/[0.12] bg-white/[0.05] px-4 py-2.5 text-[12px] font-semibold text-brand-text transition hover:bg-white/[0.08] disabled:opacity-50"
+                        >
+                            <RefreshCw className={`h-4 w-4 ${agentSyncRunning ? 'animate-spin' : ''}`} aria-hidden />
+                            {agentSyncRunning ? 'Running staff sync…' : 'Run staff sync now'}
+                        </button>
+                        <p className="max-w-sm text-center text-[11px] leading-snug text-brand-muted sm:text-left">
+                            Uses your venture snapshot + headlines. Results merge into the fields shown in the graph and surface in each
+                            desk.
+                        </p>
                     </div>
                 </section>
 
@@ -343,8 +416,8 @@ export function CsuiteIntelligenceGuide() {
                         ) : traceOpen ? (
                             <p className="rounded-xl border border-dashed border-brand-border/60 px-4 py-4 text-sm text-brand-muted">
                                 Run <strong className="text-brand-text">staff sync</strong> in this session to populate a step-by-step
-                                trace (snapshot → headlines → model → each desk → merge). After refresh, use desk sections above —
-                                trace is session-only.
+                                trace (snapshot → headlines → one combined model pass → per-desk lines → merge). After refresh, use desk
+                                sections above — trace is session-only.
                             </p>
                         ) : null}
                     </div>
@@ -373,8 +446,14 @@ export function CsuiteIntelligenceGuide() {
                 <section className="mb-8" aria-labelledby="net-title">
                     <h2 id="net-title" className="mb-4 flex items-center gap-2 text-lg font-semibold text-brand-text">
                         <Layers className="h-5 w-5 text-brand-teal" aria-hidden />
-                        System map (static)
+                        Data flow summary
                     </h2>
+                    <p className="mb-4 text-sm text-brand-muted">
+                        The <strong className="font-medium text-brand-text">Neural suite map</strong> above is this venture&apos;s live
+                        wiring. <strong className="font-medium text-brand-text">Staff sync</strong> is the batched step: one API response
+                        updates every role brief and shared fields together. <strong className="font-medium text-brand-text">Desk AI</strong>{' '}
+                        applies changes as you work; the next sync reads that updated snapshot.
+                    </p>
                     <div className="rounded-2xl border border-brand-border/80 bg-brand-panel/35 p-4 sm:p-6">
                         <div className="flex flex-col gap-4 lg:flex-row lg:items-stretch lg:justify-between lg:gap-2">
                             <div className="flex flex-1 flex-col rounded-xl border border-brand-border/60 bg-brand-bg/80 p-4">
@@ -395,7 +474,8 @@ export function CsuiteIntelligenceGuide() {
                                     Intelligence layer
                                 </div>
                                 <p className="text-[13px] leading-relaxed text-brand-muted">
-                                    Dexo, Chief of Staff rail, and staff sync share the same record — desks stay aligned.
+                                    Dexo, Chief of Staff, desk chats, Boardroom, and staff sync all touch the same venture row; sync is the
+                                    coordinated refresh of all five desk outputs in one pass.
                                 </p>
                             </div>
                             <div className="hidden lg:flex lg:items-center">
@@ -464,5 +544,6 @@ export function CsuiteIntelligenceGuide() {
                 </footer>
             </div>
         </div>
+        </>
     );
 }

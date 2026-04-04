@@ -26,6 +26,7 @@ import {
     Map,
     FolderOpen,
     Flame,
+    CheckCircle2,
 } from 'lucide-react';
 import { DeskShell, DeskTabButton, DeskEmpty } from '@/components/workspaces/DeskShell';
 
@@ -129,6 +130,11 @@ export function ProductKanban() {
         if (ni === i) return;
         const nextStatus = order[ni];
         persistTasks(tasks.map((x) => (x.id === task.id ? { ...x, status: nextStatus } : x)));
+    };
+
+    const markTaskDone = (task: KanbanTask) => {
+        if (task.status === 'completed') return;
+        persistTasks(tasks.map((x) => (x.id === task.id ? { ...x, status: 'completed' as const } : x)));
     };
 
     const remove = (id: string) => {
@@ -243,11 +249,22 @@ export function ProductKanban() {
                                                 .map((task) => (
                                                     <div key={task.id} className="rounded-md border border-brand-border bg-brand-input p-3">
                                                         <p className="text-sm font-medium text-zinc-200">{task.title}</p>
-                                                        <div className="mt-2 flex items-center justify-between gap-1">
-                                                            <div className="flex gap-1">
+                                                        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                                                            <div className="flex flex-wrap items-center gap-1">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => markTaskDone(task)}
+                                                                    disabled={task.status === 'completed'}
+                                                                    title="Mark done"
+                                                                    className="inline-flex items-center gap-1 rounded border border-emerald-500/35 bg-emerald-950/25 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-200/95 hover:bg-emerald-950/40 disabled:pointer-events-none disabled:opacity-40"
+                                                                >
+                                                                    <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
+                                                                    Done
+                                                                </button>
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => move(task, 'prev')}
+                                                                    title="Move to previous column"
                                                                     className="rounded border border-zinc-600 p-1 text-zinc-500 hover:bg-zinc-800"
                                                                 >
                                                                     <ChevronLeft className="h-3.5 w-3.5" />
@@ -255,6 +272,7 @@ export function ProductKanban() {
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => move(task, 'next')}
+                                                                    title="Move to next column"
                                                                     className="rounded border border-zinc-600 p-1 text-zinc-500 hover:bg-zinc-800"
                                                                 >
                                                                     <ChevronRight className="h-3.5 w-3.5" />
@@ -263,6 +281,7 @@ export function ProductKanban() {
                                                             <button
                                                                 type="button"
                                                                 onClick={() => remove(task.id)}
+                                                                title="Delete task"
                                                                 className="rounded p-1 text-zinc-600 hover:text-rose-400"
                                                             >
                                                                 <Trash2 className="h-3.5 w-3.5" />

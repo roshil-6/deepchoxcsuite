@@ -284,10 +284,10 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
 
         return (
             <div className="h-full min-h-0 overflow-y-auto custom-scrollbar bg-brand-bg">
-                <div className="mx-auto flex w-full max-w-3xl flex-col px-4 py-5 sm:px-6 sm:py-7">
-                    <header className="mb-8 flex flex-col gap-5 pb-2 sm:flex-row sm:items-end sm:justify-between">
+                <div className="dash-thread flex w-full flex-col px-4 py-8 sm:px-6 sm:py-10">
+                    <header className="mb-10 flex flex-col gap-6 pb-2 sm:flex-row sm:items-end sm:justify-between">
                         <div className="min-w-0">
-                            <p className="section-heading text-brand-muted">Office · Portfolio</p>
+                            <p className="dash-section-label">Office · Portfolio</p>
                             <h1 className="mt-1.5 text-2xl font-semibold tracking-tight text-brand-text sm:text-3xl">Executive overview</h1>
                             <p className="mt-3 max-w-lg text-sm leading-relaxed text-brand-muted">
                                 Pick a tile — analytics stay folded until you want them. The Chief of Staff bar below is the main control surface.
@@ -308,16 +308,14 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         </div>
                     </header>
 
-                    <section aria-label="Shortcuts" className="mb-6">
-                        <p className="mb-4 text-[11px] font-medium text-brand-muted/90">Surfaces</p>
-                        <div className="grid gap-4 sm:grid-cols-2">
+                    <section aria-label="Shortcuts" className="mb-10">
+                        <p className="dash-section-label">Surfaces</p>
+                        <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap">
                             <button
                                 type="button"
                                 onClick={() => setPortfolioDashExpanded((o) => !o)}
-                                className={`flex flex-col items-start gap-3 rounded-2xl p-5 text-left transition ${
-                                    portfolioDashExpanded
-                                        ? 'bg-white/[0.06] ring-1 ring-white/[0.08]'
-                                        : 'bg-white/[0.03] hover:bg-white/[0.05]'
+                                className={`dash-msg flex min-w-0 flex-1 flex-col items-start gap-3 text-left transition sm:min-w-[14rem] ${
+                                    portfolioDashExpanded ? 'bg-zinc-800/55' : 'hover:bg-zinc-800/50'
                                 }`}
                             >
                                 <div className="flex w-full items-center justify-between gap-2">
@@ -337,7 +335,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 <button
                                     type="button"
                                     onClick={onNewVenture}
-                                    className="flex flex-col items-start gap-3 rounded-2xl bg-white/[0.03] p-5 text-left transition hover:bg-white/[0.05]"
+                                    className="dash-msg flex min-w-0 flex-1 flex-col items-start gap-3 text-left transition hover:bg-zinc-800/50 sm:min-w-[14rem]"
                                 >
                                     <Target className="h-6 w-6 text-brand-muted" aria-hidden />
                                     <div>
@@ -354,7 +352,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             <button
                                 type="button"
                                 onClick={() => document.getElementById('portfolio-ventures')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-                                className="mt-4 w-full rounded-2xl bg-white/[0.02] py-3.5 text-sm font-medium text-brand-muted transition hover:bg-white/[0.04] hover:text-brand-text"
+                                className="mt-6 w-full rounded-2xl py-3.5 text-sm font-medium text-brand-muted transition hover:bg-white/[0.04] hover:text-brand-text"
                             >
                                 Jump to saved ventures ({ventureCount})
                             </button>
@@ -362,8 +360,8 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                     </section>
 
                     {portfolioDashExpanded && (
-                        <div className="mb-8 animate-in fade-in slide-in-from-bottom-2 duration-300 overflow-hidden rounded-2xl bg-white/[0.03]">
-                            <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3">
+                        <div className="mb-10 animate-in fade-in slide-in-from-bottom-2 duration-300 overflow-hidden rounded-3xl bg-zinc-900/25 px-1 py-1 sm:px-2">
+                            <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-4 sm:px-5">
                                 <p className="text-sm font-semibold text-brand-text">Portfolio analytics</p>
                                 <button
                                     type="button"
@@ -373,36 +371,36 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     Collapse
                                 </button>
                             </div>
-                            <div className="space-y-6 p-4 sm:p-5">
+                            <div className="space-y-8 p-5 sm:p-6">
                                 <div
-                                    className="grid gap-3 sm:grid-cols-3"
+                                    className="flex flex-col gap-4 sm:flex-row sm:flex-wrap"
                                     aria-label="Portfolio summary"
                                 >
-                                    <div className="rounded-xl border border-brand-border bg-brand-panel/70 px-4 py-3">
+                                    <div className="dash-msg min-w-0 flex-1 sm:min-w-[8rem]">
                                         <p className="text-[10px] font-medium text-brand-muted/90">Ventures</p>
                                         <p className="mt-1 font-serif text-xl font-semibold tabular-nums text-brand-text">{ventureCount}</p>
                                     </div>
-                                    <div className="rounded-xl border border-brand-border bg-brand-panel/70 px-4 py-3">
+                                    <div className="dash-msg min-w-0 flex-1 sm:min-w-[8rem]">
                                         <p className="text-[10px] font-medium text-brand-muted/90">Office sync</p>
                                         <p className="mt-1 font-serif text-xl font-semibold tabular-nums text-brand-text">
                                             {Math.max(0, Math.floor((Date.now() - systemState.lastSync) / 60000))}m
                                         </p>
                                     </div>
-                                    <div className="rounded-xl border border-brand-border bg-brand-panel/70 px-4 py-3">
+                                    <div className="dash-msg min-w-0 flex-1 sm:min-w-[8rem]">
                                         <p className="text-[10px] font-medium text-brand-muted/90">Exec roles</p>
                                         <p className="mt-1 font-serif text-xl font-semibold tabular-nums text-brand-text">{EXEC_OUTPUT_ROLES.length}</p>
                                     </div>
                                 </div>
 
-                    <section className="grid gap-4 lg:grid-cols-2" aria-label="Portfolio charts">
-                        <div className="rounded-xl border border-brand-border bg-brand-panel/70 p-4 sm:p-5">
+                    <section className="flex flex-col gap-8" aria-label="Portfolio charts">
+                        <div className="dash-msg">
                             <h3 className="text-[11px] font-medium text-brand-muted/90">Portfolio mix</h3>
                             <p className="mt-1 text-[10px] text-brand-muted">
                                 <span className="text-brand-teal">Strategy</span> on file vs{' '}
                                 <span className="text-slate-400">draft</span> records
                             </p>
                             {portfolioComposition.length > 0 ? (
-                                <div className="mt-3 h-[200px] w-full">
+                                <div className="dash-chart-h mt-4 w-full">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <PieChart>
                                             <Pie
@@ -436,13 +434,13 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 <p className="mt-10 py-6 text-center text-sm text-brand-muted">Add a venture to see composition.</p>
                             )}
                         </div>
-                        <div className="rounded-xl border border-brand-border bg-brand-panel/70 p-4 sm:p-5">
+                        <div className="dash-msg">
                             <h3 className="text-[11px] font-medium text-brand-muted/90">New ventures by month</h3>
                             <p className="mt-1 text-[10px] text-brand-muted">
                                 Count of ventures per calendar month (by created date) · colors rotate for contrast only
                             </p>
                             {venturesByMonth.length > 0 ? (
-                                <div className="mt-3 h-[200px] w-full">
+                                <div className="dash-chart-h mt-4 w-full">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <BarChart data={venturesByMonth} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
                                             <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" vertical={false} />
@@ -466,9 +464,9 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         </div>
                     )}
 
-                    <section id="portfolio-ventures" className="scroll-mt-6">
-                        <div className="mb-4">
-                            <h2 className="text-[11px] font-medium text-brand-muted/90">
+                    <section id="portfolio-ventures" className="scroll-mt-8">
+                        <div className="mb-5">
+                            <h2 className="dash-section-label">
                                 {ventureCount > 0 ? 'Your ventures' : 'No ventures yet'}
                             </h2>
                             <p className="mt-1 text-sm text-brand-muted">
@@ -479,15 +477,15 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         </div>
 
                         {ventureCount > 0 ? (
-                            <div className={`grid gap-4 text-left ${gridVentureClass}`}>
+                            <div className={`grid gap-5 text-left ${gridVentureClass}`}>
                                 {allProjects.map((project) => (
                                     <button
                                         key={project.id}
                                         type="button"
                                         onClick={() => setActiveProject(project)}
-                                        className="group relative flex w-full items-start gap-4 rounded-xl border border-brand-border/90 bg-brand-panel/50 p-4 text-left transition-all hover:border-brand-border hover:bg-brand-panel sm:p-5"
+                                        className="group relative flex w-full items-start gap-4 rounded-2xl bg-zinc-800/35 p-5 text-left transition-all hover:bg-zinc-800/50 sm:p-6"
                                     >
-                                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-brand-border bg-brand-bg">
+                                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/[0.06]">
                                             <Briefcase className="h-5 w-5 text-brand-muted" aria-hidden />
                                         </div>
                                         <div className="min-w-0 flex-1">
@@ -510,7 +508,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 ))}
                             </div>
                         ) : (
-                            <div className="rounded-xl border border-dashed border-brand-border bg-brand-panel/25 px-6 py-10 text-center">
+                            <div className="dash-msg border border-dashed border-white/[0.08] px-6 py-12 text-center">
                                 <p className="mx-auto max-w-sm text-sm leading-relaxed text-brand-muted">
                                     No ventures yet — use <span className="text-brand-muted">New venture</span> on the left or the
                                     card above (opens Personal Assistant).
@@ -519,14 +517,14 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         )}
                     </section>
 
-                    <div className="mt-8 rounded-xl border border-brand-border/80 bg-brand-panel/30 p-5">
-                        <h3 className="text-[11px] font-medium text-brand-muted/90">Executive desks</h3>
-                        <p className="mt-1 text-xs text-brand-muted">Each role produces a fixed artifact once a venture is active.</p>
-                        <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+                    <div className="mt-12 dash-msg">
+                        <h3 className="mb-2 text-sm font-medium text-brand-text">Executive desks</h3>
+                        <p className="text-xs leading-relaxed text-brand-muted">Each role produces a fixed artifact once a venture is active.</p>
+                        <ul className="mt-5 grid gap-3 sm:grid-cols-2">
                             {EXEC_OUTPUT_ROLES.map((role) => (
                                 <li
                                     key={role.id}
-                                    className="flex items-start gap-2 rounded-lg border border-brand-border/80 bg-brand-panel/40 px-3 py-2"
+                                    className="flex items-start gap-2 rounded-xl bg-white/[0.04] px-3 py-3"
                                 >
                                     <span className="shrink-0 font-mono text-[10px] font-bold text-brand-muted">{role.shortTitle}</span>
                                     <span className="min-w-0 text-[11px] leading-snug text-brand-muted">{role.execOutput}</span>
@@ -540,17 +538,16 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     }
 
     return (
-        <div className="h-full overflow-y-auto custom-scrollbar bg-brand-bg px-0 py-5 pb-8 font-sans sm:py-6">
-            <div className="mx-auto w-full max-w-[1200px]">
-                    <div className="space-y-10 pb-12 animate-in fade-in duration-500">
-                        <header className="flex flex-col gap-6 pb-2 sm:flex-row sm:items-end sm:justify-between">
+        <div className="h-full overflow-y-auto custom-scrollbar bg-brand-bg px-4 py-8 pb-16 font-sans sm:px-6 sm:py-10">
+            <div className="dash-thread space-y-14 pb-8 animate-in fade-in duration-500">
+                        <header className="flex flex-col gap-8 pb-2 sm:flex-row sm:items-end sm:justify-between">
                             <div className="min-w-0">
                                 <div className="mb-2 flex items-center gap-2.5">
                                     <span
                                         className={`h-2 w-2 shrink-0 rounded-full ${systemState.networkStatus === 'secure' ? 'bg-zinc-400' : 'bg-brand-muted/60'}`}
                                         aria-hidden
                                     />
-                                    <span className="section-heading !text-brand-muted">Executive overview</span>
+                                    <span className="dash-section-label !mb-0">Executive overview</span>
                                 </div>
                                 <h1 className="text-2xl font-semibold tracking-tight text-brand-text sm:text-3xl">{activeProject.name}</h1>
                                 <p className="mt-3 max-w-2xl text-sm leading-relaxed text-brand-muted">
@@ -591,7 +588,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             </div>
                         </header>
 
-                        <section id="exec-goal-advancement" className="scroll-mt-8 space-y-4" aria-labelledby="goal-advancement-heading">
+                        <section id="exec-goal-advancement" className="scroll-mt-8 space-y-8" aria-labelledby="goal-advancement-heading">
                             <h2 id="goal-advancement-heading" className="sr-only">
                                 Goal advancement dashboard
                             </h2>
@@ -601,16 +598,14 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         progress={livingOffice.progress}
                                         suggestedFocus={livingOffice.brief.suggestedFocus}
                                     />
-                                    <section aria-label="Daily office" className="grid gap-4 lg:grid-cols-3">
-                                        <MorningBriefCard brief={livingOffice.brief} className="lg:col-span-2" />
-                                        <div className="flex flex-col gap-4">
-                                            <AmbientNotificationTray items={livingOffice.notifications} />
-                                            <WeeklyReviewCard review={livingOffice.weeklyReview} />
-                                        </div>
+                                    <section aria-label="Daily office" className="flex flex-col gap-8">
+                                        <MorningBriefCard brief={livingOffice.brief} />
+                                        <AmbientNotificationTray items={livingOffice.notifications} />
+                                        <WeeklyReviewCard review={livingOffice.weeklyReview} />
                                     </section>
                                 </>
                             ) : (
-                                <div className="rounded-2xl border border-dashed border-brand-border bg-brand-panel/20 px-5 py-8 text-center">
+                                <div className="dash-msg border border-dashed border-white/[0.08] px-5 py-10 text-center">
                                     <p className="text-sm text-brand-muted">Office metrics have not loaded yet for this venture.</p>
                                     <button
                                         type="button"
@@ -627,7 +622,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             <button
                                 type="button"
                                 onClick={() => openDashboard('dash-staff-snapshot')}
-                                className="group flex w-full flex-col gap-3 rounded-2xl bg-white/[0.04] p-6 text-left transition hover:bg-white/[0.06] sm:flex-row sm:items-center sm:justify-between"
+                                className="group dash-msg flex w-full flex-col gap-4 text-left transition hover:bg-zinc-800/55 sm:flex-row sm:items-center sm:justify-between"
                             >
                                 <div className="flex min-w-0 items-start gap-3">
                                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/[0.06]">
@@ -648,25 +643,22 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         )}
 
                         <section aria-labelledby="exec-hub-tiles">
-                            <h2 id="exec-hub-tiles" className="mb-1 text-[11px] font-medium text-brand-muted/90">
+                            <h2 id="exec-hub-tiles" className="dash-section-label">
                                 Surfaces
                             </h2>
-                            <p className="mb-6 max-w-2xl text-sm leading-relaxed text-brand-muted">
-                                Tiles are shortcuts; expanding <span className="text-brand-muted">Dashboard</span> reveals charts and desks in-line.
-                                The <span className="font-medium text-brand-text/90">Chief of Staff</span> bar at the bottom stays fixed — pick a model
-                                there, type, and scroll the thread inside the bar.
+                            <p className="mb-8 max-w-prose text-sm leading-relaxed text-brand-muted">
+                                Shortcuts below; expanding <span className="text-brand-muted">Dashboard</span> opens charts and desks in one scrollable thread.
+                                Use the <span className="font-medium text-brand-text/90">Chief of Staff</span> bar at the bottom for chat.
                             </p>
-                            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                            <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap">
                                 <button
                                     type="button"
                                     onClick={() => {
                                         setDashboardExpanded((open) => !open);
                                         setPendingScrollId(null);
                                     }}
-                                    className={`flex flex-col items-start gap-4 rounded-2xl p-6 text-left transition ${
-                                        dashboardExpanded
-                                            ? 'bg-white/[0.06] ring-1 ring-white/[0.08]'
-                                            : 'bg-white/[0.03] hover:bg-white/[0.05]'
+                                    className={`dash-msg flex min-w-0 flex-1 flex-col items-start gap-3 text-left transition sm:min-w-[14rem] ${
+                                        dashboardExpanded ? 'bg-zinc-800/55' : 'hover:bg-zinc-800/50'
                                     }`}
                                     aria-expanded={dashboardExpanded}
                                 >
@@ -679,8 +671,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     <div>
                                         <h3 className="text-base font-semibold text-brand-text">Dashboard</h3>
                                         <p className="mt-2 text-sm leading-relaxed text-brand-muted">
-                                            Venture snapshot, execution score, charts, staff research, signal, desks — expands here; not a
-                                            separate section.
+                                            Snapshot, score, charts, staff research, signal, desks — opens below as one flowing thread.
                                         </p>
                                     </div>
                                 </button>
@@ -691,7 +682,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                             .getElementById('exec-goal-advancement')
                                             ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                                     }}
-                                    className="flex flex-col items-start gap-4 rounded-xl border border-brand-border bg-brand-panel/60 p-6 text-left transition hover:border-brand-border hover:bg-brand-panel"
+                                    className="dash-msg flex min-w-0 flex-1 flex-col items-start gap-3 text-left transition hover:bg-zinc-800/50 sm:min-w-[14rem]"
                                 >
                                     <Target className="h-6 w-6 text-brand-muted" aria-hidden />
                                     <div>
@@ -704,7 +695,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 <button
                                     type="button"
                                     onClick={() => openDashboard('dash-signal')}
-                                    className="flex flex-col items-start gap-4 rounded-xl border border-brand-border bg-brand-panel/60 p-6 text-left transition hover:border-brand-border hover:bg-brand-panel"
+                                    className="dash-msg flex min-w-0 flex-1 flex-col items-start gap-3 text-left transition hover:bg-zinc-800/50 sm:min-w-[14rem]"
                                 >
                                     <Activity className="h-6 w-6 text-brand-muted" aria-hidden />
                                     <div>
@@ -717,7 +708,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 <button
                                     type="button"
                                     onClick={() => openDashboard('dash-desks')}
-                                    className="flex flex-col items-start gap-4 rounded-xl border border-brand-border bg-brand-panel/60 p-6 text-left transition hover:border-brand-border hover:bg-brand-panel"
+                                    className="dash-msg flex min-w-0 flex-1 flex-col items-start gap-3 text-left transition hover:bg-zinc-800/50 sm:min-w-[14rem]"
                                 >
                                     <LayoutGrid className="h-6 w-6 text-brand-muted" aria-hidden />
                                     <div>
@@ -730,7 +721,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 <button
                                     type="button"
                                     onClick={() => switchRoom('reports')}
-                                    className="flex flex-col items-start gap-4 rounded-xl border border-brand-border bg-brand-panel/60 p-6 text-left transition hover:border-brand-border hover:bg-brand-panel"
+                                    className="dash-msg flex min-w-0 flex-1 flex-col items-start gap-3 text-left transition hover:bg-zinc-800/50 sm:min-w-[14rem]"
                                 >
                                     <FileText className="h-6 w-6 text-brand-muted" aria-hidden />
                                     <div>
@@ -743,7 +734,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 <button
                                     type="button"
                                     onClick={() => switchRoom('calendar')}
-                                    className="flex flex-col items-start gap-4 rounded-xl border border-brand-border bg-brand-panel/60 p-6 text-left transition hover:border-brand-border hover:bg-brand-panel"
+                                    className="dash-msg flex min-w-0 flex-1 flex-col items-start gap-3 text-left transition hover:bg-zinc-800/50 sm:min-w-[14rem]"
                                 >
                                     <Calendar className="h-6 w-6 text-brand-muted" aria-hidden />
                                     <div>
@@ -756,7 +747,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 <button
                                     type="button"
                                     onClick={() => switchRoom('boardroom')}
-                                    className="flex flex-col items-start gap-4 rounded-xl border border-brand-border bg-brand-panel/60 p-6 text-left transition hover:border-brand-border hover:bg-brand-panel"
+                                    className="dash-msg flex min-w-0 flex-1 flex-col items-start gap-3 text-left transition hover:bg-zinc-800/50 sm:min-w-[14rem]"
                                 >
                                     <Building2 className="h-6 w-6 text-brand-muted" aria-hidden />
                                     <div>
@@ -772,9 +763,9 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         {dashboardExpanded && (
                             <div
                                 id="exec-dashboard-panel"
-                                className="animate-in fade-in slide-in-from-bottom-2 duration-300 overflow-hidden rounded-xl border border-brand-border bg-brand-panel/70"
+                                className="animate-in fade-in slide-in-from-bottom-2 duration-300 overflow-hidden rounded-3xl bg-zinc-900/30 px-1 py-1 sm:px-2"
                             >
-                                <div className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-b border-brand-border/90 bg-brand-panel/95 px-4 py-3 backdrop-blur-sm sm:px-5">
+                                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.06] px-4 py-4 sm:px-5">
                                     <div>
                                         <p className="text-[10px] font-medium text-brand-muted/90">Workspace canvas</p>
                                         <p className="text-sm font-semibold text-brand-text">Dashboard</p>
@@ -785,17 +776,17 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                             setDashboardExpanded(false);
                                             setPendingScrollId(null);
                                         }}
-                                        className="inline-flex items-center gap-2 rounded-lg border border-brand-border bg-brand-input px-3 py-2 text-xs font-semibold text-brand-text transition hover:border-brand-teal/40 hover:bg-brand-card"
+                                        className="inline-flex items-center gap-2 rounded-full bg-white/[0.08] px-3 py-2 text-xs font-semibold text-brand-text transition hover:bg-white/[0.12]"
                                     >
                                         <ChevronUp className="h-4 w-4" aria-hidden />
                                         Collapse
                                     </button>
                                 </div>
-                                <div className="space-y-8 px-4 py-6 sm:px-6 sm:py-8">
+                                <div className="space-y-12 px-4 py-8 sm:px-6 sm:py-10">
                         {activeProject.agentStaffSnapshot && (
                     <section
                         id="dash-staff-snapshot"
-                        className="mb-8 rounded-xl border border-brand-teal/25 bg-brand-teal/12 p-5 sm:p-6"
+                        className="dash-msg mb-10 bg-teal-950/20"
                         aria-labelledby="dash-staff-snapshot-title"
                     >
                         <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -808,7 +799,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             </span>
                         </div>
                         <p className="text-sm leading-relaxed text-brand-text">{activeProject.agentStaffSnapshot.summary}</p>
-                        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:flex-wrap">
                             {(
                                 [
                                     ['CEO', activeProject.agentStaffSnapshot.desks.ceo],
@@ -819,7 +810,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 ] as const
                             ).map(([label, text]) =>
                                 text?.trim() ? (
-                                    <div key={label} className="rounded-lg border border-brand-border/80 bg-brand-panel/50 p-3">
+                                    <div key={label} className="min-w-0 flex-1 rounded-2xl bg-white/[0.04] p-4 sm:min-w-[12rem]">
                                         <p className="text-[10px] font-medium text-brand-muted/90">{label}</p>
                                         <p className="mt-2 max-h-28 overflow-y-auto text-[11px] leading-snug text-brand-muted custom-scrollbar whitespace-pre-wrap">
                                             {text}
@@ -833,7 +824,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
 
                 {activeProject.staffFocusToday && activeProject.staffFocusToday.length > 0 && (
                     <section
-                        className="mb-8 rounded-xl border border-amber-500/20 bg-amber-950/15 p-5 sm:p-6"
+                        className="dash-msg mb-10 bg-amber-950/15"
                         aria-labelledby="dash-focus-today"
                     >
                         <h2 id="dash-focus-today" className="mb-3 text-sm font-medium text-amber-100/95">
@@ -849,17 +840,17 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                     </section>
                 )}
 
-                <section className="mb-10" aria-labelledby="dash-snapshot">
-                    <h2 id="dash-snapshot" className="mb-3 text-[11px] font-medium text-brand-muted/90">
+                <section className="mb-12" aria-labelledby="dash-snapshot">
+                    <h2 id="dash-snapshot" className="dash-section-label">
                         Venture snapshot
                     </h2>
-                    <div className="grid gap-6 lg:grid-cols-2">
-                        <div className="rounded-xl border border-brand-border bg-brand-input/60 p-5 sm:p-6">
+                    <div className="flex flex-col gap-8">
+                        <div className="dash-msg">
                             <p className="text-[10px] font-medium text-brand-muted/90">Strategic line</p>
                             <p className="mt-2 line-clamp-6 text-sm leading-relaxed text-brand-text">
                                 {intentPreview || 'Pin strategic intent and narrative on the CEO desk to populate this summary.'}
                             </p>
-                            <div className="mt-6 grid grid-cols-2 gap-3 border-t border-brand-border/80 pt-5 sm:grid-cols-3">
+                            <div className="mt-8 grid grid-cols-2 gap-4 border-t border-white/[0.06] pt-6 sm:grid-cols-3">
                                 <div>
                                     <p className="text-[10px] font-medium text-brand-muted/90">Phases</p>
                                     <p className="mt-1 font-mono text-sm text-brand-text">
@@ -897,7 +888,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 </div>
                             </div>
                         </div>
-                        <div className="rounded-xl border border-brand-border bg-brand-input/60 p-5 sm:p-6">
+                        <div className="dash-msg">
                             <div className="mb-1 flex flex-wrap items-baseline justify-between gap-2">
                                 <h3 className="text-sm font-medium text-brand-text">Score drivers</h3>
                                 <span className="text-[10px] text-brand-muted">Current snapshot · not a time series</span>
@@ -905,7 +896,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             <p className="mb-4 text-[11px] leading-snug text-brand-muted">
                                 Each bar uses the same inputs as the composite score (binary checks + phase/priority completion).
                             </p>
-                            <div className="h-[220px] w-full">
+                            <div className="dash-chart-h w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart
                                         data={executionBreakdown}
@@ -953,8 +944,8 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         </div>
                     </div>
 
-                    <div className="mt-6 grid gap-5 lg:grid-cols-3">
-                        <div className="rounded-xl border border-brand-border bg-brand-input/50 p-4 sm:p-5">
+                    <div className="mt-10 flex flex-col gap-8 lg:flex-row lg:flex-wrap">
+                        <div className="dash-msg min-w-0 flex-1 lg:min-w-[18rem]">
                             <h3 className="text-sm font-medium text-brand-text">Phase status</h3>
                             <p className="mt-0.5 text-[10px] text-brand-muted">
                                 Timeline ·{' '}
@@ -963,7 +954,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 <span className="text-slate-400">planned</span>
                             </p>
                             {phasePieData.length > 0 ? (
-                                <div className="mt-2 h-[200px] w-full">
+                                <div className="dash-chart-h mt-3 w-full">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <PieChart>
                                             <Pie
@@ -997,14 +988,14 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 <p className="mt-8 py-6 text-center text-sm text-brand-muted">No phases defined yet.</p>
                             )}
                         </div>
-                        <div className="rounded-xl border border-brand-border bg-brand-input/50 p-4 sm:p-5">
+                        <div className="dash-msg min-w-0 flex-1 lg:min-w-[18rem]">
                             <h3 className="text-sm font-medium text-brand-text">Priority completion</h3>
                             <p className="mt-0.5 text-[10px] text-brand-muted">
                                 <span className="text-violet-400/90">Complete</span> vs{' '}
                                 <span className="text-rose-400/90">open</span> items
                             </p>
                             {priorityPieData.length > 0 ? (
-                                <div className="mt-2 h-[200px] w-full">
+                                <div className="dash-chart-h mt-3 w-full">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <PieChart>
                                             <Pie
@@ -1038,12 +1029,12 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 <p className="mt-8 py-6 text-center text-sm text-brand-muted">No priorities listed yet.</p>
                             )}
                         </div>
-                        <div className="rounded-xl border border-brand-border bg-brand-input/50 p-4 sm:p-5">
+                        <div className="dash-msg min-w-0 flex-1 lg:min-w-[18rem]">
                             <h3 className="text-sm font-medium text-brand-text">Desk artifact coverage</h3>
                             <p className="mt-0.5 text-[10px] text-brand-muted">
                                 One color per desk role · 100% = artifact saved
                             </p>
-                            <div className="mt-3 h-[200px] w-full">
+                            <div className="dash-chart-h mt-3 w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart
                                         data={deskCoverage}
@@ -1072,12 +1063,12 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                     </div>
                 </section>
 
-                <section className="mb-10" aria-labelledby="dash-signal">
-                    <h2 id="dash-signal" className="mb-3 text-[11px] font-medium text-brand-muted/90">
+                <section className="mb-12" aria-labelledby="dash-signal">
+                    <h2 id="dash-signal" className="dash-section-label">
                         Signal &amp; activity
                     </h2>
-                    <div className="grid gap-6 lg:grid-cols-2 lg:items-stretch">
-                        <div className="surface-flow flex min-h-[300px] flex-col overflow-hidden p-6">
+                    <div className="flex flex-col gap-8 lg:flex-row lg:items-stretch">
+                        <div className="dash-msg flex min-h-0 flex-1 flex-col">
                             <div className="mb-1 flex items-start justify-between gap-3">
                                 <div>
                                     <h3 className="text-sm font-medium text-brand-text">Activity by source</h3>
@@ -1088,7 +1079,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 <BarChart3 className="h-5 w-5 shrink-0 text-brand-muted" aria-hidden />
                             </div>
                             {activityBySource.length > 0 ? (
-                                <div className="mt-4 min-h-[200px] flex-1">
+                                <div className="dash-chart-h mt-5 w-full">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <BarChart data={activityBySource} margin={{ top: 8, right: 8, left: 0, bottom: 48 }}>
                                             <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" vertical={false} />
@@ -1117,7 +1108,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             )}
                         </div>
 
-                        <div className="surface-wave relative flex min-h-[280px] flex-col overflow-hidden p-6 lg:min-h-[320px]">
+                        <div className="dash-msg flex min-h-[14rem] flex-1 flex-col lg:min-h-[16rem]">
                             <div className="mb-4 flex items-center justify-between">
                                 <h3 className="flex items-center gap-2 text-sm font-medium text-brand-text">
                                     <Activity className="h-4 w-4 text-brand-muted" aria-hidden />
@@ -1125,39 +1116,37 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 </h3>
                                 <span className="h-2 w-2 animate-pulse rounded-full bg-brand-muted" aria-hidden />
                             </div>
-                            <div className="custom-scrollbar flex-1 space-y-3 overflow-y-auto pr-1">
+                            <div className="custom-scrollbar max-h-[min(50vh,22rem)] flex-1 space-y-4 overflow-y-auto pr-1">
                                 {systemLogs.length === 0 ? (
                                     <div className="py-10 text-center text-sm text-brand-muted">No activity yet.</div>
                                 ) : (
                                     systemLogs.map((log) => (
                                         <div
                                             key={log.id}
-                                            className="border-l-2 border-brand-border bg-brand-panel/70 py-3 pl-3"
-                                            style={{ borderRadius: '0 0.5rem 0.5rem 0' }}
+                                            className="rounded-2xl bg-white/[0.04] px-4 py-3"
                                         >
-                                            <div className="mb-1 flex flex-wrap items-center gap-2">
-                                                <span className="rounded bg-brand-input px-2 py-0.5 text-[10px] font-medium text-brand-muted">
+                                            <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                                                <span className="rounded-full bg-white/[0.06] px-2.5 py-0.5 text-[10px] font-medium text-brand-muted">
                                                     {log.source}
                                                 </span>
                                                 <span className="font-mono text-[10px] text-brand-muted">
                                                     {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                 </span>
                                             </div>
-                                            <p className="text-sm leading-relaxed text-brand-text">{log.message}</p>
+                                            <p className="text-[15px] leading-relaxed text-brand-text">{log.message}</p>
                                         </div>
                                     ))
                                 )}
                             </div>
-                            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-brand-card to-transparent" />
                         </div>
                     </div>
                 </section>
 
-                <section className="mb-10" aria-labelledby="dash-desks">
-                    <h2 id="dash-desks" className="mb-3 text-[11px] font-medium text-brand-muted/90">
+                <section className="mb-12" aria-labelledby="dash-desks">
+                    <h2 id="dash-desks" className="dash-section-label">
                         Operational desks
                     </h2>
-                    <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="grid gap-4 sm:grid-cols-2">
                         <AgentCard
                             agent={agents.ceo}
                             activeRoom={activeRoom}
@@ -1185,12 +1174,12 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                     </div>
                 </section>
 
-                <section className="mb-6" aria-labelledby="dash-next">
-                    <h2 id="dash-next" className="mb-3 text-[11px] font-medium text-brand-muted/90">
+                <section className="mb-4" aria-labelledby="dash-next">
+                    <h2 id="dash-next" className="dash-section-label">
                         Next focus
                     </h2>
-                    <div className="flex flex-col gap-6 overflow-hidden rounded-xl border border-brand-border bg-brand-input/60 p-6 md:flex-row md:items-start md:justify-between md:p-8">
-                        <div className="max-w-2xl">
+                    <div className="dash-msg flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+                        <div className="max-w-prose">
                             <p className="font-serif text-xl leading-snug text-brand-text md:text-2xl">
                                 {phaseActive > 0
                                     ? `Drive the active timeline phase — ${phaseDone} of ${phaseTotal} phases complete.`
@@ -1199,22 +1188,22 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                       : 'Open the CEO desk to set intent, timeline phases, and priorities.'}
                             </p>
                         </div>
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-brand-border bg-brand-panel">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/[0.06]">
                             <Zap className="h-5 w-5 text-brand-muted" aria-hidden />
                         </div>
                     </div>
-                    <div className="mt-4 flex flex-wrap gap-2">
+                    <div className="mt-6 flex flex-wrap gap-3">
                         <button
                             type="button"
                             onClick={() => switchRoom('ceo')}
-                            className="rounded-lg border border-brand-border bg-brand-card px-4 py-2.5 text-xs font-semibold text-brand-text transition hover:bg-brand-input"
+                            className="rounded-full bg-white/[0.08] px-4 py-2.5 text-xs font-semibold text-brand-text transition hover:bg-white/[0.12]"
                         >
                             CEO desk
                         </button>
                         <button
                             type="button"
                             onClick={() => switchRoom('reports')}
-                            className="rounded-lg border border-brand-border bg-brand-input px-4 py-2.5 text-xs font-semibold text-brand-text transition hover:border-brand-teal/40 hover:bg-brand-card"
+                            className="rounded-full bg-white/[0.06] px-4 py-2.5 text-xs font-semibold text-brand-text transition hover:bg-white/[0.1]"
                         >
                             Knowledge base
                         </button>
@@ -1224,7 +1213,6 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 </div>
                             </div>
                         )}
-                    </div>
             </div>
         </div>
     );
@@ -1235,9 +1223,9 @@ function AgentCard({ agent, activeRoom, onClick, status }: any) {
         <button
             type="button"
             onClick={onClick}
-            className="group relative flex min-h-[5rem] w-full items-center gap-4 rounded-lg border border-brand-border bg-brand-input py-3 pl-3 pr-5 text-left transition-colors hover:border-brand-border"
+            className="group relative flex min-h-[4.5rem] w-full items-center gap-4 rounded-2xl bg-white/[0.04] py-4 pl-4 pr-5 text-left transition-colors hover:bg-white/[0.07]"
         >
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-brand-border bg-brand-panel text-brand-muted">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/[0.06] text-brand-muted">
                 {agent.icon}
             </div>
             <div className="min-w-0 flex-1">
@@ -1252,7 +1240,7 @@ function AgentCard({ agent, activeRoom, onClick, status }: any) {
             </div>
             <ChevronRight className="h-5 w-5 shrink-0 text-brand-muted transition group-hover:translate-x-0.5 group-hover:text-brand-muted" aria-hidden />
             {activeRoom === agent.role && (
-                <div className="pointer-events-none absolute inset-0 rounded-lg ring-2 ring-brand-teal/35" />
+                <div className="pointer-events-none absolute inset-0 rounded-2xl ring-2 ring-brand-teal/35" />
             )}
         </button>
     );
