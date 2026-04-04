@@ -236,8 +236,8 @@ export function StrategyNotebook() {
         <div className="flex h-full min-h-0 flex-col overflow-hidden bg-brand-bg">
             {deskView === 'hub' ? (
                 <div className="flex h-full min-h-0 flex-col overflow-hidden bg-brand-bg">
-                    <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto">
-                        <div className="space-y-8 px-6 py-6 sm:px-8 sm:py-8">
+                    <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto scroll-pb-32">
+                        <div className="space-y-8 px-6 py-6 pb-28 sm:px-8 sm:py-8 sm:pb-32">
                             <div className="space-y-2">
                                 <label className="text-xs font-medium text-zinc-500" htmlFor="ceo-strategic-intent">
                                     Strategic intent
