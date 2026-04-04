@@ -606,8 +606,9 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 Surfaces
                             </h2>
                             <p className="mb-6 max-w-2xl text-sm leading-relaxed text-brand-muted">
-                                Tiles are shortcuts; expanding <span className="text-brand-muted">Dashboard</span> reveals charts and desks in-line,
-                                above the AI bar — like a playground canvas.
+                                Tiles are shortcuts; expanding <span className="text-brand-muted">Dashboard</span> reveals charts and desks in-line.
+                                The <span className="font-medium text-brand-text/90">Chief of Staff</span> bar at the bottom stays fixed — pick a model
+                                there, type, and scroll the thread inside the bar.
                             </p>
                             <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
                                 <button
@@ -1008,18 +1009,6 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                     </div>
                 </section>
 
-                <section className="mb-10" aria-labelledby="dash-ping">
-                    <h2 id="dash-ping" className="mb-3 text-[11px] font-medium text-brand-muted/90">
-                        Office chat
-                    </h2>
-                    <div className="rounded-xl border border-brand-border/80 bg-brand-panel/50 p-4 sm:p-5">
-                        <p className="text-sm leading-relaxed text-brand-muted">
-                            Use the <span className="font-semibold text-brand-text">Chief of Staff</span> bar fixed at the bottom of this screen to
-                            message the office — same intelligence thread, without a separate chat column.
-                        </p>
-                    </div>
-                </section>
-
                 <section className="mb-10" aria-labelledby="dash-signal">
                     <h2 id="dash-signal" className="mb-3 text-[11px] font-medium text-brand-muted/90">
                         Signal &amp; activity
@@ -1172,11 +1161,6 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 </div>
                             </div>
                         )}
-
-                        <p className="rounded-xl border border-brand-border/90 bg-brand-panel/40 px-5 py-4 text-center text-sm leading-relaxed text-brand-muted sm:text-left">
-                            <span className="font-semibold text-brand-muted">Chief of Staff</span> lives in the workspace bar below — same intelligence
-                            thread for every tile and the expanded dashboard.
-                        </p>
                     </div>
             </div>
         </div>

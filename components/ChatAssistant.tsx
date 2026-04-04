@@ -3,8 +3,24 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useOffice, getAgentSystemPrompt, AgentRole } from '@/lib/OfficeContext';
 import { getChatRailTheme, getChatAgentRoleForRoom } from '@/lib/roomThemes';
-import { Paperclip, ArrowUp, Bot, X, Eraser, Mic } from 'lucide-react';
+import { Paperclip, ArrowUp, Bot, X, Eraser, Mic, Cpu } from 'lucide-react';
 import { ModelAttribution } from '@/components/ModelAttribution';
+import {
+    EXEC_CHAT_MODEL_OPTIONS,
+    EXEC_CHAT_MODEL_STORAGE_KEY,
+    isExecChatModelId,
+} from '@/lib/deskConstants';
+
+function readStoredExecModel(): string {
+    if (typeof window === 'undefined') return 'llama3';
+    try {
+        const v = localStorage.getItem(EXEC_CHAT_MODEL_STORAGE_KEY);
+        if (v && isExecChatModelId(v)) return v;
+    } catch {
+        /* noop */
+    }
+    return 'llama3';
+}
 
 interface Message {
     id: string;
@@ -74,6 +90,10 @@ export function ChatAssistant({
     }, [activeRoom]);
 
     const [selectedModel, setSelectedModel] = useState('llama3');
+
+    useEffect(() => {
+        setSelectedModel(readStoredExecModel());
+    }, []);
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -177,19 +197,57 @@ export function ChatAssistant({
     const isBottomDock = variant === 'bottomDock' || variant === 'aiOs';
     const isAiOs = variant === 'aiOs';
     const dockThreadEmpty = isBottomDock && messages.length === 0 && !isLoading;
+    const dockThreadActive = isBottomDock && !dockThreadEmpty;
 
     return (
         <div
             className={`flex min-h-0 flex-col overflow-hidden shadow-none transition-all duration-300 ${
                 isBottomDock && dockThreadEmpty
-                    ? 'h-auto w-full rounded-none border-0 bg-transparent'
+                    ? `h-auto w-full ${isAiOs ? 'rounded-2xl border border-white/[0.08] bg-[#131314]/95 shadow-[0_-16px_48px_rgba(0,0,0,0.55)] backdrop-blur-md' : 'rounded-none border-0 bg-transparent'}`
                     : isBottomDock
-                      ? 'h-full min-h-0 max-h-full rounded-none border-0 bg-transparent'
+                      ? `min-h-0 w-full max-h-full flex-1 ${isAiOs ? 'rounded-2xl border border-white/[0.08] bg-[#131314]/95 shadow-[0_-16px_48px_rgba(0,0,0,0.55)] backdrop-blur-md' : 'rounded-none border-0 bg-transparent'}`
                       : chatTheme.railClass
             }`}
         >
-            {isBottomDock && !dockThreadEmpty ? (
-                <div className="flex shrink-0 items-baseline justify-between gap-2 pb-2 pt-0.5">
+            {isBottomDock ? (
+                <div
+                    className={`flex shrink-0 flex-wrap items-end gap-2 border-b border-white/[0.06] px-3 pb-2.5 pt-3 sm:px-4 ${
+                        isAiOs ? 'rounded-t-2xl bg-white/[0.03]' : ''
+                    }`}
+                >
+                    <label className="flex min-w-0 flex-1 items-center gap-2 sm:max-w-[min(100%,20rem)]">
+                        <Cpu className="h-3.5 w-3.5 shrink-0 text-brand-muted opacity-80" aria-hidden />
+                        <span className="sr-only">Model</span>
+                        <select
+                            value={selectedModel}
+                            onChange={(e) => {
+                                const v = e.target.value;
+                                setSelectedModel(v);
+                                try {
+                                    localStorage.setItem(EXEC_CHAT_MODEL_STORAGE_KEY, v);
+                                } catch {
+                                    /* noop */
+                                }
+                            }}
+                            className="min-w-0 flex-1 cursor-pointer appearance-none rounded-xl border border-white/[0.1] bg-[#1a1b1f] py-2 pl-3 pr-8 text-[12px] font-medium text-brand-text shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-colors hover:border-white/[0.14] focus:border-brand-teal/50 focus:outline-none focus:ring-1 focus:ring-brand-teal/30"
+                            title="Model used for this thread (saved for next visit)"
+                            aria-label="Chat model"
+                        >
+                            {EXEC_CHAT_MODEL_OPTIONS.map((opt) => (
+                                <option key={opt.id} value={opt.id}>
+                                    {opt.label} — {opt.blurb}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
+                    <p className="hidden text-[10px] leading-snug text-brand-muted/85 sm:block sm:max-w-[12rem] lg:max-w-none">
+                        Server uses Groq when configured; otherwise local Ollama names apply.
+                    </p>
+                </div>
+            ) : null}
+
+            {isBottomDock && dockThreadActive ? (
+                <div className="flex shrink-0 items-baseline justify-between gap-2 border-b border-white/[0.04] px-1 py-2 sm:px-0">
                     <p className="min-w-0 text-[11px] leading-snug text-brand-muted/90">
                         <span className="text-brand-text/90">{currentAgent.name}</span>
                         <span className="text-brand-muted"> · {currentAgent.title}</span>
@@ -265,8 +323,8 @@ export function ChatAssistant({
 
             {!dockThreadEmpty && (
             <div
-                className={`custom-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto ${
-                    isBottomDock ? 'bg-transparent px-0 pb-2 pt-0' : 'bg-brand-bg p-4 sm:p-5'
+                className={`custom-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto overflow-x-hidden ${
+                    isBottomDock ? 'bg-transparent px-3 pb-2 pt-1 sm:px-4' : 'bg-brand-bg p-4 sm:p-5'
                 }`}
             >
                 {messages.length === 0 && (
