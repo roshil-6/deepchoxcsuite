@@ -13,6 +13,8 @@ import { Project, saveProject, getAllProjects } from '@/lib/db';
 import { emptyVentureShell } from '@/lib/minimalVenture';
 import { OfficeShell } from '@/components/OfficeShell';
 import { SyncToastHost } from '@/components/SyncToastHost';
+import { PersonalAssistantChatProvider } from '@/components/pa/PersonalAssistantChatContext';
+import { FloatingPABuddy } from '@/components/pa/FloatingPABuddy';
 
 export default function Home() {
   const [hasStarted, setHasStarted] = useState(false);
@@ -56,27 +58,30 @@ export default function Home() {
         onConfirm={(name) => void createVentureWithName(name)}
       />
       <OfficeShell>
-        <AppShell
-          onLogout={() => {
-            setHasStarted(false);
-            setNameVentureOpen(false);
-          }}
-          onNewVenture={openNameVentureModal}
-          /** Floating chat: CEO uses split thread+above bar; other desks use compact aiOs. PA / Dexo are full-page or immersive. */
-          bottomBar={
-            activeRoom !== 'personal_assistant' && activeRoom !== 'dexo' ? (
-              <AIInputBarShell>
-                {activeRoom === 'ceo' ? (
-                  <ChatAssistant variant="ceoSplit" useExecutiveThread />
-                ) : (
-                  <ChatAssistant variant="aiOs" />
-                )}
-              </AIInputBarShell>
-            ) : null
-          }
-        >
-          <WorkspaceStage hideWorkspaceHeader onNewVenture={openNameVentureModal} />
-        </AppShell>
+        <PersonalAssistantChatProvider>
+          <AppShell
+            onLogout={() => {
+              setHasStarted(false);
+              setNameVentureOpen(false);
+            }}
+            onNewVenture={openNameVentureModal}
+            /** Floating chat: CEO uses split thread+above bar; other desks use compact aiOs. PA / Dexo are full-page or immersive. */
+            bottomBar={
+              activeRoom !== 'personal_assistant' && activeRoom !== 'dexo' ? (
+                <AIInputBarShell>
+                  {activeRoom === 'ceo' ? (
+                    <ChatAssistant variant="ceoSplit" useExecutiveThread />
+                  ) : (
+                    <ChatAssistant variant="aiOs" />
+                  )}
+                </AIInputBarShell>
+              ) : null
+            }
+          >
+            <WorkspaceStage hideWorkspaceHeader onNewVenture={openNameVentureModal} />
+          </AppShell>
+          <FloatingPABuddy />
+        </PersonalAssistantChatProvider>
         <SyncToastHost />
       </OfficeShell>
     </div>

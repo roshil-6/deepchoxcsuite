@@ -25,6 +25,7 @@ import { useOffice } from '@/lib/OfficeContext';
 import type { AgentStaffSnapshot } from '@/lib/db';
 import { useHfRoleSync, type HfDeskRole } from '@/lib/useHfRoleSync';
 import { ModelAttribution } from '@/components/ModelAttribution';
+import { StaffFocusChecklist } from '@/components/office/StaffFocusChecklist';
 import { SuiteIntelligenceNeuralFlow } from '@/components/SuiteIntelligenceNeuralFlow';
 import type { IntelligenceNavRoom } from '@/lib/suiteIntelligenceFlowGraph';
 
@@ -71,6 +72,7 @@ export function CsuiteIntelligenceGuide() {
         runAgentStaffSync,
         lastAiSyncTrace,
         systemLogs,
+        markStaffFocusLineDone,
     } = useOffice();
 
     const snapshot = activeProject?.agentStaffSnapshot;
@@ -81,6 +83,7 @@ export function CsuiteIntelligenceGuide() {
     const [traceOpen, setTraceOpen] = useState(true);
     const [flowStructureFullView, setFlowStructureFullView] = useState(false);
     const [flowPortalReady, setFlowPortalReady] = useState(false);
+    const [howAiOpen, setHowAiOpen] = useState(false);
 
     useEffect(() => setFlowPortalReady(true), []);
 
@@ -195,24 +198,24 @@ export function CsuiteIntelligenceGuide() {
             {flowPortalReady && flowFullScreenLayer ? createPortal(flowFullScreenLayer, document.body) : null}
 
         <div className="h-full min-h-0 overflow-y-auto bg-brand-bg custom-scrollbar">
-            <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8 lg:max-w-5xl">
-                <header className="mb-8 border-b border-brand-border/60 pb-8">
+            <div className="mx-auto max-w-3xl px-4 py-5 sm:px-5 sm:py-6 lg:max-w-5xl">
+                <header className="mb-6 border-b border-brand-border/60 pb-5">
                     <div className="mb-3 inline-flex items-center gap-2 rounded-lg border border-brand-border/60 bg-brand-panel/50 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-muted">
                         <Sparkles className="h-3.5 w-3.5 text-brand-teal" aria-hidden />
                         Intelligence Suite
                     </div>
-                    <h1 className="text-2xl font-semibold tracking-tight text-brand-text sm:text-3xl">Staff network &amp; process</h1>
-                    <p className="mt-3 max-w-3xl text-[15px] leading-relaxed text-brand-muted">
+                    <h1 className="text-xl font-semibold tracking-tight text-brand-text sm:text-2xl">Staff network &amp; process</h1>
+                    <p className="mt-2 max-w-3xl text-sm leading-relaxed text-brand-muted">
                         This suite explains <strong className="font-medium text-brand-text">how coordinated staff sync</strong> refreshes
                         every officer lane at once from your venture snapshot, and how <strong className="font-medium text-brand-text">day-to-day AI</strong> in each desk feeds the same record so the next run stays aligned.
                     </p>
                 </header>
 
                 {/* Live network — neural flow + venture-aware graph */}
-                <section className="mb-10" aria-labelledby="live-net">
-                    <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-                        <h2 id="live-net" className="flex items-center gap-2 text-lg font-semibold text-brand-text">
-                            <GitBranch className="h-5 w-5 shrink-0 text-brand-teal" aria-hidden />
+                <section className="mb-7" aria-labelledby="live-net">
+                    <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+                        <h2 id="live-net" className="flex items-center gap-2 text-base font-semibold text-brand-text">
+                            <GitBranch className="h-4 w-4 shrink-0 text-brand-teal" aria-hidden />
                             Live coordination map
                         </h2>
                         <button
@@ -225,49 +228,57 @@ export function CsuiteIntelligenceGuide() {
                             <span className="hidden text-[10px] font-normal text-brand-muted sm:inline">(flow only)</span>
                         </button>
                     </div>
-                    <p className="mb-4 text-sm leading-relaxed text-brand-muted">
-                        The map below shows <strong className="font-medium text-brand-text">venture record → staff-sync API → each role → linked workspaces</strong>.
-                        Run <strong className="font-medium text-brand-text">Sync AI staff</strong> to populate the pipeline strip and step trace.
+                    <p className="mb-3 text-xs leading-relaxed text-brand-muted">
+                        Map: <strong className="font-medium text-brand-text">venture → staff-sync → roles → workspaces</strong>.{' '}
+                        <strong className="font-medium text-brand-text">Sync AI staff</strong> fills the pipeline strip.
                     </p>
 
-                    <section
-                        className="mb-6 rounded-2xl border border-brand-border/70 bg-brand-panel/25 p-4 sm:p-5"
-                        aria-labelledby="how-ai-updates"
-                    >
-                        <h3 id="how-ai-updates" className="mb-3 text-sm font-semibold text-brand-text">
-                            How AI works on each role — and how updates propagate
-                        </h3>
-                        <ol className="list-decimal space-y-2.5 pl-4 text-sm leading-relaxed text-brand-muted marker:text-brand-teal/90">
-                            <li>
-                                <strong className="font-medium text-brand-text">Shared venture record.</strong> All officers use the same
-                                IndexedDB project: strategy, product plan, budget, market intel, execution board (kanban), calendar, notes,
-                                and the last staff snapshot.
-                            </li>
-                            <li>
-                                <strong className="font-medium text-brand-text">Staff sync — one coordinated model pass.</strong> Each time
-                                you run sync, the server sends that <em>entire</em> snapshot (plus news headlines) through a single structured
-                                request. The model outputs CEO, CTO, CFO, CSO, and CMO briefs <em>together</em> so narratives and execution
-                                tasks do not contradict each other. The app merges those strings into{' '}
-                                <span className="font-mono text-[11px] text-brand-text/90">agentStaffSnapshot.desks.*</span>, adds optional
-                                kanban tasks and events, updates focus today, and queues bell notifications.
-                            </li>
-                            <li>
-                                <strong className="font-medium text-brand-text">Working with AI between syncs.</strong> Desk chat rails,
-                                notebooks, Boardroom, Dexo, and Personal Assistant can change the same fields when you save or apply. Those
-                                edits become part of the snapshot — so the <em>next</em> staff sync sees your latest context and regenerates
-                                all five role briefs from it.
-                            </li>
-                            <li>
-                                <strong className="font-medium text-brand-text">Per-role panels on the map.</strong> Each column lists what
-                                that officer&apos;s sync output is for, which venture fields it touches, and which suite screens read it. Use{' '}
-                                <strong className="font-medium text-brand-text">Open desk workspace</strong> or a linked surface to drill in.
-                            </li>
-                        </ol>
-                    </section>
+                    <div className="mb-4">
+                        <button
+                            type="button"
+                            onClick={() => setHowAiOpen((v) => !v)}
+                            className="flex w-full items-center justify-between gap-2 rounded-lg border border-brand-border/50 bg-brand-panel/20 px-3 py-2 text-left text-xs font-medium text-brand-text transition hover:bg-brand-panel/30"
+                            aria-expanded={howAiOpen}
+                            aria-controls="how-ai-updates"
+                            id="how-ai-toggle"
+                        >
+                            <span>How sync &amp; desk updates work</span>
+                            <ChevronDown
+                                className={`h-4 w-4 shrink-0 text-brand-muted transition-transform ${howAiOpen ? 'rotate-180' : ''}`}
+                                aria-hidden
+                            />
+                        </button>
+                        {howAiOpen ? (
+                            <section
+                                id="how-ai-updates"
+                                className="mt-2 rounded-lg border border-brand-border/50 bg-brand-panel/15 px-3 py-3 sm:px-4"
+                                aria-labelledby="how-ai-toggle"
+                            >
+                                <ol className="list-decimal space-y-2 pl-3.5 text-xs leading-relaxed text-brand-muted marker:text-brand-teal/80">
+                                    <li>
+                                        <strong className="font-medium text-brand-text">One venture record</strong> — strategy, plan,
+                                        budget, market, kanban, calendar, staff snapshot.
+                                    </li>
+                                    <li>
+                                        <strong className="font-medium text-brand-text">Staff sync</strong> — one model pass returns all five
+                                        desk briefs + merges; see <span className="font-mono text-[10px]">agentStaffSnapshot.desks.*</span>.
+                                    </li>
+                                    <li>
+                                        <strong className="font-medium text-brand-text">Between syncs</strong> — desk AI / PA edits merge into
+                                        the same record; next sync re-reads it.
+                                    </li>
+                                    <li>
+                                        <strong className="font-medium text-brand-text">Map columns</strong> — brief, fields, linked
+                                        surfaces; <strong className="text-brand-text">Open desk</strong> to go deeper.
+                                    </li>
+                                </ol>
+                            </section>
+                        ) : null}
+                    </div>
 
                     <SuiteIntelligenceNeuralFlow {...flowProps} variant="inline" />
 
-                    <div className="mt-6 flex flex-wrap items-center gap-2 rounded-xl border border-brand-border/60 bg-brand-panel/30 px-3 py-3">
+                    <div className="mt-4 flex flex-wrap items-center gap-1.5 rounded-lg border border-brand-border/50 bg-brand-panel/25 px-2.5 py-2">
                         <span className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">HF desk (optional)</span>
                         {DESK_ORDER.map((d) => (
                             <button
@@ -371,14 +382,14 @@ export function CsuiteIntelligenceGuide() {
                             Focus today
                         </h2>
                         {focus.length > 0 ? (
-                            <ul className="space-y-2 rounded-xl border border-brand-border/50 bg-brand-panel/25 p-4">
-                                {focus.map((line, i) => (
-                                    <li key={i} className="flex gap-2 text-sm text-brand-text/95">
-                                        <span className="font-mono text-[11px] text-brand-teal">{i + 1}.</span>
-                                        <span>{line}</span>
-                                    </li>
-                                ))}
-                            </ul>
+                            <div className="rounded-lg border border-brand-border/50 bg-brand-panel/20 p-3">
+                                <p className="mb-2 text-[10px] leading-snug text-brand-muted">Done / + note → journal (Assistant &amp; sync).</p>
+                                <StaffFocusChecklist
+                                    lines={focus}
+                                    completedLines={activeProject?.staffFocusCompletedLines || []}
+                                    onMarkDone={(line, note) => markStaffFocusLineDone(line, note)}
+                                />
+                            </div>
                         ) : (
                             <p className="rounded-xl border border-dashed border-brand-border/60 bg-brand-bg/50 px-4 py-6 text-sm text-brand-muted">
                                 Run a staff sync to populate prioritized actions for today.

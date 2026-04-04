@@ -41,7 +41,8 @@ export type NavItemDef = {
 
 /** AI OS left rail — maps to OfficeContext rooms */
 export const APP_NAV_ITEMS: NavItemDef[] = [
-    { room: 'personal_assistant', label: 'Assistant', short: 'AI', icon: Sparkles },
+    { room: 'personal_assistant', label: 'Relay', short: 'Re', icon: Sparkles },
+    { room: 'dashboard', label: 'Dashboard', short: 'Hub', icon: LayoutGrid },
     { room: 'ceo', label: 'CEO', short: 'CEO', icon: Briefcase },
     { room: 'pm', label: 'CTO · Product', short: 'CTO', icon: Cpu },
     { room: 'accountant', label: 'CFO', short: 'CFO', icon: BarChart3 },
@@ -49,7 +50,6 @@ export const APP_NAV_ITEMS: NavItemDef[] = [
     { room: 'cmo', label: 'GTM', short: 'GTM', icon: Rocket },
     { room: 'chief_of_staff', label: 'Chief of Staff', short: 'CoS', icon: Users },
     { room: 'boardroom', label: 'Board room', short: 'Board', icon: Gavel },
-    { room: 'dashboard', label: 'Dashboard', short: 'Hub', icon: LayoutGrid },
     { room: 'calendar', label: 'Timeline', short: 'Time', icon: CalendarDays },
     { room: 'reports', label: 'Knowledge', short: 'Kb', icon: FileText },
     { room: 'dexo', label: 'Dexo', short: 'Dx', icon: Bot },
@@ -58,7 +58,7 @@ export const APP_NAV_ITEMS: NavItemDef[] = [
 ];
 
 export const WORKSPACE_TITLES: Record<string, string> = {
-    personal_assistant: 'Assistant',
+    personal_assistant: 'Relay',
     ceo: 'CEO',
     pm: 'CTO / Product',
     accountant: 'CFO',

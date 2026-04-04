@@ -117,6 +117,10 @@ export interface OfficeContextType {
   updateNotes: (notes: string) => void;
   updateDirectives: (directives: string) => void;
   updateProjectField: (field: string, value: any) => Promise<void>;
+  /** Mark a staff-sync focus bullet done; optional note is appended to the venture journal for the AI stack. */
+  markStaffFocusLineDone: (line: string, note?: string) => Promise<void>;
+  /** Save full venture row and refresh lists without changing room (e.g. after Personal Assistant merges updates). */
+  persistActiveProject: (project: Project) => Promise<void>;
 
   // New Methods
   addJournal: (content: string) => void;
@@ -419,6 +423,10 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
         }
       }
 
+      const focusNext = (result.focusToday || []).slice(0, 10);
+      const prevDone = p.staffFocusCompletedLines || [];
+      const staffFocusCompletedLines = prevDone.filter((line) => focusNext.includes(line));
+
       const next: Project = {
         ...p,
         strategy: mergedStrategy,
@@ -434,7 +442,8 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
           desks: result.desks,
         },
         staffAttentionItems,
-        staffFocusToday: (result.focusToday || []).slice(0, 10),
+        staffFocusToday: focusNext,
+        staffFocusCompletedLines,
         timestamp: syncAt,
       };
 
@@ -617,7 +626,7 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
         lines ? `Priorities:\n${lines}\n\n` : ''
       }Suggested focus: ${result.brief.suggestedFocus}`;
       appendExecutiveThread({
-        id: `living-office-${Date.now()}`,
+        id: `living-office-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
         role: 'assistant',
         content: body,
         ts: Date.now(),
@@ -657,6 +666,45 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
       // DB Update
       await addJournalEntry(activeProject.id, entry);
     }
+  };
+
+  const markStaffFocusLineDone = async (line: string, note?: string) => {
+    const p = activeProjectRef.current;
+    if (!p?.id) return;
+    const trimmed = line.trim();
+    if (!trimmed) return;
+    const prevDone = p.staffFocusCompletedLines || [];
+    if (prevDone.includes(trimmed)) return;
+
+    const staffFocusCompletedLines = [...prevDone, trimmed];
+    const entry: JournalEntry = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      content: note?.trim()
+        ? `[Focus ✓] ${trimmed}\nUpdate: ${note.trim()}`
+        : `[Focus ✓] ${trimmed}`,
+      timestamp: Date.now(),
+    };
+    const updated: Project = {
+      ...p,
+      staffFocusCompletedLines,
+      journal: [entry, ...(p.journal || [])],
+    };
+    await saveProject(updated);
+    setActiveProjectState(updated);
+    activeProjectRef.current = updated;
+    const projects = await getAllProjects();
+    setAllProjects(projects);
+    addSystemLog('Focus item marked done — saved to venture journal.', 'focus', 'success');
+    await refreshLivingOfficeRef.current?.(updated);
+  };
+
+  const persistActiveProject = async (project: Project) => {
+    await saveProject(project);
+    setActiveProjectState(project);
+    activeProjectRef.current = project;
+    const projects = await getAllProjects();
+    setAllProjects(projects);
+    await refreshLivingOfficeRef.current?.(project);
   };
 
   /**
@@ -764,6 +812,8 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
     updateNotes,
     updateDirectives,
     updateProjectField,
+    markStaffFocusLineDone,
+    persistActiveProject,
     addJournal,
     addEvent,
     addFile, // New
@@ -993,6 +1043,7 @@ DISCOVERY / QUESTIONS:
 - When the user answers once, treat that answer as covering related follow-ups — avoid asking overlapping questions in the next turns.
 
 ROLE:
+- Journal lines starting with **[Focus ✓]** are founder check-ins from marking staff-sync focus items done — treat them as ground truth on what shipped or moved.
 - Answer questions such as: “What are today’s most important things for my attention?” / “What should we do today as a growing startup?” — infer urgency from calendar, phases, priorities, directives, kanban load, journal notes, staff sync summary, **focus today** bullets, and **pending notifications**. Rank items and say why now.
 - Take natural-language duties. Respond with clear next steps, risks, and which function (CEO strategy, CTO product, CFO finance, CMO GTM, CSO market) should own follow-up.
 - Synthesize across strategy, product plan, budget, market intel, events, journal, and team directives. Do not invent metrics—say what’s missing.

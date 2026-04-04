@@ -103,13 +103,13 @@ export function SuiteIntelligenceNeuralFlow({
     const ref = (id: string) => setNodeRef(nodesRef, id);
 
     return (
-        <div className={isFull ? 'space-y-8' : 'space-y-6'}>
+        <div className={isFull ? 'space-y-5' : 'space-y-3'}>
             {trace && trace.length > 0 ? (
                 <div
-                    className="rounded-xl border border-brand-teal/20 bg-brand-teal/[0.04] px-4 py-3"
+                    className="rounded-lg border border-brand-teal/18 bg-brand-teal/[0.035] px-3 py-2"
                     aria-label="Last sync pipeline trace"
                 >
-                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-brand-teal/90">
+                    <p className="mb-1.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-brand-teal/85">
                         AI pipeline (last run)
                     </p>
                     <div className="flex flex-wrap items-stretch gap-1.5 sm:gap-2">
@@ -136,24 +136,18 @@ export function SuiteIntelligenceNeuralFlow({
                     </div>
                 </div>
             ) : (
-                <p className="rounded-lg border border-dashed border-brand-border/50 bg-brand-bg/40 px-3 py-2 text-[11px] text-brand-muted">
-                    Run <strong className="text-brand-text">Sync AI staff</strong> to populate the strip — each box is a backend step
-                    (snapshot → headlines → one combined model pass for all five roles → merge into the venture record).
+                <p className="rounded-md border border-dashed border-brand-border/40 bg-brand-bg/30 px-2.5 py-1.5 text-[10px] text-brand-muted">
+                    Run <strong className="text-brand-text">Sync AI staff</strong> for the pipeline strip (snapshot → model → merge).
                 </p>
             )}
 
-            <div
-                className={`rounded-xl border border-brand-border/55 bg-brand-panel/20 px-3 py-2.5 sm:px-4 ${isFull ? 'text-[12px]' : 'text-[11px]'} leading-relaxed text-brand-muted`}
-            >
-                <span className="font-semibold text-brand-text">How to read the map: </span>
-                Flow is <span className="text-brand-text/95">venture data → staff-sync API → each officer lane → suite screens</span>.
-                Sync regenerates <em>all</em> desk briefs in one response so roles stay consistent; AI you use inside a desk updates the same
-                record when you save, and the next sync picks that up.
-            </div>
+            <p className={`${isFull ? 'text-[11px]' : 'text-[10px]'} leading-snug text-brand-muted/80`}>
+                <span className="text-brand-muted">Map:</span> venture → sync API → lanes → screens. One sync refreshes all desk briefs.
+            </p>
 
             <div
-                className={`relative overflow-hidden rounded-2xl border border-brand-border/80 bg-[#0c0c0e] p-4 sm:p-6 ${
-                    isFull ? 'min-h-[min(78vh,900px)] shadow-2xl shadow-black/40' : ''
+                className={`relative overflow-hidden rounded-xl border border-brand-border/80 bg-[#0c0c0e] p-3 sm:p-4 ${
+                    isFull ? 'min-h-[min(72vh,820px)] shadow-xl shadow-black/35' : ''
                 }`}
             >
                 <div
@@ -168,17 +162,15 @@ export function SuiteIntelligenceNeuralFlow({
                     aria-hidden
                 />
 
-                <div className="relative z-[1] mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-brand-muted">
-                    <Network className="h-4 w-4 shrink-0 text-brand-teal" aria-hidden />
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.14em]">Neural suite map</span>
-                    <span className="text-[10px] text-brand-muted/80">
-                        — per role: last sync brief, fields updated, linked suite surfaces
-                    </span>
+                <div className="relative z-[1] mb-2 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-brand-muted">
+                    <Network className="h-3.5 w-3.5 shrink-0 text-brand-teal" aria-hidden />
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.12em]">Neural suite map</span>
+                    <span className="text-[9px] text-brand-muted/75">— brief · fields · links</span>
                 </div>
 
                 <div
                     ref={wrapRef}
-                    className={`relative z-[1] pb-4 ${isFull ? 'min-h-[min(68vh,820px)] lg:min-h-[min(65vh,780px)]' : 'min-h-[520px] lg:min-h-[480px]'}`}
+                    className={`relative z-[1] pb-3 ${isFull ? 'min-h-[min(62vh,760px)] lg:min-h-[min(58vh,720px)]' : 'min-h-[420px] lg:min-h-[380px]'}`}
                 >
                     <svg
                         className="pointer-events-none absolute inset-0 z-0 h-full w-full overflow-visible"
@@ -258,20 +250,16 @@ export function SuiteIntelligenceNeuralFlow({
                         </div>
 
                         {/* Role columns + surfaces */}
-                        <div className="mt-8 w-full">
-                            <p className="mx-auto mb-1 max-w-2xl text-center text-[10px] font-semibold uppercase tracking-[0.16em] text-brand-muted">
-                                Officer lanes → where that role shows up (tap to open)
+                        <div className="mt-5 w-full">
+                            <p className="mx-auto mb-3 max-w-xl text-center text-[9px] font-medium uppercase tracking-[0.14em] text-brand-muted/90">
+                                Officer lanes · tap to open
                             </p>
-                            <p className="mx-auto mb-4 max-w-xl text-center text-[10px] leading-snug text-brand-muted/85">
-                                Each lane is refreshed together on staff sync; between syncs, desk AI can change the venture record so the
-                                next run reflects your latest work.
-                            </p>
-                            <div className="grid grid-cols-1 gap-8 lg:grid-cols-5 lg:gap-3">
+                            <div className="grid grid-cols-1 gap-5 lg:grid-cols-5 lg:gap-2.5">
                                 {SUITE_ROLE_FLOW_COLUMNS.map((col) => (
-                                    <div key={col.id} className="flex flex-col items-stretch gap-4">
+                                    <div key={col.id} className="flex flex-col items-stretch gap-3">
                                         <div
                                             ref={ref(`role-${col.id}`)}
-                                            className="flex min-h-[11rem] flex-col rounded-xl border border-brand-border/70 bg-brand-bg/85 px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                                            className="flex min-h-[9.5rem] flex-col rounded-lg border border-brand-border/70 bg-brand-bg/85 px-2.5 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
                                         >
                                             <p className="text-[10px] font-semibold uppercase tracking-wide text-brand-teal/90">
                                                 Desk · {col.agentSyncDeskKey}
@@ -293,14 +281,14 @@ export function SuiteIntelligenceNeuralFlow({
                                             <button
                                                 type="button"
                                                 onClick={() => switchRoom(col.deskRoom)}
-                                                className="mt-3 inline-flex items-center justify-center gap-1.5 rounded-lg border border-brand-teal/30 bg-brand-teal/10 py-2 text-[10px] font-semibold text-brand-text transition hover:bg-brand-teal/20"
+                                                className="mt-2 inline-flex items-center justify-center gap-1 rounded-md border border-brand-teal/30 bg-brand-teal/10 py-1.5 text-[9px] font-semibold text-brand-text transition hover:bg-brand-teal/20"
                                             >
-                                                Open desk workspace
-                                                <ExternalLink className="h-3 w-3 opacity-70" aria-hidden />
+                                                Open desk
+                                                <ExternalLink className="h-2.5 w-2.5 opacity-70" aria-hidden />
                                             </button>
                                         </div>
 
-                                        <div ref={ref(`surfaces-${col.id}`)} className="flex flex-col gap-2">
+                                        <div ref={ref(`surfaces-${col.id}`)} className="flex flex-col gap-1.5">
                                             <p className="text-[9px] font-semibold uppercase tracking-wider text-brand-muted/90">
                                                 Linked suite sections
                                             </p>
@@ -309,14 +297,13 @@ export function SuiteIntelligenceNeuralFlow({
                                                     key={`${col.id}-${s.label}`}
                                                     type="button"
                                                     onClick={() => switchRoom(s.room)}
-                                                    className="rounded-lg border border-brand-border/55 bg-brand-panel/50 px-2.5 py-2 text-left transition hover:border-brand-teal/35 hover:bg-brand-panel"
+                                                    className="rounded-md border border-brand-border/50 bg-brand-panel/45 px-2 py-1.5 text-left transition hover:border-brand-teal/30 hover:bg-brand-panel"
                                                 >
-                                                    <p className="flex items-center justify-between gap-1 text-[11px] font-medium text-brand-text">
+                                                    <p className="flex items-center justify-between gap-1 text-[10px] font-medium text-brand-text">
                                                         {s.label}
-                                                        <ExternalLink className="h-3 w-3 shrink-0 opacity-50" aria-hidden />
+                                                        <ExternalLink className="h-2.5 w-2.5 shrink-0 opacity-50" aria-hidden />
                                                     </p>
-                                                    <p className="mt-1 text-[10px] leading-relaxed text-brand-muted">{s.detail}</p>
-                                                    <p className="mt-1 font-mono text-[9px] text-brand-teal/70">workspace · {s.room}</p>
+                                                    <p className="mt-0.5 line-clamp-2 text-[9px] leading-snug text-brand-muted">{s.detail}</p>
                                                 </button>
                                             ))}
                                         </div>

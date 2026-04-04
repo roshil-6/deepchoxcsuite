@@ -39,7 +39,7 @@ const WORKSPACE_TITLES: Record<string, string> = {
     intelligence_diary: 'Neural Diary',
     dexo: 'Dexo Core',
     org_structure: 'Org structure',
-    personal_assistant: 'Assistant',
+    personal_assistant: 'Relay',
     suite_intelligence: 'Suite intelligence',
 };
 

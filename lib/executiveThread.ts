@@ -51,7 +51,16 @@ export function loadExecutiveThread(projectId: string | number): ExecutiveThread
         if (!raw) return [];
         const parsed = JSON.parse(raw) as unknown;
         if (!Array.isArray(parsed)) return [];
-        return parsed.map(normalizeEntry).filter((m): m is ExecutiveThreadMessage => m !== null);
+        const normalized = parsed.map(normalizeEntry).filter((m): m is ExecutiveThreadMessage => m !== null);
+        const seen = new Set<string>();
+        return normalized.map((m) => {
+            let id = m.id;
+            if (seen.has(id)) {
+                id = `${m.id}-${Math.random().toString(36).slice(2, 9)}`;
+            }
+            seen.add(id);
+            return id === m.id ? m : { ...m, id };
+        });
     } catch {
         return [];
     }

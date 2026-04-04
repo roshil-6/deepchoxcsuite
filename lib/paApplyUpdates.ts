@@ -171,9 +171,10 @@ export function projectPayloadForPA(p: Project): Record<string, unknown> {
     teamDirectives: (p.teamDirectives || '').slice(0, 6000),
     events: (p.events || []).slice(-30),
     kanban: (p.kanban || []).slice(-40),
-    journal: (p.journal || []).slice(0, 5).map((j) => ({ ...j, content: j.content.slice(0, 500) })),
+    journal: (p.journal || []).slice(0, 10).map((j) => ({ ...j, content: j.content.slice(0, 800) })),
     files: (p.files || []).slice(0, 8).map((f) => ({ ...f, content: (f.content || '').slice(0, 4000) })),
     staffFocusToday: p.staffFocusToday,
+    staffFocusCompletedLines: p.staffFocusCompletedLines,
     agentStaffSnapshot: p.agentStaffSnapshot
       ? { at: p.agentStaffSnapshot.at, summary: p.agentStaffSnapshot.summary.slice(0, 2000) }
       : undefined,

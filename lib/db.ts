@@ -39,6 +39,8 @@ export interface Project {
   staffAttentionItems?: StaffAttentionItem[];
   /** Short bullets from latest sync — “what to focus on today”. */
   staffFocusToday?: string[];
+  /** Subset of staffFocusToday lines the founder marked done (exact string match); pruned when sync replaces focus list. */
+  staffFocusCompletedLines?: string[];
 
   // Strategy (CEO)
   strategy: string; // JSON string

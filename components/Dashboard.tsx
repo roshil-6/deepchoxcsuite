@@ -18,6 +18,8 @@ import {
     LayoutGrid,
     LayoutDashboard,
     ChevronUp,
+    ChevronDown,
+    Compass,
 } from 'lucide-react';
 import { useOffice } from '@/lib/OfficeContext';
 import { parseStrategy } from '@/lib/strategyDoc';
@@ -42,6 +44,7 @@ import { MorningBriefCard } from '@/components/office/MorningBriefCard';
 import { AmbientNotificationTray } from '@/components/office/AmbientNotificationTray';
 import { WeeklyReviewCard } from '@/components/office/WeeklyReviewCard';
 import { GoalAdvanceCard } from '@/components/office/GoalAdvanceCard';
+import { StaffFocusChecklist } from '@/components/office/StaffFocusChecklist';
 
 /**
  * Recharts Tooltip defaults omit cursor.fill, so the hover rectangle uses a light gray/white band
@@ -116,6 +119,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
         agentSyncRunning,
         livingOffice,
         refreshLivingOffice,
+        markStaffFocusLineDone,
     } = useOffice();
     /** Inline dashboard panel (AI playground): tiles stay visible; metrics expand below — same column as chat bar */
     const [dashboardExpanded, setDashboardExpanded] = useState(false);
@@ -538,9 +542,9 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     }
 
     return (
-        <div className="h-full overflow-y-auto custom-scrollbar bg-brand-bg px-4 py-8 pb-16 font-sans sm:px-6 sm:py-10">
-            <div className="dash-thread space-y-14 pb-8 animate-in fade-in duration-500">
-                        <header className="flex flex-col gap-8 pb-2 sm:flex-row sm:items-end sm:justify-between">
+        <div className="h-full overflow-y-auto custom-scrollbar bg-brand-bg px-4 py-6 pb-14 font-sans sm:px-5 sm:py-8">
+            <div className="dash-thread space-y-9 pb-6 animate-in fade-in duration-500">
+                        <header className="flex flex-col gap-5 pb-1 sm:flex-row sm:items-end sm:justify-between">
                             <div className="min-w-0">
                                 <div className="mb-2 flex items-center gap-2.5">
                                     <span
@@ -588,7 +592,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             </div>
                         </header>
 
-                        <section id="exec-goal-advancement" className="scroll-mt-8 space-y-8" aria-labelledby="goal-advancement-heading">
+                        <section id="exec-goal-advancement" className="scroll-mt-6 space-y-5" aria-labelledby="goal-advancement-heading">
                             <h2 id="goal-advancement-heading" className="sr-only">
                                 Goal advancement dashboard
                             </h2>
@@ -598,8 +602,48 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         progress={livingOffice.progress}
                                         suggestedFocus={livingOffice.brief.suggestedFocus}
                                     />
-                                    <section aria-label="Daily office" className="flex flex-col gap-8">
+                                    <section aria-label="Daily office" className="flex flex-col gap-5">
                                         <MorningBriefCard brief={livingOffice.brief} />
+                                        {livingOffice.suggestedActions.length > 0 ? (
+                                            <details className="dash-msg border border-teal-500/15 bg-teal-950/10 group open:bg-teal-950/12">
+                                                <summary className="flex cursor-pointer list-none items-center justify-between gap-2 py-2.5 pl-3 pr-3 text-left [&::-webkit-details-marker]:hidden">
+                                                    <span className="flex items-center gap-2 text-xs font-medium text-brand-text">
+                                                        <Compass className="h-3.5 w-3.5 text-teal-400/80" aria-hidden />
+                                                        Leadership hints
+                                                        <span className="font-normal text-brand-muted">({livingOffice.suggestedActions.length})</span>
+                                                    </span>
+                                                    <ChevronDown className="h-4 w-4 shrink-0 text-brand-muted transition-transform group-open:rotate-180" aria-hidden />
+                                                </summary>
+                                                <div className="border-t border-white/[0.05] px-3 pb-3 pt-2">
+                                                    <p className="mb-2 text-[10px] leading-snug text-brand-muted">
+                                                        Heuristic nudges — use Personal Assistant to turn into a plan.
+                                                    </p>
+                                                    <ul className="space-y-2">
+                                                        {livingOffice.suggestedActions.map((a, idx) => (
+                                                            <li
+                                                                key={`${a.intent}-${idx}`}
+                                                                className="rounded-lg border border-white/[0.05] bg-black/15 px-2.5 py-2"
+                                                            >
+                                                                <p className="text-[9px] font-medium uppercase tracking-wide text-teal-400/75">
+                                                                    {a.intent.replace(/_/g, ' ')} · {a.targetDesks.join(', ')}
+                                                                </p>
+                                                                <p className="mt-0.5 text-[12px] leading-snug text-brand-text/95">{a.summary}</p>
+                                                                {a.proposedSteps.length > 0 ? (
+                                                                    <ul className="mt-1.5 space-y-0.5 border-t border-white/[0.04] pt-1.5 text-[10px] leading-snug text-brand-muted">
+                                                                        {a.proposedSteps.map((s, i) => (
+                                                                            <li key={i} className="flex gap-1.5 text-[10px] leading-snug text-brand-muted">
+                                                                                <span className="shrink-0 text-brand-muted/45">·</span>
+                                                                                <span>{s}</span>
+                                                                            </li>
+                                                                        ))}
+                                                                    </ul>
+                                                                ) : null}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            </details>
+                                        ) : null}
                                         <AmbientNotificationTray items={livingOffice.notifications} />
                                         <WeeklyReviewCard review={livingOffice.weeklyReview} />
                                     </section>
@@ -782,11 +826,11 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         Collapse
                                     </button>
                                 </div>
-                                <div className="space-y-12 px-4 py-8 sm:px-6 sm:py-10">
+                                <div className="space-y-8 px-4 py-6 sm:px-5 sm:py-8">
                         {activeProject.agentStaffSnapshot && (
                     <section
                         id="dash-staff-snapshot"
-                        className="dash-msg mb-10 bg-teal-950/20"
+                        className="dash-msg mb-7 bg-teal-950/20"
                         aria-labelledby="dash-staff-snapshot-title"
                     >
                         <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -824,19 +868,20 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
 
                 {activeProject.staffFocusToday && activeProject.staffFocusToday.length > 0 && (
                     <section
-                        className="dash-msg mb-10 bg-amber-950/15"
+                        className="dash-msg mb-7 bg-amber-950/15"
                         aria-labelledby="dash-focus-today"
                     >
-                        <h2 id="dash-focus-today" className="mb-3 text-sm font-medium text-amber-100/95">
+                        <h2 id="dash-focus-today" className="mb-0.5 text-sm font-medium text-amber-100/95">
                             Today’s focus — from latest staff sync
                         </h2>
-                        <ul className="list-inside list-disc space-y-2 text-sm leading-relaxed text-brand-text">
-                            {activeProject.staffFocusToday.map((line, i) => (
-                                <li key={i} className="pl-1 marker:text-amber-400/90">
-                                    {line}
-                                </li>
-                            ))}
-                        </ul>
+                        <p className="mb-2.5 text-[10px] leading-snug text-amber-100/65">
+                            Done / + note → saved to journal for Assistant &amp; next sync.
+                        </p>
+                        <StaffFocusChecklist
+                            lines={activeProject.staffFocusToday}
+                            completedLines={activeProject.staffFocusCompletedLines || []}
+                            onMarkDone={(line, note) => markStaffFocusLineDone(line, note)}
+                        />
                     </section>
                 )}
 

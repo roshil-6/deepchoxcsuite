@@ -34,7 +34,8 @@ function pickPriorities(strategy: StrategyDoc, tasks: KanbanTask[], max: number)
 function criticalFromAlerts(
     progress: GoalProgress,
     budgetSnippet: string,
-    staffSummary: string | undefined
+    staffSummary: string | undefined,
+    venture: Project
 ): string[] {
     const alerts: string[] = [];
     if (progress.risk === 'High') {
@@ -50,7 +51,18 @@ function criticalFromAlerts(
     if (staffSummary && /risk|critical|blocker|urgent/i.test(staffSummary)) {
         alerts.push('Latest staff sync flagged elevated risk — review desk notifications.');
     }
-    return alerts.slice(0, 4);
+    const syncAt = venture.agentStaffSnapshot?.at;
+    if (syncAt) {
+        const days = (Date.now() - syncAt) / 86400000;
+        if (days > 5) {
+            alerts.push(
+                'Staff sync is over five days old — run Sync AI staff so every desk brief reflects your latest venture state.'
+            );
+        }
+    } else if (venture.name?.trim()) {
+        alerts.push('No staff sync yet — run Sync AI staff once to populate cross-desk research and today’s focus list.');
+    }
+    return alerts.slice(0, 5);
 }
 
 /**
@@ -64,10 +76,15 @@ export function generateMorningBrief(
 ): MorningBrief {
     const name = venture.name?.trim() || 'your venture';
     const greeting = `${hourGreeting()} — ${name} is on the desk.`;
-    const priorities = pickPriorities(strategy, tasks, 5);
+    let priorities = pickPriorities(strategy, tasks, 5);
+    const doneFocus = new Set((venture.staffFocusCompletedLines || []).map((s) => s.trim()));
+    const openFocus = (venture.staffFocusToday || []).map((s) => s.trim()).filter((s) => s && !doneFocus.has(s));
+    for (const f of openFocus.slice(0, 2)) {
+        if (!priorities.includes(f)) priorities = [f, ...priorities].slice(0, 5);
+    }
     const budget = venture.budget || '';
     const budgetSnippet = budget.length > 1200 ? budget.slice(0, 1200) : budget;
-    const criticalAlerts = criticalFromAlerts(progress, budgetSnippet, venture.agentStaffSnapshot?.summary);
+    const criticalAlerts = criticalFromAlerts(progress, budgetSnippet, venture.agentStaffSnapshot?.summary, venture);
     const phase = (strategy.phases || []).find((p) => p.status === 'in_progress');
     const suggestedFocus =
         phase?.title?.trim() ||

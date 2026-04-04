@@ -23,4 +23,4 @@ export function isVentureUnsettled(p: Project): boolean {
 }
 
 export const PA_WELCOME_MESSAGE =
-    "I'm the assistant for this workspace. Describe what you're building (idea, stage, audience). We'll shape your venture record from this thread.";
+    "I'm Relay — your venture copilot. Describe what you're building (idea, stage, audience). I'll help shape your record; you can also tell me to update any desk from here or the floating chat.";
