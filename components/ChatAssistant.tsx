@@ -30,7 +30,7 @@ interface Message {
     model?: string;
 }
 
-export type ChatAssistantVariant = 'default' | 'drawer' | 'bottomDock' | 'aiOs';
+export type ChatAssistantVariant = 'default' | 'drawer' | 'bottomDock' | 'aiOs' | 'inlineDesk';
 
 export function ChatAssistant({
     variant = 'default',
@@ -190,63 +190,34 @@ export function ChatAssistant({
     const fileInputId =
         variant === 'drawer'
             ? 'chat-file-upload-drawer'
-            : variant === 'bottomDock' || variant === 'aiOs'
-              ? 'chat-file-upload-dock'
-              : 'file-upload';
+            : variant === 'inlineDesk'
+              ? 'chat-file-upload-inline-desk'
+              : variant === 'bottomDock' || variant === 'aiOs'
+                ? 'chat-file-upload-dock'
+                : 'file-upload';
 
     const isBottomDock = variant === 'bottomDock' || variant === 'aiOs';
+    const isInlineDesk = variant === 'inlineDesk';
+    const isDockChrome = isBottomDock || isInlineDesk;
     const isAiOs = variant === 'aiOs';
-    const dockThreadEmpty = isBottomDock && messages.length === 0 && !isLoading;
-    const dockThreadActive = isBottomDock && !dockThreadEmpty;
+    const dockThreadEmpty = isDockChrome && messages.length === 0 && !isLoading;
+    const dockThreadActive = isDockChrome && !dockThreadEmpty;
 
     return (
         <div
             className={`flex min-h-0 flex-col overflow-hidden shadow-none transition-all duration-300 ${
-                isBottomDock && dockThreadEmpty
-                    ? `h-auto w-full ${isAiOs ? 'rounded-2xl border border-white/[0.08] bg-[#131314]/95 shadow-[0_-16px_48px_rgba(0,0,0,0.55)] backdrop-blur-md' : 'rounded-none border-0 bg-transparent'}`
-                    : isBottomDock
-                      ? `min-h-0 w-full max-h-full flex-1 ${isAiOs ? 'rounded-2xl border border-white/[0.08] bg-[#131314]/95 shadow-[0_-16px_48px_rgba(0,0,0,0.55)] backdrop-blur-md' : 'rounded-none border-0 bg-transparent'}`
-                      : chatTheme.railClass
+                isInlineDesk
+                    ? dockThreadEmpty
+                        ? 'h-auto w-full rounded-xl border border-white/[0.08] bg-[#131314]/90'
+                        : 'w-full rounded-xl border border-white/[0.08] bg-[#131314]/90'
+                    : isBottomDock && dockThreadEmpty
+                      ? `h-auto w-full ${isAiOs ? 'rounded-2xl border border-white/[0.08] bg-[#131314]/95 shadow-[0_-16px_48px_rgba(0,0,0,0.55)] backdrop-blur-md' : 'rounded-none border-0 bg-transparent'}`
+                      : isBottomDock
+                        ? `min-h-0 w-full max-h-full flex-1 ${isAiOs ? 'rounded-2xl border border-white/[0.08] bg-[#131314]/95 shadow-[0_-16px_48px_rgba(0,0,0,0.55)] backdrop-blur-md' : 'rounded-none border-0 bg-transparent'}`
+                        : chatTheme.railClass
             }`}
         >
-            {isBottomDock ? (
-                <div
-                    className={`flex shrink-0 flex-wrap items-end gap-2 border-b border-white/[0.06] px-3 pb-2.5 pt-3 sm:px-4 ${
-                        isAiOs ? 'rounded-t-2xl bg-white/[0.03]' : ''
-                    }`}
-                >
-                    <label className="flex min-w-0 flex-1 items-center gap-2 sm:max-w-[min(100%,20rem)]">
-                        <Cpu className="h-3.5 w-3.5 shrink-0 text-brand-muted opacity-80" aria-hidden />
-                        <span className="sr-only">Model</span>
-                        <select
-                            value={selectedModel}
-                            onChange={(e) => {
-                                const v = e.target.value;
-                                setSelectedModel(v);
-                                try {
-                                    localStorage.setItem(EXEC_CHAT_MODEL_STORAGE_KEY, v);
-                                } catch {
-                                    /* noop */
-                                }
-                            }}
-                            className="min-w-0 flex-1 cursor-pointer appearance-none rounded-xl border border-white/[0.1] bg-[#1a1b1f] py-2 pl-3 pr-8 text-[12px] font-medium text-brand-text shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-colors hover:border-white/[0.14] focus:border-brand-teal/50 focus:outline-none focus:ring-1 focus:ring-brand-teal/30"
-                            title="Model used for this thread (saved for next visit)"
-                            aria-label="Chat model"
-                        >
-                            {EXEC_CHAT_MODEL_OPTIONS.map((opt) => (
-                                <option key={opt.id} value={opt.id}>
-                                    {opt.label} — {opt.blurb}
-                                </option>
-                            ))}
-                        </select>
-                    </label>
-                    <p className="hidden text-[10px] leading-snug text-brand-muted/85 sm:block sm:max-w-[12rem] lg:max-w-none">
-                        Server uses Groq when configured; otherwise local Ollama names apply.
-                    </p>
-                </div>
-            ) : null}
-
-            {isBottomDock && dockThreadActive ? (
+            {isDockChrome && dockThreadActive ? (
                 <div className="flex shrink-0 items-baseline justify-between gap-2 border-b border-white/[0.04] px-1 py-2 sm:px-0">
                     <p className="min-w-0 text-[11px] leading-snug text-brand-muted/90">
                         <span className="text-brand-text/90">{currentAgent.name}</span>
@@ -293,7 +264,7 @@ export function ChatAssistant({
                         )}
                     </div>
                 </div>
-            ) : isBottomDock || activeRoom === 'dashboard' ? null : (
+            ) : isDockChrome || activeRoom === 'dashboard' ? null : (
                 <div
                     className={`sticky top-0 z-10 flex items-start justify-between gap-3 border-b p-5 ${chatTheme.headerClass}`}
                 >
@@ -323,14 +294,16 @@ export function ChatAssistant({
 
             {!dockThreadEmpty && (
             <div
-                className={`custom-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto overflow-x-hidden ${
-                    isBottomDock ? 'bg-transparent px-3 pb-2 pt-1 sm:px-4' : 'bg-brand-bg p-4 sm:p-5'
-                }`}
+                className={`custom-scrollbar space-y-3 overflow-y-auto overflow-x-hidden ${
+                    isInlineDesk && dockThreadActive
+                        ? 'max-h-[min(44vh,420px)] min-h-0 shrink-0'
+                        : 'min-h-0 flex-1'
+                } ${isDockChrome ? 'bg-transparent px-3 pb-2 pt-1 sm:px-4' : 'bg-brand-bg p-4 sm:p-5'}`}
             >
                 {messages.length === 0 && (
                     <div
                         className={`flex select-none flex-col items-start text-left ${
-                            isBottomDock
+                            isDockChrome
                                 ? 'py-1'
                                 : `rounded-2xl border border-white/[0.07] bg-white/[0.02] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:p-6 ${variant === 'drawer' ? 'min-h-[120px]' : 'min-h-[160px]'}`
                         }`}
@@ -343,18 +316,18 @@ export function ChatAssistant({
                 )}
 
                 {messages.map((msg) => (
-                    <div key={msg.id} className={`flex gap-2.5 sm:gap-3 ${isBottomDock ? '' : 'animate-in fade-in slide-in-from-bottom-4 duration-500'} ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                    <div key={msg.id} className={`flex gap-2.5 sm:gap-3 ${isDockChrome ? '' : 'animate-in fade-in slide-in-from-bottom-4 duration-500'} ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
                         {msg.role === 'assistant' && (
-                            <div className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${isBottomDock ? 'bg-white/[0.04] text-brand-muted' : 'border border-zinc-600 bg-zinc-800'}`}>
-                                <Bot className={`h-3.5 w-3.5 ${isBottomDock ? 'text-brand-muted' : 'text-zinc-400'}`} />
+                            <div className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${isDockChrome ? 'bg-white/[0.04] text-brand-muted' : 'border border-zinc-600 bg-zinc-800'}`}>
+                                <Bot className={`h-3.5 w-3.5 ${isDockChrome ? 'text-brand-muted' : 'text-zinc-400'}`} />
                             </div>
                         )}
 
                         <div className={`max-w-[88%] text-sm leading-relaxed ${msg.role === 'user'
-                            ? isBottomDock
+                            ? isDockChrome
                                 ? `rounded-2xl rounded-br-md bg-white/[0.06] px-3 py-2.5 text-brand-text ring-1 ring-white/[0.06]`
                                 : `rounded-lg rounded-tr-sm border p-4 text-zinc-50 ${chatTheme.userBubbleClass}`
-                            : isBottomDock
+                            : isDockChrome
                               ? 'rounded-2xl rounded-bl-md bg-white/[0.04] px-3 py-2.5 text-brand-text/95'
                               : 'rounded-lg rounded-tl-sm border border-zinc-600 bg-zinc-800 p-4 font-sans text-zinc-300'
                             }`}>
@@ -365,12 +338,12 @@ export function ChatAssistant({
                 ))}
 
                 {isLoading && (
-                    <div className={isBottomDock ? 'flex gap-2.5' : 'flex gap-4 p-2'}>
-                        <div className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${isBottomDock ? 'bg-white/[0.04]' : 'border border-zinc-600 bg-zinc-800'}`}>
-                            <Bot className={`h-3.5 w-3.5 ${isBottomDock ? 'text-brand-muted' : 'text-zinc-400'}`} />
+                    <div className={isDockChrome ? 'flex gap-2.5' : 'flex gap-4 p-2'}>
+                        <div className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${isDockChrome ? 'bg-white/[0.04]' : 'border border-zinc-600 bg-zinc-800'}`}>
+                            <Bot className={`h-3.5 w-3.5 ${isDockChrome ? 'text-brand-muted' : 'text-zinc-400'}`} />
                         </div>
-                        <div className={`flex items-center ${isBottomDock ? 'rounded-2xl rounded-bl-md bg-white/[0.04] px-3 py-2.5' : 'rounded-lg rounded-tl-sm border border-zinc-700 bg-zinc-800 px-5 py-3'}`}>
-                            <span className={`text-sm ${isBottomDock ? 'text-brand-muted' : 'text-zinc-500'}`}>…</span>
+                        <div className={`flex items-center ${isDockChrome ? 'rounded-2xl rounded-bl-md bg-white/[0.04] px-3 py-2.5' : 'rounded-lg rounded-tl-sm border border-zinc-700 bg-zinc-800 px-5 py-3'}`}>
+                            <span className={`text-sm ${isDockChrome ? 'text-brand-muted' : 'text-zinc-500'}`}>…</span>
                         </div>
                     </div>
                 )}
@@ -382,7 +355,7 @@ export function ChatAssistant({
             {activeProject?.files && activeProject.files.length > 0 && (
                 <div
                     className={`flex flex-wrap gap-2 px-1 py-1.5 sm:px-2 ${
-                        isBottomDock
+                        isDockChrome
                             ? 'border-0 bg-transparent'
                             : 'border-t border-brand-border bg-brand-panel/80 px-6 py-3'
                     }`}
@@ -398,7 +371,7 @@ export function ChatAssistant({
 
             <div
                 className={`shrink-0 ${
-                    isBottomDock
+                    isDockChrome
                         ? 'border-0 bg-transparent pb-0 pt-1'
                         : 'border-t border-brand-border bg-brand-panel/90 p-4 sm:p-5'
                 }`}
@@ -406,12 +379,43 @@ export function ChatAssistant({
                 <div
                     className={`group relative overflow-hidden transition-all duration-300 ${
                         isAiOs
-                            ? 'rounded-full border border-white/[0.06] bg-white/[0.04] backdrop-blur-md focus-within:border-white/[0.1] focus-within:bg-white/[0.06]'
-                            : isBottomDock
-                              ? 'rounded-xl bg-white/[0.04] ring-1 ring-white/[0.06] focus-within:bg-white/[0.06] focus-within:ring-white/[0.1]'
+                            ? 'rounded-2xl border border-white/[0.06] bg-white/[0.04] backdrop-blur-md focus-within:border-white/[0.1] focus-within:bg-white/[0.06]'
+                            : isDockChrome
+                              ? 'rounded-2xl bg-white/[0.04] ring-1 ring-white/[0.06] focus-within:bg-white/[0.06] focus-within:ring-white/[0.1]'
                               : 'rounded-xl border border-brand-border bg-brand-bg/90 focus-within:ring-1 focus-within:ring-white/[0.1]'
                     }`}
                 >
+                    {isDockChrome ? (
+                        <div className="flex items-center gap-1.5 border-b border-white/[0.06] px-2.5 py-1 sm:px-3.5">
+                            <Cpu className="h-3 w-3 shrink-0 text-brand-muted/60" aria-hidden />
+                            <select
+                                value={selectedModel}
+                                onChange={(e) => {
+                                    const v = e.target.value;
+                                    setSelectedModel(v);
+                                    try {
+                                        localStorage.setItem(EXEC_CHAT_MODEL_STORAGE_KEY, v);
+                                    } catch {
+                                        /* noop */
+                                    }
+                                }}
+                                className="min-w-0 max-w-full flex-1 cursor-pointer appearance-none border-0 bg-transparent py-0.5 pr-5 text-[10px] font-medium leading-tight text-brand-muted/90 [-webkit-appearance:none] focus:outline-none focus:ring-0 sm:text-[11px]"
+                                style={{
+                                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
+                                    backgroundRepeat: 'no-repeat',
+                                    backgroundPosition: 'right 0 center',
+                                }}
+                                title="Model for this thread (saved locally)"
+                                aria-label="Chat model"
+                            >
+                                {EXEC_CHAT_MODEL_OPTIONS.map((opt) => (
+                                    <option key={opt.id} value={opt.id}>
+                                        {opt.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    ) : null}
                     <textarea
                         ref={textareaRef}
                         value={inputValue}
@@ -422,13 +426,19 @@ export function ChatAssistant({
                                 handleSendMessage();
                             }
                         }}
-                        placeholder={isAiOs ? 'Ask your executive team anything…' : chatTheme.placeholder}
+                        placeholder={
+                            isAiOs
+                                ? 'Ask your executive team anything…'
+                                : isInlineDesk
+                                  ? 'Message this desk…'
+                                  : chatTheme.placeholder
+                        }
                         disabled={isLoading}
                         className={`relative z-10 max-h-40 w-full resize-none border-none bg-transparent text-sm leading-relaxed text-brand-text placeholder:text-brand-muted focus:ring-0 ${
                             isAiOs
-                                ? 'min-h-[52px] py-4 pl-5 pr-[7.5rem] sm:min-h-[56px] sm:pl-6 sm:pr-28'
-                                : isBottomDock
-                                  ? 'min-h-[44px] p-3 pr-12 sm:min-h-[48px] sm:p-3.5 sm:pr-14'
+                                ? 'min-h-[48px] px-4 py-3 pr-[7.5rem] sm:min-h-[52px] sm:px-5 sm:pr-28'
+                                : isDockChrome
+                                  ? 'min-h-[40px] px-3 py-2.5 pr-12 sm:min-h-[44px] sm:px-3.5 sm:pr-14'
                                   : 'min-h-[52px] p-3 pr-12 sm:p-4 sm:pr-14'
                         }`}
                         rows={1}
@@ -453,7 +463,7 @@ export function ChatAssistant({
                             className={`rounded-full p-2 transition-colors active:scale-[0.98] disabled:opacity-40 ${
                                 isAiOs
                                     ? 'bg-[var(--text)] text-[#0f1115] hover:bg-white/90'
-                                    : isBottomDock
+                                    : isDockChrome
                                       ? 'bg-zinc-300/90 text-[#131314] hover:bg-zinc-200'
                                       : 'bg-zinc-300 text-[#131314] hover:bg-zinc-200'
                             }`}
@@ -463,7 +473,7 @@ export function ChatAssistant({
                     </div>
                 </div>
 
-                <div className={`mt-2 flex items-center justify-between ${isBottomDock ? 'px-0.5' : 'px-1 sm:mt-3 sm:px-2'}`}>
+                <div className={`mt-2 flex items-center justify-between ${isDockChrome ? 'px-0.5' : 'px-1 sm:mt-3 sm:px-2'}`}>
                     <div className="flex items-center gap-4">
                         <input
                             type="file"
@@ -476,7 +486,7 @@ export function ChatAssistant({
                             type="button"
                             onClick={() => document.getElementById(fileInputId)?.click()}
                             className={`flex items-center gap-1.5 transition-colors hover:text-brand-text ${
-                                isBottomDock
+                                isDockChrome
                                     ? 'text-[12px] font-medium text-brand-muted'
                                     : 'text-[12px] font-medium text-zinc-500 hover:text-zinc-300'
                             }`}

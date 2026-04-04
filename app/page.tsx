@@ -63,7 +63,9 @@ export default function Home() {
           }}
           onNewVenture={openNameVentureModal}
           bottomBar={
-            activeRoom !== 'dexo' && activeRoom !== 'personal_assistant' ? (
+            activeRoom !== 'dexo' &&
+            activeRoom !== 'personal_assistant' &&
+            activeRoom !== 'ceo' ? (
               <AIInputBarShell>
                 <ChatAssistant variant="aiOs" />
               </AIInputBarShell>
