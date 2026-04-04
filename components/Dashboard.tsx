@@ -41,6 +41,7 @@ import { fromExecutionScore } from '@/lib/impact/adapters/dashboardAdapter';
 import { MorningBriefCard } from '@/components/office/MorningBriefCard';
 import { AmbientNotificationTray } from '@/components/office/AmbientNotificationTray';
 import { WeeklyReviewCard } from '@/components/office/WeeklyReviewCard';
+import { GoalAdvanceCard } from '@/components/office/GoalAdvanceCard';
 
 /**
  * Recharts Tooltip defaults omit cursor.fill, so the hover rectangle uses a light gray/white band
@@ -553,8 +554,10 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 </div>
                                 <h1 className="text-2xl font-semibold tracking-tight text-brand-text sm:text-3xl">{activeProject.name}</h1>
                                 <p className="mt-3 max-w-2xl text-sm leading-relaxed text-brand-muted">
-                                    Start from the tiles below — open <span className="text-brand-muted">Dashboard</span> to expand venture metrics in
-                                    this same workspace. The Chief of Staff bar stays fixed underneath; nothing lives in a separate chat page.
+                                    <span className="font-medium text-brand-text/90">Goal advancement</span> and the daily office brief are{' '}
+                                    <span className="text-brand-text/80">below the header</span> on this page. Use{' '}
+                                    <span className="text-brand-muted">Surfaces → Goal advancement</span> to jump there. Expand{' '}
+                                    <span className="text-brand-muted">Dashboard</span> for charts; the Chief of Staff bar stays fixed at the bottom.
                                 </p>
                             </div>
                             <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
@@ -588,15 +591,37 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             </div>
                         </header>
 
-                        {livingOffice ? (
-                            <section aria-label="Living office" className="grid gap-4 lg:grid-cols-3">
-                                <MorningBriefCard brief={livingOffice.brief} className="lg:col-span-2" />
-                                <div className="flex flex-col gap-4">
-                                    <AmbientNotificationTray items={livingOffice.notifications} />
-                                    <WeeklyReviewCard review={livingOffice.weeklyReview} />
+                        <section id="exec-goal-advancement" className="scroll-mt-8 space-y-4" aria-labelledby="goal-advancement-heading">
+                            <h2 id="goal-advancement-heading" className="sr-only">
+                                Goal advancement dashboard
+                            </h2>
+                            {livingOffice ? (
+                                <>
+                                    <GoalAdvanceCard
+                                        progress={livingOffice.progress}
+                                        suggestedFocus={livingOffice.brief.suggestedFocus}
+                                    />
+                                    <section aria-label="Daily office" className="grid gap-4 lg:grid-cols-3">
+                                        <MorningBriefCard brief={livingOffice.brief} className="lg:col-span-2" />
+                                        <div className="flex flex-col gap-4">
+                                            <AmbientNotificationTray items={livingOffice.notifications} />
+                                            <WeeklyReviewCard review={livingOffice.weeklyReview} />
+                                        </div>
+                                    </section>
+                                </>
+                            ) : (
+                                <div className="rounded-2xl border border-dashed border-brand-border bg-brand-panel/20 px-5 py-8 text-center">
+                                    <p className="text-sm text-brand-muted">Office metrics have not loaded yet for this venture.</p>
+                                    <button
+                                        type="button"
+                                        onClick={() => void refreshLivingOffice()}
+                                        className="mt-4 inline-flex items-center justify-center rounded-full bg-white/[0.08] px-4 py-2 text-xs font-medium text-brand-text transition hover:bg-white/[0.12]"
+                                    >
+                                        Load goal advancement
+                                    </button>
                                 </div>
-                            </section>
-                        ) : null}
+                            )}
+                        </section>
 
                         {activeProject.agentStaffSnapshot && (
                             <button
@@ -656,6 +681,23 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         <p className="mt-2 text-sm leading-relaxed text-brand-muted">
                                             Venture snapshot, execution score, charts, staff research, signal, desks — expands here; not a
                                             separate section.
+                                        </p>
+                                    </div>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        document
+                                            .getElementById('exec-goal-advancement')
+                                            ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                    }}
+                                    className="flex flex-col items-start gap-4 rounded-xl border border-brand-border bg-brand-panel/60 p-6 text-left transition hover:border-brand-border hover:bg-brand-panel"
+                                >
+                                    <Target className="h-6 w-6 text-brand-muted" aria-hidden />
+                                    <div>
+                                        <h3 className="text-base font-semibold text-brand-text">Goal advancement</h3>
+                                        <p className="mt-2 text-sm leading-relaxed text-brand-muted">
+                                            Scroll to progress bar, horizon estimate, risk, and the daily office brief on this page.
                                         </p>
                                     </div>
                                 </button>

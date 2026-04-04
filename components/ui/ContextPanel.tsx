@@ -61,7 +61,7 @@ export function ContextPanel({ className = '', mobileOpen, onCloseMobile }: Prop
             />
             {livingOffice ? (
                 <div className={`${executiveSurfaceClass} p-5`}>
-                    <h3 className="text-sm font-medium text-[var(--text)]">Goal pace</h3>
+                    <h3 className="text-sm font-medium text-[var(--text)]">Goal advancement</h3>
                     <p className="mt-2 text-2xl font-semibold tabular-nums text-[var(--text)]">
                         {livingOffice.progress.percentage}%
                     </p>
