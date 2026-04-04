@@ -19,7 +19,7 @@ type Props = {
 };
 
 export function ContextPanel({ className = '', mobileOpen, onCloseMobile }: Props) {
-    const { activeProject, activeRoom, staffAttentionPending } = useOffice();
+    const { activeProject, activeRoom, staffAttentionPending, livingOffice } = useOffice();
 
     const execution = useMemo(
         () => computeExecutionScore(activeProject?.strategy),
@@ -59,6 +59,25 @@ export function ContextPanel({ className = '', mobileOpen, onCloseMobile }: Prop
                 messages={alertMessages}
                 escalation={businessImpact.requiresEscalation}
             />
+            {livingOffice ? (
+                <div className={`${executiveSurfaceClass} p-5`}>
+                    <h3 className="text-sm font-medium text-[var(--text)]">Goal pace</h3>
+                    <p className="mt-2 text-2xl font-semibold tabular-nums text-[var(--text)]">
+                        {livingOffice.progress.percentage}%
+                    </p>
+                    <p className="mt-1 text-xs text-[var(--muted)]">
+                        Risk: <span className="text-[var(--text)]/90">{livingOffice.progress.risk}</span>
+                        {' · '}
+                        ~{livingOffice.progress.projectedDaysRemaining}d to next horizon
+                    </p>
+                    {livingOffice.suggestedActions[0] ? (
+                        <p className="mt-3 border-t border-[var(--border)] pt-3 text-[11px] leading-relaxed text-[var(--muted)]">
+                            <span className="font-medium text-[var(--text)]/90">Routed: </span>
+                            {livingOffice.suggestedActions[0].summary} → {livingOffice.suggestedActions[0].targetDesks.join(', ')}
+                        </p>
+                    ) : null}
+                </div>
+            ) : null}
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

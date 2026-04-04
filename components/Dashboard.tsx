@@ -38,6 +38,9 @@ import {
 } from 'recharts';
 import { aggregateImpact, getAffectedDesks } from '@/lib/impact/impactEngine';
 import { fromExecutionScore } from '@/lib/impact/adapters/dashboardAdapter';
+import { MorningBriefCard } from '@/components/office/MorningBriefCard';
+import { AmbientNotificationTray } from '@/components/office/AmbientNotificationTray';
+import { WeeklyReviewCard } from '@/components/office/WeeklyReviewCard';
 
 /**
  * Recharts Tooltip defaults omit cursor.fill, so the hover rectangle uses a light gray/white band
@@ -110,6 +113,8 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
         setActiveProject,
         runAgentStaffSync,
         agentSyncRunning,
+        livingOffice,
+        refreshLivingOffice,
     } = useOffice();
     /** Inline dashboard panel (AI playground): tiles stay visible; metrics expand below — same column as chat bar */
     const [dashboardExpanded, setDashboardExpanded] = useState(false);
@@ -121,6 +126,12 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
         setDashboardExpanded(false);
         setPortfolioDashExpanded(false);
     }, [activeProject?.id]);
+
+    useEffect(() => {
+        if (activeRoom === 'dashboard' && activeProject?.id) {
+            void refreshLivingOffice();
+        }
+    }, [activeRoom, activeProject?.id, refreshLivingOffice]);
 
     useEffect(() => {
         if (!dashboardExpanded || !pendingScrollId) return;
@@ -576,6 +587,16 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 </div>
                             </div>
                         </header>
+
+                        {livingOffice ? (
+                            <section aria-label="Living office" className="grid gap-4 lg:grid-cols-3">
+                                <MorningBriefCard brief={livingOffice.brief} className="lg:col-span-2" />
+                                <div className="flex flex-col gap-4">
+                                    <AmbientNotificationTray items={livingOffice.notifications} />
+                                    <WeeklyReviewCard review={livingOffice.weeklyReview} />
+                                </div>
+                            </section>
+                        ) : null}
 
                         {activeProject.agentStaffSnapshot && (
                             <button

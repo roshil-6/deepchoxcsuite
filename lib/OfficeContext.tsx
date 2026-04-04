@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useMemo, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useMemo, useEffect, useCallback, useRef, ReactNode } from 'react';
 import {
   Project,
   StaffAttentionItem,
@@ -29,6 +29,15 @@ import {
   loadExecutiveThread,
   saveExecutiveThread,
 } from '@/lib/executiveThread';
+import type { DailyOfficeCycleResult } from '@/types/office';
+import { runDailyOfficeCycle } from '@/lib/office/dailyOfficeEngine';
+import {
+  appendUnresolvedRisk,
+  getOfficeMemory,
+  serializeOfficeMemory,
+  setLastFocus,
+  updateOfficeMemory,
+} from '@/lib/office/officeMemory';
 
 const EO = Object.fromEntries(EXEC_OUTPUT_ROLES.map((r) => [r.id, r])) as Record<
   (typeof EXEC_OUTPUT_ROLES)[number]['id'],
@@ -122,6 +131,11 @@ export interface OfficeContextType {
   /** Steps the server ran for the last successful staff sync (intel → Groq → parse). */
   lastAiSyncTrace: AiSyncTraceStep[] | null;
   dismissSyncToast: () => void;
+
+  /** Living Office Engine — last daily cycle output for dashboards / context panel */
+  livingOffice: DailyOfficeCycleResult | null;
+  /** Recompute brief, tasks intel, notifications; persists office memory; may append one PA brief per local day */
+  refreshLivingOffice: (projectOverride?: Project | null) => Promise<void>;
 }
 
 export interface SystemLog {
@@ -236,6 +250,7 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
   });
 
   const [systemLogs, setSystemLogs] = useState<SystemLog[]>([]);
+  const [livingOffice, setLivingOffice] = useState<DailyOfficeCycleResult | null>(null);
 
   const staffAttentionPending = useMemo(
     () => (activeProject?.staffAttentionItems || []).filter((a) => !a.dismissed),
@@ -265,6 +280,10 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
   const clearExecutiveThread = useCallback(() => {
     setExecutiveThread([]);
   }, []);
+
+  const activeProjectRef = useRef<Project | null>(null);
+  activeProjectRef.current = activeProject;
+  const refreshLivingOfficeRef = useRef<((o?: Project | null) => Promise<void>) | undefined>(undefined);
 
   useEffect(() => {
     if (!syncToastMessage) return;
@@ -426,6 +445,8 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
         addSystemLog(`CTO execution board updated — +${addedBoard} task(s). Open the CTO desk → Execution board.`, 'agent-sync', 'info');
       }
       addSystemLog('AI staff sync complete — check notifications and each desk for updates.', 'agent-sync', 'success');
+      activeProjectRef.current = next;
+      await refreshLivingOfficeRef.current?.(next);
       return { ok: true };
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Staff sync failed';
@@ -550,6 +571,53 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateProjectFieldRef = useRef(updateProjectField);
+  updateProjectFieldRef.current = updateProjectField;
+
+  const refreshLivingOffice = useCallback(async (projectOverride?: Project | null) => {
+    const p = projectOverride ?? activeProjectRef.current;
+    if (!p?.id) {
+      setLivingOffice(null);
+      return;
+    }
+    const list = await getAllProjects();
+    const result = await runDailyOfficeCycle(String(p.id), list);
+    setLivingOffice(result);
+
+    const memoryBefore = getOfficeMemory(p);
+    const today = new Date().toDateString();
+    const shouldBrief = memoryBefore.lastMorningBriefDay !== today;
+
+    let nextMem = setLastFocus(memoryBefore, result.brief.suggestedFocus);
+    for (const a of result.brief.criticalAlerts) {
+      nextMem = appendUnresolvedRisk(nextMem, a);
+    }
+    if (shouldBrief) {
+      nextMem = updateOfficeMemory(nextMem, { lastMorningBriefDay: today });
+      const lines = result.brief.priorities.map((x) => `• ${x}`).join('\n');
+      const body = `${result.brief.greeting}\n\n${
+        lines ? `Priorities:\n${lines}\n\n` : ''
+      }Suggested focus: ${result.brief.suggestedFocus}`;
+      appendExecutiveThread({
+        id: `living-office-${Date.now()}`,
+        role: 'assistant',
+        content: body,
+        ts: Date.now(),
+        channel: 'pa',
+      });
+    }
+    const json = serializeOfficeMemory(nextMem);
+    if (json !== (p.officeEngineMemoryJson || '')) {
+      await updateProjectFieldRef.current('officeEngineMemoryJson', json);
+    }
+  }, [appendExecutiveThread]);
+
+  useEffect(() => {
+    void refreshLivingOffice();
+  }, [activeProject?.id, refreshLivingOffice]);
+
+  refreshLivingOfficeRef.current = refreshLivingOffice;
+
   /**
    * Add a journal entry
    */
@@ -637,6 +705,7 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
     setAllProjects([]);
     setActiveProjectState(null);
     setExecutiveThread([]);
+    setLivingOffice(null);
     setActiveRoom('dashboard');
     setSystemState(prev => ({ ...prev, alertLevel: 'stable', isDeepWork: false }));
   };
@@ -694,6 +763,8 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
     syncToastMessage,
     lastAiSyncTrace,
     dismissSyncToast,
+    livingOffice,
+    refreshLivingOffice,
   };
 
   return <OfficeContext.Provider value={value}>{children}</OfficeContext.Provider>;

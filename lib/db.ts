@@ -66,6 +66,9 @@ export interface Project {
   diary: any[];
   /** Cross-desk documents (clients, meetings, notes) */
   deskDocuments?: DeskDocument[];
+
+  /** JSON string: Living Office Engine continuity (see lib/office/officeMemory.ts). */
+  officeEngineMemoryJson?: string;
 }
 
 export interface DeskDocument {
