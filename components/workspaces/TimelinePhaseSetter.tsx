@@ -10,6 +10,10 @@ type Props = {
     projectName: string;
     phases: StrategyPhase[];
     onPhasesChange: (next: StrategyPhase[]) => void;
+    /** Narrow CEO sidebar — tighter chrome, full-width list */
+    variant?: 'page' | 'rail';
+    /** Use app-shell surfaces (Timeline room) — no inner dark canvas or duplicate “Timeline” chrome */
+    embedded?: boolean;
 };
 
 function formatRange(start: string, end: string) {
@@ -18,8 +22,16 @@ function formatRange(start: string, end: string) {
     return start || end || '';
 }
 
-export function TimelinePhaseSetter({ projectName, phases, onPhasesChange }: Props) {
+export function TimelinePhaseSetter({
+    projectName,
+    phases,
+    onPhasesChange,
+    variant = 'page',
+    embedded: embeddedProp = false,
+}: Props) {
     const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+    const rail = variant === 'rail';
+    const embedded = Boolean(embeddedProp) && !rail;
 
     const stats = useMemo(() => {
         const total = phases.length;
@@ -85,6 +97,38 @@ export function TimelinePhaseSetter({ projectName, phases, onPhasesChange }: Pro
 
     const badge = (status: PhaseStatus | undefined) => {
         const s = status || 'planned';
+        if (rail) {
+            if (s === 'done') {
+                return (
+                    <span className="rounded px-1.5 py-0.5 text-[10px] font-medium text-zinc-400">Done</span>
+                );
+            }
+            if (s === 'in_progress') {
+                return (
+                    <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium text-zinc-300">
+                        <Clock className="h-3 w-3 opacity-70" aria-hidden />
+                        Active
+                    </span>
+                );
+            }
+            return <span className="rounded px-1.5 py-0.5 text-[10px] font-medium text-zinc-500">Planned</span>;
+        }
+        if (embedded) {
+            const base =
+                'inline-flex items-center gap-1 rounded-full border border-brand-border bg-brand-panel/70 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide';
+            if (s === 'done') {
+                return <span className={`${base} text-brand-text`}>Done</span>;
+            }
+            if (s === 'in_progress') {
+                return (
+                    <span className={`${base} text-brand-text`}>
+                        <Clock className="h-3 w-3 opacity-80" aria-hidden />
+                        In progress
+                    </span>
+                );
+            }
+            return <span className={`${base} text-brand-muted`}>Planned</span>;
+        }
         if (s === 'done') {
             return (
                 <span className="inline-flex items-center gap-1 rounded-full border border-violet-500/40 bg-violet-950/50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-400">
@@ -109,66 +153,142 @@ export function TimelinePhaseSetter({ projectName, phases, onPhasesChange }: Pro
 
     const nodeDot = (status: PhaseStatus | undefined) => {
         const s = status || 'planned';
+        if (rail) {
+            if (s === 'in_progress') return <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-zinc-400" />;
+            if (s === 'done') return <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-zinc-500" />;
+            return <span className="h-2.5 w-2.5 shrink-0 rounded-full border border-zinc-600 bg-zinc-800" />;
+        }
+        if (embedded) {
+            if (s === 'in_progress') {
+                return <span className={`h-3 w-3 shrink-0 rounded-full ${ceo.accentBg} ring-4 ring-black/20`} />;
+            }
+            if (s === 'done') {
+                return <span className="h-3 w-3 shrink-0 rounded-full bg-brand-muted ring-4 ring-white/[0.06]" />;
+            }
+            return <span className="h-3 w-3 shrink-0 rounded-full border-2 border-brand-border bg-brand-bg" />;
+        }
         if (s === 'in_progress') return <span className={`h-3 w-3 shrink-0 rounded-full ${ceo.accentBg} ring-4 ring-orange-500/20`} />;
         if (s === 'done') return <span className="h-3 w-3 shrink-0 rounded-full bg-violet-500 ring-4 ring-violet-500/15" />;
         return <span className="h-3 w-3 shrink-0 rounded-full border-2 border-zinc-500 bg-zinc-800" />;
     };
 
+    const statChipClass = embedded
+        ? 'rounded-full border border-brand-border/80 bg-brand-bg/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-brand-muted'
+        : '';
+
     return (
-        <div className="flex h-full min-h-0 flex-col bg-[#141416]">
+        <div
+            className={`flex flex-col ${rail || embedded ? 'bg-transparent' : 'h-full min-h-0 bg-[#141416]'}`}
+        >
             {/* Header */}
-            <div className="shrink-0 border-b border-zinc-800 px-4 py-4 sm:px-6">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div
+                className={`shrink-0 ${rail ? 'border-b border-zinc-800/80 px-3 py-2.5' : embedded ? 'border-b border-brand-border/80 py-3' : 'border-b border-zinc-800/80 px-4 py-4 sm:px-6'}`}
+            >
+                <div className={`flex flex-col ${rail ? 'gap-2' : embedded ? 'gap-3 lg:flex-row lg:items-start lg:justify-between' : 'gap-4 lg:flex-row lg:items-start lg:justify-between'}`}>
                     <div className="min-w-0">
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-zinc-500">Timeline</p>
-                        <p className="mt-1 truncate text-sm text-zinc-400">{projectName}</p>
+                        {embedded ? (
+                            <p className="truncate text-sm font-semibold text-brand-text">{projectName}</p>
+                        ) : (
+                            <>
+                                <p
+                                    className={`font-medium text-zinc-500 ${rail ? 'text-[10px] tracking-wide' : 'text-[10px] font-semibold uppercase tracking-[0.25em]'}`}
+                                >
+                                    {rail ? 'Timeline & phases' : 'Timeline'}
+                                </p>
+                                <p className={`truncate text-zinc-400 ${rail ? 'mt-0.5 text-xs' : 'mt-1 text-sm'}`}>{projectName}</p>
+                            </>
+                        )}
                     </div>
-                    <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-                        <div className="flex min-w-[140px] flex-col gap-1">
-                            <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-800">
+                    <div
+                        className={`flex flex-col items-stretch ${rail ? 'gap-2' : 'gap-3 sm:flex-row sm:items-center'}`}
+                    >
+                        <div className={`flex flex-col gap-1 ${rail ? 'min-w-0' : 'min-w-[140px]'}`}>
+                            <div
+                                className={`h-1.5 w-full overflow-hidden rounded-full ${embedded ? 'bg-brand-input' : 'bg-zinc-800'}`}
+                            >
                                 <div
-                                    className={`h-full rounded-full transition-all ${ceo.accentBg}`}
+                                    className={`h-full rounded-full transition-all ${rail ? 'bg-zinc-500' : ceo.accentBg}`}
                                     style={{ width: `${stats.progressPct}%` }}
                                 />
                             </div>
-                            <span className="text-[10px] text-zinc-500">{stats.progressPct}% complete</span>
+                            <span className={`text-[10px] ${embedded ? 'text-brand-muted' : 'text-zinc-500'}`}>
+                                {stats.progressPct}% complete
+                            </span>
                         </div>
-                        <span className="rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-center text-[11px] font-medium text-zinc-400">
-                            {stats.active} active
-                        </span>
+                        {!rail ? (
+                            <span
+                                className={
+                                    embedded
+                                        ? 'rounded-full border border-brand-border bg-brand-panel px-3 py-1 text-center text-[11px] font-medium text-brand-muted'
+                                        : 'rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-center text-[11px] font-medium text-zinc-400'
+                                }
+                            >
+                                {stats.active} active
+                            </span>
+                        ) : null}
                         <button
                             type="button"
                             onClick={addPhase}
-                            className={`inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-wide text-white shadow-lg shadow-orange-500/10 ${ceo.accentBg} ${ceo.accentBgHover}`}
+                            className={`inline-flex shrink-0 items-center justify-center rounded-md text-xs font-medium ${rail ? 'gap-1.5 bg-zinc-700 px-3 py-1.5 text-zinc-100 hover:bg-zinc-600' : `gap-2 border border-white/15 px-4 py-2 font-bold uppercase tracking-wide shadow-md shadow-black/25 ${ceo.accentBg} ${ceo.accentBgHover} text-brand-bg hover:text-brand-bg`}`}
                         >
-                            <Plus className="h-4 w-4" aria-hidden />
+                            <Plus className={rail ? 'h-3.5 w-3.5' : 'h-4 w-4'} aria-hidden />
                             Add phase
                         </button>
                     </div>
                 </div>
 
-                <div className="mt-4 flex flex-wrap gap-2">
-                    <span className="rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-400">
+                <div className={`flex flex-wrap gap-1.5 ${rail ? 'mt-2' : embedded ? 'mt-3 gap-2' : 'mt-4 gap-2'}`}>
+                    <span
+                        className={
+                            embedded
+                                ? statChipClass
+                                : `rounded border border-zinc-700/60 bg-zinc-900/50 px-2 py-0.5 text-[10px] font-normal text-zinc-500 ${rail ? '' : 'rounded-full px-3 py-1 font-semibold uppercase tracking-wide'}`
+                        }
+                    >
                         {stats.total} total
                     </span>
-                    <span className="rounded-full border border-violet-500/30 bg-violet-950/30 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-violet-400/90">
+                    <span
+                        className={
+                            embedded
+                                ? statChipClass
+                                : `rounded border border-zinc-700/60 bg-zinc-900/50 px-2 py-0.5 text-[10px] font-normal text-zinc-500 ${rail ? '' : 'rounded-full border-violet-500/30 bg-violet-950/25 px-3 py-1 font-semibold uppercase tracking-wide text-violet-400/90'}`
+                        }
+                    >
                         {stats.done} done
                     </span>
-                    <span className="rounded-full border border-orange-500/30 bg-orange-950/30 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-orange-300/90">
+                    <span
+                        className={
+                            embedded
+                                ? statChipClass
+                                : `rounded border border-zinc-700/60 bg-zinc-900/50 px-2 py-0.5 text-[10px] font-normal text-zinc-500 ${rail ? '' : 'rounded-full border-orange-500/30 bg-orange-950/25 px-3 py-1 font-semibold uppercase tracking-wide text-orange-300/90'}`
+                        }
+                    >
                         {stats.active} active
                     </span>
-                    <span className="rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
+                    <span
+                        className={
+                            embedded
+                                ? statChipClass
+                                : `rounded border border-zinc-700/60 bg-zinc-900/50 px-2 py-0.5 text-[10px] font-normal text-zinc-500 ${rail ? '' : 'rounded-full px-3 py-1 font-semibold uppercase tracking-wide'}`
+                        }
+                    >
                         {stats.planned} planned
                     </span>
                 </div>
             </div>
 
-            {/* Timeline */}
-            <div className="custom-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-6 sm:px-8">
-                <div className="mx-auto w-full max-w-3xl">
+            {/* Timeline — embedded: no inner scroll; parent workspace scrolls as one column */}
+            <div
+                className={`flex flex-col ${rail ? 'px-2 py-2 sm:px-3' : embedded ? 'pb-8 pt-2' : 'px-4 py-6 sm:px-8'}`}
+            >
+                <div className={rail || embedded ? 'w-full max-w-none' : 'mx-auto w-full max-w-3xl'}>
                     {phases.length === 0 ? (
-                        <p className="rounded-lg border border-dashed border-zinc-700 px-4 py-12 text-center text-sm text-zinc-500">
-                            No phases yet. Use <span className={ceo.accent}>Add phase</span> to break your plan into horizons.
+                        <p
+                            className={`rounded-lg border border-dashed px-4 py-12 text-center text-sm ${embedded ? 'border-brand-border text-brand-muted' : 'border-zinc-700 text-zinc-500'}`}
+                        >
+                            No phases yet. Use{' '}
+                            <span className={embedded ? 'font-medium text-brand-text' : ceo.accent}>Add phase</span> to break your plan
+                            into horizons.
                         </p>
                     ) : (
                         <ul className="relative space-y-0 pl-0">
@@ -176,12 +296,14 @@ export function TimelinePhaseSetter({ projectName, phases, onPhasesChange }: Pro
                                 const range = formatRange(p.start, p.end);
                                 const last = index === phases.length - 1;
                                 return (
-                                    <li key={p.id} className="relative flex gap-0 pb-8 last:pb-2">
+                                    <li key={p.id} className={`relative flex gap-0 ${rail ? 'pb-6 last:pb-1' : 'pb-8 last:pb-2'}`}>
                                         {/* Spine */}
-                                        <div className="relative flex w-10 shrink-0 flex-col items-center sm:w-12">
+                                        <div
+                                            className={`relative flex shrink-0 flex-col items-center ${rail ? 'w-8' : 'w-10 sm:w-12'}`}
+                                        >
                                             {!last ? (
                                                 <div
-                                                    className={`absolute left-1/2 top-4 z-0 w-px -translate-x-1/2 ${ceo.spine}`}
+                                                    className={`absolute left-1/2 top-4 z-0 w-px -translate-x-1/2 ${embedded ? 'bg-brand-border' : ceo.spine}`}
                                                     style={{ height: 'calc(100% + 0.5rem)' }}
                                                     aria-hidden
                                                 />
@@ -192,17 +314,20 @@ export function TimelinePhaseSetter({ projectName, phases, onPhasesChange }: Pro
                                                     type="button"
                                                     title="Move phase up"
                                                     onClick={() => move(index, -1)}
-                                                    className="rounded p-0.5 text-zinc-600 hover:text-zinc-300 disabled:opacity-30"
+                                                    className={`rounded p-0.5 disabled:opacity-30 ${embedded ? 'text-brand-muted hover:text-brand-text' : 'text-zinc-600 hover:text-zinc-300'}`}
                                                     disabled={index === 0}
                                                 >
                                                     <ArrowUp className="h-3.5 w-3.5" />
                                                 </button>
-                                                <GripVertical className="h-4 w-4 text-zinc-600" aria-hidden />
+                                                <GripVertical
+                                                    className={`h-4 w-4 ${embedded ? 'text-brand-muted' : 'text-zinc-600'}`}
+                                                    aria-hidden
+                                                />
                                                 <button
                                                     type="button"
                                                     title="Move phase down"
                                                     onClick={() => move(index, 1)}
-                                                    className="rounded p-0.5 text-zinc-600 hover:text-zinc-300 disabled:opacity-30"
+                                                    className={`rounded p-0.5 disabled:opacity-30 ${embedded ? 'text-brand-muted hover:text-brand-text' : 'text-zinc-600 hover:text-zinc-300'}`}
                                                     disabled={index === phases.length - 1}
                                                 >
                                                     <ArrowDown className="h-3.5 w-3.5" />
@@ -211,16 +336,18 @@ export function TimelinePhaseSetter({ projectName, phases, onPhasesChange }: Pro
                                         </div>
 
                                         {/* Card */}
-                                        <div className={`min-w-0 flex-1 ${ceo.card} p-4 shadow-sm`}>
+                                        <div
+                                            className={`min-w-0 flex-1 shadow-sm ${rail ? 'rounded-md border border-white/[0.06] bg-zinc-900/20 p-3' : embedded ? 'rounded-xl border border-brand-border bg-brand-card/90 p-4' : `${ceo.card} p-4`}`}
+                                        >
                                             <div className="flex flex-wrap items-start justify-between gap-2">
                                                 <div className="min-w-0 flex-1 space-y-1">
                                                     <input
                                                         value={p.title}
                                                         onChange={(e) => updatePhase(p.id, { title: e.target.value })}
                                                         placeholder="Untitled phase — add a title"
-                                                        className="w-full border-0 bg-transparent text-base font-medium text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-0"
+                                                        className={`w-full border-0 bg-transparent text-base font-medium focus:outline-none focus:ring-0 ${embedded ? 'text-brand-text placeholder:text-brand-muted/60' : 'text-zinc-100 placeholder:text-zinc-600'}`}
                                                     />
-                                                    <p className="text-xs text-zinc-500">
+                                                    <p className={`text-xs ${embedded ? 'text-brand-muted' : 'text-zinc-500'}`}>
                                                         {range || 'Add timeframe…'}
                                                     </p>
                                                     <div className="flex flex-wrap gap-2 pt-1">
@@ -228,14 +355,16 @@ export function TimelinePhaseSetter({ projectName, phases, onPhasesChange }: Pro
                                                             type="date"
                                                             value={p.start}
                                                             onChange={(e) => updatePhase(p.id, { start: e.target.value })}
-                                                            className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs text-zinc-300"
+                                                            className={`rounded border px-2 py-1 text-xs ${embedded ? 'border-brand-border bg-brand-bg text-brand-text' : 'border-zinc-700 bg-zinc-900 text-zinc-300'}`}
                                                         />
-                                                        <span className="self-center text-zinc-600">→</span>
+                                                        <span className={`self-center ${embedded ? 'text-brand-muted' : 'text-zinc-600'}`}>
+                                                            →
+                                                        </span>
                                                         <input
                                                             type="date"
                                                             value={p.end}
                                                             onChange={(e) => updatePhase(p.id, { end: e.target.value })}
-                                                            className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs text-zinc-300"
+                                                            className={`rounded border px-2 py-1 text-xs ${embedded ? 'border-brand-border bg-brand-bg text-brand-text' : 'border-zinc-700 bg-zinc-900 text-zinc-300'}`}
                                                         />
                                                     </div>
                                                 </div>
@@ -247,15 +376,24 @@ export function TimelinePhaseSetter({ projectName, phases, onPhasesChange }: Pro
                                                             onClick={() => setStatus(p.id, 'done')}
                                                             disabled={p.status === 'done'}
                                                             title="Mark this phase complete"
-                                                            className="inline-flex items-center gap-1 rounded-lg border border-violet-500/40 bg-violet-950/40 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-violet-200/95 hover:bg-violet-950/55 disabled:pointer-events-none disabled:opacity-35"
+                                                            className={
+                                                                rail
+                                                                    ? 'inline-flex items-center gap-1 rounded-md border border-zinc-600 bg-zinc-800/80 px-2 py-1 text-[10px] font-medium text-zinc-300 hover:bg-zinc-700/80 disabled:pointer-events-none disabled:opacity-35'
+                                                                    : embedded
+                                                                      ? 'inline-flex items-center gap-1 rounded-lg border border-brand-border bg-brand-panel px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-brand-text hover:bg-brand-input disabled:pointer-events-none disabled:opacity-35'
+                                                                      : 'inline-flex items-center gap-1 rounded-lg border border-violet-500/40 bg-violet-950/40 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-violet-200/95 hover:bg-violet-950/55 disabled:pointer-events-none disabled:opacity-35'
+                                                            }
                                                         >
-                                                            <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
+                                                            <CheckCircle2
+                                                                className={`h-3.5 w-3.5 ${embedded ? 'text-brand-muted' : ''}`}
+                                                                aria-hidden
+                                                            />
                                                             Done
                                                         </button>
                                                         <select
                                                             value={p.status || 'planned'}
                                                             onChange={(e) => setStatus(p.id, e.target.value as PhaseStatus)}
-                                                            className="rounded-lg border border-zinc-700 bg-zinc-900 px-2 py-1 text-[10px] font-medium uppercase text-zinc-400"
+                                                            className={`rounded-lg border px-2 py-1 text-[10px] font-medium ${rail ? 'normal-case' : 'uppercase'} ${embedded ? 'border-brand-border bg-brand-bg text-brand-muted' : 'border-zinc-700 bg-zinc-900 text-zinc-400'}`}
                                                             aria-label={`Status for ${p.title || 'phase'}`}
                                                         >
                                                             <option value="planned">Planned</option>
@@ -265,7 +403,7 @@ export function TimelinePhaseSetter({ projectName, phases, onPhasesChange }: Pro
                                                         <button
                                                             type="button"
                                                             onClick={() => toggleExpand(p.id)}
-                                                            className="rounded p-1 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
+                                                            className={`rounded p-1 ${embedded ? 'text-brand-muted hover:bg-brand-input hover:text-brand-text' : 'text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300'}`}
                                                             aria-expanded={isExpanded(p.id)}
                                                         >
                                                             {isExpanded(p.id) ? (
@@ -277,7 +415,7 @@ export function TimelinePhaseSetter({ projectName, phases, onPhasesChange }: Pro
                                                         <button
                                                             type="button"
                                                             onClick={() => removePhase(p.id)}
-                                                            className="rounded p-1 text-zinc-600 hover:text-rose-400"
+                                                            className={`rounded p-1 ${embedded ? 'text-brand-muted hover:text-rose-400' : 'text-zinc-600 hover:text-rose-400'}`}
                                                             title="Remove phase"
                                                         >
                                                             <Trash2 className="h-4 w-4" />
@@ -291,7 +429,7 @@ export function TimelinePhaseSetter({ projectName, phases, onPhasesChange }: Pro
                                                     onChange={(e) => updatePhase(p.id, { notes: e.target.value })}
                                                     placeholder="Describe what happens in this phase — milestones, deliverables…"
                                                     rows={5}
-                                                    className="mt-3 w-full resize-y rounded-lg border border-zinc-700/80 bg-[#0f0f10] p-3 text-sm leading-relaxed text-zinc-200 placeholder:text-zinc-600 focus:border-orange-500/40 focus:outline-none focus:ring-1 focus:ring-orange-500/30"
+                                                    className={`mt-3 w-full resize-y rounded-lg border p-3 text-sm leading-relaxed focus:outline-none ${rail ? 'border-zinc-700/80 bg-zinc-950/50 text-zinc-200 placeholder:text-zinc-600 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500/25' : embedded ? 'border-brand-border/80 bg-brand-bg text-brand-text placeholder:text-brand-muted/70 focus:border-brand-teal/35 focus:ring-1 focus:ring-brand-teal/15' : 'border-zinc-700/80 bg-[#0f0f10] text-zinc-200 placeholder:text-zinc-600 focus:border-orange-500/40 focus:ring-1 focus:ring-orange-500/30'}`}
                                                 />
                                             ) : null}
                                         </div>
@@ -305,7 +443,7 @@ export function TimelinePhaseSetter({ projectName, phases, onPhasesChange }: Pro
                         <button
                             type="button"
                             onClick={addPhase}
-                            className="mt-2 w-full rounded-xl border border-dashed border-zinc-600 py-3 text-sm font-medium text-zinc-500 transition hover:border-orange-500/40 hover:text-orange-300/90"
+                            className={`mt-2 w-full rounded-xl border border-dashed py-3 text-sm font-medium transition ${embedded ? 'border-brand-border bg-brand-bg/40 text-brand-muted hover:border-brand-border hover:bg-brand-input hover:text-brand-text' : 'border-zinc-500/70 bg-zinc-900/40 text-zinc-300 hover:border-zinc-400 hover:bg-zinc-900/70 hover:text-zinc-100'}`}
                         >
                             + Add next phase
                         </button>

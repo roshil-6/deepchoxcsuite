@@ -2,8 +2,8 @@
 
 import React from 'react';
 
-const HEADER_PAD = 'px-6 py-5 sm:px-8';
-const BODY_PAD = 'px-6 py-6 sm:px-8';
+const HEADER_PAD = 'px-5 py-4 sm:px-7 sm:py-4';
+const BODY_PAD = 'px-5 py-5 sm:px-7 sm:py-6';
 
 function shellClass(base: string, extra?: string) {
     return extra ? `${base} ${extra}` : base;
@@ -42,18 +42,18 @@ export function DeskShell({
     bodyClassName,
 }: DeskShellProps) {
     return (
-        <div className={shellClass('flex h-full min-h-0 flex-col overflow-hidden bg-brand-bg', className)}>
-            <header className={shellClass('shrink-0 border-b border-brand-border', HEADER_PAD)}>
-                <p className="text-[11px] font-medium text-brand-muted">{eyebrow}</p>
-                <h1 className="mt-1 text-lg font-medium tracking-tight text-brand-text sm:text-xl">{title}</h1>
+        <div className={shellClass('flex w-full min-w-0 flex-col bg-brand-bg', className)}>
+            <header className={shellClass('shrink-0 border-b border-white/[0.05] bg-transparent', HEADER_PAD)}>
+                <p className="text-[11px] font-normal text-brand-muted/90">{eyebrow}</p>
+                <h1 className="mt-0.5 text-base font-normal tracking-tight text-brand-text sm:text-lg">{title}</h1>
                 {description ? (
-                    <p className="mt-2 max-w-3xl text-sm leading-relaxed text-brand-muted">{description}</p>
+                    <p className="mt-2 max-w-3xl text-sm font-normal leading-relaxed text-brand-muted">{description}</p>
                 ) : null}
-                {tabs ? <div className="mt-5 flex flex-wrap gap-1.5 border-t border-brand-border pt-4">{tabs}</div> : null}
+                {tabs ? (
+                    <div className="mt-4 flex flex-wrap gap-1 border-t border-white/[0.04] pt-3">{tabs}</div>
+                ) : null}
             </header>
-            <div
-                className={`custom-scrollbar min-h-0 flex-1 overflow-y-auto ${bodyFlush ? 'p-0' : BODY_PAD} ${bodyClassName ?? ''}`}
-            >
+            <div className={`${bodyFlush ? 'p-0' : BODY_PAD} ${bodyClassName ?? ''}`}>
                 {children}
             </div>
             {footer ? (
@@ -95,7 +95,7 @@ export function DeskTabButton({
 
 export function DeskEmpty({ children, className }: { children: React.ReactNode; className?: string }) {
     return (
-        <div className={shellClass('flex h-full items-center justify-center p-8 text-sm text-brand-muted', className)}>
+        <div className={shellClass('flex min-h-[min(50vh,24rem)] items-center justify-center p-8 text-sm text-brand-muted', className)}>
             {children}
         </div>
     );

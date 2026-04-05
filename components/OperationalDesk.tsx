@@ -31,7 +31,7 @@ function DeskSyncCorner({ room }: { room: string }) {
     /** CTO desk: ProductKanban aside is `w-[min(100%,280px)]` — pin sync left of that rail so it does not sit on the intent field. */
     const cornerRightClass =
         room === 'pm'
-            ? 'right-2 top-2 sm:right-[calc(280px+0.75rem)] sm:top-3'
+            ? 'right-2 top-2 sm:right-[calc(14rem+0.75rem)] sm:top-3'
             : 'right-2 top-2 sm:right-3 sm:top-3';
 
     return (
@@ -82,7 +82,7 @@ export function OperationalDesk({ children }: { children: React.ReactNode }) {
     const waiting = staffAttentionPending.filter((i) => i.role === deskRole);
 
     return (
-        <div className="relative flex h-full w-full flex-col overflow-hidden bg-brand-bg">
+        <div className="relative flex min-h-0 w-full flex-1 flex-col bg-[var(--color-brand-bg)]">
             <DeskSyncCorner room={activeRoom} />
             {waiting.length > 0 && (
                 <div className="pointer-events-none absolute left-2 top-2 z-20 max-w-[min(calc(100vw-8rem),22rem)] sm:left-3 sm:top-3 sm:max-w-sm">
@@ -108,7 +108,7 @@ export function OperationalDesk({ children }: { children: React.ReactNode }) {
                     </div>
                 </div>
             )}
-            <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
+            <div className="min-h-0 w-full flex-1">{children}</div>
         </div>
     );
 }

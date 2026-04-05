@@ -106,10 +106,10 @@ export function SuiteIntelligenceNeuralFlow({
         <div className={isFull ? 'space-y-5' : 'space-y-3'}>
             {trace && trace.length > 0 ? (
                 <div
-                    className="rounded-lg border border-brand-teal/18 bg-brand-teal/[0.035] px-3 py-2"
+                    className="rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2"
                     aria-label="Last sync pipeline trace"
                 >
-                    <p className="mb-1.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-brand-teal/85">
+                    <p className="mb-1.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-zinc-400">
                         AI pipeline (last run)
                     </p>
                     <div className="flex flex-wrap items-stretch gap-1.5 sm:gap-2">
@@ -153,7 +153,7 @@ export function SuiteIntelligenceNeuralFlow({
                 <div
                     className="pointer-events-none absolute inset-0 opacity-[0.35]"
                     style={{
-                        backgroundImage: `radial-gradient(circle at 20% 30%, rgba(45,212,191,0.08) 0%, transparent 45%),
+                        backgroundImage: `radial-gradient(circle at 20% 30%, rgba(161,161,170,0.07) 0%, transparent 45%),
               radial-gradient(circle at 80% 70%, rgba(139,92,246,0.06) 0%, transparent 40%),
               linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
               linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)`,
@@ -163,7 +163,7 @@ export function SuiteIntelligenceNeuralFlow({
                 />
 
                 <div className="relative z-[1] mb-2 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-brand-muted">
-                    <Network className="h-3.5 w-3.5 shrink-0 text-brand-teal" aria-hidden />
+                    <Network className="h-3.5 w-3.5 shrink-0 text-zinc-400" aria-hidden />
                     <span className="text-[10px] font-semibold uppercase tracking-[0.12em]">Neural suite map</span>
                     <span className="text-[9px] text-brand-muted/75">— brief · fields · links</span>
                 </div>
@@ -181,7 +181,7 @@ export function SuiteIntelligenceNeuralFlow({
                                 key={i}
                                 d={d}
                                 fill="none"
-                                stroke="rgba(45, 212, 191, 0.28)"
+                                stroke="rgba(161, 161, 170, 0.35)"
                                 strokeWidth={1.5}
                                 vectorEffect="non-scaling-stroke"
                             />
@@ -194,13 +194,13 @@ export function SuiteIntelligenceNeuralFlow({
                             ref={ref(SUITE_INTELLIGENCE_VENTURE_NODE.id)}
                             className={`w-full max-w-lg rounded-2xl border px-4 py-4 sm:px-5 ${
                                 agentSyncRunning
-                                    ? 'border-brand-teal/40 bg-brand-teal/[0.08] shadow-[0_0_24px_rgba(45,212,191,0.12)]'
+                                    ? 'border-zinc-500/35 bg-white/[0.07] shadow-[0_0_20px_rgba(255,255,255,0.06)]'
                                     : 'border-white/[0.1] bg-white/[0.04]'
                             }`}
                         >
                             <div className="flex items-start gap-3">
                                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-brand-border bg-brand-input">
-                                    <Database className="h-5 w-5 text-brand-teal" aria-hidden />
+                                    <Database className="h-5 w-5 text-zinc-400" aria-hidden />
                                 </div>
                                 <div className="min-w-0 flex-1">
                                     <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">
@@ -214,7 +214,7 @@ export function SuiteIntelligenceNeuralFlow({
                                         ))}
                                     </ul>
                                     {lastSyncAtLabel ? (
-                                        <p className="mt-2 font-mono text-[10px] text-brand-teal/85">Last staff sync: {lastSyncAtLabel}</p>
+                                        <p className="mt-2 font-mono text-[10px] text-zinc-500">Last staff sync: {lastSyncAtLabel}</p>
                                     ) : null}
                                 </div>
                             </div>
@@ -261,7 +261,7 @@ export function SuiteIntelligenceNeuralFlow({
                                             ref={ref(`role-${col.id}`)}
                                             className="flex min-h-[9.5rem] flex-col rounded-lg border border-brand-border/70 bg-brand-bg/85 px-2.5 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
                                         >
-                                            <p className="text-[10px] font-semibold uppercase tracking-wide text-brand-teal/90">
+                                            <p className="text-[10px] font-semibold uppercase tracking-wide text-zinc-400">
                                                 Desk · {col.agentSyncDeskKey}
                                             </p>
                                             <p className="mt-2 text-[12px] font-semibold leading-snug text-brand-text">{col.fullTitle}</p>
@@ -281,7 +281,7 @@ export function SuiteIntelligenceNeuralFlow({
                                             <button
                                                 type="button"
                                                 onClick={() => switchRoom(col.deskRoom)}
-                                                className="mt-2 inline-flex items-center justify-center gap-1 rounded-md border border-brand-teal/30 bg-brand-teal/10 py-1.5 text-[9px] font-semibold text-brand-text transition hover:bg-brand-teal/20"
+                                                className="mt-2 inline-flex items-center justify-center gap-1 rounded-md border border-white/[0.12] bg-white/[0.05] py-1.5 text-[9px] font-semibold text-brand-text transition hover:bg-white/[0.09]"
                                             >
                                                 Open desk
                                                 <ExternalLink className="h-2.5 w-2.5 opacity-70" aria-hidden />
@@ -297,7 +297,7 @@ export function SuiteIntelligenceNeuralFlow({
                                                     key={`${col.id}-${s.label}`}
                                                     type="button"
                                                     onClick={() => switchRoom(s.room)}
-                                                    className="rounded-md border border-brand-border/50 bg-brand-panel/45 px-2 py-1.5 text-left transition hover:border-brand-teal/30 hover:bg-brand-panel"
+                                                    className="rounded-md border border-brand-border/50 bg-brand-panel/45 px-2 py-1.5 text-left transition hover:border-white/15 hover:bg-brand-panel"
                                                 >
                                                     <p className="flex items-center justify-between gap-1 text-[10px] font-medium text-brand-text">
                                                         {s.label}

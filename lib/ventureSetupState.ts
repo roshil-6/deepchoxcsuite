@@ -22,5 +22,4 @@ export function isVentureUnsettled(p: Project): boolean {
     return true;
 }
 
-export const PA_WELCOME_MESSAGE =
-    "I'm Relay — your venture copilot. Describe what you're building (idea, stage, audience). I'll help shape your record; you can also tell me to update any desk from here or the floating chat.";
+export const PA_WELCOME_MESSAGE = `Hi — I'm Relay, your "PA". Describe what you're building (idea, stage, audience). I'll help shape your record; ask me to update any desk from here or the floating chat.`;

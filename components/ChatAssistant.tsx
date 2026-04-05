@@ -11,6 +11,7 @@ import {
     isExecChatModelId,
     type ExecChatModelId,
 } from '@/lib/deskConstants';
+import { PA_BUDDY_NAME } from '@/lib/paBuddy';
 
 function readStoredExecModel(): string {
     if (typeof window === 'undefined') return 'llama3';
@@ -353,7 +354,7 @@ export function ChatAssistant({
                                     ? 'CEO desk'
                                     : msg.role === 'user'
                                       ? 'Assistant thread'
-                                      : 'Personal Assistant'}
+                                      : PA_BUDDY_NAME}
                             </p>
                         ) : null}
                         <p className="whitespace-pre-wrap">{msg.content}</p>
@@ -421,7 +422,7 @@ export function ChatAssistant({
                             </p>
                             <p className="mt-0.5 truncate text-[11px] text-zinc-300">
                                 {useExecutiveThread
-                                    ? 'Same thread as Personal Assistant'
+                                    ? `Same thread as ${PA_BUDDY_NAME}`
                                     : chatTheme.subtitle}
                             </p>
                         </div>

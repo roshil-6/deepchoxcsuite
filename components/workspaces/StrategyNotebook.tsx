@@ -27,6 +27,55 @@ type ToolId = 'narrative' | 'flow' | 'phases' | 'team' | 'schedule' | 'prioritie
 
 type DeskView = 'hub' | 'surface';
 
+type CeoPlanRailTab = 'phases' | 'dates';
+
+function CeoSidebarDates({
+    events,
+    onOpenSchedule,
+}: {
+    events: ProjectEvent[];
+    onOpenSchedule: () => void;
+}) {
+    const lines = useMemo(() => [...events].sort((a, b) => a.date - b.date), [events]);
+    return (
+        <div className="flex w-full flex-col bg-transparent">
+            <div className="shrink-0 border-b border-zinc-800/80 px-3 py-2.5">
+                <p className="text-[10px] font-medium text-zinc-500">Key dates</p>
+                <p className="mt-0.5 text-xs font-normal text-zinc-400">From your venture calendar</p>
+            </div>
+            <div className="flex flex-col px-3 py-3">
+                {lines.length === 0 ? (
+                    <p className="text-xs font-normal leading-relaxed text-zinc-600">
+                        No dated entries yet. Add them from Schedule on this desk.
+                    </p>
+                ) : (
+                    <ul className="space-y-2">
+                        {lines.slice(0, 48).map((ev) => (
+                            <li
+                                key={ev.id}
+                                className="rounded-md border border-white/[0.05] bg-zinc-900/20 px-2.5 py-2"
+                            >
+                                <p className="text-xs font-normal text-zinc-200">{ev.title}</p>
+                                <p className="mt-0.5 text-[10px] font-normal text-zinc-500">
+                                    {new Date(ev.date).toLocaleString(undefined, { dateStyle: 'medium' })}
+                                    {ev.type ? ` · ${ev.type}` : ''}
+                                </p>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+                <button
+                    type="button"
+                    onClick={onOpenSchedule}
+                    className="mt-4 w-full rounded-md border border-white/[0.06] bg-zinc-800/35 px-2 py-2 text-left text-xs font-normal text-zinc-300 transition hover:bg-zinc-800/55"
+                >
+                    Open schedule
+                </button>
+            </div>
+        </div>
+    );
+}
+
 export function StrategyNotebook() {
     const { activeProject, updateStrategy, addEvent, updateProjectField } = useOffice();
     const [deskView, setDeskView] = useState<DeskView>('hub');
@@ -39,6 +88,7 @@ export function StrategyNotebook() {
     const [calType, setCalType] = useState<ProjectEvent['type']>('milestone');
     const [memberDraft, setMemberDraft] = useState({ name: '', role: '' });
     const [chatLine, setChatLine] = useState('');
+    const [ceoRailTab, setCeoRailTab] = useState<CeoPlanRailTab>('phases');
     const timelineBootstrapRef = useRef<Set<number>>(new Set());
     /** Context exposes a new updateStrategy function each render — do not put it in useCallback deps or effects loop. */
     const updateStrategyRef = useRef(updateStrategy);
@@ -76,6 +126,7 @@ export function StrategyNotebook() {
 
     useEffect(() => {
         setDeskView('hub');
+        setCeoRailTab('phases');
     }, [activeProject?.id]);
 
     const persist = (next: StrategyDoc) => {
@@ -171,6 +222,11 @@ export function StrategyNotebook() {
 
     const events = [...(activeProject?.events || [])].sort((a, b) => a.date - b.date);
 
+    const openScheduleSurface = () => {
+        setTool('schedule');
+        setDeskView('surface');
+    };
+
     if (!activeProject) {
         return <DeskEmpty>Select a venture to open the CEO desk.</DeskEmpty>;
     }
@@ -183,6 +239,9 @@ export function StrategyNotebook() {
         { id: 'schedule', label: 'Schedule & critical work', sub: 'Dates & tasks' },
         { id: 'priorities', label: 'Executive priorities', sub: 'Checklist' },
     ];
+
+    /** Phases live in the left rail — tiles skip duplicate entry */
+    const planningSurfaceItems = navItems.filter((i) => i.id !== 'phases');
 
     const activeNav = navItems.find((n) => n.id === tool) ?? navItems[0];
 
@@ -207,23 +266,23 @@ export function StrategyNotebook() {
     };
 
     const surfaceToolbar = (
-        <header className="flex shrink-0 flex-wrap items-center gap-3 border-b border-zinc-700 bg-zinc-900/40 px-6 py-3 sm:px-8">
+        <header className="flex shrink-0 flex-wrap items-center gap-2 border-b border-white/[0.06] bg-brand-bg/85 px-4 py-2 backdrop-blur-md sm:gap-3 sm:px-6 sm:py-2.5">
             <button
                 type="button"
                 onClick={goHub}
-                className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-brand-border bg-brand-card px-3 py-2 text-xs font-semibold text-zinc-100 hover:border-brand-teal/35 hover:bg-brand-bg"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.04] px-2.5 py-1.5 text-xs font-medium text-zinc-200 transition hover:bg-white/[0.07]"
             >
-                <ArrowLeft className="h-4 w-4" aria-hidden />
+                <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
                 Back
             </button>
             <div className="min-w-0 flex-1">
-                <h2 className="truncate text-sm font-semibold text-zinc-100 sm:text-base">{activeNav.label}</h2>
-                <p className="truncate text-[11px] text-zinc-500">{activeNav.sub}</p>
+                <h2 className="truncate text-sm font-normal text-zinc-100">{activeNav.label}</h2>
+                <p className="truncate text-[11px] font-normal text-zinc-500">{activeNav.sub}</p>
             </div>
             <button
                 type="button"
                 onClick={() => persist(doc)}
-                className={`inline-flex shrink-0 items-center gap-2 rounded-lg border border-brand-border px-3 py-2 text-xs font-semibold text-[#0a0a0a] shadow-sm shadow-brand-teal/15 ${ceo.accentBg} ${ceo.accentBgHover}`}
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-md border border-white/[0.1] px-2.5 py-1.5 text-xs font-medium text-[#0a0a0a] ${ceo.accentBg} ${ceo.accentBgHover}`}
             >
                 {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
                 Save
@@ -231,13 +290,58 @@ export function StrategyNotebook() {
         </header>
     );
 
+    const phasesRail = (
+        <aside
+            aria-label="Strategy plan sidebar"
+            className="hidden w-[13rem] max-w-[13rem] shrink-0 flex-col border-r border-[var(--border)] bg-[var(--bg)] lg:flex"
+        >
+            <div className="flex shrink-0 gap-px border-b border-white/[0.04] p-1">
+                <button
+                    type="button"
+                    onClick={() => setCeoRailTab('phases')}
+                    className={`min-w-0 flex-1 rounded-md px-2 py-2 text-center text-[11px] font-normal transition ${
+                        ceoRailTab === 'phases'
+                            ? 'bg-zinc-800/80 text-zinc-100'
+                            : 'text-zinc-500 hover:bg-zinc-800/40 hover:text-zinc-300'
+                    }`}
+                >
+                    Phases
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setCeoRailTab('dates')}
+                    className={`min-w-0 flex-1 rounded-md px-2 py-2 text-center text-[11px] font-normal transition ${
+                        ceoRailTab === 'dates'
+                            ? 'bg-zinc-800/80 text-zinc-100'
+                            : 'text-zinc-500 hover:bg-zinc-800/40 hover:text-zinc-300'
+                    }`}
+                >
+                    Key dates
+                </button>
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col">
+                {ceoRailTab === 'phases' ? (
+                    <TimelinePhaseSetter
+                        variant="rail"
+                        projectName={activeProject.name}
+                        phases={phases}
+                        onPhasesChange={(next) => persist({ ...doc, phases: next })}
+                    />
+                ) : (
+                    <CeoSidebarDates events={events} onOpenSchedule={openScheduleSurface} />
+                )}
+            </div>
+        </aside>
+    );
+
     return (
         <>
-        <div className="flex h-full min-h-0 flex-col overflow-hidden bg-brand-bg">
+            <div className="flex w-full min-w-0 flex-col bg-[var(--color-brand-bg)] lg:flex-row lg:items-start">
+                {phasesRail}
+                <div className="flex min-w-0 flex-1 flex-col bg-[var(--color-brand-bg)]">
             {deskView === 'hub' ? (
-                <div className="flex h-full min-h-0 flex-col overflow-hidden bg-brand-bg">
-                    <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto scroll-pb-32">
-                        <div className="space-y-8 px-6 py-6 pb-28 sm:px-8 sm:py-8 sm:pb-32">
+                <div className="flex w-full flex-col bg-[var(--color-brand-bg)]">
+                    <div className="space-y-8 px-5 py-6 pb-28 sm:px-7 sm:py-7 sm:pb-32">
                             <div className="space-y-2">
                                 <label className="text-xs font-medium text-zinc-500" htmlFor="ceo-strategic-intent">
                                     Strategic intent
@@ -269,9 +373,12 @@ export function StrategyNotebook() {
                                 <p className="text-[10px] text-zinc-600">Saved when you leave the field — same as strategic intent.</p>
                             </div>
 
-                            <section className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4" aria-label="Executive priorities quick checklist">
+                            <section
+                                className="rounded-lg border border-white/[0.05] bg-zinc-900/15 p-4"
+                                aria-label="Executive priorities quick checklist"
+                            >
                                 <div className="flex items-center justify-between gap-2">
-                                    <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-500">Executive priorities</p>
+                                    <p className="text-xs font-normal text-zinc-400">Priorities</p>
                                     <button
                                         type="button"
                                         onClick={() => openSurface('priorities')}
@@ -309,21 +416,24 @@ export function StrategyNotebook() {
                             </section>
 
                             <div className="space-y-3">
-                                <div className="flex items-baseline justify-between gap-2 px-0.5">
-                                    <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-500">Planning surfaces</p>
-                                    <p className="text-[10px] text-zinc-600">Updates save to the venture · Product mirrors the flow</p>
+                                <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                                    <p className="text-sm font-normal text-zinc-300">More on this desk</p>
+                                    <p className="text-[11px] font-normal text-zinc-600">
+                                        On a wide screen, phases and key dates sit in the slim column beside this page. Product still mirrors
+                                        your flow.
+                                    </p>
                                 </div>
-                                <ul className="grid gap-3">
-                                    {navItems.map((item) => {
+                                <ul className="grid gap-2.5 sm:gap-3">
+                                    {planningSurfaceItems.map((item) => {
                                         const isFlow = item.id === 'flow';
                                         return (
                                             <li key={item.id}>
                                                 <button
                                                     type="button"
                                                     onClick={() => openSurface(item.id)}
-                                                    className="group flex w-full items-start gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4 text-left transition hover:border-white/[0.1] hover:bg-white/[0.05]"
+                                                    className="group flex w-full items-start gap-3 rounded-lg border border-white/[0.05] bg-zinc-900/15 p-3.5 text-left transition hover:border-white/[0.07] hover:bg-zinc-900/25 sm:p-4"
                                                 >
-                                                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/[0.05] text-zinc-400 transition group-hover:text-zinc-200">
+                                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/[0.04] text-zinc-400 transition group-hover:text-zinc-200 sm:h-10 sm:w-10 sm:rounded-xl">
                                                         {modeIcon(item.id)}
                                                     </span>
                                                     <span className="min-w-0 flex-1">
@@ -357,14 +467,13 @@ export function StrategyNotebook() {
                                 </button>
                             </div>
                         </div>
-                    </div>
                 </div>
             ) : (
                 <>
                     {surfaceToolbar}
-                    <div className="flex min-h-0 min-h-[70vh] flex-1 flex-col overflow-hidden sm:min-h-[75vh]">
+                    <div className="flex min-h-[70vh] flex-1 flex-col sm:min-h-[75vh]">
                         {tool === 'narrative' && (
-                            <section className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden bg-brand-bg p-4 sm:p-6">
+                            <section className="flex flex-col gap-3 bg-brand-bg p-4 sm:p-6">
                                 <p className="shrink-0 text-xs text-zinc-500">
                                     Full strategic thesis — north star, where you play, how you win, and what is explicitly out of scope. Saves when you
                                     leave this field (or use Save above).
@@ -374,18 +483,18 @@ export function StrategyNotebook() {
                                     onChange={(e) => setDoc({ ...doc, content: e.target.value })}
                                     onBlur={(e) => persist({ ...doc, content: e.target.value })}
                                     placeholder="North star, where you play, how you win, and what is out of scope…"
-                                    className="min-h-0 w-full flex-1 rounded-xl border border-brand-border bg-brand-card p-4 text-[15px] leading-relaxed text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand-teal/30"
+                                    className="min-h-[min(70vh,36rem)] w-full rounded-xl border border-brand-border bg-brand-card p-4 text-[15px] leading-relaxed text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand-teal/30"
                                 />
                             </section>
                         )}
 
                         {tool === 'flow' && (
-                            <section className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-[var(--bg)]">
-                                <div className="shrink-0 border-b border-[var(--border)] px-4 py-3 sm:px-6">
+                            <section className="flex w-full flex-col bg-[var(--bg)]">
+                                <div className="shrink-0 border-b border-white/[0.05] px-4 py-2.5 sm:px-6">
                                     <div className="flex flex-wrap items-end justify-between gap-3">
                                         <div className="min-w-0">
-                                            <h3 className="text-sm font-medium text-[var(--text)]">Strategy flow</h3>
-                                            <p className="mt-1 max-w-xl text-xs leading-relaxed text-[var(--muted)]">
+                                            <h3 className="text-sm font-normal text-[var(--text)]">Strategy flow</h3>
+                                            <p className="mt-1 max-w-xl text-xs font-normal leading-relaxed text-[var(--muted)]">
                                                 Add steps, drag to arrange, and link between boxes. Drag the mid-line dot to bend. Saved with your
                                                 strategy — the Product desk shows a read-only mirror under Planning.
                                             </p>
@@ -396,7 +505,7 @@ export function StrategyNotebook() {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex min-h-0 min-h-[55vh] flex-1 flex-col px-4 pb-4 pt-3 sm:min-h-[60vh] sm:px-6">
+                                <div className="flex min-h-[55vh] flex-col px-4 pb-4 pt-3 sm:min-h-[60vh] sm:px-6">
                                     <StrategyFlowCanvas
                                         expanded
                                         fillHeight
@@ -409,17 +518,23 @@ export function StrategyNotebook() {
                         )}
 
                         {tool === 'phases' && (
-                            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-                                <TimelinePhaseSetter
-                                    projectName={activeProject.name}
-                                    phases={phases}
-                                    onPhasesChange={(next) => persist({ ...doc, phases: next })}
-                                />
-                            </div>
+                            <section className="flex flex-col items-center justify-center bg-brand-bg px-6 py-10 text-center">
+                                <p className="max-w-sm text-sm font-normal leading-relaxed text-zinc-500">
+                                    Phases and dates live in the slim column next to this desk on a <span className="text-zinc-300">wide
+                                    screen</span>. Resize the window or use a larger display to edit them there.
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={goHub}
+                                    className="mt-5 rounded-md border border-white/[0.1] bg-white/[0.05] px-3 py-2 text-xs font-medium text-zinc-200 hover:bg-white/[0.08]"
+                                >
+                                    Back to overview
+                                </button>
+                            </section>
                         )}
 
                         {tool === 'team' && (
-                            <section className="custom-scrollbar mx-auto w-full max-w-4xl flex-1 space-y-4 overflow-y-auto bg-brand-bg p-4 sm:p-6">
+                            <section className="mx-auto w-full max-w-4xl space-y-4 bg-brand-bg p-4 sm:p-6">
                                 <p className="text-xs text-zinc-500">
                                     Assign roles for clarity. Thread is stored on this venture (single-device today; multi-user sync would use your
                                     org&apos;s identity layer later).
@@ -451,7 +566,7 @@ export function StrategyNotebook() {
                                 </ul>
                                 <div className="rounded-lg border border-zinc-700 bg-zinc-900 p-3 pb-8">
                                     <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Group thread</p>
-                                    <div className="custom-scrollbar mt-2 max-h-48 space-y-2 overflow-y-auto text-sm">
+                                    <div className="mt-2 space-y-2 text-sm">
                                         {team.thread.length === 0 ? <p className="text-zinc-600">No messages yet.</p> : null}
                                         {team.thread.map((m) => (
                                             <div key={m.id} className="rounded border border-brand-border bg-brand-input px-2 py-1.5">
@@ -479,7 +594,7 @@ export function StrategyNotebook() {
                         )}
 
                         {tool === 'schedule' && (
-                            <section className="custom-scrollbar mx-auto w-full max-w-3xl flex-1 space-y-4 overflow-y-auto bg-brand-bg p-4 sm:p-6">
+                            <section className="mx-auto w-full max-w-3xl space-y-4 bg-brand-bg p-4 sm:p-6">
                                 <p className="text-xs text-zinc-500">Same timeline as the suite calendar—board meetings, launches, deadlines.</p>
                                 <div className="grid gap-2 rounded-lg border border-zinc-700 bg-zinc-900 p-3 sm:grid-cols-2">
                                     <input
@@ -516,7 +631,7 @@ export function StrategyNotebook() {
                         )}
 
                         {tool === 'priorities' && (
-                            <section className="custom-scrollbar mx-auto w-full max-w-3xl flex-1 space-y-4 overflow-y-auto bg-brand-bg p-4 sm:p-6">
+                            <section className="mx-auto w-full max-w-3xl space-y-4 bg-brand-bg p-4 sm:p-6">
                                 <div className="flex flex-wrap gap-2">
                                     <input
                                         value={newPriority}
@@ -545,7 +660,8 @@ export function StrategyNotebook() {
                     </div>
                 </>
             )}
-        </div>
+                </div>
+            </div>
         </>
     );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PanelRight, Menu, X } from 'lucide-react';
 import { DailySyncBanner } from '@/components/DailySyncBanner';
@@ -9,6 +9,17 @@ import { WorkspacePanel } from '@/components/ui/WorkspacePanel';
 import { ContextPanel } from '@/components/ui/ContextPanel';
 import { useOffice } from '@/lib/OfficeContext';
 import { WORKSPACE_TITLES } from '@/components/ui/appNav';
+
+const INTEL_DESKTOP_COLLAPSED_KEY = 'deepchox-intel-panel-collapsed';
+
+function readIntelDesktopCollapsed(): boolean {
+    if (typeof window === 'undefined') return false;
+    try {
+        return localStorage.getItem(INTEL_DESKTOP_COLLAPSED_KEY) === '1';
+    } catch {
+        return false;
+    }
+}
 
 type Props = {
     children: React.ReactNode;
@@ -21,6 +32,23 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
     const { activeProject, activeRoom } = useOffice();
     const [mobileContext, setMobileContext] = useState(false);
     const [mobileNav, setMobileNav] = useState(false);
+    const [intelDesktopCollapsed, setIntelDesktopCollapsed] = useState(false);
+
+    useEffect(() => {
+        setIntelDesktopCollapsed(readIntelDesktopCollapsed());
+    }, []);
+
+    const toggleIntelDesktop = useCallback(() => {
+        setIntelDesktopCollapsed((c) => {
+            const next = !c;
+            try {
+                localStorage.setItem(INTEL_DESKTOP_COLLAPSED_KEY, next ? '1' : '0');
+            } catch {
+                /* noop */
+            }
+            return next;
+        });
+    }, []);
 
     const title = WORKSPACE_TITLES[activeRoom] ?? activeRoom;
 
@@ -43,16 +71,28 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
                         </p>
                     </div>
                 </div>
-                <button
-                    type="button"
-                    className="rounded-full bg-white/[0.05] px-3 py-2 text-xs font-medium text-[var(--text)] transition-colors hover:bg-white/[0.08] lg:hidden"
-                    onClick={() => setMobileContext(true)}
-                >
-                    <span className="inline-flex items-center gap-1.5">
-                        <PanelRight className="h-4 w-4 opacity-70" aria-hidden />
-                        Intel
-                    </span>
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        type="button"
+                        className="hidden rounded-lg border border-[var(--border)] bg-white/[0.03] p-2 text-[var(--muted)] transition-colors hover:bg-white/[0.06] hover:text-[var(--text)] lg:inline-flex"
+                        onClick={toggleIntelDesktop}
+                        aria-expanded={!intelDesktopCollapsed}
+                        aria-label={intelDesktopCollapsed ? 'Show intelligence panel' : 'Hide intelligence panel'}
+                        title={intelDesktopCollapsed ? 'Show alerts panel' : 'Hide alerts panel'}
+                    >
+                        <PanelRight className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+                    </button>
+                    <button
+                        type="button"
+                        className="rounded-full bg-white/[0.05] px-3 py-2 text-xs font-medium text-[var(--text)] transition-colors hover:bg-white/[0.08] lg:hidden"
+                        onClick={() => setMobileContext(true)}
+                    >
+                        <span className="inline-flex items-center gap-1.5">
+                            <PanelRight className="h-4 w-4 opacity-70" aria-hidden />
+                            Intel
+                        </span>
+                    </button>
+                </div>
             </header>
 
             <DailySyncBanner />
@@ -107,13 +147,18 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
                         initial={{ opacity: 0, y: 4 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.25 }}
-                        className="flex min-h-0 flex-1 flex-col"
+                        className="flex min-h-full flex-col"
                     >
                         {children}
                     </motion.div>
                 </WorkspacePanel>
 
-                <ContextPanel mobileOpen={mobileContext} onCloseMobile={() => setMobileContext(false)} />
+                <ContextPanel
+                    mobileOpen={mobileContext}
+                    onCloseMobile={() => setMobileContext(false)}
+                    desktopCollapsed={intelDesktopCollapsed}
+                    onToggleDesktopCollapse={toggleIntelDesktop}
+                />
             </div>
 
             {bottomBar}

@@ -7,6 +7,8 @@ import { useOffice } from '@/lib/OfficeContext';
 import { getAllProjects, type Project } from '@/lib/db';
 import { StaffNotificationCenter } from '@/components/StaffNotificationCenter';
 import { APP_NAV_ITEMS, type AppNavRoom } from '@/components/ui/appNav';
+import { RelayNavHint } from '@/components/pa/RelayNavHint';
+import { PA_SECTION_TAG } from '@/lib/paBuddy';
 
 type Props = {
     onLogout: () => void;
@@ -33,10 +35,10 @@ export function LeftRail({ onLogout, onNewVenture }: Props) {
         <div
             role="navigation"
             aria-label="Executive desks"
-            className="group/rail relative z-30 flex h-full w-full shrink-0 flex-col overflow-hidden border-r border-[var(--border)] bg-[var(--bg)] transition-[width] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] lg:w-[5rem] lg:hover:w-64"
+            className="relative z-30 flex h-full w-full min-w-0 shrink-0 flex-col overflow-hidden border-r border-[var(--border)] bg-[var(--bg)] lg:w-52"
         >
             <div className="flex min-h-14 shrink-0 items-center justify-between gap-1 border-b border-[var(--border)] px-3 py-2.5">
-                <div className="min-w-0 overflow-hidden opacity-0 transition-opacity duration-200 group-hover/rail:opacity-100">
+                <div className="min-w-0 overflow-hidden">
                     <p className="truncate text-sm font-semibold tracking-tight text-[var(--text)]">DeepChox</p>
                     <p className="truncate text-[10px] text-[var(--muted)]">Executive OS</p>
                 </div>
@@ -53,9 +55,9 @@ export function LeftRail({ onLogout, onNewVenture }: Props) {
                             type="button"
                             layout
                             onClick={() => go(item.room)}
-                            title={item.label}
+                            title={item.room === 'personal_assistant' ? PA_SECTION_TAG : item.label}
                             whileTap={{ scale: 0.98 }}
-                            className={`relative flex w-full items-center gap-3 rounded-2xl py-2.5 pl-2 pr-2 text-left transition-colors ${
+                            className={`relative flex w-full items-center gap-3 rounded-2xl py-2 pl-2 pr-2 text-left transition-colors ${
                                 active
                                     ? 'bg-[var(--accent-soft)] text-[var(--text)]'
                                     : 'text-[var(--muted)] hover:bg-white/[0.04] hover:text-[var(--text)]'
@@ -68,8 +70,15 @@ export function LeftRail({ onLogout, onNewVenture }: Props) {
                             >
                                 <Icon className="h-4 w-4" aria-hidden />
                             </span>
-                            <span className="min-w-0 flex-1 truncate text-sm font-medium opacity-0 transition-opacity duration-200 group-hover/rail:opacity-100">
-                                {item.label}
+                            <span className="min-w-0 flex-1">
+                                {item.room === 'personal_assistant' ? (
+                                    <span className="flex flex-col items-start gap-0.5">
+                                        <span className="truncate text-sm font-medium">{item.label}</span>
+                                        <RelayNavHint className="!text-[10px] !leading-snug !text-[var(--muted)]" />
+                                    </span>
+                                ) : (
+                                    <span className="truncate text-sm font-medium">{item.label}</span>
+                                )}
                             </span>
                         </motion.button>
                     );
@@ -83,7 +92,7 @@ export function LeftRail({ onLogout, onNewVenture }: Props) {
                     className="flex w-full items-center gap-2 rounded-2xl py-2 pl-2 text-sm font-medium text-[var(--muted)] transition-colors hover:bg-white/[0.05] hover:text-[var(--text)]"
                 >
                     <Plus className="h-4 w-4 shrink-0" />
-                    <span className="truncate opacity-0 transition-opacity duration-200 group-hover/rail:opacity-100">New venture</span>
+                    <span className="truncate">New venture</span>
                 </button>
                 <div className="max-h-28 space-y-0.5 overflow-y-auto">
                     {projects.map((p) => (
@@ -101,7 +110,7 @@ export function LeftRail({ onLogout, onNewVenture }: Props) {
                             }`}
                         >
                             <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--muted)]" />
-                            <span className="truncate opacity-0 transition-opacity duration-200 group-hover/rail:opacity-100">{p.name}</span>
+                            <span className="truncate">{p.name}</span>
                         </button>
                     ))}
                 </div>
@@ -114,7 +123,7 @@ export function LeftRail({ onLogout, onNewVenture }: Props) {
                     className="flex w-full items-center gap-2 rounded-2xl py-2.5 pl-2 text-sm text-[var(--muted)] transition-colors hover:bg-white/[0.05] hover:text-[var(--text)]"
                 >
                     <LogOut className="h-4 w-4 shrink-0" />
-                    <span className="truncate opacity-0 transition-opacity duration-200 group-hover/rail:opacity-100">Sign out</span>
+                    <span className="truncate">Sign out</span>
                 </button>
             </div>
         </div>

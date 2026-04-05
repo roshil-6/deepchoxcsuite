@@ -39,7 +39,7 @@ const WORKSPACE_TITLES: Record<string, string> = {
     intelligence_diary: 'Neural Diary',
     dexo: 'Dexo Core',
     org_structure: 'Org structure',
-    personal_assistant: 'Relay',
+    personal_assistant: 'Relay your "PA"',
     suite_intelligence: 'Suite intelligence',
 };
 
@@ -118,7 +118,7 @@ export function WorkspaceStage({
     };
 
     return (
-        <div className="relative flex h-full w-full flex-col overflow-hidden">
+        <div className="relative flex w-full flex-1 flex-col">
             <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${shell.wash}`} />
             <div
                 className="pointer-events-none absolute inset-0"
@@ -132,13 +132,15 @@ export function WorkspaceStage({
             <div
                 className={
                     activeRoom === 'dexo'
-                        ? 'relative z-10 flex min-h-0 flex-1 flex-col p-0'
-                        : 'relative z-10 flex min-h-0 flex-1 flex-col py-3 animate-in fade-in duration-300 sm:py-4'
+                        ? 'relative z-10 flex flex-1 flex-col p-0'
+                        : 'relative z-10 flex flex-1 flex-col py-3 animate-in fade-in duration-300 sm:py-4'
                 }
             >
                 {!shell.immersive && !hideWorkspaceHeader && (
-                    <header className="mb-3 flex shrink-0 items-center justify-between gap-3">
-                        <h1 className="text-[15px] font-medium tracking-tight text-brand-text">{workspaceTitle(activeRoom)}</h1>
+                    <header className="mb-2 flex shrink-0 items-center justify-between gap-3 border-b border-white/[0.04] pb-2.5">
+                        <h1 className="text-sm font-normal tracking-normal text-brand-text/95 sm:text-[15px]">
+                            {workspaceTitle(activeRoom)}
+                        </h1>
                         <div className="flex items-center gap-1 sm:gap-2">
                             <button
                                 type="button"

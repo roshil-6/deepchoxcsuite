@@ -2,6 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronRight, PanelRight } from 'lucide-react';
 import { useOffice } from '@/lib/OfficeContext';
 import { parseStrategy } from '@/lib/strategyDoc';
 import { computeExecutionScore } from '@/lib/ventureMetrics';
@@ -16,9 +17,18 @@ type Props = {
     className?: string;
     mobileOpen?: boolean;
     onCloseMobile?: () => void;
+    /** lg+ only: panel tucked to a slim strip */
+    desktopCollapsed?: boolean;
+    onToggleDesktopCollapse?: () => void;
 };
 
-export function ContextPanel({ className = '', mobileOpen, onCloseMobile }: Props) {
+export function ContextPanel({
+    className = '',
+    mobileOpen,
+    onCloseMobile,
+    desktopCollapsed = false,
+    onToggleDesktopCollapse,
+}: Props) {
     const { activeProject, activeRoom, staffAttentionPending, livingOffice } = useOffice();
 
     const execution = useMemo(
@@ -127,11 +137,13 @@ export function ContextPanel({ className = '', mobileOpen, onCloseMobile }: Prop
             <aside
                 className={`
                   ${className}
-                  fixed inset-y-0 right-0 z-50 flex w-[min(100%,20rem)] flex-col border-l border-[var(--border)] bg-[var(--bg)] transition-transform duration-300 lg:static lg:z-0 lg:w-80 lg:translate-x-0 lg:border-l lg:bg-[var(--bg)]
+                  fixed inset-y-0 right-0 z-50 flex w-[min(100%,20rem)] flex-col border-l border-[var(--border)] bg-[var(--bg)] transition-[width,transform] duration-300 ease-out
+                  lg:static lg:z-0 lg:translate-x-0
                   ${mobileOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
+                  ${desktopCollapsed ? 'lg:w-11 lg:min-w-[2.75rem]' : 'lg:w-80 lg:max-w-[20rem]'}
                 `}
             >
-                <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3 lg:hidden">
+                <div className="flex shrink-0 items-center justify-between gap-2 border-b border-[var(--border)] px-4 py-3 lg:hidden">
                     <span className="text-sm font-medium text-[var(--text)]">Intelligence</span>
                     <button
                         type="button"
@@ -141,7 +153,30 @@ export function ContextPanel({ className = '', mobileOpen, onCloseMobile }: Prop
                         Close
                     </button>
                 </div>
-                {inner}
+
+                {onToggleDesktopCollapse ? (
+                    <div className="hidden shrink-0 border-b border-[var(--border)] lg:block">
+                        <button
+                            type="button"
+                            onClick={onToggleDesktopCollapse}
+                            aria-expanded={!desktopCollapsed}
+                            aria-label={desktopCollapsed ? 'Show alerts and context' : 'Hide alerts and context'}
+                            className="flex h-10 w-full items-center justify-center text-[var(--muted)] transition-colors hover:bg-white/[0.04] hover:text-[var(--text)]"
+                        >
+                            {desktopCollapsed ? (
+                                <PanelRight className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+                            ) : (
+                                <ChevronRight className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+                            )}
+                        </button>
+                    </div>
+                ) : null}
+
+                <div
+                    className={`min-h-0 flex-1 overflow-hidden ${desktopCollapsed ? 'lg:hidden' : ''}`}
+                >
+                    {inner}
+                </div>
             </aside>
         </>
     );

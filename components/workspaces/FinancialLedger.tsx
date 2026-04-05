@@ -15,6 +15,12 @@ import {
     Check,
     Hash,
     Bot,
+    Briefcase,
+    Cpu,
+    ScanSearch,
+    Megaphone,
+    ArrowRight,
+    Link2,
 } from 'lucide-react';
 import type { Project, ProjectEvent, StaffAttentionItem } from '@/lib/db';
 import { DeskShell, DeskEmpty } from '@/components/workspaces/DeskShell';
@@ -117,9 +123,9 @@ const TOPIC_META: { id: TopicId; title: string; shortLabel: string; hint: string
     },
     {
         id: 'cross_desk',
-        title: 'Delivery & strategy (cost impact)',
-        shortLabel: 'Strategy & delivery',
-        hint: 'Latest from CEO and PM that affects spend and timing.',
+        title: 'Cross-office map (CEO · CTO · CSO · CMO)',
+        shortLabel: 'Cross-office',
+        hint: 'Strategy, delivery board, market, GTM, and each desk’s last sync brief — finance reads one record.',
         icon: GitBranch,
     },
     {
@@ -179,15 +185,44 @@ function buildTopicContent(project: Project, ledgerBody: string) {
 
     const strategy = (project.strategy || '').trim();
     const product = (project.productPlan || '').trim();
-    const crossDeskBlock = [strategy && `CEO / strategy:\n${strategy}`, product && `PM / product:\n${product}`]
-        .filter(Boolean)
-        .join('\n\n');
-    const crossPreview =
-        excerpt(strategy ? strategy : product ? product : '', 120) || excerpt(crossDeskBlock, 120);
-    const crossInsights = toInsightBullets(excerpt(crossDeskBlock, 1200), 6);
-    const crossUpdated = { label: 'Venture fields', at: project.timestamp };
-
     const marketText = (project.marketInsights || '').trim();
+
+    const desk = snap?.desks;
+    const syncPeerBlocks = [
+        desk?.ceo?.trim() && `Staff sync · CEO brief:\n${desk.ceo.trim()}`,
+        desk?.pm?.trim() && `Staff sync · CTO / PM brief:\n${desk.pm.trim()}`,
+        desk?.scout?.trim() && `Staff sync · CSO brief:\n${desk.scout.trim()}`,
+        desk?.cmo?.trim() && `Staff sync · CMO brief:\n${desk.cmo.trim()}`,
+    ].filter(Boolean) as string[];
+
+    const kanban = Array.isArray(project.kanban) ? project.kanban : [];
+    const kanbanTitles = kanban
+        .map((t: { title?: string }) => (typeof t?.title === 'string' ? t.title.trim() : ''))
+        .filter(Boolean)
+        .slice(0, 8);
+    const kanbanBlock =
+        kanbanTitles.length > 0
+            ? `CTO execution board (sample titles):\n${kanbanTitles.map((t) => `• ${t}`).join('\n')}`
+            : '';
+
+    const crossDeskBlock = [
+        strategy && `CEO desk — strategy field:\n${strategy}`,
+        product && `CTO desk — product / plan field:\n${product}`,
+        marketText && `CSO desk — market intel field:\n${marketText}`,
+        kanbanBlock,
+        ...syncPeerBlocks,
+    ]
+        .filter(Boolean)
+        .join('\n\n---\n\n');
+
+    const crossPreview =
+        excerpt(strategy || product || marketText || syncPeerBlocks[0] || '', 120) || excerpt(crossDeskBlock, 120);
+    const crossInsights = toInsightBullets(excerpt(crossDeskBlock, 2400), 8);
+    const crossLatestAt = snap?.at ?? project.timestamp;
+    const crossUpdated = {
+        label: snap?.at ? 'Venture fields + last staff sync (peer desks)' : 'Venture fields (run sync for live peer briefs)',
+        at: crossLatestAt,
+    };
     const marketPreview = excerpt(marketText.split('\n').find((l) => l.trim()) || marketText, 110);
     const marketInsights = toInsightBullets(marketText, 8);
     const marketUpdated = { label: 'Market intel field', at: project.timestamp };
@@ -233,12 +268,15 @@ function buildTopicContent(project: Project, ledgerBody: string) {
             hasData: !!liquidityText,
         },
         cross_desk: {
-            preview: crossPreview || 'No strategy or product plan text yet.',
+            preview:
+                crossPreview ||
+                'No cross-desk text yet — add strategy, product plan, market intel, or run staff sync.',
             insights: crossInsights,
             latest: crossUpdated,
-            emptyHint: 'When CEO and PM desks have content, the CFO sees cost implications here.',
+            emptyHint:
+                'Open CEO, CTO, CSO, or CMO desks to edit source fields, or run staff sync so every role’s brief lands in one venture record.',
             rawContext: crossDeskBlock,
-            hasData: !!(strategy || product),
+            hasData: !!(strategy || product || marketText || syncPeerBlocks.length > 0 || kanbanTitles.length > 0),
         },
         market: {
             preview: marketPreview || 'No scout / market intel yet.',
@@ -285,7 +323,7 @@ Venture: ${ventureName}
 --- Financial ledger & assumptions ---
 ${truncateForPrompt(ledger || '(empty — describe what you want to model)')}
 
-Reply as CFO: be specific, flag risks, and say what’s missing from the numbers or narrative.`;
+Reply as CFO: be specific, flag risks, and say what’s missing from the numbers or narrative. When useful, say which other desk (CEO strategy, CTO delivery, CSO market, CMO GTM) should confirm or update assumptions.`;
 }
 
 function topicDiscussMessage(ventureName: string, topicTitle: string, rawContext: string): string {
@@ -294,7 +332,7 @@ function topicDiscussMessage(ventureName: string, topicTitle: string, rawContext
 Context for this section:
 ${truncateForPrompt(rawContext || '(no data in this section yet)')}
 
-Please: (1) summarize what matters for finance, (2) list risks or gaps, (3) suggest 2–3 concrete next steps.`;
+You share one venture record with CEO (strategy), CTO (product + board), CSO (market), and CMO (GTM). Please: (1) summarize what matters for finance and cash, (2) call out any tension between roles (e.g. roadmap vs runway, GTM spend vs liquidity), (3) list risks or gaps, (4) suggest 2–3 concrete next steps and which desk should own each.`;
 }
 
 const LEDGER_QUICK_PROMPTS: { label: string; instruction: string }[] = [
@@ -302,6 +340,16 @@ const LEDGER_QUICK_PROMPTS: { label: string; instruction: string }[] = [
         label: 'Stress-test runway',
         instruction:
             'Challenge my runway and liquidity assumptions. What would make them wrong, and what should I monitor weekly?',
+    },
+    {
+        label: 'CEO vs budget tension',
+        instruction:
+            'Compare our stated strategy and priorities to the budget and runway. Where is the narrative overstretched vs the numbers?',
+    },
+    {
+        label: 'CTO delivery vs cash',
+        instruction:
+            'Given product plan and execution board load, what hiring, infra, or timeline choices most threaten runway in the next 90 days?',
     },
     {
         label: 'Board-ready summary',
@@ -320,8 +368,21 @@ const LEDGER_QUICK_PROMPTS: { label: string; instruction: string }[] = [
     },
 ];
 
+const PEER_DESKS: {
+    room: 'ceo' | 'pm' | 'scout' | 'cmo';
+    label: string;
+    short: string;
+    fieldHint: string;
+    icon: typeof Briefcase;
+}[] = [
+    { room: 'ceo', label: 'CEO desk', short: 'CEO', fieldHint: 'Strategy', icon: Briefcase },
+    { room: 'pm', label: 'CTO / PM desk', short: 'CTO', fieldHint: 'Product & board', icon: Cpu },
+    { room: 'scout', label: 'CSO desk', short: 'CSO', fieldHint: 'Market intel', icon: ScanSearch },
+    { room: 'cmo', label: 'CMO desk', short: 'CMO', fieldHint: 'GTM / narrative', icon: Megaphone },
+];
+
 export function FinancialLedger() {
-    const { activeProject, prepopulateChat } = useOffice();
+    const { activeProject, prepopulateChat, switchRoom } = useOffice();
     const [selectedTopicId, setSelectedTopicId] = useState<TopicId>('liquidity');
     const [copiedTopic, setCopiedTopic] = useState<TopicId | null>(null);
     const detailPanelRef = useRef<HTMLDivElement>(null);
@@ -339,6 +400,23 @@ export function FinancialLedger() {
         if (!activeProject) return null;
         return buildTopicContent(activeProject, budgetText);
     }, [activeProject, budgetText]);
+
+    const peerStatus = useMemo(() => {
+        if (!activeProject) {
+            return { ceo: false, pm: false, scout: false, cmo: false };
+        }
+        const d = activeProject.agentStaffSnapshot?.desks;
+        const s = (activeProject.strategy || '').trim().length > 0;
+        const p = (activeProject.productPlan || '').trim().length > 0;
+        const m = (activeProject.marketInsights || '').trim().length > 0;
+        const k = Array.isArray(activeProject.kanban) && activeProject.kanban.length > 0;
+        return {
+            ceo: s || !!(d?.ceo?.trim()),
+            pm: p || k || !!(d?.pm?.trim()),
+            scout: m || !!(d?.scout?.trim()),
+            cmo: !!(d?.cmo?.trim()),
+        };
+    }, [activeProject]);
 
     const askCfoLedger = useCallback(
         (instruction: string) => {
@@ -388,9 +466,51 @@ export function FinancialLedger() {
         <DeskShell
             eyebrow="CFO · Numbers + scenario table"
             title="Chief Financial Officer"
-            description="Key figures and comparable scenarios (base / upside / downside). Work in the budget field; pick a topic to focus the review and AI prompts below."
+            description="You work from the same venture record as every officer: strategy, product, market, GTM, and staff-sync briefs all flow here for runway, scenarios, and trade-offs. Use the links below to jump to a desk and refresh source data, then bring questions back to the CFO chat."
         >
             <div className="flex flex-col gap-5">
+                <div className="rounded-xl border border-brand-border bg-brand-card px-4 py-4 sm:px-5">
+                    <div className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-brand-muted">
+                        <Link2 className="h-3.5 w-3.5" aria-hidden />
+                        Connected roles — one venture record
+                    </div>
+                    <p className="mb-3 text-[12px] leading-relaxed text-brand-muted">
+                        CFO models cash against what CEO prioritizes, CTO ships, CSO sees in the market, and CMO pushes in GTM. Staff sync refreshes every desk brief in one pass so numbers and narrative stay aligned.
+                    </p>
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                        {PEER_DESKS.map(({ room, label, short, fieldHint, icon: Icon }) => {
+                            const live = peerStatus[room];
+                            return (
+                                <button
+                                    key={room}
+                                    type="button"
+                                    onClick={() => switchRoom(room)}
+                                    className="group flex flex-col items-start gap-2 rounded-lg border border-brand-border bg-brand-bg px-3 py-2.5 text-left transition-colors hover:border-brand-teal/30 hover:bg-brand-input/80"
+                                >
+                                    <span className="flex w-full items-center justify-between gap-1">
+                                        <span className="flex h-8 w-8 items-center justify-center rounded-md border border-brand-border bg-brand-panel text-brand-text">
+                                            <Icon className="h-4 w-4" aria-hidden />
+                                        </span>
+                                        <span
+                                            className={`text-[9px] font-bold uppercase tracking-wider ${
+                                                live ? 'text-brand-teal' : 'text-brand-muted'
+                                            }`}
+                                        >
+                                            {live ? 'Active' : 'Open'}
+                                        </span>
+                                    </span>
+                                    <span className="text-[12px] font-semibold text-brand-text">{short}</span>
+                                    <span className="text-[10px] leading-snug text-brand-muted">{fieldHint}</span>
+                                    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-brand-muted group-hover:text-brand-text">
+                                        {label}
+                                        <ArrowRight className="h-3 w-3 opacity-70" aria-hidden />
+                                    </span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     <div className="rounded-lg border border-brand-border bg-brand-panel px-4 py-3">
                         <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Venture</p>

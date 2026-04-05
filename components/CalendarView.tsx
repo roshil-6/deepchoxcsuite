@@ -2,8 +2,12 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useOffice } from '@/lib/OfficeContext';
-import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Trash2, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Trash2, CheckCircle2, Layers } from 'lucide-react';
 import { KanbanTask } from '@/lib/db';
+import { parseStrategy, serializeStrategy } from '@/lib/strategyDoc';
+import { TimelinePhaseSetter } from '@/components/workspaces/TimelinePhaseSetter';
+
+type CalendarSection = 'schedule' | 'phases';
 
 const KANBAN_STATUSES: KanbanTask['status'][] = ['todo', 'in_progress', 'next', 'completed'];
 
@@ -22,7 +26,8 @@ function normalizeKanbanList(raw: unknown): KanbanTask[] {
 }
 
 export function CalendarView() {
-    const { allProjects, activeProject, addEvent, updateProjectField, patchActiveProject } = useOffice();
+    const { allProjects, activeProject, addEvent, updateProjectField, patchActiveProject, updateStrategy } = useOffice();
+    const [section, setSection] = useState<CalendarSection>('schedule');
     const [currentDate, setCurrentDate] = useState(new Date());
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDateForEvent, setSelectedDateForEvent] = useState<Date | null>(null);
@@ -30,6 +35,19 @@ export function CalendarView() {
     const [newEventType, setNewEventType] = useState<'milestone' | 'meeting' | 'deadline' | 'task'>('meeting');
 
     const [kanbanTasks, setKanbanTasks] = useState<KanbanTask[]>([]);
+
+    const strategyDoc = useMemo(() => parseStrategy(activeProject?.strategy || ''), [activeProject?.strategy]);
+    const strategyPhases = strategyDoc.phases || [];
+
+    const persistStrategyPhases = useCallback(
+        (nextPhases: typeof strategyPhases) => {
+            if (!activeProject) return;
+            const doc = parseStrategy(activeProject.strategy || '');
+            doc.phases = nextPhases;
+            updateStrategy(serializeStrategy(doc));
+        },
+        [activeProject, updateStrategy]
+    );
 
     /** Calendar grid reads from allProjects; unsaved ventures only exist on activeProject. */
     const allEvents = useMemo(() => {
@@ -147,54 +165,109 @@ export function CalendarView() {
     ];
 
     return (
-        <div className="relative flex h-full min-h-0 flex-col gap-4 overflow-hidden bg-brand-bg px-3 py-3 sm:px-5 sm:py-4">
+        <div className="relative flex w-full min-w-0 flex-col gap-4 bg-brand-bg px-3 py-3 sm:px-5 sm:py-4">
             {/* Top bar */}
             <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
+                <div className="min-w-0 flex-1">
                     <h1 className="flex items-center gap-2 text-lg font-semibold text-brand-text sm:text-xl">
                         <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-brand-border bg-brand-panel">
                             <CalendarIcon className="h-5 w-5 text-brand-teal" aria-hidden />
                         </span>
-                        Calendar
+                        Timeline
                     </h1>
                     <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-brand-muted">
-                        Scheduled events appear on dates below. The task board is for workflow columns — it stays under the month grid so nothing is covered.
+                        {section === 'schedule'
+                            ? 'Month view and venture task board. Switch to Strategy phases to edit roadmap horizons and dates.'
+                            : 'Strategy phases tie to your venture strategy — same data as on the CEO desk. Calendar events stay under Schedule.'}
                     </p>
-                    {activeProject && !activeProject.id && (
+                    {activeProject && !activeProject.id && section === 'schedule' && (
                         <p className="mt-1 max-w-xl text-[12px] text-amber-400/90">
                             Save this venture from the sidebar (new project) so events and tasks persist after you reload.
                         </p>
                     )}
-                </div>
-                <div className="flex shrink-0 items-center gap-1 rounded-lg border border-brand-border bg-brand-panel px-1 py-1">
-                    <button
-                        type="button"
-                        onClick={handlePrevMonth}
-                        className="rounded-md p-2 text-brand-muted transition-colors hover:bg-brand-input hover:text-brand-text"
-                        aria-label="Previous month"
+                    <div
+                        className="mt-3 flex w-full max-w-md flex-wrap gap-1 rounded-lg border border-brand-border bg-brand-panel/80 p-1"
+                        role="tablist"
+                        aria-label="Calendar sections"
                     >
-                        <ChevronLeft className="h-5 w-5" />
-                    </button>
-                    <span className="min-w-[10rem] text-center text-sm font-semibold text-brand-text">
-                        {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                    </span>
-                    <button
-                        type="button"
-                        onClick={handleNextMonth}
-                        className="rounded-md p-2 text-brand-muted transition-colors hover:bg-brand-input hover:text-brand-text"
-                        aria-label="Next month"
-                    >
-                        <ChevronRight className="h-5 w-5" />
-                    </button>
+                        <button
+                            type="button"
+                            role="tab"
+                            aria-selected={section === 'schedule'}
+                            onClick={() => setSection('schedule')}
+                            className={`inline-flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-colors sm:flex-none ${
+                                section === 'schedule'
+                                    ? 'bg-brand-input text-brand-text'
+                                    : 'text-brand-muted hover:bg-brand-bg hover:text-brand-text'
+                            }`}
+                        >
+                            <CalendarIcon className="h-3.5 w-3.5 opacity-80" aria-hidden />
+                            Schedule
+                        </button>
+                        <button
+                            type="button"
+                            role="tab"
+                            aria-selected={section === 'phases'}
+                            onClick={() => setSection('phases')}
+                            className={`inline-flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-colors sm:flex-none ${
+                                section === 'phases'
+                                    ? 'bg-brand-input text-brand-text'
+                                    : 'text-brand-muted hover:bg-brand-bg hover:text-brand-text'
+                            }`}
+                        >
+                            <Layers className="h-3.5 w-3.5 opacity-80" aria-hidden />
+                            Strategy phases
+                        </button>
+                    </div>
                 </div>
+                {section === 'schedule' ? (
+                    <div className="flex shrink-0 items-center gap-1 rounded-lg border border-brand-border bg-brand-panel px-1 py-1">
+                        <button
+                            type="button"
+                            onClick={handlePrevMonth}
+                            className="rounded-md p-2 text-brand-muted transition-colors hover:bg-brand-input hover:text-brand-text"
+                            aria-label="Previous month"
+                        >
+                            <ChevronLeft className="h-5 w-5" />
+                        </button>
+                        <span className="min-w-[10rem] text-center text-sm font-semibold text-brand-text">
+                            {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                        </span>
+                        <button
+                            type="button"
+                            onClick={handleNextMonth}
+                            className="rounded-md p-2 text-brand-muted transition-colors hover:bg-brand-input hover:text-brand-text"
+                            aria-label="Next month"
+                        >
+                            <ChevronRight className="h-5 w-5" />
+                        </button>
+                    </div>
+                ) : null}
             </div>
 
+            {section === 'phases' ? (
+                !activeProject ? (
+                    <div className="shrink-0 py-10 text-center text-sm text-brand-muted">
+                        Select or create a venture to edit strategy phases.
+                    </div>
+                ) : (
+                    <TimelinePhaseSetter
+                        variant="page"
+                        embedded
+                        projectName={activeProject.name}
+                        phases={strategyPhases}
+                        onPhasesChange={persistStrategyPhases}
+                    />
+                )
+            ) : null}
+
             {/* Month grid — own scroll region; does not share height with Kanban */}
-            <section className="flex min-h-0 shrink-0 flex-col overflow-hidden rounded-xl border border-brand-border bg-brand-panel/70">
+            {section === 'schedule' ? (
+            <section className="shrink-0 flex flex-col rounded-xl border border-brand-border bg-brand-panel/70">
                 <div className="border-b border-brand-border px-3 py-2 sm:px-4">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-brand-muted">Month</p>
                 </div>
-                <div className="max-h-[min(52vh,560px)] min-h-[240px] overflow-y-auto p-3 sm:p-4">
+                <div className="min-h-[240px] p-3 sm:p-4">
                     <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
                         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
                             <div
@@ -223,7 +296,7 @@ export function CalendarView() {
                                     className="group relative flex min-h-[4.5rem] flex-col rounded-lg border border-brand-border bg-brand-bg/80 p-1.5 transition-colors hover:border-brand-teal/40 hover:bg-brand-input/30 sm:min-h-[5rem] sm:p-2"
                                 >
                                     <span className="text-[11px] font-semibold text-brand-muted sm:text-xs">{day}</span>
-                                    <div className="mt-0.5 flex-1 space-y-1 overflow-y-auto custom-scrollbar">
+                                    <div className="mt-0.5 flex-1 space-y-1">
                                         {dayEvents.map((evt, idx) => (
                                             <div
                                                 key={idx}
@@ -256,18 +329,20 @@ export function CalendarView() {
                     </div>
                 </div>
             </section>
+            ) : null}
 
             {/* Task board — fills remaining height; never overlays the calendar */}
-            <section className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden">
+            {section === 'schedule' ? (
+            <section className="flex shrink-0 flex-col gap-2 pb-4">
                 <div className="flex shrink-0 items-baseline justify-between gap-2">
                     <h2 className="text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-muted">Task board</h2>
                     <span className="text-[10px] text-brand-muted">Venture kanban · {activeProject?.name ?? 'No venture'}</span>
                 </div>
-                <div className="grid min-h-0 flex-1 grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
+                <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
                     {columns.map((col) => (
                         <div
                             key={col.id}
-                            className={`flex min-h-0 flex-col overflow-hidden rounded-lg border border-brand-border bg-brand-bg ${col.bar} border-t-2`}
+                            className={`flex min-h-[12rem] flex-col rounded-lg border border-brand-border bg-brand-bg ${col.bar} border-t-2`}
                         >
                             <div className="flex shrink-0 items-center justify-between border-b border-brand-border bg-brand-panel/50 px-2 py-2 sm:px-3">
                                 <span className="text-[10px] font-bold uppercase tracking-wider text-brand-text">{col.title}</span>
@@ -280,7 +355,7 @@ export function CalendarView() {
                                     <Plus className="h-3.5 w-3.5" />
                                 </button>
                             </div>
-                            <div className="min-h-0 flex-1 space-y-2 overflow-y-auto custom-scrollbar p-2 sm:p-3">
+                            <div className="flex flex-col space-y-2 p-2 sm:p-3">
                                 {kanbanTasks
                                     .filter((t) => t.status === col.id)
                                     .map((task) => (
@@ -340,6 +415,7 @@ export function CalendarView() {
                     ))}
                 </div>
             </section>
+            ) : null}
 
             {isModalOpen && (
                 <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm animate-in fade-in duration-200">

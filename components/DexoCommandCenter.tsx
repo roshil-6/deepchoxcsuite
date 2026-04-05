@@ -156,7 +156,7 @@ export function DexoCommandCenter() {
     };
 
     return (
-        <div className="flex h-full w-full bg-brand-bg text-brand-text">
+        <div className="flex w-full min-w-0 flex-1 flex-col bg-brand-bg text-brand-text lg:flex-row">
             <aside className="hidden w-56 shrink-0 flex-col border-r border-brand-border/80 bg-brand-bg p-6 lg:flex">
                 <DexoMark />
                 <h1 className="mt-5 text-[15px] font-semibold tracking-tight text-brand-text">Dexo</h1>
@@ -176,7 +176,7 @@ export function DexoCommandCenter() {
                     </div>
                 </header>
 
-                <div className="custom-scrollbar min-h-0 flex-1 space-y-6 overflow-y-auto bg-brand-bg px-4 py-6 sm:px-8">
+                <div className="space-y-6 bg-brand-bg px-4 py-6 sm:px-8">
                     {messages.map((msg) => (
                         <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
                             {msg.role === 'assistant' && (

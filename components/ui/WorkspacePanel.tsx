@@ -16,13 +16,17 @@ export function WorkspacePanel({
             initial={{ opacity: 0.96 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.35 }}
-            className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[var(--bg)]"
+            className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-y-contain custom-scrollbar bg-[var(--bg)]"
         >
+            {/*
+              shrink-0 is required: this node is a flex item of the column scrollport.
+              Default flex-shrink:1 lets the browser squash it to the viewport height,
+              so scrollHeight never grows — long pages (e.g. Suite intelligence) clip.
+            */}
             <div
-                className={`mx-auto flex h-full w-full max-w-[min(100%,72rem)] min-h-0 flex-1 flex-col px-4 sm:px-6 ${
+                className={`mx-auto w-full max-w-[min(100%,72rem)] shrink-0 px-4 sm:px-6 ${
                     reserveBottom
-                        ? /* ~composer + thread peek; scroll lives in desk — avoid ~40vh “dead” band that looked like a black void */
-                          'pb-[max(6.5rem,calc(5.5rem+env(safe-area-inset-bottom)))] sm:pb-[max(7.5rem,calc(6.5rem+env(safe-area-inset-bottom)))] lg:pb-[max(8rem,calc(7rem+env(safe-area-inset-bottom)))]'
+                        ? 'pb-[max(6.5rem,calc(5.5rem+env(safe-area-inset-bottom)))] sm:pb-[max(7.5rem,calc(6.5rem+env(safe-area-inset-bottom)))] lg:pb-[max(8rem,calc(7rem+env(safe-area-inset-bottom)))]'
                         : ''
                 }`}
             >

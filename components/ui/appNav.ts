@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 import {
-    Sparkles,
+    MessageCircle,
     Briefcase,
     Cpu,
     BarChart3,
@@ -41,7 +41,7 @@ export type NavItemDef = {
 
 /** AI OS left rail — maps to OfficeContext rooms */
 export const APP_NAV_ITEMS: NavItemDef[] = [
-    { room: 'personal_assistant', label: 'Relay', short: 'Re', icon: Sparkles },
+    { room: 'personal_assistant', label: 'Relay your "PA"', short: 'PA', icon: MessageCircle },
     { room: 'dashboard', label: 'Dashboard', short: 'Hub', icon: LayoutGrid },
     { room: 'ceo', label: 'CEO', short: 'CEO', icon: Briefcase },
     { room: 'pm', label: 'CTO · Product', short: 'CTO', icon: Cpu },
@@ -58,7 +58,7 @@ export const APP_NAV_ITEMS: NavItemDef[] = [
 ];
 
 export const WORKSPACE_TITLES: Record<string, string> = {
-    personal_assistant: 'Relay',
+    personal_assistant: 'Relay your "PA"',
     ceo: 'CEO',
     pm: 'CTO / Product',
     accountant: 'CFO',

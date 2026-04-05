@@ -194,10 +194,10 @@ export function ProductKanban() {
     ];
 
     return (
-        <div className="flex h-full min-h-0 overflow-hidden bg-brand-bg">
-            <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <div className="flex w-full min-w-0 flex-1 flex-col bg-brand-bg">
+            <div className="flex min-w-0 flex-1 flex-col">
                 <DeskShell
-                    className="min-h-0 flex-1"
+                    className="w-full min-w-0 flex-1"
                     bodyClassName="pb-8"
                     eyebrow="CTO · Architecture & execution"
                     title="Chief Technology Officer"
@@ -237,13 +237,13 @@ export function ProductKanban() {
                                     Add
                                 </button>
                             </div>
-                            <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-4">
+                            <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
                                 {COLUMNS.map((col) => (
-                                    <div key={col.id} className="flex min-h-[260px] flex-col rounded-lg border border-brand-border bg-brand-panel">
-                                        <div className="border-b border-brand-border px-3 py-2">
-                                            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">{col.label}</h3>
+                                    <div key={col.id} className="flex min-h-[200px] flex-col rounded-lg border border-white/[0.06] bg-brand-panel/40">
+                                        <div className="border-b border-white/[0.06] px-3 py-2">
+                                            <h3 className="text-xs font-normal text-zinc-400">{col.label}</h3>
                                         </div>
-                                        <div className="custom-scrollbar flex-1 space-y-2 overflow-y-auto p-2">
+                                        <div className="flex flex-col space-y-2 p-2">
                                             {tasks
                                                 .filter((t) => t.status === col.id)
                                                 .map((task) => (
@@ -299,7 +299,7 @@ export function ProductKanban() {
                     {tool === 'roadmap' && (
                         <section className="mx-auto max-w-4xl space-y-3">
                             <div className="flex items-center justify-between gap-2">
-                                <h2 className="text-sm font-semibold text-zinc-300">Roadmap brief</h2>
+                                <h2 className="text-sm font-normal text-zinc-300">Roadmap brief</h2>
                                 <button
                                     type="button"
                                     onClick={() => persistProduct(pd)}
@@ -321,7 +321,7 @@ export function ProductKanban() {
 
                     {tool === 'war' && (
                         <section className="mx-auto max-w-5xl space-y-3">
-                            <h2 className="text-sm font-semibold text-zinc-300">War room</h2>
+                            <h2 className="text-sm font-normal text-zinc-300">War room</h2>
                             <p className="text-xs text-zinc-500">
                                 Persistent sticky notes and sketches—nothing clears when you leave. Save updates the venture record.
                             </p>
@@ -334,7 +334,7 @@ export function ProductKanban() {
 
                     {tool === 'recent' && (
                         <section className="mx-auto max-w-3xl space-y-4">
-                            <h2 className="text-sm font-semibold text-zinc-300">Recent actions</h2>
+                            <h2 className="text-sm font-normal text-zinc-300">Recent actions</h2>
                             <p className="text-xs text-zinc-500">
                                 Structured entries—not a freeform journal. Log what shipped, what was decided, and what you learned.
                             </p>
@@ -479,7 +479,7 @@ export function ProductKanban() {
                 </DeskShell>
             </div>
 
-            <aside className="flex w-[min(100%,280px)] shrink-0 flex-col border-l border-zinc-800 bg-zinc-900/30">
+            <aside className="flex w-[min(100%,14rem)] shrink-0 flex-col border-l border-zinc-800 bg-zinc-900/30">
                 {/** Headroom on narrow viewports: sync pill stays top-right until sm breakpoint. */}
                 <div className="border-b border-zinc-800 p-4 pt-14 sm:pt-4">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">Product intent · pinned</p>

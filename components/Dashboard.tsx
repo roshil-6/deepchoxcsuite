@@ -287,7 +287,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                 : 'mx-auto max-w-4xl grid-cols-1 sm:grid-cols-2';
 
         return (
-            <div className="h-full min-h-0 overflow-y-auto custom-scrollbar bg-brand-bg">
+            <div className="w-full min-w-0 bg-brand-bg">
                 <div className="dash-thread flex w-full flex-col px-4 py-8 sm:px-6 sm:py-10">
                     <header className="mb-10 flex flex-col gap-6 pb-2 sm:flex-row sm:items-end sm:justify-between">
                         <div className="min-w-0">
@@ -400,7 +400,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         <div className="dash-msg">
                             <h3 className="text-[11px] font-medium text-brand-muted/90">Portfolio mix</h3>
                             <p className="mt-1 text-[10px] text-brand-muted">
-                                <span className="text-brand-teal">Strategy</span> on file vs{' '}
+                                <span className="text-zinc-300">Strategy</span> on file vs{' '}
                                 <span className="text-slate-400">draft</span> records
                             </p>
                             {portfolioComposition.length > 0 ? (
@@ -542,7 +542,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     }
 
     return (
-        <div className="h-full overflow-y-auto custom-scrollbar bg-brand-bg px-4 py-6 pb-14 font-sans sm:px-5 sm:py-8">
+        <div className="w-full min-w-0 bg-brand-bg px-4 py-6 pb-14 font-sans sm:px-5 sm:py-8">
             <div className="dash-thread space-y-9 pb-6 animate-in fade-in duration-500">
                         <header className="flex flex-col gap-5 pb-1 sm:flex-row sm:items-end sm:justify-between">
                             <div className="min-w-0">
@@ -605,10 +605,10 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     <section aria-label="Daily office" className="flex flex-col gap-5">
                                         <MorningBriefCard brief={livingOffice.brief} />
                                         {livingOffice.suggestedActions.length > 0 ? (
-                                            <details className="dash-msg border border-teal-500/15 bg-teal-950/10 group open:bg-teal-950/12">
+                                            <details className="dash-msg border border-white/[0.08] bg-white/[0.03] group open:bg-white/[0.04]">
                                                 <summary className="flex cursor-pointer list-none items-center justify-between gap-2 py-2.5 pl-3 pr-3 text-left [&::-webkit-details-marker]:hidden">
                                                     <span className="flex items-center gap-2 text-xs font-medium text-brand-text">
-                                                        <Compass className="h-3.5 w-3.5 text-teal-400/80" aria-hidden />
+                                                        <Compass className="h-3.5 w-3.5 text-zinc-400" aria-hidden />
                                                         Leadership hints
                                                         <span className="font-normal text-brand-muted">({livingOffice.suggestedActions.length})</span>
                                                     </span>
@@ -624,7 +624,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                                 key={`${a.intent}-${idx}`}
                                                                 className="rounded-lg border border-white/[0.05] bg-black/15 px-2.5 py-2"
                                                             >
-                                                                <p className="text-[9px] font-medium uppercase tracking-wide text-teal-400/75">
+                                                                <p className="text-[9px] font-medium uppercase tracking-wide text-zinc-500">
                                                                     {a.intent.replace(/_/g, ' ')} · {a.targetDesks.join(', ')}
                                                                 </p>
                                                                 <p className="mt-0.5 text-[12px] leading-snug text-brand-text/95">{a.summary}</p>
@@ -709,7 +709,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     <div className="flex w-full items-start justify-between gap-2">
                                         <LayoutDashboard className="h-6 w-6 text-brand-muted" aria-hidden />
                                         {dashboardExpanded ? (
-                                            <ChevronUp className="h-5 w-5 shrink-0 text-brand-teal" aria-hidden />
+                                            <ChevronUp className="h-5 w-5 shrink-0 text-zinc-400" aria-hidden />
                                         ) : null}
                                     </div>
                                     <div>
@@ -830,11 +830,11 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         {activeProject.agentStaffSnapshot && (
                     <section
                         id="dash-staff-snapshot"
-                        className="dash-msg mb-7 bg-teal-950/20"
+                        className="dash-msg mb-7 bg-white/[0.03]"
                         aria-labelledby="dash-staff-snapshot-title"
                     >
                         <div className="mb-3 flex flex-wrap items-center gap-2">
-                            <Sparkles className="h-4 w-4 text-teal-400" aria-hidden />
+                            <Sparkles className="h-4 w-4 text-zinc-400" aria-hidden />
                             <h2 id="dash-staff-snapshot-title" className="text-sm font-medium text-brand-text">
                                 Latest AI staff research
                             </h2>
@@ -1277,7 +1277,7 @@ function AgentCard({ agent, activeRoom, onClick, status }: any) {
                 <div className="truncate text-sm font-semibold text-brand-text">{agent.title}</div>
                 <div className="mt-1 flex items-center gap-2">
                     <span
-                        className={`h-2 w-2 shrink-0 rounded-full ${status === 'active' ? 'bg-brand-teal/80' : 'bg-brand-muted/60'}`}
+                        className={`h-2 w-2 shrink-0 rounded-full ${status === 'active' ? 'bg-zinc-400' : 'bg-brand-muted/60'}`}
                         aria-hidden
                     />
                     <span className="text-[11px] font-medium capitalize text-brand-muted">{status}</span>
@@ -1285,7 +1285,7 @@ function AgentCard({ agent, activeRoom, onClick, status }: any) {
             </div>
             <ChevronRight className="h-5 w-5 shrink-0 text-brand-muted transition group-hover:translate-x-0.5 group-hover:text-brand-muted" aria-hidden />
             {activeRoom === agent.role && (
-                <div className="pointer-events-none absolute inset-0 rounded-2xl ring-2 ring-brand-teal/35" />
+                <div className="pointer-events-none absolute inset-0 rounded-2xl ring-2 ring-white/20" />
             )}
         </button>
     );

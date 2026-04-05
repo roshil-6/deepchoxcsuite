@@ -1,13 +1,15 @@
 'use client';
 
 import React from 'react';
-import { Target, TrendingUp, CalendarClock, AlertTriangle } from 'lucide-react';
+import { Target, TrendingUp, CalendarClock, AlertTriangle, ArrowRight } from 'lucide-react';
+import { useOffice } from '@/lib/OfficeContext';
+import { PA_BUDDY_NAME } from '@/lib/paBuddy';
 import type { GoalProgress } from '@/types/office';
 
 function riskBadge(risk: GoalProgress['risk']): string {
     switch (risk) {
         case 'Low':
-            return 'bg-emerald-950/35 text-emerald-200';
+            return 'bg-zinc-700/45 text-zinc-200';
         case 'High':
             return 'bg-rose-950/35 text-rose-100';
         default:
@@ -24,76 +26,136 @@ export function GoalAdvanceCard({
     suggestedFocus?: string;
     className?: string;
 }) {
+    const { switchRoom } = useOffice();
     const pct = Math.min(100, Math.max(0, progress.percentage));
 
     return (
         <div
-            className={`dash-msg bg-gradient-to-br from-zinc-800/55 to-zinc-900/40 ${className}`}
+            className={`dash-msg !p-3.5 sm:!p-4 bg-gradient-to-br from-zinc-800/55 to-zinc-900/40 ${className}`}
         >
-            <div className="flex flex-wrap items-start justify-between gap-4">
-                <div className="flex items-start gap-3">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-500/15 text-teal-200">
-                        <Target className="h-5 w-5" aria-hidden />
+            <div className="flex flex-wrap items-start justify-between gap-2">
+                <div className="flex min-w-0 items-start gap-2.5">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/[0.08] text-zinc-400">
+                        <Target className="h-4 w-4" aria-hidden />
                     </div>
-                    <div>
-                        <h2 className="text-base font-semibold tracking-tight text-zinc-100">Goal advancement</h2>
-                        <p className="mt-1 max-w-xl text-sm leading-relaxed text-zinc-500">
-                            Blended progress across strategy phases and your execution board — updates when you open this overview or
-                            refresh the office.
+                    <div className="min-w-0">
+                        <h2 className="text-sm font-semibold tracking-tight text-zinc-100">Goal advancement</h2>
+                        <p className="mt-0.5 max-w-md text-[11px] leading-snug text-zinc-500">
+                            Auto score from phases, priorities, and kanban — refresh or revisit the dashboard to recalc.
                         </p>
                     </div>
                 </div>
                 <span
-                    className={`inline-flex shrink-0 items-center rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${riskBadge(progress.risk)}`}
+                    className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${riskBadge(progress.risk)}`}
                 >
                     Risk · {progress.risk}
                 </span>
             </div>
 
-            <div className="mt-6">
+            <div className="mt-3">
                 <div className="flex items-end justify-between gap-2">
-                    <span className="text-4xl font-semibold tabular-nums tracking-tight text-zinc-50 sm:text-5xl">{pct}%</span>
-                    <span className="mb-1 text-xs text-zinc-500">toward current horizon</span>
+                    <span className="text-3xl font-semibold tabular-nums tracking-tight text-zinc-50">{pct}%</span>
+                    <span className="mb-0.5 text-[10px] text-zinc-500">toward current horizon</span>
                 </div>
-                <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-zinc-800/80">
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-zinc-800/80">
                     <div
-                        className="h-full rounded-full bg-gradient-to-r from-teal-600/90 to-cyan-500/85 transition-[width] duration-500"
+                        className="h-full rounded-full bg-gradient-to-r from-zinc-500/90 to-zinc-400/80 transition-[width] duration-500"
                         style={{ width: `${pct}%` }}
                     />
                 </div>
             </div>
 
-            <dl className="mt-6 grid gap-4 sm:grid-cols-2">
-                <div className="flex items-start gap-2 rounded-xl bg-white/[0.05] px-3 py-3">
-                    <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-zinc-500" aria-hidden />
+            <dl className="mt-3 grid gap-2 sm:grid-cols-2">
+                <div className="flex items-start gap-2 rounded-lg bg-white/[0.05] px-2.5 py-2">
+                    <CalendarClock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
                     <div>
-                        <dt className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">Horizon (est.)</dt>
-                        <dd className="mt-0.5 text-sm font-medium text-zinc-200">
-                            ~{progress.projectedDaysRemaining} day{progress.projectedDaysRemaining === 1 ? '' : 's'} to next milestone
-                            window
+                        <dt className="text-[9px] font-semibold uppercase tracking-wide text-zinc-500">Horizon (est.)</dt>
+                        <dd className="mt-0.5 text-[11px] font-medium leading-snug text-zinc-200">
+                            ~{progress.projectedDaysRemaining} day{progress.projectedDaysRemaining === 1 ? '' : 's'} to next
+                            milestone window
                         </dd>
                     </div>
                 </div>
-                <div className="flex items-start gap-2 rounded-xl bg-white/[0.05] px-3 py-3">
-                    <TrendingUp className="mt-0.5 h-4 w-4 shrink-0 text-zinc-500" aria-hidden />
+                <div className="flex items-start gap-2 rounded-lg bg-white/[0.05] px-2.5 py-2">
+                    <TrendingUp className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
                     <div>
-                        <dt className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">Delivery pace</dt>
-                        <dd className="mt-0.5 text-sm font-medium text-zinc-200">
-                            Score {Math.round(progress.paceScore * 100)}% — recent completions vs open work
+                        <dt className="text-[9px] font-semibold uppercase tracking-wide text-zinc-500">Delivery pace</dt>
+                        <dd className="mt-0.5 text-[11px] font-medium leading-snug text-zinc-200">
+                            {Math.round(progress.paceScore * 100)}% — completions vs open work
                         </dd>
                     </div>
                 </div>
             </dl>
 
             {suggestedFocus?.trim() ? (
-                <div className="mt-5 flex items-start gap-2 rounded-xl bg-teal-950/25 px-3 py-3">
-                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-teal-400/80" aria-hidden />
-                    <p className="text-sm text-teal-50/95">
-                        <span className="font-medium text-teal-200/95">Office suggests: </span>
+                <div className="mt-2.5 flex items-start gap-2 rounded-lg bg-white/[0.05] px-2.5 py-2 ring-1 ring-white/[0.06]">
+                    <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-400" aria-hidden />
+                    <p className="text-[11px] leading-snug text-zinc-200/95">
+                        <span className="font-medium text-zinc-300">Suggest: </span>
                         {suggestedFocus.trim()}
                     </p>
                 </div>
             ) : null}
+
+            <div className="mt-3 border-t border-white/[0.06] pt-3">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.1em] text-zinc-500">Where to update</p>
+                <ul className="mt-2 space-y-1 text-[11px] leading-snug text-zinc-400">
+                    <li>
+                        <span className="font-medium text-zinc-300">Timeline</span>
+                        <span className="text-zinc-500"> — </span>
+                        strategy phases &amp; dates
+                    </li>
+                    <li>
+                        <span className="font-medium text-zinc-300">CEO</span>
+                        <span className="text-zinc-500"> — </span>
+                        executive priorities &amp; strategy notes
+                    </li>
+                    <li>
+                        <span className="font-medium text-zinc-300">CTO</span>
+                        <span className="text-zinc-500"> — </span>
+                        move tasks to Completed
+                    </li>
+                    <li>
+                        <span className="font-medium text-zinc-300">{PA_BUDDY_NAME}</span>
+                        <span className="text-zinc-500"> — </span>
+                        ask to change phases, priorities, or board in chat
+                    </li>
+                </ul>
+                <div className="mt-2.5 flex flex-wrap gap-1.5">
+                    <button
+                        type="button"
+                        onClick={() => switchRoom('calendar')}
+                        className="inline-flex items-center gap-1 rounded-md border border-zinc-600/80 bg-zinc-800/80 px-2 py-1.5 text-[10px] font-medium text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-800"
+                    >
+                        Timeline
+                        <ArrowRight className="h-3 w-3 opacity-70" aria-hidden />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => switchRoom('ceo')}
+                        className="inline-flex items-center gap-1 rounded-md border border-zinc-600/80 bg-zinc-800/80 px-2 py-1.5 text-[10px] font-medium text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-800"
+                    >
+                        CEO
+                        <ArrowRight className="h-3 w-3 opacity-70" aria-hidden />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => switchRoom('pm')}
+                        className="inline-flex items-center gap-1 rounded-md border border-zinc-600/80 bg-zinc-800/80 px-2 py-1.5 text-[10px] font-medium text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-800"
+                    >
+                        CTO
+                        <ArrowRight className="h-3 w-3 opacity-70" aria-hidden />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => switchRoom('personal_assistant')}
+                        className="inline-flex items-center gap-1 rounded-md border border-zinc-600/80 bg-zinc-800/80 px-2 py-1.5 text-[10px] font-medium text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-800"
+                    >
+                        {PA_BUDDY_NAME}
+                        <ArrowRight className="h-3 w-3 opacity-70" aria-hidden />
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }
