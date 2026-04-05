@@ -237,7 +237,15 @@ export function TimelinePhaseSetter({
                     </div>
                 </div>
 
-                <div className={`flex flex-wrap gap-1.5 ${rail ? 'mt-2' : embedded ? 'mt-3 gap-2' : 'mt-4 gap-2'}`}>
+                <div
+                    className={
+                        rail
+                            ? 'mt-2 grid grid-cols-2 gap-1.5'
+                            : embedded
+                              ? 'mt-3 flex flex-wrap gap-2'
+                              : 'mt-4 flex flex-wrap gap-2'
+                    }
+                >
                     <span
                         className={
                             embedded
@@ -296,10 +304,13 @@ export function TimelinePhaseSetter({
                                 const range = formatRange(p.start, p.end);
                                 const last = index === phases.length - 1;
                                 return (
-                                    <li key={p.id} className={`relative flex gap-0 ${rail ? 'pb-6 last:pb-1' : 'pb-8 last:pb-2'}`}>
+                                    <li
+                                        key={p.id}
+                                        className={`relative flex ${rail ? 'gap-2 pb-6 last:pb-1' : 'gap-0 pb-8 last:pb-2'}`}
+                                    >
                                         {/* Spine */}
                                         <div
-                                            className={`relative flex shrink-0 flex-col items-center ${rail ? 'w-8' : 'w-10 sm:w-12'}`}
+                                            className={`relative flex shrink-0 flex-col items-center ${rail ? 'w-7' : 'w-10 sm:w-12'}`}
                                         >
                                             {!last ? (
                                                 <div
@@ -337,10 +348,16 @@ export function TimelinePhaseSetter({
 
                                         {/* Card */}
                                         <div
-                                            className={`min-w-0 flex-1 shadow-sm ${rail ? 'rounded-md border border-white/[0.06] bg-zinc-900/20 p-3' : embedded ? 'rounded-xl border border-brand-border bg-brand-card/90 p-4' : `${ceo.card} p-4`}`}
+                                            className={`min-w-0 flex-1 overflow-hidden shadow-sm ${rail ? 'rounded-md border border-white/[0.06] bg-zinc-900/20 p-3' : embedded ? 'rounded-xl border border-brand-border bg-brand-card/90 p-4' : `${ceo.card} p-4`}`}
                                         >
-                                            <div className="flex flex-wrap items-start justify-between gap-2">
-                                                <div className="min-w-0 flex-1 space-y-1">
+                                            <div
+                                                className={
+                                                    rail
+                                                        ? 'flex flex-col gap-3'
+                                                        : 'flex flex-wrap items-start justify-between gap-2'
+                                                }
+                                            >
+                                                <div className={`min-w-0 space-y-1 ${rail ? 'w-full' : 'flex-1'}`}>
                                                     <input
                                                         value={p.title}
                                                         onChange={(e) => updatePhase(p.id, { title: e.target.value })}
@@ -368,9 +385,21 @@ export function TimelinePhaseSetter({
                                                         />
                                                     </div>
                                                 </div>
-                                                <div className="flex shrink-0 flex-col items-end gap-2">
+                                                <div
+                                                    className={
+                                                        rail
+                                                            ? 'flex w-full min-w-0 flex-col gap-2 border-t border-white/[0.06] pt-2'
+                                                            : 'flex shrink-0 flex-col items-end gap-2'
+                                                    }
+                                                >
                                                     {badge(p.status)}
-                                                    <div className="flex flex-wrap items-center gap-1">
+                                                    <div
+                                                        className={
+                                                            rail
+                                                                ? 'flex w-full min-w-0 flex-wrap items-center gap-1'
+                                                                : 'flex flex-wrap items-center gap-1'
+                                                        }
+                                                    >
                                                         <button
                                                             type="button"
                                                             onClick={() => setStatus(p.id, 'done')}

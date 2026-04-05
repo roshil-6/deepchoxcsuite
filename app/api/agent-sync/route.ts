@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { chatWithGroq } from '@/lib/ai/chatProviders';
 import type { AgentSyncPayload, AiSyncTraceStep, SyncProjectDTO } from '@/lib/agentStaffTypes';
+import { parseStrategy } from '@/lib/strategyDoc';
 
 const SYNC_SYSTEM = `You are the combined AI staff of a growing startup: CEO strategy, CTO product & execution, CFO finance, CSO market intel, and CMO GTM. The user pressed "Sync" — you must research across the venture snapshot and public news context, then output ONE JSON object only (no markdown fence).
 
@@ -48,13 +49,22 @@ function stripJsonFence(raw: string): string {
   return s.trim();
 }
 
-async function fetchIntelHeadlines(req: Request, ventureName: string): Promise<string> {
+async function fetchIntelHeadlines(req: Request, project: SyncProjectDTO): Promise<string> {
   try {
     const origin = new URL(req.url).origin;
+    const doc = parseStrategy(project.strategy || '');
+    const strategicIntent = (doc.strategicIntent || doc.vision || '').trim().slice(0, 600);
+    const userNotes = (project.userNotes || '').trim().slice(0, 600);
     const res = await fetch(`${origin}/api/intel`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query: `${ventureName} startup industry` }),
+      body: JSON.stringify({
+        ventureName: project.name.trim(),
+        strategicIntent: strategicIntent || undefined,
+        userNotes: userNotes || undefined,
+        lens: 'all',
+        timeWindow: '7d',
+      }),
     });
     if (!res.ok) return '';
     const data = (await res.json()) as { items?: { title: string; source: string }[] };
@@ -83,7 +93,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: 'project with id and name required' }, { status: 400 });
     }
 
-    const headlines = await fetchIntelHeadlines(req, project.name);
+    const headlines = await fetchIntelHeadlines(req, project);
     const headlineLines = headlines
       ? headlines.split('\n').filter((l) => l.trim().length > 0)
       : [];

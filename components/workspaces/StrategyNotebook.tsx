@@ -22,59 +22,12 @@ import { enrichLegacyStrategyDoc, needsTimelineAndFlowBootstrap } from '@/lib/de
 import { ceo } from '@/lib/ceoTheme';
 import { StrategyFlowCanvas } from '@/components/workspaces/StrategyFlowCanvas';
 import { TimelinePhaseSetter } from '@/components/workspaces/TimelinePhaseSetter';
+import { TimelinePhaseReadOnly } from '@/components/workspaces/TimelinePhaseReadOnly';
+import { DeskRevealSection } from '@/components/workspaces/DeskRevealSection';
 import { DeskEmpty } from '@/components/workspaces/DeskShell';
 type ToolId = 'narrative' | 'flow' | 'phases' | 'team' | 'schedule' | 'priorities';
 
 type DeskView = 'hub' | 'surface';
-
-type CeoPlanRailTab = 'phases' | 'dates';
-
-function CeoSidebarDates({
-    events,
-    onOpenSchedule,
-}: {
-    events: ProjectEvent[];
-    onOpenSchedule: () => void;
-}) {
-    const lines = useMemo(() => [...events].sort((a, b) => a.date - b.date), [events]);
-    return (
-        <div className="flex w-full flex-col bg-transparent">
-            <div className="shrink-0 border-b border-zinc-800/80 px-3 py-2.5">
-                <p className="text-[10px] font-medium text-zinc-500">Key dates</p>
-                <p className="mt-0.5 text-xs font-normal text-zinc-400">From your venture calendar</p>
-            </div>
-            <div className="flex flex-col px-3 py-3">
-                {lines.length === 0 ? (
-                    <p className="text-xs font-normal leading-relaxed text-zinc-600">
-                        No dated entries yet. Add them from Schedule on this desk.
-                    </p>
-                ) : (
-                    <ul className="space-y-2">
-                        {lines.slice(0, 48).map((ev) => (
-                            <li
-                                key={ev.id}
-                                className="rounded-md border border-white/[0.05] bg-zinc-900/20 px-2.5 py-2"
-                            >
-                                <p className="text-xs font-normal text-zinc-200">{ev.title}</p>
-                                <p className="mt-0.5 text-[10px] font-normal text-zinc-500">
-                                    {new Date(ev.date).toLocaleString(undefined, { dateStyle: 'medium' })}
-                                    {ev.type ? ` · ${ev.type}` : ''}
-                                </p>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-                <button
-                    type="button"
-                    onClick={onOpenSchedule}
-                    className="mt-4 w-full rounded-md border border-white/[0.06] bg-zinc-800/35 px-2 py-2 text-left text-xs font-normal text-zinc-300 transition hover:bg-zinc-800/55"
-                >
-                    Open schedule
-                </button>
-            </div>
-        </div>
-    );
-}
 
 export function StrategyNotebook() {
     const { activeProject, updateStrategy, addEvent, updateProjectField } = useOffice();
@@ -88,7 +41,6 @@ export function StrategyNotebook() {
     const [calType, setCalType] = useState<ProjectEvent['type']>('milestone');
     const [memberDraft, setMemberDraft] = useState({ name: '', role: '' });
     const [chatLine, setChatLine] = useState('');
-    const [ceoRailTab, setCeoRailTab] = useState<CeoPlanRailTab>('phases');
     const timelineBootstrapRef = useRef<Set<number>>(new Set());
     /** Context exposes a new updateStrategy function each render — do not put it in useCallback deps or effects loop. */
     const updateStrategyRef = useRef(updateStrategy);
@@ -126,7 +78,6 @@ export function StrategyNotebook() {
 
     useEffect(() => {
         setDeskView('hub');
-        setCeoRailTab('phases');
     }, [activeProject?.id]);
 
     const persist = (next: StrategyDoc) => {
@@ -234,14 +185,13 @@ export function StrategyNotebook() {
     const navItems: { id: ToolId; label: string; sub: string }[] = [
         { id: 'narrative', label: 'Strategy narrative', sub: 'Full thesis' },
         { id: 'flow', label: 'Visualise your plan', sub: 'Flow boxes & links' },
-        { id: 'phases', label: 'Strategy time phases', sub: 'Horizon planning' },
+        { id: 'phases', label: 'Edit phase timeline', sub: 'Horizons, dates & notes' },
         { id: 'team', label: 'Team workspace', sub: 'Roles & thread' },
         { id: 'schedule', label: 'Schedule & critical work', sub: 'Dates & tasks' },
         { id: 'priorities', label: 'Executive priorities', sub: 'Checklist' },
     ];
 
-    /** Phases live in the left rail — tiles skip duplicate entry */
-    const planningSurfaceItems = navItems.filter((i) => i.id !== 'phases');
+    const planningSurfaceItems = navItems;
 
     const activeNav = navItems.find((n) => n.id === tool) ?? navItems[0];
 
@@ -290,60 +240,30 @@ export function StrategyNotebook() {
         </header>
     );
 
-    const phasesRail = (
-        <aside
-            aria-label="Strategy plan sidebar"
-            className="hidden w-[13rem] max-w-[13rem] shrink-0 flex-col border-r border-[var(--border)] bg-[var(--bg)] lg:flex"
-        >
-            <div className="flex shrink-0 gap-px border-b border-white/[0.04] p-1">
-                <button
-                    type="button"
-                    onClick={() => setCeoRailTab('phases')}
-                    className={`min-w-0 flex-1 rounded-md px-2 py-2 text-center text-[11px] font-normal transition ${
-                        ceoRailTab === 'phases'
-                            ? 'bg-zinc-800/80 text-zinc-100'
-                            : 'text-zinc-500 hover:bg-zinc-800/40 hover:text-zinc-300'
-                    }`}
-                >
-                    Phases
-                </button>
-                <button
-                    type="button"
-                    onClick={() => setCeoRailTab('dates')}
-                    className={`min-w-0 flex-1 rounded-md px-2 py-2 text-center text-[11px] font-normal transition ${
-                        ceoRailTab === 'dates'
-                            ? 'bg-zinc-800/80 text-zinc-100'
-                            : 'text-zinc-500 hover:bg-zinc-800/40 hover:text-zinc-300'
-                    }`}
-                >
-                    Key dates
-                </button>
-            </div>
-            <div className="flex min-w-0 flex-1 flex-col">
-                {ceoRailTab === 'phases' ? (
-                    <TimelinePhaseSetter
-                        variant="rail"
-                        projectName={activeProject.name}
-                        phases={phases}
-                        onPhasesChange={(next) => persist({ ...doc, phases: next })}
-                    />
-                ) : (
-                    <CeoSidebarDates events={events} onOpenSchedule={openScheduleSurface} />
-                )}
-            </div>
-        </aside>
-    );
-
     return (
         <>
-            <div className="flex w-full min-w-0 flex-col bg-[var(--color-brand-bg)] lg:flex-row lg:items-start">
-                {phasesRail}
-                <div className="flex min-w-0 flex-1 flex-col bg-[var(--color-brand-bg)]">
+            <div className="flex w-full min-w-0 flex-col bg-[var(--color-brand-bg)]">
+                <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--color-brand-bg)]">
             {deskView === 'hub' ? (
                 <div className="flex w-full flex-col bg-[var(--color-brand-bg)]">
-                    <div className="space-y-8 px-5 py-6 pb-28 sm:px-7 sm:py-7 sm:pb-32">
-                            <div className="space-y-2">
-                                <label className="text-xs font-medium text-zinc-500" htmlFor="ceo-strategic-intent">
+                    <div className="space-y-4 px-5 py-6 pb-28 sm:px-7 sm:py-7 sm:pb-32">
+                            <p className="text-[11px] leading-relaxed text-zinc-500">
+                                Tap a section to open it. Each block is separate so you can jump to intent, timeline, dates, or tasks quickly.
+                            </p>
+
+                            <DeskRevealSection
+                                title="Strategic intent"
+                                subtitle="One or two lines — what winning looks like for this venture."
+                                defaultOpen
+                                badge={
+                                    doc.strategicIntent?.trim() ? (
+                                        <span className="rounded-full bg-white/[0.08] px-2 py-0.5 text-[10px] font-medium text-zinc-400">
+                                            Saved
+                                        </span>
+                                    ) : null
+                                }
+                            >
+                                <label className="sr-only" htmlFor="ceo-strategic-intent">
                                     Strategic intent
                                 </label>
                                 <textarea
@@ -355,10 +275,13 @@ export function StrategyNotebook() {
                                     rows={3}
                                     className="w-full resize-none rounded-lg border border-zinc-700 bg-zinc-900/60 px-3 py-3 text-sm leading-relaxed text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-zinc-500/30"
                                 />
-                            </div>
+                            </DeskRevealSection>
 
-                            <div className="space-y-2">
-                                <label className="text-xs font-medium text-zinc-500" htmlFor="ceo-vision">
+                            <DeskRevealSection
+                                title="Vision / north star"
+                                subtitle="12–36 month picture. Saved when you leave the field."
+                            >
+                                <label className="sr-only" htmlFor="ceo-vision">
                                     Vision / north star
                                 </label>
                                 <textarea
@@ -367,38 +290,140 @@ export function StrategyNotebook() {
                                     onChange={(e) => setDoc({ ...doc, vision: e.target.value })}
                                     onBlur={(e) => persist({ ...doc, vision: e.target.value })}
                                     placeholder="Longer-horizon picture — where this venture is headed in 12–36 months."
-                                    rows={2}
+                                    rows={3}
                                     className="w-full resize-none rounded-lg border border-zinc-700 bg-zinc-900/60 px-3 py-3 text-sm leading-relaxed text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-zinc-500/30"
                                 />
-                                <p className="text-[10px] text-zinc-600">Saved when you leave the field — same as strategic intent.</p>
-                            </div>
+                            </DeskRevealSection>
 
-                            <section
-                                className="rounded-lg border border-white/[0.05] bg-zinc-900/15 p-4"
-                                aria-label="Executive priorities quick checklist"
+                            <DeskRevealSection
+                                title="Phase timeline"
+                                subtitle="Read-only here. Edit horizons under Open full editor, or Product → Planning."
+                                badge={
+                                    <span className="rounded-full bg-white/[0.08] px-2 py-0.5 text-[10px] font-medium tabular-nums text-zinc-400">
+                                        {phases.length} phase{phases.length === 1 ? '' : 's'}
+                                    </span>
+                                }
                             >
-                                <div className="flex items-center justify-between gap-2">
-                                    <p className="text-xs font-normal text-zinc-400">Priorities</p>
+                                <TimelinePhaseReadOnly
+                                    phases={phases}
+                                    emptyHint="No phases yet. Open “Edit phase timeline” below or use Product → Planning."
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => openSurface('phases')}
+                                    className="mt-4 w-full rounded-lg border border-white/[0.08] bg-zinc-800/50 px-3 py-2.5 text-center text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800/80"
+                                >
+                                    Open full phase editor
+                                </button>
+                            </DeskRevealSection>
+
+                            <DeskRevealSection
+                                title="Key dates & milestones"
+                                subtitle="Suite calendar entries for this venture. Add below or open the full schedule workspace."
+                                badge={
+                                    events.length > 0 ? (
+                                        <span className="rounded-full bg-white/[0.08] px-2 py-0.5 text-[10px] font-medium tabular-nums text-zinc-400">
+                                            {events.length} dated
+                                        </span>
+                                    ) : null
+                                }
+                            >
+                                <div className="grid gap-2 rounded-lg border border-white/[0.06] bg-zinc-950/30 p-3 sm:grid-cols-2">
+                                    <input
+                                        value={calTitle}
+                                        onChange={(e) => setCalTitle(e.target.value)}
+                                        placeholder="Title"
+                                        className="rounded border border-zinc-700 bg-zinc-900/80 px-2 py-2 text-sm text-zinc-200 sm:col-span-2"
+                                    />
+                                    <input
+                                        type="datetime-local"
+                                        value={calDate}
+                                        onChange={(e) => setCalDate(e.target.value)}
+                                        className="rounded border border-zinc-700 bg-zinc-900/80 px-2 py-2 text-sm text-zinc-200"
+                                    />
+                                    <select
+                                        value={calType}
+                                        onChange={(e) => setCalType(e.target.value as ProjectEvent['type'])}
+                                        className="rounded border border-zinc-700 bg-zinc-900/80 px-2 py-2 text-sm text-zinc-300"
+                                    >
+                                        <option value="milestone">Milestone</option>
+                                        <option value="meeting">Meeting</option>
+                                        <option value="deadline">Deadline</option>
+                                        <option value="launch">Launch</option>
+                                        <option value="task">Task</option>
+                                    </select>
                                     <button
                                         type="button"
-                                        onClick={() => openSurface('priorities')}
-                                        className="text-[10px] font-semibold text-zinc-400 hover:text-zinc-200"
+                                        onClick={addCalendarRow}
+                                        className="rounded-lg border border-zinc-600 bg-zinc-800 py-2 text-xs font-semibold text-zinc-100 sm:col-span-2"
                                     >
-                                        Open full list
+                                        Add to calendar
+                                    </button>
+                                </div>
+                                {events.length === 0 ? (
+                                    <p className="mt-3 text-xs text-zinc-600">No dated entries yet.</p>
+                                ) : (
+                                    <ul className="mt-3 space-y-2">
+                                        {events.slice(0, 24).map((ev) => (
+                                            <li
+                                                key={ev.id}
+                                                className="rounded-md border border-white/[0.06] bg-zinc-900/30 px-2.5 py-2"
+                                            >
+                                                <p className="text-xs text-zinc-200">{ev.title}</p>
+                                                <p className="mt-0.5 text-[10px] text-zinc-500">
+                                                    {new Date(ev.date).toLocaleString(undefined, { dateStyle: 'medium' })}
+                                                    {ev.type ? ` · ${ev.type}` : ''}
+                                                </p>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                                <button
+                                    type="button"
+                                    onClick={openScheduleSurface}
+                                    className="mt-4 w-full rounded-md border border-white/[0.06] bg-zinc-800/35 px-2 py-2 text-xs font-normal text-zinc-300 transition hover:bg-zinc-800/55"
+                                >
+                                    Open full schedule workspace
+                                </button>
+                            </DeskRevealSection>
+
+                            <DeskRevealSection
+                                title="Executive priorities"
+                                subtitle="Checklist stored with strategy. Expand to add or tick items."
+                                badge={
+                                    (doc.priorities || []).length > 0 ? (
+                                        <span className="rounded-full bg-white/[0.08] px-2 py-0.5 text-[10px] font-medium tabular-nums text-zinc-400">
+                                            {(doc.priorities || []).filter((p) => !p.done).length} open
+                                        </span>
+                                    ) : null
+                                }
+                            >
+                                <div className="flex flex-wrap gap-2">
+                                    <input
+                                        value={newPriority}
+                                        onChange={(e) => setNewPriority(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addPriority())}
+                                        placeholder="Add a priority…"
+                                        className="min-w-[12rem] flex-1 rounded-lg border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-sm text-zinc-200"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={addPriority}
+                                        className="inline-flex items-center gap-1 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-xs font-semibold text-zinc-100"
+                                    >
+                                        <Plus className="h-3.5 w-3.5" aria-hidden />
+                                        Add
                                     </button>
                                 </div>
                                 {(doc.priorities || []).length === 0 ? (
-                                    <p className="mt-2 text-xs text-zinc-600">
-                                        No priorities yet —{' '}
-                                        <button type="button" onClick={() => openSurface('priorities')} className="text-zinc-300 underline">
-                                            add some
-                                        </button>
-                                        .
-                                    </p>
+                                    <p className="mt-3 text-xs text-zinc-600">No priorities yet.</p>
                                 ) : (
                                     <ul className="mt-3 space-y-2">
-                                        {(doc.priorities || []).slice(0, 8).map((pr) => (
-                                            <li key={pr.id} className="flex items-start gap-3 rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2">
+                                        {(doc.priorities || []).map((pr) => (
+                                            <li
+                                                key={pr.id}
+                                                className="flex items-start gap-3 rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2"
+                                            >
                                                 <input
                                                     type="checkbox"
                                                     checked={pr.done}
@@ -406,23 +431,34 @@ export function StrategyNotebook() {
                                                     className="mt-1"
                                                     aria-label={pr.done ? `Mark not done: ${pr.title}` : `Mark done: ${pr.title}`}
                                                 />
-                                                <span className={`flex-1 text-sm ${pr.done ? 'text-zinc-500 line-through' : 'text-zinc-200'}`}>
+                                                <span className={`min-w-0 flex-1 text-sm ${pr.done ? 'text-zinc-500 line-through' : 'text-zinc-200'}`}>
                                                     {pr.title}
                                                 </span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removePriority(pr.id)}
+                                                    className="shrink-0 text-zinc-500 hover:text-rose-400"
+                                                    aria-label={`Remove ${pr.title}`}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
                                             </li>
                                         ))}
                                     </ul>
                                 )}
-                            </section>
+                                <button
+                                    type="button"
+                                    onClick={() => openSurface('priorities')}
+                                    className="mt-3 text-[10px] font-semibold text-zinc-500 hover:text-zinc-300"
+                                >
+                                    Open priorities in full-page view →
+                                </button>
+                            </DeskRevealSection>
 
-                            <div className="space-y-3">
-                                <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-                                    <p className="text-sm font-normal text-zinc-300">More on this desk</p>
-                                    <p className="text-[11px] font-normal text-zinc-600">
-                                        On a wide screen, phases and key dates sit in the slim column beside this page. Product still mirrors
-                                        your flow.
-                                    </p>
-                                </div>
+                            <DeskRevealSection
+                                title="More on this desk"
+                                subtitle="Narrative, flow canvas, team, schedule — each opens in a focused view."
+                            >
                                 <ul className="grid gap-2.5 sm:gap-3">
                                     {planningSurfaceItems.map((item) => {
                                         const isFlow = item.id === 'flow';
@@ -431,7 +467,7 @@ export function StrategyNotebook() {
                                                 <button
                                                     type="button"
                                                     onClick={() => openSurface(item.id)}
-                                                    className="group flex w-full items-start gap-3 rounded-lg border border-white/[0.05] bg-zinc-900/15 p-3.5 text-left transition hover:border-white/[0.07] hover:bg-zinc-900/25 sm:p-4"
+                                                    className="group flex w-full items-start gap-3 rounded-lg border border-white/[0.06] bg-zinc-900/20 p-3.5 text-left transition hover:border-white/[0.1] hover:bg-zinc-900/35 sm:p-4"
                                                 >
                                                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/[0.04] text-zinc-400 transition group-hover:text-zinc-200 sm:h-10 sm:w-10 sm:rounded-xl">
                                                         {modeIcon(item.id)}
@@ -445,7 +481,7 @@ export function StrategyNotebook() {
                                                                     {flowStats.steps} step{flowStats.steps === 1 ? '' : 's'} · {flowStats.links}{' '}
                                                                     link{flowStats.links === 1 ? '' : 's'}
                                                                 </span>
-                                                                <span className="text-[10px] text-zinc-600">Live · same graph in Product → Planning</span>
+                                                                <span className="text-[10px] text-zinc-600">Live · Product → Planning</span>
                                                             </span>
                                                         ) : null}
                                                     </span>
@@ -454,9 +490,9 @@ export function StrategyNotebook() {
                                         );
                                     })}
                                 </ul>
-                            </div>
+                            </DeskRevealSection>
 
-                            <div className="flex flex-wrap gap-3 pt-1 pb-8">
+                            <div className="flex flex-wrap gap-3 pt-2">
                                 <button
                                     type="button"
                                     onClick={() => persist(doc)}
@@ -518,18 +554,19 @@ export function StrategyNotebook() {
                         )}
 
                         {tool === 'phases' && (
-                            <section className="flex flex-col items-center justify-center bg-brand-bg px-6 py-10 text-center">
-                                <p className="max-w-sm text-sm font-normal leading-relaxed text-zinc-500">
-                                    Phases and dates live in the slim column next to this desk on a <span className="text-zinc-300">wide
-                                    screen</span>. Resize the window or use a larger display to edit them there.
+                            <section className="flex flex-col bg-brand-bg p-4 sm:p-6">
+                                <p className="mb-4 max-w-prose text-xs leading-relaxed text-zinc-500">
+                                    Edit phase titles, date ranges, status, and notes. Changes save with your venture strategy — the CEO overview
+                                    shows a read-only timeline.
                                 </p>
-                                <button
-                                    type="button"
-                                    onClick={goHub}
-                                    className="mt-5 rounded-md border border-white/[0.1] bg-white/[0.05] px-3 py-2 text-xs font-medium text-zinc-200 hover:bg-white/[0.08]"
-                                >
-                                    Back to overview
-                                </button>
+                                <div className="min-h-0 flex-1 overflow-auto rounded-xl border border-white/[0.06] bg-[#141416]">
+                                    <TimelinePhaseSetter
+                                        variant="page"
+                                        projectName={activeProject.name}
+                                        phases={phases}
+                                        onPhasesChange={(next) => persist({ ...doc, phases: next })}
+                                    />
+                                </div>
                             </section>
                         )}
 

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useOffice } from '@/lib/OfficeContext';
 import { Download, Loader2, CheckCircle, LayoutTemplate } from 'lucide-react';
 import { DeskShell, DeskEmpty } from '@/components/workspaces/DeskShell';
+import { DeskRevealSection } from '@/components/workspaces/DeskRevealSection';
 import jsPDF from 'jspdf';
 
 export function PitchDeckForge() {
@@ -129,53 +130,63 @@ export function PitchDeckForge() {
                     : 'Compile strategy, financials, and market intel into a seven-slide PDF investor deck.'
             }
         >
-            <div className="mx-auto flex max-w-2xl flex-col items-center gap-8 py-4 text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-zinc-700 bg-zinc-900">
-                    <LayoutTemplate className="h-8 w-8 text-zinc-400" aria-hidden />
-                </div>
-
-                <div className="grid max-w-md grid-cols-2 gap-3 text-left">
-                    <div className="rounded-lg border border-zinc-700 bg-zinc-900/50 p-3">
-                        <div className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Slide 1</div>
-                        <div className="text-sm font-medium text-zinc-200">Title & vision</div>
-                    </div>
-                    <div className="rounded-lg border border-zinc-700 bg-zinc-900/50 p-3">
-                        <div className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Slide 2</div>
-                        <div className="text-sm font-medium text-zinc-200">The problem</div>
-                    </div>
-                    <div className="rounded-lg border border-zinc-700 bg-zinc-900/50 p-3">
-                        <div className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Slide 3</div>
-                        <div className="text-sm font-medium text-zinc-200">The solution</div>
-                    </div>
-                    <div className="rounded-lg border border-zinc-700 bg-zinc-900/50 p-3">
-                        <div className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Slides 4–7</div>
-                        <div className="text-sm font-medium text-zinc-200">Market, biz, money, team</div>
-                    </div>
-                </div>
-
-                <button
-                    type="button"
-                    onClick={generatePDF}
-                    disabled={isGenerating}
-                    className="flex w-full max-w-md items-center justify-center gap-2 rounded-lg border border-zinc-600 bg-zinc-800 py-3.5 text-sm font-semibold text-zinc-100 shadow-md transition hover:bg-zinc-700 active:scale-[0.99] disabled:opacity-50"
+            <div className="mx-auto flex max-w-2xl flex-col gap-4 py-4">
+                <DeskRevealSection
+                    variant="brand"
+                    defaultOpen
+                    title="Deck outline"
+                    subtitle="Seven slides pulled from your venture fields (problem, solution, market, strategy, budget, team)."
                 >
-                    {isGenerating ? (
-                        <>
-                            <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
-                            Forging deck…
-                        </>
-                    ) : isComplete ? (
-                        <>
-                            <CheckCircle className="h-5 w-5" aria-hidden />
-                            Deck downloaded
-                        </>
-                    ) : (
-                        <>
-                            <Download className="h-5 w-5" aria-hidden />
-                            Generate pitch deck
-                        </>
-                    )}
-                </button>
+                    <div className="mb-4 flex justify-center">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-brand-border bg-brand-panel">
+                            <LayoutTemplate className="h-7 w-7 text-brand-muted" aria-hidden />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 text-left">
+                        <div className="rounded-lg border border-brand-border bg-brand-panel/60 p-3">
+                            <div className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Slide 1</div>
+                            <div className="text-sm font-medium text-brand-text">Title & vision</div>
+                        </div>
+                        <div className="rounded-lg border border-brand-border bg-brand-panel/60 p-3">
+                            <div className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Slide 2</div>
+                            <div className="text-sm font-medium text-brand-text">The problem</div>
+                        </div>
+                        <div className="rounded-lg border border-brand-border bg-brand-panel/60 p-3">
+                            <div className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Slide 3</div>
+                            <div className="text-sm font-medium text-brand-text">The solution</div>
+                        </div>
+                        <div className="rounded-lg border border-brand-border bg-brand-panel/60 p-3">
+                            <div className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Slides 4–7</div>
+                            <div className="text-sm font-medium text-brand-text">Market, biz, money, team</div>
+                        </div>
+                    </div>
+                </DeskRevealSection>
+
+                <DeskRevealSection variant="brand" defaultOpen title="Export PDF" subtitle="Landscape A4 — ready to share or rehearse.">
+                    <button
+                        type="button"
+                        onClick={generatePDF}
+                        disabled={isGenerating}
+                        className="flex w-full items-center justify-center gap-2 rounded-lg border border-zinc-600 bg-zinc-800 py-3.5 text-sm font-semibold text-zinc-100 shadow-md transition hover:bg-zinc-700 active:scale-[0.99] disabled:opacity-50"
+                    >
+                        {isGenerating ? (
+                            <>
+                                <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
+                                Forging deck…
+                            </>
+                        ) : isComplete ? (
+                            <>
+                                <CheckCircle className="h-5 w-5" aria-hidden />
+                                Deck downloaded
+                            </>
+                        ) : (
+                            <>
+                                <Download className="h-5 w-5" aria-hidden />
+                                Generate pitch deck
+                            </>
+                        )}
+                    </button>
+                </DeskRevealSection>
             </div>
         </DeskShell>
     );

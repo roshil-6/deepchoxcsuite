@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import type { Project, ProjectEvent, StaffAttentionItem } from '@/lib/db';
 import { DeskShell, DeskEmpty } from '@/components/workspaces/DeskShell';
+import { DeskRevealSection } from '@/components/workspaces/DeskRevealSection';
 
 const MAX_PROMPT_CONTEXT = 7200;
 
@@ -468,14 +469,22 @@ export function FinancialLedger() {
             title="Chief Financial Officer"
             description="You work from the same venture record as every officer: strategy, product, market, GTM, and staff-sync briefs all flow here for runway, scenarios, and trade-offs. Use the links below to jump to a desk and refresh source data, then bring questions back to the CFO chat."
         >
-            <div className="flex flex-col gap-5">
-                <div className="rounded-xl border border-brand-border bg-brand-card px-4 py-4 sm:px-5">
-                    <div className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-brand-muted">
-                        <Link2 className="h-3.5 w-3.5" aria-hidden />
-                        Connected roles — one venture record
-                    </div>
+            <div className="flex flex-col gap-4">
+                <DeskRevealSection
+                    variant="brand"
+                    defaultOpen
+                    title="Connected roles"
+                    subtitle="One venture record — jump to another desk to refresh source data."
+                    badge={
+                        <span className="flex items-center gap-1 rounded-full border border-brand-border bg-brand-bg px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-muted">
+                            <Link2 className="h-3 w-3" aria-hidden />
+                            Suite
+                        </span>
+                    }
+                >
                     <p className="mb-3 text-[12px] leading-relaxed text-brand-muted">
-                        CFO models cash against what CEO prioritizes, CTO ships, CSO sees in the market, and CMO pushes in GTM. Staff sync refreshes every desk brief in one pass so numbers and narrative stay aligned.
+                        CFO models cash against what CEO prioritizes, CTO ships, CSO sees in the market, and CMO pushes in GTM. Staff sync
+                        refreshes every desk brief in one pass so numbers and narrative stay aligned.
                     </p>
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                         {PEER_DESKS.map(({ room, label, short, fieldHint, icon: Icon }) => {
@@ -509,44 +518,50 @@ export function FinancialLedger() {
                             );
                         })}
                     </div>
-                </div>
+                </DeskRevealSection>
 
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                    <div className="rounded-lg border border-brand-border bg-brand-panel px-4 py-3">
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Venture</p>
-                        <p className="mt-1 truncate text-sm font-medium text-brand-text">{activeProject.name}</p>
-                    </div>
-                    <div className="rounded-lg border border-brand-border bg-brand-panel px-4 py-3">
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Budget field</p>
-                        <p className="mt-1 flex flex-wrap items-baseline gap-2 text-sm font-medium text-brand-text">
-                            <span>
-                                {chars.toLocaleString()} chars · {lines} lines
-                            </span>
-                        </p>
-                    </div>
-                    <div className="rounded-lg border border-brand-border bg-brand-panel px-4 py-3 sm:col-span-2 lg:col-span-2">
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Signals in text</p>
-                        <div className="mt-2 flex flex-wrap gap-1.5">
-                            {signals.length > 0 ? (
-                                signals.map((s) => (
-                                    <span
-                                        key={s}
-                                        className={`rounded-md px-2 py-0.5 text-[10px] font-medium ${DESK_PANEL.signalChip}`}
-                                    >
-                                        {s}
-                                    </span>
-                                ))
-                            ) : (
-                                <span className="text-[12px] text-brand-muted">
-                                    Add burn, runway, or revenue cues — we’ll tag them.
+                <DeskRevealSection
+                    variant="brand"
+                    defaultOpen
+                    title="Venture snapshot"
+                    subtitle="Budget field size and auto-detected finance cues."
+                >
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        <div className="rounded-lg border border-brand-border bg-brand-panel px-4 py-3">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Venture</p>
+                            <p className="mt-1 truncate text-sm font-medium text-brand-text">{activeProject.name}</p>
+                        </div>
+                        <div className="rounded-lg border border-brand-border bg-brand-panel px-4 py-3">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Budget field</p>
+                            <p className="mt-1 flex flex-wrap items-baseline gap-2 text-sm font-medium text-brand-text">
+                                <span>
+                                    {chars.toLocaleString()} chars · {lines} lines
                                 </span>
-                            )}
+                            </p>
+                        </div>
+                        <div className="rounded-lg border border-brand-border bg-brand-panel px-4 py-3 sm:col-span-2 lg:col-span-2">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Signals in text</p>
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                                {signals.length > 0 ? (
+                                    signals.map((s) => (
+                                        <span
+                                            key={s}
+                                            className={`rounded-md px-2 py-0.5 text-[10px] font-medium ${DESK_PANEL.signalChip}`}
+                                        >
+                                            {s}
+                                        </span>
+                                    ))
+                                ) : (
+                                    <span className="text-[12px] text-brand-muted">
+                                        Add burn, runway, or revenue cues — we’ll tag them.
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     </div>
-                </div>
+                </DeskRevealSection>
 
-                <div>
-                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-muted">Topics</p>
+                <DeskRevealSection variant="brand" defaultOpen title="Topics" subtitle="Tap a card to load its detail below.">
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                         {TOPIC_META.map(({ id, shortLabel, icon: Icon }) => {
                             const row = map[id];
@@ -559,9 +574,7 @@ export function FinancialLedger() {
                                     className={`flex min-h-[4.5rem] flex-col items-start gap-1.5 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-brand-card/40 ${
                                         row.hasData ? DESK_PANEL.tileOn : DESK_PANEL.tileOff
                                     } ${
-                                        isSel
-                                            ? 'ring-2 ring-brand-teal/25 ring-offset-2 ring-offset-brand-bg'
-                                            : ''
+                                        isSel ? 'ring-2 ring-brand-teal/25 ring-offset-2 ring-offset-brand-bg' : ''
                                     }`}
                                 >
                                     <span className="flex w-full items-center justify-between gap-1">
@@ -582,28 +595,24 @@ export function FinancialLedger() {
                             );
                         })}
                     </div>
-                </div>
+                </DeskRevealSection>
 
-                <div
-                    ref={detailPanelRef}
-                    id="cfo-topic-detail"
-                    className={`scroll-mt-4 rounded-lg px-3 py-3 sm:px-4 ${
-                        selectedRow.hasData ? DESK_PANEL.detailWrap : 'border border-brand-border/60 bg-brand-bg'
-                    }`}
-                >
-                    <div className="mb-3 flex flex-wrap items-start justify-between gap-2 border-b border-brand-border/60 pb-3">
-                        <div>
-                            <h3 className="text-sm font-semibold text-brand-text">{selectedMeta.title}</h3>
-                            <p className="mt-0.5 text-[11px] text-brand-muted">{selectedMeta.hint}</p>
-                        </div>
+                <DeskRevealSection
+                    variant="brand"
+                    defaultOpen
+                    title={selectedMeta.title}
+                    subtitle={selectedMeta.hint}
+                    badge={
                         <span
-                            className={`shrink-0 rounded px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
+                            className={`rounded px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
                                 selectedRow.hasData ? DESK_PANEL.badgeOn : DESK_PANEL.badgeOff
                             }`}
                         >
                             {selectedRow.hasData ? 'Has data' : 'Empty'}
                         </span>
-                    </div>
+                    }
+                >
+                <div ref={detailPanelRef} id="cfo-topic-detail" className="scroll-mt-4">
                     <p className="mb-3 text-[12px] leading-snug text-brand-muted">{selectedRow.preview}</p>
 
                     <div className="space-y-3">
@@ -678,20 +687,26 @@ export function FinancialLedger() {
                         )}
                     </div>
                 </div>
+                </DeskRevealSection>
 
-                <div className="rounded-xl border border-brand-border bg-brand-panel px-4 py-4 sm:px-5">
+                <DeskRevealSection
+                    variant="brand"
+                    title="Discuss with CFO"
+                    subtitle="Chat prompts use your budget field, desk sync, and the topic you selected."
+                    badge={
+                        <span className="rounded-full border border-brand-border bg-brand-bg px-2 py-0.5 text-[10px] font-medium text-brand-muted">
+                            Chat
+                        </span>
+                    }
+                >
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div className="flex min-w-0 gap-3">
                             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-brand-border bg-brand-bg text-brand-text">
                                 <Bot className="h-5 w-5" aria-hidden />
                             </span>
-                            <div>
-                                <h2 className="text-sm font-semibold text-brand-text">Discuss with CFO</h2>
-                                <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-brand-muted">
-                                    Use the chat below to work through finance. Prompts use your venture budget field, desk sync,
-                                    and the topic you selected (trimmed if very long).
-                                </p>
-                            </div>
+                            <p className="max-w-xl text-[12px] leading-relaxed text-brand-muted">
+                                Use the suite chat to work through finance. The buttons below pre-fill the CFO with your ledger context.
+                            </p>
                         </div>
                         <div className="flex shrink-0 flex-col gap-2 sm:items-end">
                             <button
@@ -725,7 +740,7 @@ export function FinancialLedger() {
                             </button>
                         ))}
                     </div>
-                </div>
+                </DeskRevealSection>
             </div>
         </DeskShell>
     );

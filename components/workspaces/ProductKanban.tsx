@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useOffice } from '@/lib/OfficeContext';
 import type { KanbanTask, DeskDocument } from '@/lib/db';
 import {
@@ -10,8 +10,11 @@ import {
     type ProductPlanDoc,
     type RecentAction,
 } from '@/lib/productPlanDoc';
+import { parseStrategy, serializeStrategy, type StrategyPhase } from '@/lib/strategyDoc';
 import { StrategyFlowCanvas } from '@/components/workspaces/StrategyFlowCanvas';
 import { ProductWarRoom } from '@/components/workspaces/ProductWarRoom';
+import { TimelinePhaseSetter } from '@/components/workspaces/TimelinePhaseSetter';
+import { DeskRevealSection } from '@/components/workspaces/DeskRevealSection';
 import {
     Plus,
     Trash2,
@@ -68,7 +71,7 @@ const ACTION_LABELS: Record<RecentAction['category'], string> = {
 };
 
 export function ProductKanban() {
-    const { activeProject, updateProjectField, updateProductPlan } = useOffice();
+    const { activeProject, updateProjectField, updateProductPlan, updateStrategy } = useOffice();
     const [tool, setTool] = useState<MainTool>('board');
     const [pd, setPd] = useState<ProductPlanDoc>({ roadmapText: '', warRoom: { stickies: [] } });
     const [tasks, setTasks] = useState<KanbanTask[]>([]);
@@ -177,6 +180,19 @@ export function ProductKanban() {
     };
 
     const ceoFlow = activeProject ? getCeoFlowForPlanning(activeProject.strategy || '') : { nodes: [], edges: [] };
+    const strategyPhases = useMemo(
+        () => parseStrategy(activeProject?.strategy || '').phases || [],
+        [activeProject?.strategy]
+    );
+
+    const persistStrategyPhases = useCallback(
+        (nextPhases: StrategyPhase[]) => {
+            if (!activeProject) return;
+            const base = parseStrategy(activeProject.strategy || '');
+            updateStrategy(serializeStrategy({ ...base, phases: nextPhases }));
+        },
+        [activeProject, updateStrategy]
+    );
 
     if (!activeProject) {
         return <DeskEmpty>Select a venture to open the product desk.</DeskEmpty>;
@@ -220,23 +236,26 @@ export function ProductKanban() {
                     <div className="flex flex-col gap-4">
                     {tool === 'board' && (
                         <div className="flex min-h-[420px] flex-col gap-4">
-                            <div className="flex flex-wrap items-end gap-2">
-                                <input
-                                    value={newTitle}
-                                    onChange={(e) => setNewTitle(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTask())}
-                                    placeholder="New work item…"
-                                    className="min-w-[200px] flex-1 rounded-lg border border-zinc-600 bg-brand-panel px-3 py-2 text-sm text-zinc-200"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={addTask}
-                                    className="inline-flex items-center gap-2 rounded-lg border border-brand-border bg-brand-card px-4 py-2 text-xs font-semibold text-zinc-100 hover:bg-brand-input"
-                                >
-                                    <Plus className="h-4 w-4" aria-hidden />
-                                    Add
-                                </button>
-                            </div>
+                            <DeskRevealSection variant="brand" defaultOpen title="Add to backlog" subtitle="New items land in Backlog.">
+                                <div className="flex flex-wrap items-end gap-2">
+                                    <input
+                                        value={newTitle}
+                                        onChange={(e) => setNewTitle(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTask())}
+                                        placeholder="New work item…"
+                                        className="min-w-[200px] flex-1 rounded-lg border border-zinc-600 bg-brand-panel px-3 py-2 text-sm text-zinc-200"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={addTask}
+                                        className="inline-flex items-center gap-2 rounded-lg border border-brand-border bg-brand-card px-4 py-2 text-xs font-semibold text-zinc-100 hover:bg-brand-input"
+                                    >
+                                        <Plus className="h-4 w-4" aria-hidden />
+                                        Add
+                                    </button>
+                                </div>
+                            </DeskRevealSection>
+                            <DeskRevealSection variant="brand" defaultOpen title="Execution board" subtitle="Backlog through done — four columns.">
                             <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
                                 {COLUMNS.map((col) => (
                                     <div key={col.id} className="flex min-h-[200px] flex-col rounded-lg border border-white/[0.06] bg-brand-panel/40">
@@ -293,51 +312,58 @@ export function ProductKanban() {
                                     </div>
                                 ))}
                             </div>
+                            </DeskRevealSection>
                         </div>
                     )}
 
                     {tool === 'roadmap' && (
-                        <section className="mx-auto max-w-4xl space-y-3">
-                            <div className="flex items-center justify-between gap-2">
-                                <h2 className="text-sm font-normal text-zinc-300">Roadmap brief</h2>
-                                <button
-                                    type="button"
-                                    onClick={() => persistProduct(pd)}
-                                    className="inline-flex items-center gap-2 rounded-lg border border-brand-border bg-brand-card px-4 py-2 text-xs font-semibold text-zinc-100 hover:bg-brand-input"
-                                >
-                                    {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-                                    Save
-                                </button>
-                            </div>
-                            <textarea
-                                value={pd.roadmapText || ''}
-                                onChange={(e) => setPd({ ...pd, roadmapText: e.target.value })}
-                                placeholder="Themes, bets, outcomes, and how you measure success…"
-                                rows={22}
-                                className="w-full rounded-lg border border-brand-border bg-brand-input p-4 text-[15px] leading-relaxed text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand-teal/30"
-                            />
+                        <section className="mx-auto max-w-4xl">
+                            <DeskRevealSection variant="brand" defaultOpen title="Roadmap brief" subtitle="Themes, bets, outcomes, and success metrics.">
+                                <div className="mb-3 flex justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={() => persistProduct(pd)}
+                                        className="inline-flex items-center gap-2 rounded-lg border border-brand-border bg-brand-card px-4 py-2 text-xs font-semibold text-zinc-100 hover:bg-brand-input"
+                                    >
+                                        {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                                        Save
+                                    </button>
+                                </div>
+                                <textarea
+                                    value={pd.roadmapText || ''}
+                                    onChange={(e) => setPd({ ...pd, roadmapText: e.target.value })}
+                                    placeholder="Themes, bets, outcomes, and how you measure success…"
+                                    rows={22}
+                                    className="w-full rounded-lg border border-brand-border bg-brand-input p-4 text-[15px] leading-relaxed text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand-teal/30"
+                                />
+                            </DeskRevealSection>
                         </section>
                     )}
 
                     {tool === 'war' && (
-                        <section className="mx-auto max-w-5xl space-y-3">
-                            <h2 className="text-sm font-normal text-zinc-300">War room</h2>
-                            <p className="text-xs text-zinc-500">
-                                Persistent sticky notes and sketches—nothing clears when you leave. Save updates the venture record.
-                            </p>
-                            <ProductWarRoom
-                                stickies={pd.warRoom?.stickies || []}
-                                onChange={(stickies) => persistProduct({ ...pd, warRoom: { stickies } })}
-                            />
+                        <section className="mx-auto max-w-5xl">
+                            <DeskRevealSection
+                                variant="brand"
+                                defaultOpen
+                                title="War room"
+                                subtitle="Persistent sticky notes and sketches — save updates the venture record."
+                            >
+                                <ProductWarRoom
+                                    stickies={pd.warRoom?.stickies || []}
+                                    onChange={(stickies) => persistProduct({ ...pd, warRoom: { stickies } })}
+                                />
+                            </DeskRevealSection>
                         </section>
                     )}
 
                     {tool === 'recent' && (
                         <section className="mx-auto max-w-3xl space-y-4">
-                            <h2 className="text-sm font-normal text-zinc-300">Recent actions</h2>
-                            <p className="text-xs text-zinc-500">
-                                Structured entries—not a freeform journal. Log what shipped, what was decided, and what you learned.
-                            </p>
+                            <DeskRevealSection
+                                variant="brand"
+                                defaultOpen
+                                title="Log an action"
+                                subtitle="Shipments, decisions, research, syncs — structured, not a freeform journal."
+                            >
                             <div className="grid gap-2 rounded-lg border border-brand-border bg-brand-panel p-3 sm:grid-cols-2">
                                 <select
                                     value={actionDraft.category}
@@ -372,6 +398,8 @@ export function ProductKanban() {
                                     Log action
                                 </button>
                             </div>
+                            </DeskRevealSection>
+                            <DeskRevealSection variant="brand" defaultOpen title="Action history" subtitle="Newest first.">
                             <ul className="space-y-2">
                                 {(pd.recentActions || []).map((a) => (
                                     <li key={a.id} className="rounded-lg border border-brand-border bg-brand-panel p-3">
@@ -391,44 +419,68 @@ export function ProductKanban() {
                                     </li>
                                 ))}
                             </ul>
+                            </DeskRevealSection>
                         </section>
                     )}
 
                     {tool === 'planning' && (
-                        <section className="mx-auto max-w-5xl space-y-4">
-                            <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] px-4 py-3 sm:px-5">
-                                <h2 className="text-sm font-medium text-zinc-200">Planning room · Strategy flow</h2>
-                                <p className="mt-1 text-xs leading-relaxed text-zinc-500">
-                                    Read-only mirror of CEO → Visualise your plan. Edits save with the venture strategy — this view refreshes when
-                                    the flow changes.
-                                </p>
-                                {ceoFlow.nodes.length > 0 ? (
-                                    <p className="mt-2 text-[11px] tabular-nums text-zinc-600">
-                                        {ceoFlow.nodes.length} step{ceoFlow.nodes.length === 1 ? '' : 's'} · {ceoFlow.edges.length} link
-                                        {ceoFlow.edges.length === 1 ? '' : 's'}
+                        <section className="mx-auto flex max-w-5xl flex-col gap-4">
+                            <DeskRevealSection
+                                variant="brand"
+                                title="Strategy flow (read-only)"
+                                subtitle="Mirror of CEO → Visualise your plan. Edit the flow on the CEO desk."
+                                defaultOpen
+                                badge={
+                                    ceoFlow.nodes.length > 0 ? (
+                                        <span className="rounded-full border border-brand-border bg-brand-bg px-2 py-0.5 text-[10px] font-medium tabular-nums text-brand-muted">
+                                            {ceoFlow.nodes.length} steps · {ceoFlow.edges.length} links
+                                        </span>
+                                    ) : null
+                                }
+                            >
+                                {ceoFlow.nodes.length === 0 ? (
+                                    <p className="rounded-xl border border-dashed border-brand-border bg-brand-bg/50 px-4 py-8 text-center text-sm text-brand-muted">
+                                        No flow yet. Build it under CEO → Visualise your plan.
                                     </p>
-                                ) : null}
-                            </div>
-                            {ceoFlow.nodes.length === 0 ? (
-                                <p className="rounded-2xl border border-dashed border-white/[0.08] bg-white/[0.02] px-4 py-10 text-center text-sm text-zinc-500">
-                                    No flow yet. Build it under CEO → Visualise your plan.
-                                </p>
-                            ) : (
-                                <StrategyFlowCanvas
-                                    key={activeProject.strategy ?? ''}
-                                    readOnly
-                                    nodes={ceoFlow.nodes}
-                                    edges={ceoFlow.edges}
-                                    onChange={() => {}}
-                                />
-                            )}
+                                ) : (
+                                    <div className="min-h-[280px] sm:min-h-[360px]">
+                                        <StrategyFlowCanvas
+                                            key={activeProject.strategy ?? ''}
+                                            readOnly
+                                            nodes={ceoFlow.nodes}
+                                            edges={ceoFlow.edges}
+                                            onChange={() => {}}
+                                        />
+                                    </div>
+                                )}
+                            </DeskRevealSection>
+
+                            <DeskRevealSection
+                                variant="brand"
+                                title="Phase timeline (editable)"
+                                subtitle="Horizons and dates live in strategy JSON — same record the CEO desk reads as a summary."
+                                defaultOpen
+                                badge={
+                                    <span className="rounded-full border border-brand-border bg-brand-bg px-2 py-0.5 text-[10px] font-medium tabular-nums text-brand-muted">
+                                        {strategyPhases.length} phase{strategyPhases.length === 1 ? '' : 's'}
+                                    </span>
+                                }
+                            >
+                                <div className="overflow-hidden rounded-xl border border-brand-border bg-brand-bg">
+                                    <TimelinePhaseSetter
+                                        embedded
+                                        projectName={activeProject.name}
+                                        phases={strategyPhases}
+                                        onPhasesChange={persistStrategyPhases}
+                                    />
+                                </div>
+                            </DeskRevealSection>
                         </section>
                     )}
 
                     {tool === 'docs' && (
                         <section className="mx-auto max-w-3xl space-y-4">
-                            <h2 className="text-sm font-semibold text-zinc-300">Desk documents</h2>
-                            <p className="text-xs text-zinc-500">Client notes, meeting notes, and internal docs—saved on the venture.</p>
+                            <DeskRevealSection variant="brand" defaultOpen title="New document" subtitle="Client, meeting, or internal — saved on the venture.">
                             <div className="grid gap-2 rounded-lg border border-brand-border bg-brand-panel p-3">
                                 <input
                                     placeholder="Title"
@@ -456,6 +508,8 @@ export function ProductKanban() {
                                     Save document
                                 </button>
                             </div>
+                            </DeskRevealSection>
+                            <DeskRevealSection variant="brand" defaultOpen title="Saved documents" subtitle="Newest in list order from your venture record.">
                             <ul className="space-y-2">
                                 {(activeProject.deskDocuments || []).map((d) => (
                                     <li key={d.id} className="rounded-lg border border-brand-border bg-brand-panel p-3">
@@ -473,6 +527,7 @@ export function ProductKanban() {
                                     </li>
                                 ))}
                             </ul>
+                            </DeskRevealSection>
                         </section>
                     )}
                     </div>
