@@ -1,6 +1,7 @@
 'use client';
 
 import { useOffice } from '@/lib/OfficeContext';
+import { RESEARCH_STAFF } from '@/lib/researchStaffLabels';
 import { Sparkles } from 'lucide-react';
 
 type Props = {
@@ -8,8 +9,11 @@ type Props = {
   label?: string;
 };
 
-/** Opens Dexo Core — full AI command surface (immersive). */
-export function WorkspaceAiButton({ className = '', label = 'Open Dexo' }: Props) {
+/** Opens suite-wide research surface (immersive). */
+export function WorkspaceAiButton({
+  className = '',
+  label = `Open ${RESEARCH_STAFF.dexo.navTitle}`,
+}: Props) {
   const { switchRoom } = useOffice();
   return (
     <button

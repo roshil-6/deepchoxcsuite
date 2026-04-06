@@ -20,8 +20,6 @@ import {
     ScanSearch,
     Megaphone,
     ArrowRight,
-    Link2,
-    Banknote,
     Plus,
     Loader2,
     RefreshCw,
@@ -40,6 +38,7 @@ import {
 } from '@/lib/ventureFundingStructure';
 import { DeskShell, DeskEmpty } from '@/components/workspaces/DeskShell';
 import { DeskRevealSection } from '@/components/workspaces/DeskRevealSection';
+import { deskHeadline, deskHelpText, RESEARCH_STAFF } from '@/lib/researchStaffLabels';
 
 const MAX_PROMPT_CONTEXT = 7200;
 
@@ -139,9 +138,9 @@ const TOPIC_META: { id: TopicId; title: string; shortLabel: string; hint: string
     },
     {
         id: 'cross_desk',
-        title: 'Cross-office map (CEO · CTO · CSO · CMO)',
+        title: 'Cross-desk map (strategy, product, market, growth)',
         shortLabel: 'Cross-office',
-        hint: 'Strategy, delivery board, market, GTM, and each desk’s last sync brief — finance reads one record.',
+        hint: 'Strategy, delivery board, market, go-to-market, and each desk’s last sync brief — finance reads one record.',
         icon: GitBranch,
     },
     {
@@ -160,7 +159,7 @@ const TOPIC_META: { id: TopicId; title: string; shortLabel: string; hint: string
     },
     {
         id: 'ai_brief',
-        title: 'Staff sync — CFO brief',
+        title: 'Staff sync — fund intelligence brief',
         shortLabel: 'Staff sync',
         hint: 'AI desk summary for finance from the last office sync.',
         icon: Sparkles,
@@ -279,7 +278,7 @@ function buildTopicContent(project: Project, ledgerBody: string) {
             preview: liquidityPreview || 'Add burn, cash, and runway to the venture budget (sync or other desks).',
             insights: liquidityInsights,
             latest: liquidityUpdated,
-            emptyHint: 'Budget text can be filled via staff sync, PM/CEO flows, or Chief of Staff — then it appears here.',
+            emptyHint: 'Budget text can be filled via staff sync, product/strategy flows, or coordination — then it appears here.',
             rawContext: liquidityText,
             hasData: !!liquidityText,
         },
@@ -290,7 +289,7 @@ function buildTopicContent(project: Project, ledgerBody: string) {
             insights: crossInsights,
             latest: crossUpdated,
             emptyHint:
-                'Open CEO, CTO, CSO, or CMO desks to edit source fields, or run staff sync so every role’s brief lands in one venture record.',
+                'Open strategy, product and delivery, market and landscape, or growth and narrative to edit source fields, or run staff sync so every brief lands in one venture record.',
             rawContext: crossDeskBlock,
             hasData: !!(strategy || product || marketText || syncPeerBlocks.length > 0 || kanbanTitles.length > 0),
         },
@@ -311,10 +310,10 @@ function buildTopicContent(project: Project, ledgerBody: string) {
             hasData: !!(project.teamDirectives?.trim() || project.userNotes?.trim()),
         },
         ai_brief: {
-            preview: aiPreview || 'Run staff sync from the executive overview to populate CFO brief.',
+            preview: aiPreview || 'Run staff sync from the overview to populate the fund intelligence brief.',
             insights: aiInsights,
             latest: aiUpdated,
-            emptyHint: 'Staff sync merges research into a per-desk brief including CFO.',
+            emptyHint: 'Staff sync merges research into a per-desk brief for fund intelligence.',
             rawContext: aiBlock,
             hasData: !!(cfoDesk || syncSummary),
         },
@@ -358,12 +357,12 @@ const LEDGER_QUICK_PROMPTS: { label: string; instruction: string }[] = [
             'Challenge my runway and liquidity assumptions. What would make them wrong, and what should I monitor weekly?',
     },
     {
-        label: 'CEO vs budget tension',
+        label: 'Strategy versus budget tension',
         instruction:
             'Compare our stated strategy and priorities to the budget and runway. Where is the narrative overstretched vs the numbers?',
     },
     {
-        label: 'CTO delivery vs cash',
+        label: 'Product delivery versus cash',
         instruction:
             'Given product plan and execution board load, what hiring, infra, or timeline choices most threaten runway in the next 90 days?',
     },
@@ -384,7 +383,7 @@ const LEDGER_QUICK_PROMPTS: { label: string; instruction: string }[] = [
     },
 ];
 
-/** Single funding panel: group rows so the CFO view reads top-to-bottom, not as scattered tiles. */
+/** Single funding panel: group rows so the fund view reads top-to-bottom, not as scattered tiles. */
 const FUNDING_ROW_GROUPS: { title: string; ids: string[] }[] = [
     { title: 'Capital & runway', ids: ['total_capital', 'secured', 'pre_launch', 'monthly_burn', 'runway_months'] },
     { title: 'Build & go-to-market', ids: ['product_build', 'gtm', 'team_people', 'infra'] },
@@ -398,15 +397,15 @@ const PEER_DESKS: {
     fieldHint: string;
     icon: typeof Briefcase;
 }[] = [
-    { room: 'ceo', label: 'CEO desk', short: 'CEO', fieldHint: 'Strategy', icon: Briefcase },
-    { room: 'pm', label: 'CTO / PM desk', short: 'CTO', fieldHint: 'Product & board', icon: Cpu },
-    { room: 'scout', label: 'CSO desk', short: 'CSO', fieldHint: 'Market intel', icon: ScanSearch },
-    { room: 'cmo', label: 'CMO desk', short: 'CMO', fieldHint: 'GTM / narrative', icon: Megaphone },
+    { room: 'ceo', label: RESEARCH_STAFF.ceo.navTitle, short: RESEARCH_STAFF.ceo.navTitle, fieldHint: 'Strategy field', icon: Briefcase },
+    { room: 'pm', label: RESEARCH_STAFF.pm.navTitle, short: RESEARCH_STAFF.pm.navTitle, fieldHint: 'Board and plan', icon: Cpu },
+    { room: 'scout', label: RESEARCH_STAFF.scout.navTitle, short: RESEARCH_STAFF.scout.navTitle, fieldHint: 'Intel brief', icon: ScanSearch },
+    { room: 'cmo', label: RESEARCH_STAFF.cmo.navTitle, short: RESEARCH_STAFF.cmo.navTitle, fieldHint: 'Go-to-market and story', icon: Megaphone },
 ];
 
 const CFO_JUMP: { id: string; label: string }[] = [
     { id: 'cfo-funding', label: 'Funding' },
-    { id: 'cfo-connected', label: 'Roles' },
+    { id: 'cfo-connected', label: 'Desks' },
     { id: 'cfo-snapshot', label: 'Snapshot' },
     { id: 'cfo-topic-cards', label: 'Topics' },
     { id: 'cfo-topic-panel', label: 'Brief' },
@@ -516,7 +515,7 @@ export function FinancialLedger() {
                 if (cancelled) return;
                 if (!res.ok || !data.ok) {
                     setAiFunding(null);
-                    setAiFundingError(typeof data.error === 'string' ? data.error : 'Could not load C-suite estimate');
+                    setAiFundingError(typeof data.error === 'string' ? data.error : 'Could not load desk estimates');
                     return;
                 }
                 setAiFunding(data.values ?? null);
@@ -621,7 +620,7 @@ export function FinancialLedger() {
     }, []);
 
     if (!activeProject) {
-        return <DeskEmpty className="text-brand-muted">Select a venture to open the CFO desk.</DeskEmpty>;
+        return <DeskEmpty className="text-brand-muted">Select a venture to open Research fund intelligence.</DeskEmpty>;
     }
 
     if (!topic) return null;
@@ -635,11 +634,10 @@ export function FinancialLedger() {
 
     return (
         <DeskShell
-            eyebrow="CFO · Numbers + scenario table"
-            title="Chief Financial Officer"
-            description="The funding table combines your saved ledger with an AI estimate from CEO, CTO, CSO, CMO, staff sync, and onboarding. Empty budget fields auto-fill once estimates load; review and edit the ledger below."
+            title={deskHeadline(activeProject.name, 'accountant')}
+            description={deskHelpText('accountant')}
             tabs={
-                <nav className="flex flex-wrap gap-1" aria-label="CFO desk sections">
+                <nav className="flex flex-wrap gap-1" aria-label="Fund intelligence sections">
                     {CFO_JUMP.map((item) => (
                         <button
                             key={item.id}
@@ -653,19 +651,14 @@ export function FinancialLedger() {
                 </nav>
             }
         >
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
                 <DeskRevealSection
                     id="cfo-funding"
                     variant="brand"
+                    density="compact"
                     defaultOpen
                     title={`Expected funding — ${activeProject.name}`}
-                    subtitle="Saved rows and C-suite AI estimates merge in the table. Use Refresh to re-run analysis after you edit other desks."
-                    badge={
-                        <span className="inline-flex items-center gap-1 rounded-full border border-brand-teal/30 bg-brand-teal/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-teal">
-                            <Banknote className="h-3 w-3" aria-hidden />
-                            {fundingFilledWithAi}/{fundingTotal} filled
-                        </span>
-                    }
+                    subtitle={`Saved rows and desk estimates merge in the table (${fundingFilledWithAi}/${fundingTotal} lines filled). Refresh after you edit other areas.`}
                 >
                     <div className="mb-3 flex flex-wrap items-center gap-2">
                         <button
@@ -679,7 +672,7 @@ export function FinancialLedger() {
                             ) : (
                                 <RefreshCw className="h-3.5 w-3.5" aria-hidden />
                             )}
-                            Refresh C-suite estimate
+                            Refresh desk estimates
                         </button>
                         {aiFunding && (
                             <button
@@ -700,9 +693,9 @@ export function FinancialLedger() {
                         </p>
                     ) : null}
 
-                    <div className="overflow-hidden rounded-xl border border-brand-border bg-brand-bg/50">
+                    <div className="overflow-hidden rounded-lg border border-brand-border/70 bg-brand-bg/25">
                         {resourcesFromOnboarding && resourcesFromOnboarding !== budgetDraft.trim() ? (
-                            <div className="border-b border-brand-border/70 bg-brand-panel/30 px-4 py-3 sm:px-5">
+                            <div className="border-b border-brand-border/60 bg-brand-panel/20 px-3 py-2.5 sm:px-4">
                                 <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Onboarding · Resources</p>
                                 <p className="mt-1 text-[12px] leading-relaxed text-brand-text/95">{resourcesFromOnboarding}</p>
                                 <p className="mt-2 text-[10px] text-brand-muted">
@@ -711,8 +704,8 @@ export function FinancialLedger() {
                             </div>
                         ) : null}
 
-                        <div className="border-b border-brand-border/70 bg-gradient-to-r from-brand-teal/12 via-brand-teal/5 to-transparent px-4 py-4 sm:px-5">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-muted">Total capital needed</p>
+                        <div className="border-b border-brand-border/60 bg-brand-panel/15 px-3 py-3 sm:px-4">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Total capital needed</p>
                             {totalCapitalRow?.value?.trim() || aiFunding?.total_capital?.trim() ? (
                                 <p className="mt-1.5 text-lg font-semibold leading-snug text-brand-text sm:text-xl">
                                     {totalCapitalRow?.value?.trim() || aiFunding?.total_capital?.trim()}
@@ -720,10 +713,10 @@ export function FinancialLedger() {
                             ) : (
                                 <p className="mt-1.5 text-sm leading-relaxed text-brand-muted">
                                     Add a line starting with <span className="font-medium text-brand-text/90">Total capital needed</span> in the
-                                    editor, use the template, or wait for the C-suite estimate when other desks have data.
+                                    editor, use the template, or wait for desk estimates when other areas have data.
                                 </p>
                             )}
-                            <div className="mt-3 h-1.5 w-full max-w-md overflow-hidden rounded-full bg-brand-border/40">
+                            <div className="mt-2 h-1 w-full max-w-md overflow-hidden rounded-full bg-brand-border/40">
                                 <div
                                     className="h-full rounded-full bg-brand-teal/75 transition-all duration-300"
                                     style={{
@@ -737,11 +730,11 @@ export function FinancialLedger() {
                         </div>
 
                         {FUNDING_ROW_GROUPS.map((group) => (
-                            <div key={group.title} className="border-b border-brand-border/60 last:border-b-0">
-                                <div className="bg-brand-panel/20 px-4 py-2 sm:px-5">
-                                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-brand-muted">{group.title}</p>
+                            <div key={group.title} className="border-b border-brand-border/50 last:border-b-0">
+                                <div className="bg-brand-panel/10 px-3 py-1.5 sm:px-4">
+                                    <p className="text-[10px] font-medium uppercase tracking-wide text-brand-muted">{group.title}</p>
                                 </div>
-                                <ul className="divide-y divide-brand-border/50">
+                                <ul className="divide-y divide-brand-border/40">
                                     {group.ids.map((id) => {
                                         const row = fundingById[id];
                                         if (!row) return null;
@@ -752,13 +745,13 @@ export function FinancialLedger() {
                                         return (
                                             <li
                                                 key={id}
-                                                className={`flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-8 sm:px-5 ${
-                                                    display ? 'bg-brand-input/25' : ''
+                                                className={`flex flex-col gap-0.5 px-3 py-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-4 ${
+                                                    display ? 'bg-brand-input/15' : ''
                                                 }`}
                                             >
                                                 <div className="min-w-0 flex-1">
                                                     <p className="text-[12px] font-medium text-brand-text">{row.spec.label}</p>
-                                                    <p className="mt-0.5 text-[10px] leading-snug text-brand-muted">{row.spec.shortHint}</p>
+                                                    <p className="text-[10px] leading-snug text-brand-muted/90">{row.spec.shortHint}</p>
                                                 </div>
                                                 <div className="flex min-w-0 shrink-0 flex-col items-start gap-0.5 sm:max-w-[min(24rem,45%)] sm:items-end sm:text-right">
                                                     <p
@@ -774,7 +767,7 @@ export function FinancialLedger() {
                                                     </p>
                                                     {isAiOnly ? (
                                                         <span className="text-[9px] font-semibold uppercase tracking-wider text-brand-teal/80">
-                                                            C-suite estimate
+                                                            Desk estimate
                                                         </span>
                                                     ) : null}
                                                 </div>
@@ -786,7 +779,7 @@ export function FinancialLedger() {
                         ))}
                     </div>
 
-                    <div className="mt-4 rounded-xl border border-brand-border/80 bg-brand-panel/20 p-4 sm:p-5">
+                    <div className="mt-3 rounded-lg border border-brand-border/70 bg-brand-panel/15 p-3 sm:p-4">
                         <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                             <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Budget &amp; ledger (venture record)</p>
                             <div className="flex flex-wrap gap-2">
@@ -839,76 +832,58 @@ export function FinancialLedger() {
                 <DeskRevealSection
                     id="cfo-connected"
                     variant="brand"
+                    density="compact"
                     defaultOpen
-                    title="Connected roles"
-                    subtitle="One venture record — jump to another desk to refresh source data."
-                    badge={
-                        <span className="flex items-center gap-1 rounded-full border border-brand-border bg-brand-bg px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-muted">
-                            <Link2 className="h-3 w-3" aria-hidden />
-                            Suite
-                        </span>
-                    }
+                    title="Other desks"
+                    subtitle="Open another research area to edit source fields."
                 >
-                    <p className="mb-3 text-[12px] leading-relaxed text-brand-muted">
-                        CFO models cash against what CEO prioritizes, CTO ships, CSO sees in the market, and CMO pushes in GTM. Staff sync
-                        refreshes every desk brief in one pass so numbers and narrative stay aligned.
-                    </p>
-                    <div className="overflow-hidden rounded-xl border border-brand-border bg-brand-border">
-                        <div className="grid grid-cols-2 gap-px sm:grid-cols-4">
-                            {PEER_DESKS.map(({ room, label, short, fieldHint, icon: Icon }) => {
-                                const live = peerStatus[room];
-                                return (
-                                    <button
-                                        key={room}
-                                        type="button"
-                                        onClick={() => switchRoom(room)}
-                                        className="group flex flex-col items-start gap-2 bg-brand-panel/95 px-3 py-3 text-left transition-colors hover:bg-brand-input sm:py-2.5"
-                                    >
-                                        <span className="flex w-full items-center justify-between gap-1">
-                                            <span className="flex h-8 w-8 items-center justify-center rounded-md border border-brand-border bg-brand-panel text-brand-text">
-                                                <Icon className="h-4 w-4" aria-hidden />
-                                            </span>
-                                            <span
-                                                className={`text-[9px] font-bold uppercase tracking-wider ${
-                                                    live ? 'text-brand-teal' : 'text-brand-muted'
-                                                }`}
-                                            >
-                                                {live ? 'Active' : 'Open'}
-                                            </span>
+                    <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+                        {PEER_DESKS.map(({ room, label, short, icon: Icon }) => {
+                            const live = peerStatus[room];
+                            return (
+                                <button
+                                    key={room}
+                                    type="button"
+                                    onClick={() => switchRoom(room)}
+                                    className="group flex items-center gap-2 rounded-md border border-brand-border/70 bg-brand-panel/40 px-2.5 py-2 text-left transition hover:bg-brand-input/80"
+                                >
+                                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded border border-brand-border/80 bg-brand-bg text-brand-text">
+                                        <Icon className="h-3.5 w-3.5" aria-hidden />
+                                    </span>
+                                    <span className="min-w-0 flex-1">
+                                        <span className="block text-[12px] font-semibold text-brand-text">{short}</span>
+                                        <span className={`text-[9px] uppercase ${live ? 'text-brand-teal' : 'text-brand-muted'}`}>
+                                            {live ? 'Has data' : 'Open'}
                                         </span>
-                                        <span className="text-[12px] font-semibold text-brand-text">{short}</span>
-                                        <span className="text-[10px] leading-snug text-brand-muted">{fieldHint}</span>
-                                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-brand-muted group-hover:text-brand-text">
-                                            {label}
-                                            <ArrowRight className="h-3 w-3 opacity-70" aria-hidden />
-                                        </span>
-                                    </button>
-                                );
-                            })}
-                        </div>
+                                    </span>
+                                    <ArrowRight className="h-3 w-3 shrink-0 text-brand-muted opacity-60 group-hover:opacity-100" aria-hidden />
+                                </button>
+                            );
+                        })}
                     </div>
                 </DeskRevealSection>
 
                 <DeskRevealSection
                     id="cfo-snapshot"
                     variant="brand"
+                    density="compact"
                     defaultOpen
-                    title="Venture snapshot"
-                    subtitle="Budget field size and auto-detected finance cues — one summary strip."
+                    title="Ledger snapshot"
+                    subtitle="Size of budget field and detected cues."
                 >
-                    <div className="overflow-hidden rounded-xl border border-brand-border bg-brand-bg/40">
-                        <div className="grid grid-cols-1 divide-y divide-brand-border/60 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-                            <div className="px-4 py-3 sm:px-5">
+                    <div className="rounded-lg border border-brand-border/60 bg-brand-bg/25">
+                        <div className="grid grid-cols-1 divide-y divide-brand-border/50 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+                            <div className="px-3 py-2.5 sm:px-4">
                                 <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Venture</p>
                                 <p className="mt-1 truncate text-sm font-medium text-brand-text">{activeProject.name}</p>
                             </div>
-                            <div className="px-4 py-3 sm:px-5">
+                            <div className="px-3 py-2.5 sm:px-4">
                                 <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Budget field</p>
                                 <p className="mt-1 text-sm font-medium text-brand-text">
                                     {chars.toLocaleString()} chars · {lines} lines
                                 </p>
                             </div>
-                            <div className="px-4 py-3 sm:px-5">
+                            <div className="px-3 py-2.5 sm:px-4">
                                 <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Signals in text</p>
                                 <div className="mt-2 flex flex-wrap gap-1.5">
                                     {signals.length > 0 ? (
@@ -932,11 +907,12 @@ export function FinancialLedger() {
                 <DeskRevealSection
                     id="cfo-topic-cards"
                     variant="brand"
+                    density="compact"
                     defaultOpen
                     title="Topics"
-                    subtitle="Tap a card to load its detail below."
+                    subtitle="Select — detail loads below."
                 >
-                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    <div className="flex flex-wrap gap-1.5">
                         {TOPIC_META.map(({ id, shortLabel, icon: Icon }) => {
                             const row = map[id];
                             const isSel = selectedTopicId === id;
@@ -945,26 +921,22 @@ export function FinancialLedger() {
                                     key={id}
                                     type="button"
                                     onClick={() => selectTopic(id)}
-                                    className={`flex min-h-[4.5rem] flex-col items-start gap-1.5 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-brand-card/40 ${
-                                        row.hasData ? DESK_PANEL.tileOn : DESK_PANEL.tileOff
-                                    } ${
-                                        isSel ? 'ring-2 ring-brand-teal/25 ring-offset-2 ring-offset-brand-bg' : ''
+                                    className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-left text-[11px] font-medium transition ${
+                                        isSel
+                                            ? 'border-brand-teal/40 bg-brand-input text-brand-text'
+                                            : row.hasData
+                                              ? 'border-brand-border bg-brand-panel/50 text-brand-text hover:bg-brand-input/50'
+                                              : 'border-brand-border/60 bg-brand-bg/40 text-brand-muted hover:border-brand-border'
                                     }`}
                                 >
-                                    <span className="flex w-full items-center justify-between gap-1">
-                                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded border border-brand-border bg-brand-input text-brand-text">
-                                            <Icon className="h-3.5 w-3.5" aria-hidden />
-                                        </span>
-                                        <span
-                                            className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-                                                row.hasData ? 'bg-brand-teal' : 'bg-brand-border'
-                                            }`}
-                                            title={row.hasData ? 'Has data' : 'Empty'}
-                                        />
-                                    </span>
-                                    <span className="line-clamp-2 w-full text-[11px] font-semibold leading-tight text-brand-text">
-                                        {shortLabel}
-                                    </span>
+                                    <Icon className="h-3.5 w-3.5 shrink-0 opacity-80" aria-hidden />
+                                    <span>{shortLabel}</span>
+                                    <span
+                                        className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+                                            row.hasData ? 'bg-brand-teal' : 'bg-brand-border'
+                                        }`}
+                                        title={row.hasData ? 'Has data' : 'Empty'}
+                                    />
                                 </button>
                             );
                         })}
@@ -974,6 +946,7 @@ export function FinancialLedger() {
                 <DeskRevealSection
                     id="cfo-topic-panel"
                     variant="brand"
+                    density="compact"
                     defaultOpen
                     title={selectedMeta.title}
                     subtitle={selectedMeta.hint}
@@ -1025,7 +998,7 @@ export function FinancialLedger() {
                                 className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-colors ${DESK_PANEL.askBtn}`}
                             >
                                 <MessageSquare className="h-3.5 w-3.5" aria-hidden />
-                                Ask CFO about this
+                                Ask about this topic
                             </button>
                             <button
                                 type="button"
@@ -1071,22 +1044,18 @@ export function FinancialLedger() {
                 <DeskRevealSection
                     id="cfo-discuss"
                     variant="brand"
+                    density="compact"
                     defaultOpen
-                    title="Discuss with CFO"
+                    title="Discuss with this desk"
                     subtitle="Chat prompts use your budget field, desk sync, and the topic you selected."
-                    badge={
-                        <span className="rounded-full border border-brand-border bg-brand-bg px-2 py-0.5 text-[10px] font-medium text-brand-muted">
-                            Chat
-                        </span>
-                    }
                 >
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="flex min-w-0 gap-3">
-                            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-brand-border bg-brand-bg text-brand-text">
-                                <Bot className="h-5 w-5" aria-hidden />
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex min-w-0 items-start gap-2">
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-brand-border bg-brand-bg text-brand-text">
+                                <Bot className="h-4 w-4" aria-hidden />
                             </span>
-                            <p className="max-w-xl text-[12px] leading-relaxed text-brand-muted">
-                                Use the suite chat to work through finance. The buttons below pre-fill the CFO with your ledger context.
+                            <p className="max-w-xl text-[11px] leading-snug text-brand-muted">
+                                Suite chat opens with this desk’s context. Use the actions and quick prompts below.
                             </p>
                         </div>
                         <div className="flex shrink-0 flex-col gap-2 sm:items-end">
@@ -1100,12 +1069,12 @@ export function FinancialLedger() {
                                 className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-brand-border bg-brand-card px-4 py-2.5 text-xs font-semibold text-brand-text transition-colors hover:bg-brand-input sm:w-auto"
                             >
                                 <MessageSquare className="h-4 w-4" aria-hidden />
-                                Discuss venture finances with CFO
+                                Discuss venture finances
                             </button>
                         </div>
                     </div>
 
-                    <div className="mt-4 flex flex-wrap gap-2">
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
                         <span className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-brand-muted">
                             <Hash className="h-3 w-3" aria-hidden />
                             Quick prompts

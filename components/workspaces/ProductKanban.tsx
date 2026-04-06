@@ -32,6 +32,7 @@ import {
     CheckCircle2,
 } from 'lucide-react';
 import { DeskShell, DeskTabButton, DeskEmpty } from '@/components/workspaces/DeskShell';
+import { deskHeadline, deskHelpText } from '@/lib/researchStaffLabels';
 
 const COLUMNS: { id: KanbanTask['status']; label: string }[] = [
     { id: 'todo', label: 'Backlog' },
@@ -195,7 +196,7 @@ export function ProductKanban() {
     );
 
     if (!activeProject) {
-        return <DeskEmpty>Select a venture to open the product desk.</DeskEmpty>;
+        return <DeskEmpty>Select a venture to open Research product and delivery.</DeskEmpty>;
     }
 
     const intent = pd.intent?.trim() || 'Pin product intent: what you ship next and for whom.';
@@ -205,7 +206,7 @@ export function ProductKanban() {
         { id: 'roadmap', label: 'Roadmap brief', sub: 'Narrative' },
         { id: 'war', label: 'War room', sub: 'Persistent whiteboard' },
         { id: 'recent', label: 'Recent actions', sub: 'Structured log' },
-        { id: 'planning', label: 'Planning room', sub: 'CEO flow mirror' },
+        { id: 'planning', label: 'Planning room', sub: 'Strategy flow mirror' },
         { id: 'docs', label: 'Desk documents', sub: 'Clients & meetings' },
     ];
 
@@ -215,9 +216,8 @@ export function ProductKanban() {
                 <DeskShell
                     className="w-full min-w-0 flex-1"
                     bodyClassName="pb-8"
-                    eyebrow="CTO · Architecture & execution"
-                    title="Chief Technology Officer"
-                    description="You own the execution board — backlog through done. Staff sync and the Personal Assistant add tasks here as the CTO plan updates. War room, roadmap brief, planning room, and desk docs live on the other tabs."
+                    title={deskHeadline(activeProject.name, 'pm')}
+                    description={deskHelpText('pm')}
                     tabs={
                         <>
                             {nav.map((item) => (
@@ -233,42 +233,46 @@ export function ProductKanban() {
                         </>
                     }
                 >
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-3">
                     {tool === 'board' && (
-                        <div className="flex min-h-[420px] flex-col gap-4">
-                            <DeskRevealSection variant="brand" defaultOpen title="Add to backlog" subtitle="New items land in Backlog.">
-                                <div className="flex flex-wrap items-end gap-2">
+                        <div className="flex min-h-[380px] flex-col">
+                            <DeskRevealSection
+                                variant="brand"
+                                density="compact"
+                                defaultOpen
+                                title="Execution board"
+                                subtitle="Add work below — four columns: backlog → done."
+                            >
+                                <div className="mb-3 flex flex-wrap items-center gap-2 border-b border-brand-border/50 pb-3">
                                     <input
                                         value={newTitle}
                                         onChange={(e) => setNewTitle(e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTask())}
-                                        placeholder="New work item…"
-                                        className="min-w-[200px] flex-1 rounded-lg border border-zinc-600 bg-brand-panel px-3 py-2 text-sm text-zinc-200"
+                                        placeholder="New backlog item…"
+                                        className="min-w-[180px] flex-1 rounded-md border border-brand-border bg-brand-input px-3 py-2 text-sm text-brand-text placeholder:text-brand-muted"
                                     />
                                     <button
                                         type="button"
                                         onClick={addTask}
-                                        className="inline-flex items-center gap-2 rounded-lg border border-brand-border bg-brand-card px-4 py-2 text-xs font-semibold text-zinc-100 hover:bg-brand-input"
+                                        className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-brand-border bg-brand-card px-3 py-2 text-xs font-semibold text-brand-text hover:bg-brand-input"
                                     >
                                         <Plus className="h-4 w-4" aria-hidden />
                                         Add
                                     </button>
                                 </div>
-                            </DeskRevealSection>
-                            <DeskRevealSection variant="brand" defaultOpen title="Execution board" subtitle="Backlog through done — four columns.">
-                            <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
+                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
                                 {COLUMNS.map((col) => (
-                                    <div key={col.id} className="flex min-h-[200px] flex-col rounded-lg border border-white/[0.06] bg-brand-panel/40">
-                                        <div className="border-b border-white/[0.06] px-3 py-2">
-                                            <h3 className="text-xs font-normal text-zinc-400">{col.label}</h3>
+                                    <div key={col.id} className="flex min-h-[180px] flex-col rounded-md border border-brand-border/70 bg-brand-panel/30">
+                                        <div className="border-b border-brand-border/50 px-2.5 py-1.5">
+                                            <h3 className="text-[11px] font-semibold uppercase tracking-wide text-brand-muted">{col.label}</h3>
                                         </div>
-                                        <div className="flex flex-col space-y-2 p-2">
+                                        <div className="flex flex-col gap-1.5 p-2">
                                             {tasks
                                                 .filter((t) => t.status === col.id)
                                                 .map((task) => (
-                                                    <div key={task.id} className="rounded-md border border-brand-border bg-brand-input p-3">
-                                                        <p className="text-sm font-medium text-zinc-200">{task.title}</p>
-                                                        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                                                    <div key={task.id} className="rounded-md border border-brand-border/80 bg-brand-input/80 p-2.5">
+                                                        <p className="text-[13px] font-medium text-brand-text">{task.title}</p>
+                                                        <div className="mt-2 flex flex-wrap items-center justify-between gap-1.5">
                                                             <div className="flex flex-wrap items-center gap-1">
                                                                 <button
                                                                     type="button"
@@ -284,7 +288,7 @@ export function ProductKanban() {
                                                                     type="button"
                                                                     onClick={() => move(task, 'prev')}
                                                                     title="Move to previous column"
-                                                                    className="rounded border border-zinc-600 p-1 text-zinc-500 hover:bg-zinc-800"
+                                                                    className="rounded border border-brand-border/80 p-1 text-brand-muted hover:bg-brand-input"
                                                                 >
                                                                     <ChevronLeft className="h-3.5 w-3.5" />
                                                                 </button>
@@ -292,7 +296,7 @@ export function ProductKanban() {
                                                                     type="button"
                                                                     onClick={() => move(task, 'next')}
                                                                     title="Move to next column"
-                                                                    className="rounded border border-zinc-600 p-1 text-zinc-500 hover:bg-zinc-800"
+                                                                    className="rounded border border-brand-border/80 p-1 text-brand-muted hover:bg-brand-input"
                                                                 >
                                                                     <ChevronRight className="h-3.5 w-3.5" />
                                                                 </button>
@@ -301,7 +305,7 @@ export function ProductKanban() {
                                                                 type="button"
                                                                 onClick={() => remove(task.id)}
                                                                 title="Delete task"
-                                                                className="rounded p-1 text-zinc-600 hover:text-rose-400"
+                                                                className="rounded p-1 text-brand-muted hover:text-rose-400"
                                                             >
                                                                 <Trash2 className="h-3.5 w-3.5" />
                                                             </button>
@@ -318,7 +322,7 @@ export function ProductKanban() {
 
                     {tool === 'roadmap' && (
                         <section className="mx-auto max-w-4xl">
-                            <DeskRevealSection variant="brand" defaultOpen title="Roadmap brief" subtitle="Themes, bets, outcomes, and success metrics.">
+                            <DeskRevealSection variant="brand" density="compact" defaultOpen title="Roadmap brief" subtitle="Themes, bets, outcomes, and success metrics.">
                                 <div className="mb-3 flex justify-end">
                                     <button
                                         type="button"
@@ -344,6 +348,7 @@ export function ProductKanban() {
                         <section className="mx-auto max-w-5xl">
                             <DeskRevealSection
                                 variant="brand"
+                                density="compact"
                                 defaultOpen
                                 title="War room"
                                 subtitle="Persistent sticky notes and sketches — save updates the venture record."
@@ -360,6 +365,7 @@ export function ProductKanban() {
                         <section className="mx-auto max-w-3xl space-y-4">
                             <DeskRevealSection
                                 variant="brand"
+                                density="compact"
                                 defaultOpen
                                 title="Log an action"
                                 subtitle="Shipments, decisions, research, syncs — structured, not a freeform journal."
@@ -399,7 +405,7 @@ export function ProductKanban() {
                                 </button>
                             </div>
                             </DeskRevealSection>
-                            <DeskRevealSection variant="brand" defaultOpen title="Action history" subtitle="Newest first.">
+                            <DeskRevealSection variant="brand" density="compact" defaultOpen title="Action history" subtitle="Newest first.">
                             <ul className="space-y-2">
                                 {(pd.recentActions || []).map((a) => (
                                     <li key={a.id} className="rounded-lg border border-brand-border bg-brand-panel p-3">
@@ -427,20 +433,18 @@ export function ProductKanban() {
                         <section className="mx-auto flex max-w-5xl flex-col gap-4">
                             <DeskRevealSection
                                 variant="brand"
+                                density="compact"
                                 title="Strategy flow (read-only)"
-                                subtitle="Mirror of CEO → Visualise your plan. Edit the flow on the CEO desk."
-                                defaultOpen
-                                badge={
-                                    ceoFlow.nodes.length > 0 ? (
-                                        <span className="rounded-full border border-brand-border bg-brand-bg px-2 py-0.5 text-[10px] font-medium tabular-nums text-brand-muted">
-                                            {ceoFlow.nodes.length} steps · {ceoFlow.edges.length} links
-                                        </span>
-                                    ) : null
+                                subtitle={
+                                    ceoFlow.nodes.length > 0
+                                        ? `Mirror of strategy · Visualise your plan (${ceoFlow.nodes.length} steps · ${ceoFlow.edges.length} links). Edit on the strategy desk.`
+                                        : 'Mirror of strategy · Visualise your plan. Edit on the strategy desk.'
                                 }
+                                defaultOpen
                             >
                                 {ceoFlow.nodes.length === 0 ? (
                                     <p className="rounded-xl border border-dashed border-brand-border bg-brand-bg/50 px-4 py-8 text-center text-sm text-brand-muted">
-                                        No flow yet. Build it under CEO → Visualise your plan.
+                                        No flow yet. Build it under Strategy → Visualise your plan.
                                     </p>
                                 ) : (
                                     <div className="min-h-[280px] sm:min-h-[360px]">
@@ -457,14 +461,12 @@ export function ProductKanban() {
 
                             <DeskRevealSection
                                 variant="brand"
+                                density="compact"
                                 title="Phase timeline (editable)"
-                                subtitle="Horizons and dates live in strategy JSON — same record the CEO desk reads as a summary."
+                                subtitle={`Horizons and dates live with your strategy record (${strategyPhases.length} phase${
+                                    strategyPhases.length === 1 ? '' : 's'
+                                }).`}
                                 defaultOpen
-                                badge={
-                                    <span className="rounded-full border border-brand-border bg-brand-bg px-2 py-0.5 text-[10px] font-medium tabular-nums text-brand-muted">
-                                        {strategyPhases.length} phase{strategyPhases.length === 1 ? '' : 's'}
-                                    </span>
-                                }
                             >
                                 <div className="overflow-hidden rounded-xl border border-brand-border bg-brand-bg">
                                     <TimelinePhaseSetter
@@ -480,7 +482,7 @@ export function ProductKanban() {
 
                     {tool === 'docs' && (
                         <section className="mx-auto max-w-3xl space-y-4">
-                            <DeskRevealSection variant="brand" defaultOpen title="New document" subtitle="Client, meeting, or internal — saved on the venture.">
+                            <DeskRevealSection variant="brand" density="compact" defaultOpen title="New document" subtitle="Client, meeting, or internal — saved on the venture.">
                             <div className="grid gap-2 rounded-lg border border-brand-border bg-brand-panel p-3">
                                 <input
                                     placeholder="Title"
@@ -509,7 +511,7 @@ export function ProductKanban() {
                                 </button>
                             </div>
                             </DeskRevealSection>
-                            <DeskRevealSection variant="brand" defaultOpen title="Saved documents" subtitle="Newest in list order from your venture record.">
+                            <DeskRevealSection variant="brand" density="compact" defaultOpen title="Saved documents" subtitle="Newest in list order from your venture record.">
                             <ul className="space-y-2">
                                 {(activeProject.deskDocuments || []).map((d) => (
                                     <li key={d.id} className="rounded-lg border border-brand-border bg-brand-panel p-3">

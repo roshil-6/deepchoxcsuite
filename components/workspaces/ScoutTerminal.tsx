@@ -14,7 +14,6 @@ import {
     Rss,
     RefreshCw,
     Info,
-    Sparkles,
     Scale,
     Landmark,
     Cpu,
@@ -22,6 +21,7 @@ import {
 import { useOffice } from '@/lib/OfficeContext';
 import { parseStrategy } from '@/lib/strategyDoc';
 import { DeskShell, DeskTabButton, DeskEmpty } from '@/components/workspaces/DeskShell';
+import { deskHeadline, deskHelpText } from '@/lib/researchStaffLabels';
 import { DeskRevealSection } from '@/components/workspaces/DeskRevealSection';
 import type { MarketIntelLens, MarketIntelTimeWindow, MarketResearchTopic } from '@/lib/marketIntelQuery';
 
@@ -52,40 +52,40 @@ const CSO_RESEARCH_FRAMES: {
 }[] = [
     {
         id: 'market_lens',
-        label: 'Market lens',
-        scanHint: 'Sector, landscape & sizing signals for your venture + strategy keywords.',
-        briefHint: 'Define segment, ICP, and how you frame the market in the Intelligence brief.',
+        label: 'Research market lens',
+        scanHint: 'Research sector, landscape, and sizing signals for your venture plus strategy keywords.',
+        briefHint: 'Define segment, ideal customer profile, and how you frame the market in the intelligence brief.',
         icon: <Globe className="h-5 w-5 shrink-0 text-brand-muted" aria-hidden />,
     },
     {
         id: 'competition',
-        label: 'Competition',
-        scanHint: 'Rivals, “vs”, share, and competitive moves tied to your name and context.',
+        label: 'Research competition',
+        scanHint: 'Research rivals, comparisons, share, and competitive moves tied to your name and context.',
         briefHint: 'Name competitors and differentiation in the brief after you verify sources.',
         icon: <Users className="h-5 w-5 shrink-0 text-brand-muted" aria-hidden />,
     },
     {
         id: 'momentum',
-        label: 'Momentum',
-        scanHint: 'Growth, demand, adoption, and expansion headlines.',
-        briefHint: 'Track what’s accelerating — log verified signals in the brief.',
+        label: 'Research momentum',
+        scanHint: 'Research growth, demand, adoption, and expansion headlines.',
+        briefHint: 'Track what is accelerating — log verified signals in the brief.',
         icon: <Activity className="h-5 w-5 shrink-0 text-brand-muted" aria-hidden />,
     },
     {
         id: 'opportunity',
-        label: 'Opportunity',
-        scanHint: 'Whitespace, emerging markets, disruption, and unmet-need stories.',
+        label: 'Research opportunity',
+        scanHint: 'Research whitespace, emerging markets, disruption, and unmet-need stories.',
         briefHint: 'Turn hypotheses into brief bullets with sources you trust.',
         icon: <Target className="h-5 w-5 shrink-0 text-brand-muted" aria-hidden />,
     },
 ];
 
 const LENS_OPTIONS: { id: MarketIntelLens; label: string; hint: string; icon: React.ReactNode }[] = [
-    { id: 'all', label: 'All signals', hint: 'Broad scan', icon: <Rss className="h-3.5 w-3.5" aria-hidden /> },
-    { id: 'industry', label: 'Industry & market', hint: 'Sector context', icon: <Globe className="h-3.5 w-3.5" aria-hidden /> },
-    { id: 'funding', label: 'Funding & deals', hint: 'Capital moves', icon: <Landmark className="h-3.5 w-3.5" aria-hidden /> },
-    { id: 'policy', label: 'Policy & legal', hint: 'Regulation', icon: <Scale className="h-3.5 w-3.5" aria-hidden /> },
-    { id: 'technology', label: 'Technology', hint: 'Product & tech', icon: <Cpu className="h-3.5 w-3.5" aria-hidden /> },
+    { id: 'all', label: 'Research all signals', hint: 'Broad scan', icon: <Rss className="h-3.5 w-3.5" aria-hidden /> },
+    { id: 'industry', label: 'Research industry and market', hint: 'Sector context', icon: <Globe className="h-3.5 w-3.5" aria-hidden /> },
+    { id: 'funding', label: 'Research funding and deals', hint: 'Capital moves', icon: <Landmark className="h-3.5 w-3.5" aria-hidden /> },
+    { id: 'policy', label: 'Research policy and legal', hint: 'Regulation', icon: <Scale className="h-3.5 w-3.5" aria-hidden /> },
+    { id: 'technology', label: 'Research technology', hint: 'Product and engineering', icon: <Cpu className="h-3.5 w-3.5" aria-hidden /> },
 ];
 
 const TOPIC_LABEL: Record<string, string> = {
@@ -220,18 +220,17 @@ export function ScoutTerminal() {
     };
 
     if (!activeProject) {
-        return <DeskEmpty>Select a venture to open the CSO desk.</DeskEmpty>;
+        return <DeskEmpty>Select a venture to open Research market and landscape.</DeskEmpty>;
     }
 
     const activeScanDescription = csoFrame
-        ? CSO_RESEARCH_FRAMES.find((f) => f.id === csoFrame)?.scanHint ?? 'CSO frame scan.'
-        : `Lens: ${LENS_OPTIONS.find((l) => l.id === lens)?.label ?? 'All signals'}.`;
+        ? CSO_RESEARCH_FRAMES.find((f) => f.id === csoFrame)?.scanHint ?? 'Research frame scan.'
+        : `Lens: ${LENS_OPTIONS.find((l) => l.id === lens)?.label ?? 'Research all signals'}.`;
 
     return (
         <DeskShell
-            eyebrow="CSO · Market intelligence"
-            title="Chief Strategy Officer"
-            description="Venture-scoped news scan from public RSS (Google News). Results are pointers to third-party articles — not verified facts. Read sources, cross-check, and record your conclusions in the intelligence brief."
+            title={deskHeadline(activeProject.name, 'scout')}
+            description={deskHelpText('scout')}
             tabs={
                 <>
                     <DeskTabButton active={tab === 'feed'} onClick={() => setTab('feed')} icon={<Rss className="h-4 w-4" aria-hidden />}>
@@ -244,113 +243,100 @@ export function ScoutTerminal() {
             }
         >
             {tab === 'feed' && (
-                <div className="flex flex-col gap-4">
-                    <div className="rounded-xl border border-amber-500/25 bg-amber-950/20 px-4 py-3 sm:px-5">
-                        <div className="flex gap-2">
-                            <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-200/80" aria-hidden />
-                            <div className="min-w-0 text-[11px] leading-relaxed text-amber-100/85">
-                                <p className="font-semibold text-amber-100/95">Accuracy & decisions</p>
-                                <p className="mt-1 text-amber-100/75">
-                                    Headlines are automated search results. Publishers may be wrong, biased, or out of date. Open each link,
-                                    verify claims, and treat this desk as a <span className="font-medium text-amber-100/90">starting point</span>{' '}
-                                    for your own research — not financial or legal advice.
-                                </p>
-                            </div>
-                        </div>
+                <div className="flex flex-col gap-3">
+                    <div className="flex gap-2 rounded-lg border border-amber-500/20 bg-amber-950/15 px-3 py-2">
+                        <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-200/75" aria-hidden />
+                        <p className="min-w-0 text-[10px] leading-snug text-amber-100/80">
+                            <span className="font-semibold text-amber-100/90">Pointers only.</span> Headlines are automated; verify sources.
+                            Not advice.
+                        </p>
                     </div>
 
                     <DeskRevealSection
                         variant="brand"
+                        density="compact"
                         defaultOpen
                         title="Research context"
-                        subtitle="Pulled from your selected venture — used to tune search queries."
-                        badge={
-                            <span className="inline-flex items-center gap-1 rounded-full border border-brand-border bg-brand-bg px-2 py-0.5 text-[10px] font-medium text-brand-muted">
-                                <Sparkles className="h-3 w-3" aria-hidden />
-                                {activeProject.name}
-                            </span>
-                        }
+                        subtitle={`${activeProject.name} · Research strategy field from Research strategy and direction tunes the scan.`}
                     >
-                        <div className="overflow-hidden rounded-xl border border-brand-border bg-brand-bg/40 divide-y divide-brand-border/60">
-                            <div className="px-4 py-3 sm:px-5">
-                                <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Venture</p>
-                                <p className="mt-1 text-[13px] font-medium text-brand-text">{activeProject.name}</p>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                            <div className="rounded-md border border-brand-border/50 bg-brand-bg/35 px-3 py-2">
+                                <p className="text-[10px] font-semibold uppercase tracking-wide text-brand-muted">Venture</p>
+                                <p className="mt-0.5 text-[13px] font-medium leading-snug text-brand-text">{activeProject.name}</p>
                             </div>
-                            <div className="px-4 py-3 sm:px-5">
-                                <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Strategy (CEO desk)</p>
+                            <div className="rounded-md border border-brand-border/50 bg-brand-bg/35 px-3 py-2">
+                                <p className="text-[10px] font-semibold uppercase tracking-wide text-brand-muted">Research strategy field</p>
                                 {strategicSnippet ? (
-                                    <p className="mt-1.5 text-[12px] leading-relaxed text-brand-text/95">{strategicSnippet}</p>
+                                    <p className="mt-0.5 text-[11px] leading-snug text-brand-text/95">{strategicSnippet}</p>
                                 ) : (
-                                    <p className="mt-1.5 text-[12px] text-brand-muted">
-                                        No strategic intent or vision yet — add one on the CEO desk to sharpen searches.
-                                    </p>
+                                    <p className="mt-0.5 text-[11px] text-brand-muted">Add intent or vision under Research strategy and direction.</p>
                                 )}
                             </div>
-                            {userNotesSnippet ? (
-                                <div className="px-4 py-3 sm:px-5">
-                                    <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Venture notes</p>
-                                    <p className="mt-1.5 text-[12px] leading-relaxed text-brand-text/95">{userNotesSnippet}</p>
-                                </div>
-                            ) : null}
                         </div>
+                        {userNotesSnippet ? (
+                            <div className="mt-2 rounded-md border border-brand-border/50 bg-brand-bg/25 px-3 py-2">
+                                <p className="text-[10px] font-semibold uppercase tracking-wide text-brand-muted">Notes</p>
+                                <p className="mt-0.5 text-[11px] leading-snug text-brand-text/95">{userNotesSnippet}</p>
+                            </div>
+                        ) : null}
                     </DeskRevealSection>
 
                     <DeskRevealSection
                         variant="brand"
+                        density="compact"
                         defaultOpen
-                        title="Research by CSO frame"
-                        subtitle="One panel — each cell runs a focused headline search. Summarize in Intelligence brief."
+                        title="Research scan frames"
+                        subtitle="Tap a frame to run a focused scan."
                     >
-                        <div className="overflow-hidden rounded-xl border border-brand-border bg-brand-border">
-                            <div className="grid grid-cols-1 gap-px sm:grid-cols-2 lg:grid-cols-4">
-                                {CSO_RESEARCH_FRAMES.map((f) => {
-                                    const active = csoFrame === f.id;
-                                    return (
-                                        <button
-                                            key={f.id}
-                                            type="button"
-                                            onClick={() => {
-                                                setCsoFrame(f.id);
-                                                setLens('all');
-                                                setSearchQuery('');
-                                            }}
-                                            className={`flex min-h-[5.5rem] w-full touch-manipulation flex-col items-start gap-1.5 px-4 py-3.5 text-left transition sm:min-h-[5.75rem] ${
-                                                active
-                                                    ? 'bg-brand-input ring-2 ring-inset ring-brand-teal/40'
-                                                    : 'bg-brand-panel/95 hover:bg-brand-input/90'
-                                            }`}
-                                        >
-                                            <span className="flex w-full items-start gap-2.5">
-                                                {f.icon}
-                                                <span className="min-w-0 flex-1">
-                                                    <span className="block text-sm font-semibold text-brand-text">{f.label}</span>
-                                                    <span className="mt-0.5 block text-[11px] leading-snug text-brand-muted">{f.scanHint}</span>
-                                                </span>
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                            {CSO_RESEARCH_FRAMES.map((f) => {
+                                const active = csoFrame === f.id;
+                                return (
+                                    <button
+                                        key={f.id}
+                                        type="button"
+                                        title={`${f.scanHint} — Brief: ${f.briefHint}`}
+                                        onClick={() => {
+                                            setCsoFrame(f.id);
+                                            setLens('all');
+                                            setSearchQuery('');
+                                        }}
+                                        className={`flex w-full touch-manipulation flex-col items-start gap-1 rounded-md border px-3 py-2.5 text-left text-[11px] transition ${
+                                            active
+                                                ? 'border-brand-teal/45 bg-brand-input ring-1 ring-inset ring-brand-teal/30'
+                                                : 'border-brand-border/70 bg-brand-panel/40 hover:bg-brand-input/60'
+                                        }`}
+                                    >
+                                        <span className="flex w-full items-start gap-2">
+                                            <span className="shrink-0 [&_svg]:h-4 [&_svg]:w-4">{f.icon}</span>
+                                            <span className="min-w-0 flex-1">
+                                                <span className="block text-[12px] font-semibold text-brand-text">{f.label}</span>
+                                                <span className="mt-0.5 block leading-snug text-brand-muted">{f.scanHint}</span>
                                             </span>
-                                            <span className="text-[10px] leading-snug text-brand-muted/90">Brief: {f.briefHint}</span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
+                                        </span>
+                                    </button>
+                                );
+                            })}
                         </div>
                         {csoFrame ? (
-                            <p className="mt-3 text-[11px] text-brand-muted">
-                                Active frame:{' '}
+                            <p className="mt-2 text-[10px] text-brand-muted">
+                                Active:{' '}
                                 <span className="font-semibold text-brand-text">
                                     {CSO_RESEARCH_FRAMES.find((x) => x.id === csoFrame)?.label}
                                 </span>
-                                . Pick a lens below or run a custom search to leave frame mode.
+                                . Use lens row or custom search to exit frame mode.
                             </p>
                         ) : null}
                     </DeskRevealSection>
 
                     <DeskRevealSection
                         variant="brand"
+                        density="compact"
                         defaultOpen
                         title="Scan controls"
-                        subtitle="Lenses apply when no CSO frame is active. Custom search clears the frame."
+                        subtitle="Lenses when no frame is active. Custom search clears the frame."
                     >
-                        <div className="mb-4 flex flex-wrap gap-2">
+                        <div className="mb-2 flex flex-wrap gap-1.5">
                             {LENS_OPTIONS.map((opt) => (
                                 <button
                                     key={opt.id}
@@ -359,22 +345,22 @@ export function ScoutTerminal() {
                                         setCsoFrame(null);
                                         setLens(opt.id);
                                     }}
-                                    className={`inline-flex min-h-[44px] touch-manipulation items-center gap-2 rounded-lg border px-3 py-2 text-left text-[11px] font-medium transition sm:min-h-0 ${
+                                    className={`inline-flex min-h-[40px] touch-manipulation items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-left text-[10px] font-medium transition sm:min-h-0 ${
                                         csoFrame === null && lens === opt.id
                                             ? 'border-brand-teal/40 bg-brand-input text-brand-text'
-                                            : 'border-brand-border bg-brand-bg text-brand-muted hover:border-brand-border hover:text-brand-text'
-                                    } ${csoFrame !== null ? 'opacity-60' : ''}`}
+                                            : 'border-brand-border/80 bg-brand-bg/50 text-brand-muted hover:text-brand-text'
+                                    } ${csoFrame !== null ? 'opacity-55' : ''}`}
                                 >
                                     {opt.icon}
                                     <span>
-                                        <span className="block">{opt.label}</span>
-                                        <span className="block text-[10px] font-normal opacity-80">{opt.hint}</span>
+                                        <span className="block leading-tight">{opt.label}</span>
+                                        <span className="block text-[9px] font-normal opacity-75">{opt.hint}</span>
                                     </span>
                                 </button>
                             ))}
                         </div>
-                        <div className="mb-4 flex flex-wrap items-center gap-3">
-                            <span className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Time window</span>
+                        <div className="mb-2 flex flex-wrap items-center gap-2">
+                            <span className="text-[10px] font-semibold uppercase tracking-wide text-brand-muted">Window</span>
                             {(
                                 [
                                     { id: '1d' as const, label: 'Last 24 hours' },
@@ -385,96 +371,94 @@ export function ScoutTerminal() {
                                     key={tw.id}
                                     type="button"
                                     onClick={() => setTimeWindow(tw.id)}
-                                    className={`min-h-[44px] touch-manipulation rounded-md border px-4 py-2 text-[11px] font-medium transition sm:min-h-0 sm:px-3 sm:py-1.5 ${
+                                    className={`min-h-[40px] touch-manipulation rounded-md border px-3 py-1.5 text-[10px] font-medium transition sm:min-h-0 sm:py-1 ${
                                         timeWindow === tw.id
                                             ? 'border-brand-teal/35 bg-brand-input text-brand-text'
-                                            : 'border-brand-border text-brand-muted hover:text-brand-text'
+                                            : 'border-brand-border/80 text-brand-muted hover:text-brand-text'
                                     }`}
                                 >
                                     {tw.label}
                                 </button>
                             ))}
                         </div>
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
-                            <div className="relative min-h-[48px] min-w-0 flex-1">
-                                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
+                            <div className="relative min-w-0 flex-1">
+                                <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-brand-muted" />
                                 <input
-                                    className="min-h-[48px] w-full rounded-lg border border-zinc-600 bg-zinc-900 py-3 pl-10 pr-3 text-base text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-zinc-500 sm:min-h-0 sm:py-2.5 sm:text-sm"
-                                    placeholder="Custom search — clears CSO frame. Enter to run…"
+                                    className="min-h-[44px] w-full rounded-md border border-brand-border bg-brand-input py-2 pl-9 pr-3 text-sm text-brand-text placeholder:text-brand-muted focus:outline-none focus:ring-1 focus:ring-brand-teal/35 sm:min-h-0"
+                                    placeholder="Custom search — Enter to run"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     onKeyDown={handleSearchKey}
                                 />
                             </div>
-                            <div className="flex w-full shrink-0 gap-2 sm:w-auto sm:items-stretch">
-                                <button
-                                    type="button"
-                                    onClick={onRunClick}
-                                    disabled={isLoading}
-                                    className="inline-flex min-h-[48px] flex-1 touch-manipulation items-center justify-center gap-2 rounded-lg border border-brand-border bg-brand-card px-4 py-3 text-xs font-semibold text-brand-text transition hover:bg-brand-input disabled:opacity-50 sm:min-h-0 sm:flex-none sm:py-2.5"
-                                >
-                                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <RefreshCw className="h-4 w-4" aria-hidden />}
-                                    {searchQuery.trim() ? 'Run custom search' : 'Refresh scan'}
-                                </button>
-                            </div>
+                            <button
+                                type="button"
+                                onClick={onRunClick}
+                                disabled={isLoading}
+                                className="inline-flex min-h-[44px] shrink-0 touch-manipulation items-center justify-center gap-2 rounded-md border border-brand-border bg-brand-card px-4 py-2 text-[11px] font-semibold text-brand-text transition hover:bg-brand-input disabled:opacity-50 sm:min-h-0"
+                            >
+                                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <RefreshCw className="h-4 w-4" aria-hidden />}
+                                {searchQuery.trim() ? 'Run search' : 'Refresh'}
+                            </button>
                         </div>
                         {intelMeta?.heuristicNote ? (
-                            <p className="mt-3 text-[10px] leading-relaxed text-brand-muted/90">{intelMeta.heuristicNote}</p>
+                            <p className="mt-2 text-[10px] leading-snug text-brand-muted/90">{intelMeta.heuristicNote}</p>
                         ) : null}
                     </DeskRevealSection>
 
                     <DeskRevealSection
                         variant="brand"
+                        density="compact"
                         defaultOpen
                         title="Headlines & sources"
-                        subtitle={`${activeScanDescription} Newest first when timestamps exist. Topic tags are from headline wording only.`}
+                        subtitle={`${activeScanDescription} Newest first when timestamps exist.`}
                     >
                         {isLoading ? (
-                            <div className="flex justify-center py-12">
-                                <Loader2 className="h-8 w-8 animate-spin text-zinc-600" aria-hidden />
+                            <div className="flex justify-center py-8">
+                                <Loader2 className="h-7 w-7 animate-spin text-brand-muted" aria-hidden />
                             </div>
                         ) : newsItems.length === 0 ? (
-                            <p className="py-8 text-center text-sm text-brand-muted">
-                                No articles returned. Try another CSO frame above, a different lens, widen to 7 days, add CEO strategy context, or
-                                use a custom search.
+                            <p className="py-6 text-center text-[13px] text-brand-muted">
+                                No articles. Try another frame, lens, last 7 days window, or Research strategy context.
                             </p>
                         ) : (
-                            <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+                            <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">
                                 {newsItems.map((item, i) => (
                                     <a
                                         key={`${item.link}-${i}`}
                                         href={item.link}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="flex gap-3 rounded-lg border border-zinc-700 bg-zinc-900 p-4 transition hover:border-zinc-600"
+                                        className="flex gap-2.5 rounded-md border border-brand-border/80 bg-brand-panel/25 p-3 transition hover:border-brand-border hover:bg-brand-panel/40"
                                     >
                                         <div className="min-w-0 flex-1">
-                                            <h4 className="text-sm font-medium leading-snug text-zinc-200">{item.title}</h4>
-                                            <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-zinc-500">
-                                                <span className="font-medium text-zinc-400">{item.source}</span>
+                                            <h4 className="text-[13px] font-medium leading-snug text-brand-text">{item.title}</h4>
+                                            <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-brand-muted">
+                                                <span className="font-medium text-brand-text/80">{item.source}</span>
                                                 <span aria-hidden>·</span>
                                                 <span>{item.time}</span>
                                                 {item.type ? (
                                                     <>
                                                         <span aria-hidden>·</span>
-                                                        <span className="rounded bg-zinc-800 px-1.5 py-0.5 text-zinc-500">
+                                                        <span className="rounded border border-brand-border/60 bg-brand-bg/50 px-1.5 py-0 text-[9px]">
                                                             {TOPIC_LABEL[item.type] || item.type}
                                                         </span>
                                                     </>
                                                 ) : null}
                                             </div>
                                         </div>
-                                        <ExternalLink className="h-4 w-4 shrink-0 text-zinc-600" aria-hidden />
+                                        <ExternalLink className="h-4 w-4 shrink-0 text-brand-muted" aria-hidden />
                                     </a>
                                 ))}
                             </div>
                         )}
                         {intelMeta?.queriesUsed && intelMeta.queriesUsed.length > 0 ? (
-                            <details className="mt-4 rounded-lg border border-brand-border/60 bg-brand-bg/40 px-3 py-2">
-                                <summary className="cursor-pointer text-[10px] font-semibold uppercase tracking-wider text-brand-muted">
-                                    Queries used (transparency)
+                            <details className="mt-3 rounded-md border border-brand-border/50 bg-brand-bg/30 px-2.5 py-1.5">
+                                <summary className="cursor-pointer text-[10px] font-semibold uppercase tracking-wide text-brand-muted">
+                                    Queries used
                                 </summary>
-                                <ul className="mt-2 list-disc space-y-1 pl-4 text-[11px] text-brand-muted">
+                                <ul className="mt-1.5 list-disc space-y-0.5 pl-4 text-[10px] text-brand-muted">
                                     {intelMeta.queriesUsed.map((q, idx) => (
                                         <li key={idx} className="break-all">
                                             {q}
@@ -492,15 +476,16 @@ export function ScoutTerminal() {
                 <section className="mx-auto max-w-4xl">
                     <DeskRevealSection
                         variant="brand"
+                        density="compact"
                         defaultOpen
                         title="Intelligence brief"
-                        subtitle="Your verified synthesis — what you believe after reading sources. This is saved on the venture for CFO, CEO, and sync."
+                        subtitle="Verified synthesis — saved on the venture for Research fund intelligence, Research strategy and direction, and staff sync."
                     >
-                        <div className="mb-3 flex justify-end">
+                        <div className="mb-2 flex justify-end">
                             <button
                                 type="button"
                                 onClick={saveBrief}
-                                className="inline-flex items-center gap-2 rounded-lg border border-zinc-600 bg-zinc-800 px-4 py-2 text-xs font-semibold text-zinc-100 hover:bg-zinc-700"
+                                className="inline-flex items-center gap-2 rounded-md border border-brand-border bg-brand-card px-3 py-1.5 text-[11px] font-semibold text-brand-text hover:bg-brand-input"
                             >
                                 {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <Save className="h-3.5 w-3.5" aria-hidden />}
                                 Save brief
@@ -509,9 +494,9 @@ export function ScoutTerminal() {
                         <textarea
                             value={brief}
                             onChange={(e) => setBrief(e.target.value)}
-                            placeholder={`After reviewing headlines, capture what you verified:\n• Segment & ICP\n• Competitors and differentiation (with sources you trust)\n• Risks and unknowns\n• Signals to watch next\n`}
-                            rows={22}
-                            className="w-full rounded-lg border border-brand-border bg-brand-input p-4 text-[15px] leading-relaxed text-brand-text placeholder:text-brand-muted focus:outline-none focus:ring-2 focus:ring-brand-teal/30"
+                            placeholder={`After reviewing headlines, capture what you verified:\n• Segment and ideal customer profile\n• Competitors and differentiation (with sources you trust)\n• Risks and unknowns\n• Signals to watch next\n`}
+                            rows={20}
+                            className="w-full rounded-md border border-brand-border bg-brand-input p-3 text-[14px] leading-relaxed text-brand-text placeholder:text-brand-muted focus:outline-none focus:ring-1 focus:ring-brand-teal/35"
                         />
                     </DeskRevealSection>
                 </section>

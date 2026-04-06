@@ -22,7 +22,7 @@ import {
   normalizeStaffAttentionRole,
 } from './agentStaffTypes';
 import { Target, ClipboardList, Calculator, ScanSearch, LayoutDashboard, Bot, Gavel, Megaphone } from 'lucide-react';
-import { EXEC_OUTPUT_ROLES } from '@/lib/execOutputFormats';
+import { RESEARCH_STAFF } from '@/lib/researchStaffLabels';
 import { emptyVentureShell } from '@/lib/minimalVenture';
 import { parseStrategy, serializeStrategy } from '@/lib/strategyDoc';
 import {
@@ -40,19 +40,14 @@ import {
   updateOfficeMemory,
 } from '@/lib/office/officeMemory';
 
-const EO = Object.fromEntries(EXEC_OUTPUT_ROLES.map((r) => [r.id, r])) as Record<
-  (typeof EXEC_OUTPUT_ROLES)[number]['id'],
-  (typeof EXEC_OUTPUT_ROLES)[number]
->;
-
 export type AgentRole = 'ceo' | 'pm' | 'accountant' | 'scout' | 'cmo' | 'chief_of_staff' | 'dexo' | 'shark';
 
 export interface AgentPersona {
-  /** Full officer title, e.g. Chief Executive Officer */
+  /** Full line for tooltips, e.g. "strategy & direction research staff" */
   name: string;
-  /** Sidebar primary label — use role acronym (CEO, CFO, …) */
+  /** Sidebar primary label */
   title: string;
-  /** One-line deliverable, e.g. Decision + reasoning */
+  /** One-line hint under the title */
   execOutput: string;
   role: AgentRole;
   style: string;
@@ -72,7 +67,7 @@ export interface SystemState {
 
 export interface OfficeContextType {
   // State
-  activeRoom: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'boardroom' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence';
+  activeRoom: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence';
   activeProject: Project | null;
   allProjects: Project[];
   systemState: SystemState;
@@ -89,7 +84,7 @@ export interface OfficeContextType {
   clearExecutiveThread: () => void;
 
   // Actions
-  switchRoom: (room: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'boardroom' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence') => void;
+  switchRoom: (room: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence') => void;
 
   /** Multi-desk AI staff run: merges research into venture sections (requires GROQ on server). */
   agentSyncRunning: boolean;
@@ -154,78 +149,75 @@ export interface SystemLog {
 // Define Agent Personas with Lucide Icons
 const AGENT_PERSONAS: Record<AgentRole, AgentPersona> = {
   ceo: {
-    name: EO.CEO.title,
-    title: EO.CEO.shortTitle,
-    execOutput: EO.CEO.execOutput,
+    name: RESEARCH_STAFF.ceo.line,
+    title: RESEARCH_STAFF.ceo.navTitle,
+    execOutput: RESEARCH_STAFF.ceo.navHint,
     role: 'ceo',
     style: 'Strategic leadership',
-    description: EO.CEO.description,
+    description: RESEARCH_STAFF.ceo.deskHelp,
     icon: <Target className="w-5 h-5" />,
   },
   accountant: {
-    name: EO.CFO.title,
-    title: EO.CFO.shortTitle,
-    execOutput: EO.CFO.execOutput,
+    name: RESEARCH_STAFF.accountant.line,
+    title: RESEARCH_STAFF.accountant.navTitle,
+    execOutput: RESEARCH_STAFF.accountant.navHint,
     role: 'accountant',
     style: 'Capital & control',
-    description: EO.CFO.description,
+    description: RESEARCH_STAFF.accountant.deskHelp,
     icon: <Calculator className="w-5 h-5" />,
   },
   pm: {
-    name: EO.CTO.title,
-    title: EO.CTO.shortTitle,
-    execOutput: EO.CTO.execOutput,
+    name: RESEARCH_STAFF.pm.line,
+    title: RESEARCH_STAFF.pm.navTitle,
+    execOutput: RESEARCH_STAFF.pm.navHint,
     role: 'pm',
     style: 'Product & systems delivery',
-    description: EO.CTO.description,
+    description: RESEARCH_STAFF.pm.deskHelp,
     icon: <ClipboardList className="w-5 h-5" />,
   },
   cmo: {
-    name: EO.CMO.title,
-    title: EO.CMO.shortTitle,
-    execOutput: EO.CMO.execOutput,
+    name: RESEARCH_STAFF.cmo.line,
+    title: RESEARCH_STAFF.cmo.navTitle,
+    execOutput: RESEARCH_STAFF.cmo.navHint,
     role: 'cmo',
     style: 'Market motion',
-    description: EO.CMO.description,
+    description: RESEARCH_STAFF.cmo.deskHelp,
     icon: <Megaphone className="w-5 h-5" />,
   },
   scout: {
-    name: EO.CSO.title,
-    title: EO.CSO.shortTitle,
-    execOutput: EO.CSO.execOutput,
+    name: RESEARCH_STAFF.scout.line,
+    title: RESEARCH_STAFF.scout.navTitle,
+    execOutput: RESEARCH_STAFF.scout.navHint,
     role: 'scout',
     style: 'Evidence-led strategy',
-    description: EO.CSO.description,
+    description: RESEARCH_STAFF.scout.deskHelp,
     icon: <ScanSearch className="w-5 h-5" />,
   },
   chief_of_staff: {
-    name: 'Chief of Staff',
-    title: 'Staff',
-    execOutput: 'Orchestration & routing',
+    name: RESEARCH_STAFF.chief_of_staff.line,
+    title: RESEARCH_STAFF.chief_of_staff.navTitle,
+    execOutput: RESEARCH_STAFF.chief_of_staff.navHint,
     role: 'chief_of_staff',
     style: 'Coordination',
-    description:
-      'Routes requests to the right desk and keeps directives visible. Use when one decision spans multiple functions.',
+    description: RESEARCH_STAFF.chief_of_staff.deskHelp,
     icon: <LayoutDashboard className="w-5 h-5" />,
   },
   dexo: {
-    name: 'Dexo Core',
-    title: 'Dexo',
-    execOutput: 'Cross-suite intelligence',
+    name: RESEARCH_STAFF.dexo.line,
+    title: RESEARCH_STAFF.dexo.navTitle,
+    execOutput: RESEARCH_STAFF.dexo.navHint,
     role: 'dexo',
     style: 'Omniscient core',
-    description:
-      'Reads across venture data and helps you act when the question does not belong to a single officer desk.',
+    description: RESEARCH_STAFF.dexo.deskHelp,
     icon: <Bot className="w-5 h-5" />,
   },
   shark: {
-    name: 'Investor diligence',
-    title: 'VC gauntlet',
-    execOutput: 'Capital stress-test',
+    name: RESEARCH_STAFF.shark.line,
+    title: RESEARCH_STAFF.shark.navTitle,
+    execOutput: RESEARCH_STAFF.shark.navHint,
     role: 'shark',
     style: 'Adversarial review',
-    description:
-      'Rehearses external capital scrutiny—challenge assumptions before real investor conversations.',
+    description: RESEARCH_STAFF.shark.deskHelp,
     icon: <Gavel className="w-5 h-5" />,
   },
 };
@@ -236,7 +228,7 @@ const OfficeContext = createContext<OfficeContextType | undefined>(undefined);
 // Context Provider Component
 export function OfficeProvider({ children }: { children: ReactNode }) {
   const [activeRoom, setActiveRoom] = useState<
-    AgentRole | 'dashboard' | 'calendar' | 'reports' | 'boardroom' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence'
+    AgentRole | 'dashboard' | 'calendar' | 'reports' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence'
   >('dashboard');
   const [agentSyncRunning, setAgentSyncRunning] = useState(false);
   const [syncToastMessage, setSyncToastMessage] = useState<string | null>(null);
@@ -330,7 +322,7 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
    * Switch between different agent rooms or views
    */
   const switchRoom = (
-    room: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'boardroom' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence'
+    room: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence'
   ) => {
     setActiveRoom(room);
   };

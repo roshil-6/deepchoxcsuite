@@ -13,7 +13,7 @@ RULES:
   - "order": integer starting at 1
   - "title": short headline (max ~10 words)
   - "why": 2–4 sentences. Say WHAT to do in the app and WHY it matters. Name the area (e.g. CEO desk, Timeline, Suite intelligence, CFO desk). No jargon walls.
-  - "goTo": exactly one of: dashboard, ceo, pm, accountant, scout, cmo, chief_of_staff, boardroom, calendar, reports, suite_intelligence, intelligence_diary, dexo, personal_assistant
+  - "goTo": exactly one of: dashboard, ceo, pm, accountant, scout, cmo, chief_of_staff, calendar, reports, suite_intelligence, intelligence_diary, dexo, personal_assistant
   - "goToLabel": short button text, e.g. "Open CEO desk", "Open Timeline", "Open Suite intelligence"
 - Prefer concrete app navigation over generic advice. If data is missing in JSON, say so in "why" and point to the desk that fills the gap.
 - Do NOT invent financial numbers, user counts, or metrics not in the JSON.

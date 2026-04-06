@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useOffice } from '@/lib/OfficeContext';
 import { Download, Loader2, CheckCircle, LayoutTemplate } from 'lucide-react';
 import { DeskShell, DeskEmpty } from '@/components/workspaces/DeskShell';
+import { deskHeadline, deskHelpText } from '@/lib/researchStaffLabels';
 import { DeskRevealSection } from '@/components/workspaces/DeskRevealSection';
 import jsPDF from 'jspdf';
 
@@ -122,11 +123,14 @@ export function PitchDeckForge() {
 
     return (
         <DeskShell
-            eyebrow={isCmo ? 'CMO · GTM plan or messaging framework' : 'Pitch forge · Export'}
-            title={isCmo ? 'Chief Marketing Officer' : 'Pitch Deck Forge'}
+            title={
+                isCmo
+                    ? deskHeadline(activeProject.name, 'cmo')
+                    : `${activeProject.name} · research pitch and narrative export`
+            }
             description={
                 isCmo
-                    ? 'Shape narrative and motion — this forge turns venture intel into a slide story you can ship or rehearse.'
+                    ? deskHelpText('cmo')
                     : 'Compile strategy, financials, and market intel into a seven-slide PDF investor deck.'
             }
         >

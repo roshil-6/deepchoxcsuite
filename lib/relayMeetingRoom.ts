@@ -9,7 +9,6 @@ export type RelayMeetingGoTo =
     | 'scout'
     | 'cmo'
     | 'chief_of_staff'
-    | 'boardroom'
     | 'calendar'
     | 'reports'
     | 'suite_intelligence'
@@ -33,7 +32,6 @@ export const RELAY_MEETING_GO_TO_SET = new Set<RelayMeetingGoTo>([
     'scout',
     'cmo',
     'chief_of_staff',
-    'boardroom',
     'calendar',
     'reports',
     'suite_intelligence',

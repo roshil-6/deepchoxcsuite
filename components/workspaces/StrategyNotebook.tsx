@@ -179,7 +179,7 @@ export function StrategyNotebook() {
     };
 
     if (!activeProject) {
-        return <DeskEmpty>Select a venture to open the CEO desk.</DeskEmpty>;
+        return <DeskEmpty>Select a venture to open Research strategy and direction.</DeskEmpty>;
     }
 
     const navItems: { id: ToolId; label: string; sub: string }[] = [
@@ -248,20 +248,17 @@ export function StrategyNotebook() {
                 <div className="flex w-full flex-col bg-[var(--color-brand-bg)]">
                     <div className="space-y-4 px-5 py-6 pb-28 sm:px-7 sm:py-7 sm:pb-32">
                             <p className="text-[11px] leading-relaxed text-zinc-500">
-                                Tap a section to open it. Each block is separate so you can jump to intent, timeline, dates, or tasks quickly.
+                                Tap a section to work on it — we keep each block simple so you can move fast.
                             </p>
 
                             <DeskRevealSection
                                 title="Strategic intent"
-                                subtitle="One or two lines — what winning looks like for this venture."
-                                defaultOpen
-                                badge={
-                                    doc.strategicIntent?.trim() ? (
-                                        <span className="rounded-full bg-white/[0.08] px-2 py-0.5 text-[10px] font-medium text-zinc-400">
-                                            Saved
-                                        </span>
-                                    ) : null
+                                subtitle={
+                                    doc.strategicIntent?.trim()
+                                        ? 'One or two lines — what winning looks like. (Saved.)'
+                                        : 'One or two lines — what winning looks like for this venture.'
                                 }
+                                defaultOpen
                             >
                                 <label className="sr-only" htmlFor="ceo-strategic-intent">
                                     Strategic intent
@@ -297,12 +294,7 @@ export function StrategyNotebook() {
 
                             <DeskRevealSection
                                 title="Phase timeline"
-                                subtitle="Read-only here. Edit horizons under Open full editor, or Product → Planning."
-                                badge={
-                                    <span className="rounded-full bg-white/[0.08] px-2 py-0.5 text-[10px] font-medium tabular-nums text-zinc-400">
-                                        {phases.length} phase{phases.length === 1 ? '' : 's'}
-                                    </span>
-                                }
+                                subtitle={`Read-only here (${phases.length} phase${phases.length === 1 ? '' : 's'}). Edit horizons under Open full editor, or Product → Planning.`}
                             >
                                 <TimelinePhaseReadOnly
                                     phases={phases}
@@ -319,13 +311,10 @@ export function StrategyNotebook() {
 
                             <DeskRevealSection
                                 title="Key dates & milestones"
-                                subtitle="Suite calendar entries for this venture. Add below or open the full schedule workspace."
-                                badge={
-                                    events.length > 0 ? (
-                                        <span className="rounded-full bg-white/[0.08] px-2 py-0.5 text-[10px] font-medium tabular-nums text-zinc-400">
-                                            {events.length} dated
-                                        </span>
-                                    ) : null
+                                subtitle={
+                                    events.length > 0
+                                        ? `${events.length} dated · Suite calendar entries for this venture. Add below or open the full schedule workspace.`
+                                        : 'Suite calendar entries for this venture. Add below or open the full schedule workspace.'
                                 }
                             >
                                 <div className="grid gap-2 rounded-lg border border-white/[0.06] bg-zinc-950/30 p-3 sm:grid-cols-2">
@@ -389,13 +378,10 @@ export function StrategyNotebook() {
 
                             <DeskRevealSection
                                 title="Executive priorities"
-                                subtitle="Checklist stored with strategy. Expand to add or tick items."
-                                badge={
-                                    (doc.priorities || []).length > 0 ? (
-                                        <span className="rounded-full bg-white/[0.08] px-2 py-0.5 text-[10px] font-medium tabular-nums text-zinc-400">
-                                            {(doc.priorities || []).filter((p) => !p.done).length} open
-                                        </span>
-                                    ) : null
+                                subtitle={
+                                    (doc.priorities || []).length > 0
+                                        ? `${(doc.priorities || []).filter((p) => !p.done).length} open · Checklist stored with strategy.`
+                                        : 'Checklist stored with strategy. Expand to add or tick items.'
                                 }
                             >
                                 <div className="flex flex-wrap gap-2">
@@ -556,8 +542,8 @@ export function StrategyNotebook() {
                         {tool === 'phases' && (
                             <section className="flex flex-col bg-brand-bg p-4 sm:p-6">
                                 <p className="mb-4 max-w-prose text-xs leading-relaxed text-zinc-500">
-                                    Edit phase titles, date ranges, status, and notes. Changes save with your venture strategy — the CEO overview
-                                    shows a read-only timeline.
+                                    Edit phase titles, date ranges, status, and notes. Changes save with your venture strategy — Research strategy and direction
+                                    shows a read-only timeline on the hub.
                                 </p>
                                 <div className="min-h-0 flex-1 overflow-auto rounded-xl border border-white/[0.06] bg-[#141416]">
                                     <TimelinePhaseSetter

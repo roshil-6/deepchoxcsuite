@@ -1,10 +1,10 @@
-/** Desk model ids. With GROQ_API_KEY on the server, these map to Groq models (see lib/ai/chatProviders.ts); without it, Ollama names are used as-is. */
+/** Desk model ids. With GROQ_API_KEY (hosted or local), ids map to Groq cloud models; without it, names go to local Ollama if available. */
 export const DESK_AI_MODELS = [
   { id: 'llama3', label: 'Llama 3' },
   { id: 'llama3.2', label: 'Llama 3.2' },
   { id: 'mistral', label: 'Mistral' },
   { id: 'phi3', label: 'Phi-3' },
-  { id: 'gemma2', label: 'Gemma 2' },
+  { id: 'gemma2', label: 'Fast 8B slot' },
 ] as const;
 
 export type DeskModelId = (typeof DESK_AI_MODELS)[number]['id'];
@@ -24,8 +24,8 @@ export const EXEC_CHAT_MODEL_OPTIONS = [
   { id: 'mistral' as const, label: 'Mixtral-class', blurb: 'Routed to Llama 3.3 70B on Groq' },
   {
     id: 'gemma2' as const,
-    label: 'Gemma 2 9B',
-    blurb: 'Google Gemma 2 on Groq — compact & fast (override id with GROQ_GEMMA_MODEL if needed)',
+    label: 'Fast 8B (Gemma slot)',
+    blurb: 'Groq cloud: Llama 3.1 8B Instant (fits hosted deploys; old Gemma id retired on Groq)',
   },
   { id: 'phi3' as const, label: 'Phi-3 class', blurb: 'Compact / low latency' },
 ] as const;

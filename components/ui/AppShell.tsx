@@ -65,8 +65,8 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
                         <Menu className="h-5 w-5" />
                     </button>
                     <div className="min-w-0">
-                        <h1 className="text-lg font-semibold tracking-tight text-[var(--text)] sm:text-xl">{title}</h1>
-                        <p className="truncate text-xs text-[var(--muted)] opacity-80">
+                        <h1 className="text-base font-semibold tracking-tight text-[var(--text)] sm:text-[17px]">{title}</h1>
+                        <p className="truncate text-[11px] text-[var(--muted)] opacity-90">
                             {activeProject?.name ?? 'Select or create a venture'}
                         </p>
                     </div>
@@ -84,7 +84,7 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
                     </button>
                     <button
                         type="button"
-                        className="rounded-full bg-white/[0.05] px-3 py-2 text-xs font-medium text-[var(--text)] transition-colors hover:bg-white/[0.08] lg:hidden"
+                        className="rounded-full bg-white/[0.05] px-3 py-2 text-[11px] font-medium text-[var(--text)] transition-colors hover:bg-white/[0.08] lg:hidden"
                         onClick={() => setMobileContext(true)}
                     >
                         <span className="inline-flex items-center gap-1.5">
@@ -97,8 +97,8 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
 
             <DailySyncBanner />
 
-            <div className="relative flex min-h-0 flex-1 overflow-hidden">
-                <div className="hidden h-full shrink-0 lg:flex">
+            <div className="relative flex min-h-0 flex-1 overflow-hidden lg:gap-5 lg:px-6 lg:pb-4 lg:pt-3">
+                <div className="hidden h-full min-h-0 shrink-0 items-stretch lg:flex">
                     <LeftRail onLogout={onLogout} onNewVenture={onNewVenture} />
                 </div>
 
@@ -119,22 +119,24 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
                                 animate={{ x: 0 }}
                                 exit={{ x: -320 }}
                                 transition={{ type: 'spring', stiffness: 400, damping: 40 }}
-                                className="fixed inset-y-0 left-0 z-[70] w-[min(20rem,88vw)] border-r border-[var(--border)] shadow-none lg:hidden"
+                                className="fixed inset-y-3 left-3 z-[70] flex h-[calc(100%-1.5rem)] w-[min(20rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-2xl border border-white/[0.1] bg-[var(--bg)]/95 shadow-[0_12px_40px_-8px_rgba(0,0,0,0.5)] backdrop-blur-xl lg:hidden"
                             >
-                                <div className="flex h-full flex-col bg-[var(--bg)]">
-                                    <div className="flex items-center justify-end border-b border-[var(--border)] p-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => setMobileNav(false)}
-                                            className="rounded-xl p-2 text-[var(--muted)] hover:bg-white/[0.06]"
-                                            aria-label="Close"
-                                        >
-                                            <X className="h-5 w-5" />
-                                        </button>
-                                    </div>
-                                    <div className="min-h-0 flex-1 overflow-hidden">
-                                        <LeftRail onLogout={onLogout} onNewVenture={onNewVenture} />
-                                    </div>
+                                <div className="flex shrink-0 items-center justify-end border-b border-white/[0.06] p-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setMobileNav(false)}
+                                        className="rounded-xl p-2 text-[var(--muted)] hover:bg-white/[0.06]"
+                                        aria-label="Close"
+                                    >
+                                        <X className="h-5 w-5" />
+                                    </button>
+                                </div>
+                                <div className="min-h-0 flex-1 overflow-hidden">
+                                    <LeftRail
+                                        variant="flush"
+                                        onLogout={onLogout}
+                                        onNewVenture={onNewVenture}
+                                    />
                                 </div>
                             </motion.aside>
                         </>

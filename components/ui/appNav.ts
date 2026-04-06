@@ -7,7 +7,6 @@ import {
     LineChart,
     Rocket,
     LayoutGrid,
-    Gavel,
     CalendarDays,
     Settings2,
     FileText,
@@ -15,6 +14,7 @@ import {
     Notebook,
     Users,
 } from 'lucide-react';
+import { RESEARCH_STAFF, sidebarPrimaryLabel } from '@/lib/researchStaffLabels';
 
 export type AppNavRoom =
     | 'personal_assistant'
@@ -23,7 +23,6 @@ export type AppNavRoom =
     | 'accountant'
     | 'scout'
     | 'cmo'
-    | 'boardroom'
     | 'dashboard'
     | 'calendar'
     | 'reports'
@@ -35,46 +34,50 @@ export type AppNavRoom =
 export type NavItemDef = {
     room: AppNavRoom;
     label: string;
+    /** Kept for compatibility — same as label (no abbreviations in UI). */
     short: string;
     icon: LucideIcon;
 };
 
-/** AI OS left rail — maps to OfficeContext rooms */
+function rail(s: string): string {
+    return sidebarPrimaryLabel(s);
+}
+
+/** Left rail — short primary labels (no clause after “ and ”). */
 export const APP_NAV_ITEMS: NavItemDef[] = [
-    { room: 'personal_assistant', label: 'Relay your "PA"', short: 'PA', icon: MessageCircle },
-    { room: 'dashboard', label: 'Dashboard', short: 'Hub', icon: LayoutGrid },
-    { room: 'ceo', label: 'CEO', short: 'CEO', icon: Briefcase },
-    { room: 'pm', label: 'CTO · Product', short: 'CTO', icon: Cpu },
-    { room: 'accountant', label: 'CFO', short: 'CFO', icon: BarChart3 },
-    { room: 'scout', label: 'Market', short: 'Mkt', icon: LineChart },
-    { room: 'cmo', label: 'GTM', short: 'GTM', icon: Rocket },
-    { room: 'chief_of_staff', label: 'Chief of Staff', short: 'CoS', icon: Users },
-    { room: 'boardroom', label: 'Board room', short: 'Board', icon: Gavel },
-    { room: 'calendar', label: 'Timeline', short: 'Time', icon: CalendarDays },
-    { room: 'reports', label: 'Knowledge', short: 'Kb', icon: FileText },
-    { room: 'dexo', label: 'Dexo', short: 'Dx', icon: Bot },
-    { room: 'intelligence_diary', label: 'Diary', short: 'Di', icon: Notebook },
-    { room: 'suite_intelligence', label: 'Suite', short: 'Sys', icon: Settings2 },
+    { room: 'personal_assistant', label: rail('Research relay assistant'), short: rail('Research relay assistant'), icon: MessageCircle },
+    { room: 'dashboard', label: rail('Research dashboard'), short: rail('Research dashboard'), icon: LayoutGrid },
+    { room: 'ceo', label: rail(RESEARCH_STAFF.ceo.navTitle), short: rail(RESEARCH_STAFF.ceo.navTitle), icon: Briefcase },
+    { room: 'pm', label: rail(RESEARCH_STAFF.pm.navTitle), short: rail(RESEARCH_STAFF.pm.navTitle), icon: Cpu },
+    { room: 'accountant', label: rail(RESEARCH_STAFF.accountant.navTitle), short: rail(RESEARCH_STAFF.accountant.navTitle), icon: BarChart3 },
+    { room: 'scout', label: rail(RESEARCH_STAFF.scout.navTitle), short: rail(RESEARCH_STAFF.scout.navTitle), icon: LineChart },
+    { room: 'cmo', label: rail(RESEARCH_STAFF.cmo.navTitle), short: rail(RESEARCH_STAFF.cmo.navTitle), icon: Rocket },
+    { room: 'chief_of_staff', label: rail(RESEARCH_STAFF.chief_of_staff.navTitle), short: rail(RESEARCH_STAFF.chief_of_staff.navTitle), icon: Users },
+    { room: 'calendar', label: rail('Research calendar'), short: rail('Research calendar'), icon: CalendarDays },
+    { room: 'reports', label: rail('Research knowledge base'), short: rail('Research knowledge base'), icon: FileText },
+    { room: 'dexo', label: rail(RESEARCH_STAFF.dexo.navTitle), short: rail(RESEARCH_STAFF.dexo.navTitle), icon: Bot },
+    { room: 'intelligence_diary', label: rail('Research neural diary'), short: rail('Research neural diary'), icon: Notebook },
+    { room: 'suite_intelligence', label: rail('Research suite intelligence'), short: rail('Research suite intelligence'), icon: Settings2 },
 ];
 
+/** Page / header titles when a room is active */
 export const WORKSPACE_TITLES: Record<string, string> = {
-    personal_assistant: 'Relay your "PA"',
-    ceo: 'CEO',
-    pm: 'CTO / Product',
-    accountant: 'CFO',
-    scout: 'Market',
-    cmo: 'GTM',
-    boardroom: 'Board room',
-    dashboard: 'Dashboard',
-    calendar: 'Timeline',
-    suite_intelligence: 'Suite settings',
-    dexo: 'Dexo Core',
-    reports: 'Knowledge base',
-    intelligence_diary: 'Neural diary',
-    forge: 'Pitch forge',
-    wargame: 'Wargame',
-    founders_office: 'Founders office',
-    vc_gauntlet: 'VC gauntlet',
-    org_structure: 'Org structure',
-    chief_of_staff: 'Chief of Staff',
+    personal_assistant: 'Research relay assistant',
+    ceo: RESEARCH_STAFF.ceo.navTitle,
+    pm: RESEARCH_STAFF.pm.navTitle,
+    accountant: RESEARCH_STAFF.accountant.navTitle,
+    scout: RESEARCH_STAFF.scout.navTitle,
+    cmo: RESEARCH_STAFF.cmo.navTitle,
+    dashboard: 'Research dashboard',
+    calendar: 'Research calendar',
+    suite_intelligence: 'Research suite intelligence',
+    dexo: RESEARCH_STAFF.dexo.navTitle,
+    reports: 'Research knowledge base',
+    intelligence_diary: 'Research neural diary',
+    forge: 'Research pitch and narrative forge',
+    wargame: 'Research wargame',
+    founders_office: 'Research founders office',
+    vc_gauntlet: RESEARCH_STAFF.shark.navTitle,
+    org_structure: 'Research org structure',
+    chief_of_staff: RESEARCH_STAFF.chief_of_staff.navTitle,
 };

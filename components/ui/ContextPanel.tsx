@@ -97,7 +97,7 @@ export function ContextPanel({
                 <p className="mt-1 text-xs text-[var(--muted)] opacity-80">Top open items</p>
                 <ol className="mt-3 list-decimal space-y-2 pl-4 text-xs leading-relaxed text-[var(--text)]/85">
                     {priorities.length === 0 ? (
-                        <li className="text-[var(--muted)]">No open priorities — add on the CEO desk.</li>
+                        <li className="text-[var(--muted)]">No open priorities — add under Research strategy and direction.</li>
                     ) : (
                         priorities
                             .filter((p) => p.title?.trim())

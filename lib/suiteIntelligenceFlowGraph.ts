@@ -12,9 +12,9 @@ export type IntelligenceNavRoom =
     | 'dashboard'
     | 'reports'
     | 'calendar'
-    | 'boardroom'
     | 'personal_assistant'
-    | 'intelligence_diary';
+    | 'intelligence_diary'
+    | 'suite_intelligence';
 
 export type SuiteSurfaceLink = {
     /** Short label for the box */
@@ -58,7 +58,7 @@ export const SUITE_INTELLIGENCE_VENTURE_NODE = {
     subtitle: 'Single source of truth — every desk and AI surface reads the same project row',
     detailLines: [
         'Persists per venture: strategy, productPlan, budget, marketInsights, kanban, events, office memory, agentStaffSnapshot (last brief per role), staff focus, notifications context.',
-        'When you work with AI in a desk, chat rail, Boardroom, or PA, saves and merges update these fields; the next staff sync re-loads that snapshot and regenerates all five desk strings together.',
+        'When you work with AI in a desk, chat rail, or PA, saves and merges update these fields; the next staff sync re-loads that snapshot and regenerates all five desk strings together.',
     ],
 } as const;
 
@@ -88,9 +88,9 @@ export const SUITE_ROLE_FLOW_COLUMNS: SuiteRoleFlowColumn[] = [
                 detail: 'Dashboard — goal advancement, morning brief, staff snapshot, surfaces hub.',
             },
             {
-                label: 'Boardroom',
-                room: 'boardroom',
-                detail: 'Parallel CEO/CFO/CTO/CMO/CSO loop with conflict pass + Groq-backed briefs.',
+                label: 'Suite intelligence',
+                room: 'suite_intelligence',
+                detail: 'Staff sync map, venture wiring, and coordination view for the same snapshot.',
             },
         ],
     },
@@ -143,9 +143,9 @@ export const SUITE_ROLE_FLOW_COLUMNS: SuiteRoleFlowColumn[] = [
                 detail: 'Saved finance artifacts & exports linked to this venture.',
             },
             {
-                label: 'Boardroom',
-                room: 'boardroom',
-                detail: 'CFO lane in exec loop — scenario table + feasibility flags.',
+                label: 'Research relay assistant',
+                room: 'personal_assistant',
+                detail: 'Chat-first updates and venture field merges with your confirmation.',
             },
         ],
     },

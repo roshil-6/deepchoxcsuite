@@ -24,7 +24,7 @@ export function WorkspacePanel({
               so scrollHeight never grows — long pages (e.g. Suite intelligence) clip.
             */}
             <div
-                className={`mx-auto w-full max-w-[min(100%,72rem)] shrink-0 px-4 sm:px-6 ${
+                className={`mx-auto w-full max-w-[min(100%,72rem)] shrink-0 px-3 sm:px-5 ${
                     reserveBottom
                         ? 'pb-[max(6.5rem,calc(5.5rem+env(safe-area-inset-bottom)))] sm:pb-[max(7.5rem,calc(6.5rem+env(safe-area-inset-bottom)))] lg:pb-[max(8rem,calc(7rem+env(safe-area-inset-bottom)))]'
                         : ''

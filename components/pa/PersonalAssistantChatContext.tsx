@@ -14,12 +14,7 @@ import { getPersonalAssistantSystemPrompt, useOffice } from '@/lib/OfficeContext
 import { isVentureUnsettled, PA_WELCOME_MESSAGE } from '@/lib/ventureSetupState';
 import { ArrowUp, Bot, FileUp, Mic } from 'lucide-react';
 import { ModelAttribution } from '@/components/ModelAttribution';
-import { ExecModelPicker } from '@/components/ui/ExecModelPicker';
-import {
-    EXEC_CHAT_MODEL_STORAGE_KEY,
-    isExecChatModelId,
-    type ExecChatModelId,
-} from '@/lib/deskConstants';
+import { EXEC_CHAT_MODEL_OPTIONS, EXEC_CHAT_MODEL_STORAGE_KEY, isExecChatModelId } from '@/lib/deskConstants';
 import type { ExecutiveThreadMessage } from '@/lib/executiveThread';
 import {
     mergeProjectWithPAUpdates,
@@ -28,6 +23,7 @@ import {
     type PersonalAssistantUpdates,
 } from '@/lib/paApplyUpdates';
 import { PA_BUDDY_NAME } from '@/lib/paBuddy';
+import { useSpeechRecognition } from '@/lib/useSpeechRecognition';
 
 type Msg = ExecutiveThreadMessage;
 
@@ -115,15 +111,12 @@ export function PersonalAssistantChatProvider({ children }: { children: ReactNod
     const messages = executiveThread;
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
-    const [listening, setListening] = useState(false);
-    const [voiceSupported, setVoiceSupported] = useState(false);
     const [fileLabel, setFileLabel] = useState<string | null>(null);
     const [fileError, setFileError] = useState<string | null>(null);
     const [selectedModel, setSelectedModel] = useState('llama3');
     const endRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const recognitionRef = useRef<{ stop: () => void; start: () => void } | null>(null);
     const welcomeSeededForProject = useRef<string | number | null>(null);
     const [followUpSelection, setFollowUpSelection] = useState<Set<string>>(new Set());
 
@@ -149,25 +142,22 @@ export function PersonalAssistantChatProvider({ children }: { children: ReactNod
         setSelectedModel(readStoredExecModel());
     }, []);
 
-    useEffect(() => {
-        if (typeof window === 'undefined') return;
-        const w = window as unknown as {
-            SpeechRecognition?: new () => { stop: () => void; start: () => void };
-            webkitSpeechRecognition?: new () => { stop: () => void; start: () => void };
-        };
-        setVoiceSupported(Boolean(w.SpeechRecognition || w.webkitSpeechRecognition));
+    const appendTranscript = useCallback((t: string) => {
+        setInput((prev) => (prev ? `${prev.trim()} ${t}` : t));
     }, []);
+    const { voiceSupported, listening, startListening, stopListening } = useSpeechRecognition(appendTranscript);
 
     useEffect(() => {
         setFollowUpSelection(new Set());
     }, [lastFollowUpMsg?.id]);
 
     useEffect(() => {
+        stopListening();
         setInput('');
         setFileLabel(null);
         setFileError(null);
         welcomeSeededForProject.current = null;
-    }, [activeProject?.id]);
+    }, [activeProject?.id, stopListening]);
 
     useEffect(() => {
         const id = activeProject?.id;
@@ -190,68 +180,6 @@ export function PersonalAssistantChatProvider({ children }: { children: ReactNod
             textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 160)}px`;
         }
     }, [input]);
-
-    const stopListening = useCallback(() => {
-        try {
-            recognitionRef.current?.stop();
-        } catch {
-            /* noop */
-        }
-        setListening(false);
-    }, []);
-
-    const startListening = useCallback(() => {
-        if (typeof window === 'undefined') return;
-        const w = window as unknown as {
-            SpeechRecognition?: new () => {
-                lang: string;
-                interimResults: boolean;
-                continuous: boolean;
-                onresult: ((e: {
-                    resultIndex: number;
-                    results: { length: number; [i: number]: { isFinal: boolean; [0]: { transcript: string } } };
-                }) => void) | null;
-                onerror: (() => void) | null;
-                onend: (() => void) | null;
-                start: () => void;
-                stop: () => void;
-            };
-            webkitSpeechRecognition?: new () => {
-                lang: string;
-                interimResults: boolean;
-                continuous: boolean;
-                onresult: ((e: {
-                    resultIndex: number;
-                    results: { length: number; [i: number]: { isFinal: boolean; [0]: { transcript: string } } };
-                }) => void) | null;
-                onerror: (() => void) | null;
-                onend: (() => void) | null;
-                start: () => void;
-                stop: () => void;
-            };
-        };
-        const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
-        if (!SR) return;
-        stopListening();
-        const rec = new SR();
-        rec.lang = 'en-US';
-        rec.interimResults = true;
-        rec.continuous = true;
-        rec.onresult = (event) => {
-            let chunk = '';
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                const r = event.results[i];
-                if (r.isFinal) chunk += r[0].transcript;
-            }
-            const t = chunk.trim();
-            if (t) setInput((prev) => (prev ? `${prev.trim()} ${t}` : t));
-        };
-        rec.onerror = () => setListening(false);
-        rec.onend = () => setListening(false);
-        recognitionRef.current = rec;
-        rec.start();
-        setListening(true);
-    }, [stopListening]);
 
     const handleFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -295,6 +223,8 @@ export function PersonalAssistantChatProvider({ children }: { children: ReactNod
             const modelUserContent = userText.trim();
             const displayContent = (opts?.displayText ?? userText).trim();
             if (!modelUserContent || loading || !activeProject?.id) return;
+
+            stopListening();
 
             const userMsg: Msg = {
                 id: Date.now().toString(),
@@ -411,7 +341,7 @@ export function PersonalAssistantChatProvider({ children }: { children: ReactNod
                 setLoading(false);
             }
         },
-        [activeProject, appendExecutiveThread, loading, messages, persistActiveProject]
+        [activeProject, appendExecutiveThread, loading, messages, persistActiveProject, stopListening]
     );
 
     const requestExecutiveBriefing = useCallback(async () => {
@@ -535,7 +465,7 @@ export function PAChatSurface({ variant }: { variant: 'page' | 'float' }) {
                             >
                                 {m.channel === 'cos' ? (
                                     <p className="mb-1 text-[9px] font-medium uppercase tracking-[0.1em] text-zinc-500">
-                                        CEO desk
+                                        Research strategy and direction
                                     </p>
                                 ) : null}
                                 <p className="whitespace-pre-wrap">{m.content}</p>
@@ -661,18 +591,12 @@ export function PAChatSurface({ variant }: { variant: 'page' | 'float' }) {
                     onChange={handleFileInput}
                 />
                 <div className="flex flex-wrap items-center gap-1 border-t border-zinc-600 bg-zinc-900/40 px-2 py-1.5">
-                    <ExecModelPicker
-                        menuAbove
-                        value={selectedModel}
-                        onChange={(id: ExecChatModelId) => {
-                            setSelectedModel(id);
-                            try {
-                                localStorage.setItem(EXEC_CHAT_MODEL_STORAGE_KEY, id);
-                            } catch {
-                                /* noop */
-                            }
-                        }}
-                    />
+                    <span
+                        className="inline-flex h-8 shrink-0 items-center px-1 text-[10px] text-zinc-500"
+                        title="Model is set from your last choice; use workspace settings to change."
+                    >
+                        {EXEC_CHAT_MODEL_OPTIONS.find((o) => o.id === selectedModel)?.label ?? selectedModel}
+                    </span>
                     <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}

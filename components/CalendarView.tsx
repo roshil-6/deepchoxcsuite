@@ -178,7 +178,7 @@ export function CalendarView() {
                     <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-brand-muted">
                         {section === 'schedule'
                             ? 'Month view and venture task board. Switch to Strategy phases to edit roadmap horizons and dates.'
-                            : 'Strategy phases tie to your venture strategy — same data as on the CEO desk. Calendar events stay under Schedule.'}
+                            : 'Strategy phases tie to your venture strategy — same data as under Research strategy and direction. Calendar events stay under Schedule.'}
                     </p>
                     {activeProject && !activeProject.id && section === 'schedule' && (
                         <p className="mt-1 max-w-xl text-[12px] text-amber-400/90">

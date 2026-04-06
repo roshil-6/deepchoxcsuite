@@ -16,6 +16,7 @@ import {
   GitBranch,
 } from 'lucide-react';
 import { StaffNotificationCenter } from '@/components/StaffNotificationCenter';
+import { RESEARCH_STAFF, sidebarPrimaryLabel } from '@/lib/researchStaffLabels';
 
 interface SidebarProps {
   onLogout: () => void;
@@ -23,7 +24,7 @@ interface SidebarProps {
   onNewVenture: () => void;
 }
 
-/** Desks shown in the rail (VC gauntlet / shark excluded — overlaps Chief of Staff) */
+/** Research areas in the rail (VC gauntlet / shark excluded — overlaps coordination bar) */
 const C_SUITE_ORDER = ['ceo', 'accountant', 'pm', 'cmo', 'scout', 'chief_of_staff', 'dexo'] as const;
 
 export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
@@ -90,13 +91,13 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
             isActive={activeRoom === 'suite_intelligence'}
             onClick={() => switchRoom('suite_intelligence')}
           />
-          <NavItem icon={<Bot className="w-4 h-4" />} label="Dexo Core" isActive={activeRoom === 'dexo'} onClick={() => switchRoom('dexo')} />
+          <NavItem icon={<Bot className="w-4 h-4" />} label={RESEARCH_STAFF.dexo.navTitle} isActive={activeRoom === 'dexo'} onClick={() => switchRoom('dexo')} />
           <NavItem icon={<Notebook className="w-4 h-4" />} label="Neural Diary" isActive={activeRoom === 'intelligence_diary'} onClick={() => switchRoom('intelligence_diary')} />
           <NavItem icon={<FileText className="w-4 h-4" />} label="Knowledge Base" isActive={activeRoom === 'reports'} onClick={() => switchRoom('reports')} />
         </NavSection>
 
         {/* Agents */}
-        <NavSection label="Desks">
+        <NavSection label="Research staff">
           {C_SUITE_ORDER.map((role) => {
             const agent = agents[role];
             const pendingN = staffAttentionPending.filter((i) => i.role === role).length;
@@ -107,7 +108,7 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
               onClick={() => switchRoom(agent.role)}
               className={`group relative flex min-h-[2.75rem] w-full items-center gap-2 rounded-lg py-1.5 pl-2 pr-3 text-left transition-colors ${activeRoom === agent.role ? 'bg-white/[0.08] text-brand-text' : 'text-brand-muted hover:bg-white/[0.05] hover:text-brand-text'
                 }`}
-              title={`${agent.name} — ${agent.execOutput}. ${agent.description}`}
+              title={`${sidebarPrimaryLabel(agent.name)} — ${sidebarPrimaryLabel(agent.execOutput)}`}
             >
               <span
                 className={`absolute left-[10px] top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full ${activeRoom === agent.role ? 'bg-brand-teal' : 'bg-brand-border group-hover:bg-brand-muted'}`}
@@ -118,8 +119,8 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
               </span>
               <span className="relative flex min-w-0 flex-1 items-center gap-1">
                 <span className="min-w-0 flex-1">
-                <span className={`block truncate text-sm leading-tight ${activeRoom === agent.role ? 'font-medium text-brand-text' : 'font-normal'}`}>{agent.title}</span>
-                <span className="mt-0.5 block truncate text-[10px] leading-snug text-brand-muted group-hover:text-brand-muted/90">{agent.execOutput}</span>
+                <span className={`block truncate text-sm leading-tight ${activeRoom === agent.role ? 'font-medium text-brand-text' : 'font-normal'}`}>{sidebarPrimaryLabel(agent.title)}</span>
+                <span className="mt-0.5 block truncate text-[10px] leading-snug text-brand-muted group-hover:text-brand-muted/90">{sidebarPrimaryLabel(agent.execOutput)}</span>
                 <span className="sr-only"> — {agent.description}</span>
                 </span>
                 {pendingN > 0 && (

@@ -10,7 +10,6 @@ import { CalendarView } from './CalendarView';
 import { Dashboard } from './Dashboard';
 import { ReportsLibrary } from './ReportsLibrary';
 
-import { Boardroom } from './Boardroom';
 import { FoundersOffice } from './FoundersOffice';
 import { DexoCommandCenter } from './DexoCommandCenter';
 import { PitchDeckForge } from './PitchDeckForge';
@@ -21,27 +20,8 @@ import { PersonalAssistant } from './PersonalAssistant';
 import { CsuiteIntelligenceGuide } from './CsuiteIntelligenceGuide';
 import { RoomChrome } from './RoomChrome';
 import { getWorkspaceShellTheme } from '@/lib/roomThemes';
-import { ChevronDown, User } from 'lucide-react';
-const WORKSPACE_TITLES: Record<string, string> = {
-    ceo: 'CEO',
-    pm: 'CTO / PM',
-    scout: 'CSO / Scout',
-    cmo: 'CMO',
-    forge: 'Pitch forge',
-    wargame: 'Wargame',
-    founders_office: 'Founders office',
-    vc_gauntlet: 'VC gauntlet',
-    accountant: 'CFO',
-    dashboard: 'Dashboard',
-    reports: 'Knowledge Base',
-    calendar: 'Calendar',
-    boardroom: 'Boardroom',
-    intelligence_diary: 'Neural Diary',
-    dexo: 'Dexo Core',
-    org_structure: 'Org structure',
-    personal_assistant: 'Relay your "PA"',
-    suite_intelligence: 'Suite intelligence',
-};
+import { WORKSPACE_TITLES } from '@/components/ui/appNav';
+import { User } from 'lucide-react';
 
 function workspaceTitle(room: string) {
     return WORKSPACE_TITLES[room] ?? 'Workspace';
@@ -66,8 +46,6 @@ export function WorkspaceStage({
                 return <ReportsLibrary />;
             case 'calendar':
                 return <CalendarView />;
-            case 'boardroom':
-                return <Boardroom />;
             case 'founders_office':
                 return <FoundersOffice />;
             case 'dexo':
@@ -142,16 +120,15 @@ export function WorkspaceStage({
                             {workspaceTitle(activeRoom)}
                         </h1>
                         <div className="flex items-center gap-1 sm:gap-2">
-                            <button
-                                type="button"
-                                className="flex items-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.03] py-1 pl-1 pr-2 transition-colors hover:bg-white/[0.06] sm:pr-3"
+                            <div
+                                className="flex items-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.03] py-1 pl-1 pr-3"
+                                role="presentation"
                             >
                                 <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/[0.05]">
                                     <User className="h-3.5 w-3.5 text-brand-text" aria-hidden />
                                 </span>
-                                <span className="hidden text-sm text-brand-muted sm:inline">Executive</span>
-                                <ChevronDown className="hidden h-4 w-4 text-brand-muted sm:block" aria-hidden />
-                            </button>
+                                <span className="hidden text-sm text-brand-muted sm:inline">Research</span>
+                            </div>
                         </div>
                     </header>
                 )}

@@ -1,5 +1,7 @@
 # Render Blueprint — link repo and adjust service name as needed.
 # Add a Postgres instance in the dashboard, set DATABASE_URL on this web service.
+#
+# AI: set GROQ_API_KEY in the dashboard (Groq Cloud). No Ollama on Render — all LLM calls use Groq.
 
 services:
   - type: web

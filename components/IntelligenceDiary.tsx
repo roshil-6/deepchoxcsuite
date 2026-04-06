@@ -23,10 +23,10 @@ export type DiaryEntry = {
 };
 
 const MOOD_STYLES: Record<string, string> = {
-    positive: 'bg-zinc-600/25 text-zinc-200 border-zinc-500/35',
-    negative: 'bg-zinc-700/35 text-zinc-300 border-zinc-600/45',
-    alert: 'bg-zinc-600/30 text-zinc-200 border-zinc-500/40',
-    neutral: 'bg-zinc-500/15 text-zinc-300 border-zinc-600/40',
+    positive: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/25',
+    negative: 'bg-rose-500/10 text-rose-300 border-rose-500/25',
+    alert: 'bg-amber-500/10 text-amber-300 border-amber-500/25',
+    neutral: 'bg-white/[0.06] text-zinc-400 border-white/[0.1]',
 };
 
 export function IntelligenceDiary() {
@@ -88,12 +88,12 @@ export function IntelligenceDiary() {
 
     if (!activeProject) {
         return (
-            <div className="flex h-full flex-col items-center justify-center gap-4 bg-zinc-900 p-12 text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-zinc-600 bg-zinc-800">
-                    <PenLine className="h-8 w-8 text-zinc-400" strokeWidth={1.5} />
+            <div className="flex h-full flex-col items-center justify-center gap-4 bg-brand-bg p-12 text-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.04]">
+                    <PenLine className="h-7 w-7 text-zinc-400" strokeWidth={1.5} />
                 </div>
-                <h2 className="font-serif text-2xl text-zinc-100">Neural Diary</h2>
-                <p className="max-w-sm text-sm leading-relaxed text-zinc-500">
+                <h2 className="text-lg font-semibold text-zinc-100">Neural Diary</h2>
+                <p className="max-w-sm text-[13px] leading-relaxed text-zinc-500">
                     Select or create a venture to capture private signals, reflections, and strategic notes.
                 </p>
             </div>
@@ -103,39 +103,37 @@ export function IntelligenceDiary() {
     const filtered = entries.filter((e) => !filterTag || e.tags.includes(filterTag));
 
     return (
-        <div className="relative flex h-full min-h-0 w-full overflow-hidden font-sans text-zinc-200">
+        <div className="relative flex h-full min-h-0 w-full overflow-hidden text-zinc-200">
             <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden">
-            {/* Entries — editorial rail */}
-            <aside className="flex h-full min-h-0 w-[min(100%,320px)] shrink-0 flex-col border-r border-zinc-700 bg-gradient-to-b from-zinc-900 to-zinc-950">
-                <div className="border-b border-zinc-700 px-5 py-6">
-                    <div className="mb-1 flex items-center gap-2 text-zinc-400">
-                        <Bookmark className="h-4 w-4" strokeWidth={1.75} aria-hidden />
-                        <span className="text-[10px] font-semibold uppercase tracking-[0.2em]">Neural diary</span>
+            <aside className="flex h-full min-h-0 w-[min(100%,300px)] shrink-0 flex-col border-r border-white/[0.06] bg-brand-bg">
+                <div className="border-b border-white/[0.06] px-4 py-4">
+                    <div className="flex items-center gap-2">
+                        <Bookmark className="h-3.5 w-3.5 text-zinc-500" strokeWidth={1.75} aria-hidden />
+                        <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500">Neural diary</span>
                     </div>
-                    <p className="font-serif text-lg leading-snug text-zinc-100">Reflections &amp; signals</p>
-                    <p className="mt-2 text-xs leading-relaxed text-zinc-500">
-                        A quiet surface for thinking — not a terminal. Write in full sentences.
+                    <p className="mt-1.5 text-[12px] leading-snug text-zinc-400">
+                        Reflections &amp; signals for this venture.
                     </p>
                     <button
                         type="button"
                         onClick={handleCreateEntry}
-                        className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-600 bg-zinc-800 py-2.5 text-xs font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-700"
+                        className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.04] py-2 text-[11px] font-semibold text-zinc-200 transition hover:bg-white/[0.08]"
                     >
-                        <Plus className="h-4 w-4" strokeWidth={2} aria-hidden />
+                        <Plus className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
                         New entry
                     </button>
                 </div>
 
-                <div className="flex gap-1.5 overflow-x-auto border-b border-zinc-800 px-3 py-3">
+                <div className="flex gap-1.5 overflow-x-auto border-b border-white/[0.06] px-3 py-2.5">
                     {['Strategic', 'Blocker', 'Insight', 'Personal'].map((tag) => (
                         <button
                             key={tag}
                             type="button"
                             onClick={() => setFilterTag(filterTag === tag ? null : tag)}
-                            className={`shrink-0 rounded-full px-3 py-1 text-[10px] font-medium transition ${
+                            className={`shrink-0 rounded-lg px-2.5 py-1 text-[10px] font-medium transition ${
                                 filterTag === tag
-                                    ? 'bg-zinc-700 text-zinc-100 ring-1 ring-zinc-500'
-                                    : 'bg-zinc-900/80 text-zinc-500 ring-1 ring-zinc-800 hover:text-zinc-300'
+                                    ? 'bg-white/[0.1] text-zinc-100'
+                                    : 'bg-white/[0.03] text-zinc-500 hover:text-zinc-300'
                             }`}
                         >
                             {tag}
@@ -146,19 +144,19 @@ export function IntelligenceDiary() {
                 <div className="custom-scrollbar flex-1 overflow-y-auto">
                     {filtered.length === 0 ? (
                         <div className="flex flex-col items-center px-6 py-12 text-center">
-                            <Lightbulb className="mb-3 h-10 w-10 text-zinc-700" strokeWidth={1.25} aria-hidden />
+                            <Lightbulb className="mb-3 h-8 w-8 text-zinc-700" strokeWidth={1.25} aria-hidden />
                             {entries.length === 0 ? (
                                 <>
-                                    <p className="text-sm text-zinc-500">No entries yet.</p>
-                                    <p className="mt-2 text-xs text-zinc-600">Use &quot;New entry&quot; above to open the editor.</p>
+                                    <p className="text-[13px] text-zinc-500">No entries yet.</p>
+                                    <p className="mt-1.5 text-[11px] text-zinc-600">Use &quot;New entry&quot; above.</p>
                                 </>
                             ) : (
                                 <>
-                                    <p className="text-sm text-zinc-500">No entries match this filter.</p>
+                                    <p className="text-[13px] text-zinc-500">No entries match this filter.</p>
                                     <button
                                         type="button"
                                         onClick={() => setFilterTag(null)}
-                                        className="mt-3 text-xs font-medium text-zinc-400 underline-offset-2 hover:underline"
+                                        className="mt-2 text-[11px] font-medium text-zinc-400 underline-offset-2 hover:underline"
                                     >
                                         Clear filters
                                     </button>
@@ -175,13 +173,12 @@ export function IntelligenceDiary() {
                             return (
                                 <div
                                     key={entry.id}
-                                    className={`group relative flex w-full border-b border-zinc-800/80 ${
+                                    className={`group relative flex w-full border-b border-white/[0.04] ${
                                         selectedEntry?.id === entry.id
-                                            ? 'bg-zinc-800/50 ring-1 ring-inset ring-zinc-600/50'
+                                            ? 'bg-white/[0.06]'
                                             : ''
                                     }`}
                                 >
-                                    {/* Sibling of delete — not inside role=button (avoids invalid nesting + hydration warnings) */}
                                     <div
                                         role="button"
                                         tabIndex={0}
@@ -192,13 +189,13 @@ export function IntelligenceDiary() {
                                                 selectEntry();
                                             }
                                         }}
-                                        className={`min-w-0 flex-1 cursor-pointer py-4 pl-4 pr-14 text-left transition outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-zinc-500/50 ${
-                                            selectedEntry?.id === entry.id ? 'pl-3' : 'hover:bg-zinc-800/40'
+                                        className={`min-w-0 flex-1 cursor-pointer px-4 py-3 text-left transition outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/20 ${
+                                            selectedEntry?.id === entry.id ? '' : 'hover:bg-white/[0.03]'
                                         }`}
                                     >
-                                        <div className="mb-2 flex items-start justify-between gap-2">
+                                        <div className="mb-1.5 flex items-center justify-between gap-2">
                                             <span
-                                                className={`rounded-md border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide ${
+                                                className={`rounded border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide ${
                                                     MOOD_STYLES[entry.mood || 'neutral'] || MOOD_STYLES.neutral
                                                 }`}
                                             >
@@ -211,17 +208,17 @@ export function IntelligenceDiary() {
                                                 })}
                                             </span>
                                         </div>
-                                        <p className="font-serif text-[15px] font-medium leading-snug text-zinc-100 line-clamp-2">
+                                        <p className="text-[13px] font-medium leading-snug text-zinc-100 line-clamp-2">
                                             {entry.title || 'Untitled note'}
                                         </p>
-                                        <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-zinc-500">
+                                        <p className="mt-0.5 line-clamp-2 text-[11px] leading-relaxed text-zinc-500">
                                             {entry.content || '…'}
                                         </p>
                                     </div>
                                     <button
                                         type="button"
                                         onClick={(e) => handleDeleteEntry(entry.id, e)}
-                                        className="absolute right-2 top-2 z-10 rounded-lg p-1.5 text-zinc-600 opacity-0 transition hover:bg-zinc-800 hover:text-zinc-300 group-hover:opacity-100"
+                                        className="absolute right-2 top-2 z-10 rounded-lg p-1.5 text-zinc-600 opacity-0 transition hover:bg-white/[0.08] hover:text-zinc-300 group-hover:opacity-100"
                                         title="Delete"
                                     >
                                         <Trash2 className="h-3.5 w-3.5" />
@@ -231,28 +228,14 @@ export function IntelligenceDiary() {
                         })
                     )}
                 </div>
-
-                <div className="mt-auto shrink-0 border-t border-zinc-800 p-3">
-                    <p className="text-center text-[10px] leading-relaxed text-zinc-500">
-                        Desk AI lives in the floating chat below — same as other desks.
-                    </p>
-                </div>
             </aside>
 
-            {/* Editor — z-20 so nothing steals clicks from the textarea */}
-            <main className="relative z-20 flex min-w-0 flex-1 flex-col bg-gradient-to-br from-zinc-900 via-zinc-950 to-zinc-900">
-                <div
-                    className="pointer-events-none absolute inset-0 opacity-[0.06]"
-                    style={{
-                        backgroundImage: `radial-gradient(circle at 20% 20%, rgba(113,113,122,0.12), transparent 45%), radial-gradient(circle at 80% 80%, rgba(82,82,91,0.1), transparent 40%)`,
-                    }}
-                />
-
+            <main className="relative flex min-w-0 flex-1 flex-col bg-brand-bg">
                 {selectedEntry ? (
                     <>
-                        <header className="relative z-10 flex flex-col gap-4 border-b border-zinc-800 px-6 py-5 sm:flex-row sm:items-end sm:justify-between">
+                        <header className="flex flex-col gap-3 border-b border-white/[0.06] px-5 py-4 sm:flex-row sm:items-end sm:justify-between sm:px-6">
                             <div className="min-w-0 flex-1">
-                                <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.15em] text-zinc-500">
+                                <label className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
                                     Title
                                 </label>
                                 {isEditing ? (
@@ -260,40 +243,41 @@ export function IntelligenceDiary() {
                                         type="text"
                                         value={selectedEntry.title}
                                         onChange={(e) => setSelectedEntry({ ...selectedEntry, title: e.target.value })}
-                                        className="w-full min-w-0 border-b border-transparent bg-transparent font-serif text-xl text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-zinc-500"
+                                        className="w-full min-w-0 border-b border-transparent bg-transparent text-[16px] font-semibold text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-white/[0.15]"
                                         placeholder="Entry title"
                                     />
                                 ) : (
-                                    <h1 className="font-serif text-2xl text-zinc-50">
+                                    <h1 className="text-[16px] font-semibold text-zinc-100">
                                         {selectedEntry.title || 'Untitled note'}
                                     </h1>
                                 )}
                             </div>
-                            <div className="flex flex-wrap items-center gap-3">
+                            <div className="flex flex-wrap items-center gap-2.5">
                                 {isEditing && (
                                     <>
                                         <div className="flex items-center gap-2">
                                             <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">Mood</span>
-                                            <select
-                                                value={selectedEntry.mood || 'neutral'}
-                                                onChange={(e) =>
-                                                    setSelectedEntry({
-                                                        ...selectedEntry,
-                                                        mood: e.target.value,
-                                                    })
-                                                }
-                                                className="rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-xs text-zinc-200 outline-none focus:border-zinc-500"
-                                            >
-                                                <option value="neutral">Neutral</option>
-                                                <option value="positive">Optimistic</option>
-                                                <option value="negative">Critical</option>
-                                                <option value="alert">Alert</option>
-                                            </select>
+                                            <div className="flex gap-1">
+                                                {(['neutral', 'positive', 'negative', 'alert'] as const).map((m) => (
+                                                    <button
+                                                        key={m}
+                                                        type="button"
+                                                        onClick={() => setSelectedEntry({ ...selectedEntry, mood: m })}
+                                                        className={`rounded-lg border px-2 py-1 text-[10px] font-medium capitalize transition ${
+                                                            selectedEntry.mood === m
+                                                                ? MOOD_STYLES[m]
+                                                                : 'border-white/[0.06] bg-white/[0.03] text-zinc-500 hover:text-zinc-300'
+                                                        }`}
+                                                    >
+                                                        {m === 'positive' ? 'Optimistic' : m === 'negative' ? 'Critical' : m}
+                                                    </button>
+                                                ))}
+                                            </div>
                                         </div>
                                         <button
                                             type="button"
                                             onClick={handleSaveEntry}
-                                            className="inline-flex items-center gap-2 rounded-xl border border-zinc-600 bg-zinc-700 px-4 py-2 text-xs font-semibold text-zinc-100 shadow-md shadow-zinc-950/30 transition hover:border-zinc-500 hover:bg-zinc-600"
+                                            className="inline-flex items-center gap-1.5 rounded-lg border border-white/[0.1] bg-white/[0.06] px-3.5 py-1.5 text-[11px] font-semibold text-zinc-100 transition hover:bg-white/[0.1]"
                                         >
                                             <Save className="h-3.5 w-3.5" aria-hidden />
                                             Save
@@ -304,7 +288,7 @@ export function IntelligenceDiary() {
                                     <button
                                         type="button"
                                         onClick={() => setIsEditing(true)}
-                                        className="rounded-xl border border-zinc-600 px-4 py-2 text-xs font-medium text-zinc-300 transition hover:border-zinc-500 hover:bg-zinc-800 hover:text-zinc-100"
+                                        className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-3.5 py-1.5 text-[11px] font-medium text-zinc-300 transition hover:bg-white/[0.08]"
                                     >
                                         Edit
                                     </button>
@@ -312,29 +296,29 @@ export function IntelligenceDiary() {
                             </div>
                         </header>
 
-                        <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
-                            <div className="custom-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto px-6 py-6 sm:py-8">
+                        <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
+                            <div className="custom-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
                                 {isEditing ? (
                                     <textarea
                                         value={selectedEntry.content}
                                         onChange={(e) => setSelectedEntry({ ...selectedEntry, content: e.target.value })}
-                                        placeholder="Write freely. This space is for sense-making, not slogans."
+                                        placeholder="Write freely — reflections, signals, strategic notes."
                                         autoFocus
                                         rows={14}
-                                        className="min-h-[min(70vh,560px)] w-full flex-1 resize-y rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-4 text-[15px] leading-[1.75] text-zinc-200 outline-none ring-0 transition placeholder:text-zinc-500 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-500/25"
+                                        className="min-h-[min(65vh,500px)] w-full flex-1 resize-y rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-4 text-[14px] leading-[1.75] text-zinc-200 outline-none transition placeholder:text-zinc-600 focus:border-white/[0.15]"
                                     />
                                 ) : (
-                                    <article className="prose prose-invert prose-p:leading-[1.75] max-w-3xl">
-                                        <p className="whitespace-pre-wrap text-[15px] leading-[1.75] text-zinc-300">
+                                    <div className="max-w-3xl">
+                                        <p className="whitespace-pre-wrap text-[14px] leading-[1.75] text-zinc-300">
                                             {selectedEntry.content || (
                                                 <span className="text-zinc-600">No body text yet.</span>
                                             )}
                                         </p>
-                                    </article>
+                                    </div>
                                 )}
 
                                 {isEditing && (
-                                    <div className="mt-8 flex flex-wrap gap-2 border-t border-zinc-800 pt-6">
+                                    <div className="mt-6 flex flex-wrap gap-1.5 border-t border-white/[0.06] pt-4">
                                         {['Strategic', 'Blocker', 'Insight', 'Personal', 'Finance'].map((tag) => (
                                             <button
                                                 key={tag}
@@ -346,10 +330,10 @@ export function IntelligenceDiary() {
                                                         : [...selectedEntry.tags, tag];
                                                     setSelectedEntry({ ...selectedEntry, tags: newTags });
                                                 }}
-                                                className={`rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wide transition ${
+                                                className={`rounded-lg px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide transition ${
                                                     selectedEntry.tags.includes(tag)
-                                                        ? 'bg-zinc-700 text-zinc-100 ring-1 ring-zinc-500'
-                                                        : 'bg-zinc-900 text-zinc-500 ring-1 ring-zinc-800 hover:text-zinc-300'
+                                                        ? 'bg-white/[0.1] text-zinc-100'
+                                                        : 'bg-white/[0.03] text-zinc-500 hover:text-zinc-300'
                                                 }`}
                                             >
                                                 {tag}
@@ -360,42 +344,42 @@ export function IntelligenceDiary() {
                             </div>
 
                             {!isEditing && (
-                                <aside className="w-full shrink-0 border-t border-zinc-800 bg-zinc-900/50 px-5 py-6 lg:w-72 lg:border-l lg:border-t-0">
-                                    <div className="mb-4 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
-                                        <Sparkles className="h-3.5 w-3.5 text-zinc-400" aria-hidden />
+                                <aside className="w-full shrink-0 border-t border-white/[0.06] bg-white/[0.02] px-5 py-5 lg:w-64 lg:border-l lg:border-t-0">
+                                    <div className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
+                                        <Sparkles className="h-3.5 w-3.5 text-brand-teal" aria-hidden />
                                         Signal sketch
                                     </div>
 
                                     {simulatingAnalysis ? (
-                                        <div className="flex flex-col items-center py-10 text-zinc-500">
-                                            <div className="mb-3 h-8 w-8 animate-spin rounded-full border-2 border-zinc-500 border-t-transparent" />
-                                            <span className="text-xs">Reading tone…</span>
+                                        <div className="flex flex-col items-center py-8 text-zinc-500">
+                                            <div className="mb-3 h-6 w-6 animate-spin rounded-full border-2 border-zinc-500 border-t-transparent" />
+                                            <span className="text-[11px]">Reading tone…</span>
                                         </div>
                                     ) : (
                                         <>
-                                            <div className="mb-4 rounded-xl border border-zinc-700 bg-zinc-800/60 p-4">
+                                            <div className="mb-3 rounded-xl border border-white/[0.07] bg-white/[0.03] p-3.5">
                                                 <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">Energy</p>
-                                                <p className="mt-1 font-serif text-2xl text-zinc-200">Steady</p>
-                                                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-zinc-800">
-                                                    <div className="h-full w-[72%] rounded-full bg-gradient-to-r from-zinc-500 to-zinc-400" />
+                                                <p className="mt-1 text-[18px] font-semibold text-zinc-200">Steady</p>
+                                                <div className="mt-2.5 h-1 overflow-hidden rounded-full bg-white/[0.06]">
+                                                    <div className="h-full w-[72%] rounded-full bg-brand-teal/60" />
                                                 </div>
                                             </div>
-                                            <div className="rounded-xl border border-zinc-700 bg-zinc-800/40 p-4">
+                                            <div className="rounded-xl border border-white/[0.07] bg-white/[0.03] p-3.5">
                                                 <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">Echoes</p>
-                                                <div className="mt-3 flex flex-wrap gap-1.5">
+                                                <div className="mt-2.5 flex flex-wrap gap-1.5">
                                                     {['Growth', 'Q3', 'Hiring'].map((ent) => (
                                                         <span
                                                             key={ent}
-                                                            className="rounded-md bg-zinc-950 px-2 py-1 text-[10px] text-zinc-400 ring-1 ring-zinc-800"
+                                                            className="rounded-lg bg-white/[0.04] px-2 py-1 text-[10px] text-zinc-400"
                                                         >
                                                             {ent}
                                                         </span>
                                                     ))}
                                                 </div>
                                             </div>
-                                            <p className="mt-6 flex items-start gap-2 text-xs leading-relaxed text-zinc-600">
-                                                <HeartPulse className="mt-0.5 h-4 w-4 shrink-0 text-zinc-500" aria-hidden />
-                                                Placeholder synthesis — wire your model to replace this block.
+                                            <p className="mt-4 flex items-start gap-2 text-[11px] leading-relaxed text-zinc-600">
+                                                <HeartPulse className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
+                                                Placeholder — wire your model to replace this.
                                             </p>
                                         </>
                                     )}
@@ -404,24 +388,21 @@ export function IntelligenceDiary() {
                         </div>
                     </>
                 ) : (
-                    <div className="relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center gap-6 px-6 py-10 text-center">
-                        <PenLine className="h-12 w-12 text-zinc-600" strokeWidth={1} aria-hidden />
+                    <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-5 px-6 py-10 text-center">
+                        <PenLine className="h-10 w-10 text-zinc-600" strokeWidth={1.25} aria-hidden />
                         <div>
-                            <p className="font-serif text-xl text-zinc-200">Start your diary</p>
-                            <p className="mt-2 max-w-md text-sm text-zinc-500">
+                            <p className="text-[15px] font-semibold text-zinc-200">Start your diary</p>
+                            <p className="mt-1.5 text-[12px] text-zinc-500">
                                 Venture: <span className="text-zinc-300">{activeProject.name}</span>
                             </p>
                         </div>
                         <button
                             type="button"
                             onClick={handleCreateEntry}
-                            className="rounded-xl border border-zinc-600 bg-zinc-700 px-8 py-3.5 text-sm font-semibold text-zinc-100 shadow-md shadow-zinc-950/30 transition hover:border-zinc-500 hover:bg-zinc-600"
+                            className="rounded-lg border border-white/[0.1] bg-white/[0.06] px-6 py-2.5 text-[12px] font-semibold text-zinc-100 transition hover:bg-white/[0.1]"
                         >
                             Start writing
                         </button>
-                        <p className="max-w-sm text-xs text-zinc-600">
-                            Opens the editor immediately — title, body, then Save. You can also use <span className="text-zinc-400">New entry</span> in the left panel.
-                        </p>
                     </div>
                 )}
             </main>

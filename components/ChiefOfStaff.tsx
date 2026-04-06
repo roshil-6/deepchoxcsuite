@@ -149,7 +149,7 @@ export function ChiefOfStaff() {
                     <LayoutDashboard className="w-5 h-5" />
                 </div>
                 <div>
-                    <h3 className="text-xs font-bold text-zinc-100 uppercase tracking-[0.2em] leading-none">Chief of Staff</h3>
+                    <h3 className="text-xs font-semibold text-zinc-100 tracking-tight leading-none">Research coordination</h3>
                     <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-1.5 opacity-60">Global Orchestrator</p>
                 </div>
             </div>

@@ -4,7 +4,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
     Database,
-    ArrowRight,
     Bot,
     Users,
     FileText,
@@ -14,8 +13,8 @@ import {
     Shield,
     Sparkles,
     Layers,
-    ChevronDown,
-    ChevronRight,
+    Minus,
+    Plus,
     Radio,
     ListOrdered,
     Maximize2,
@@ -28,13 +27,15 @@ import { ModelAttribution } from '@/components/ModelAttribution';
 import { StaffFocusChecklist } from '@/components/office/StaffFocusChecklist';
 import { SuiteIntelligenceNeuralFlow } from '@/components/SuiteIntelligenceNeuralFlow';
 import type { IntelligenceNavRoom } from '@/lib/suiteIntelligenceFlowGraph';
+import { RESEARCH_STAFF } from '@/lib/researchStaffLabels';
+import { SuiteNavChips } from '@/components/SuiteNavChips';
 
 const DESK_ORDER: { key: keyof AgentStaffSnapshot['desks']; title: string; subtitle: string }[] = [
-    { key: 'ceo', title: 'CEO', subtitle: 'Strategy & narrative' },
-    { key: 'pm', title: 'CTO', subtitle: 'Product & delivery' },
-    { key: 'accountant', title: 'CFO', subtitle: 'Finance & runway' },
-    { key: 'scout', title: 'CSO', subtitle: 'Market & intel' },
-    { key: 'cmo', title: 'CMO', subtitle: 'GTM & motion' },
+    { key: 'ceo', title: RESEARCH_STAFF.ceo.navTitle, subtitle: RESEARCH_STAFF.ceo.navHint },
+    { key: 'pm', title: RESEARCH_STAFF.pm.navTitle, subtitle: RESEARCH_STAFF.pm.navHint },
+    { key: 'accountant', title: RESEARCH_STAFF.accountant.navTitle, subtitle: RESEARCH_STAFF.accountant.navHint },
+    { key: 'scout', title: RESEARCH_STAFF.scout.navTitle, subtitle: RESEARCH_STAFF.scout.navHint },
+    { key: 'cmo', title: RESEARCH_STAFF.cmo.navTitle, subtitle: RESEARCH_STAFF.cmo.navHint },
 ];
 
 const DESK_HF_ROLE: Record<(typeof DESK_ORDER)[number]['key'], HfDeskRole> = {
@@ -45,12 +46,22 @@ const DESK_HF_ROLE: Record<(typeof DESK_ORDER)[number]['key'], HfDeskRole> = {
     cmo: 'cmo',
 };
 
-function FlowArrow() {
-    return (
-        <div className="flex items-center justify-center text-zinc-600" aria-hidden>
-            <ArrowRight className="h-4 w-4" />
-        </div>
-    );
+/** Secondary surface — one consistent treatment for nested content */
+function InsetPanel({
+    children,
+    className = '',
+    variant = 'default',
+}: {
+    children: React.ReactNode;
+    className?: string;
+    /** `muted` = terminal / code-heavy */
+    variant?: 'default' | 'muted';
+}) {
+    const base =
+        variant === 'muted'
+            ? 'rounded-xl border border-white/[0.06] bg-black/25 px-4 py-3 sm:px-5 sm:py-4'
+            : 'rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:px-5 sm:py-5';
+    return <div className={`${base} ${className}`}>{children}</div>;
 }
 
 function formatSyncTime(at: number) {
@@ -62,14 +73,6 @@ function formatSyncTime(at: number) {
     } catch {
         return '';
     }
-}
-
-function SectionCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-    return (
-        <div className={`rounded-xl border border-zinc-800 bg-[#1a1a1d] ${className}`}>
-            {children}
-        </div>
-    );
 }
 
 function SectionHeading({
@@ -84,12 +87,17 @@ function SectionHeading({
     right?: React.ReactNode;
 }) {
     return (
-        <div className="flex items-center justify-between gap-3">
-            <h2 id={id} className="flex items-center gap-2.5 text-[15px] font-semibold tracking-[-0.01em] text-zinc-100">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-800 text-zinc-400">
-                    <Icon className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
+        <div className="flex items-start justify-between gap-3">
+            <h2
+                id={id}
+                className={`flex min-w-0 items-center gap-3 text-[14px] font-semibold leading-snug tracking-tight text-zinc-100 ${
+                    id ? 'scroll-mt-28' : ''
+                }`}
+            >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-b from-white/[0.09] to-white/[0.04] text-zinc-100 ring-1 ring-white/[0.08]">
+                    <Icon className="h-[17px] w-[17px]" strokeWidth={1.9} aria-hidden />
                 </span>
-                {title}
+                <span>{title}</span>
             </h2>
             {right}
         </div>
@@ -98,7 +106,7 @@ function SectionHeading({
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
     return (
-        <span className="inline-block text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
+        <span className="inline-block text-[9px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
             {children}
         </span>
     );
@@ -160,13 +168,13 @@ export function CsuiteIntelligenceGuide() {
     /* ── Empty state ── */
     if (!activeProject?.id) {
         return (
-            <div className="flex h-full min-h-0 flex-col items-center justify-center gap-5 bg-[#131314] px-6 text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-zinc-800 bg-[#1a1a1d]">
-                    <Radio className="h-7 w-7 text-zinc-500" aria-hidden />
+            <div className="flex h-full min-h-0 flex-col items-center justify-center gap-4 bg-[#131314] px-6 text-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.04]">
+                    <Radio className="h-6 w-6 text-zinc-200" strokeWidth={1.85} aria-hidden />
                 </div>
                 <div>
-                    <p className="text-[15px] font-semibold text-zinc-200">No venture selected</p>
-                    <p className="mt-1.5 max-w-sm text-[13px] leading-relaxed text-zinc-500">
+                    <p className="text-[13px] font-medium text-zinc-200">No venture selected</p>
+                    <p className="mt-1.5 max-w-sm text-[12px] leading-relaxed text-zinc-500">
                         Select a venture to open the Intelligence Suite — staff coordination and last sync outputs are tied to your
                         active project record.
                     </p>
@@ -174,7 +182,7 @@ export function CsuiteIntelligenceGuide() {
                 <button
                     type="button"
                     onClick={() => switchRoom('dashboard')}
-                    className="rounded-lg border border-zinc-700 bg-zinc-800 px-5 py-2.5 text-[13px] font-medium text-zinc-200 transition-colors hover:bg-zinc-700"
+                    className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-4 py-2 text-[11px] font-medium text-zinc-200 transition-colors hover:bg-white/[0.07]"
                 >
                     Go to Executive Overview
                 </button>
@@ -199,15 +207,17 @@ export function CsuiteIntelligenceGuide() {
                 aria-modal="true"
                 aria-labelledby="flow-full-title"
             >
-                <header className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-zinc-800 bg-[#161618] px-5 py-3.5 sm:px-7">
+                <header className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-white/[0.06] bg-[#131314] px-4 py-3 sm:px-6">
                     <div className="min-w-0">
                         <SectionLabel>Suite intelligence · flow only</SectionLabel>
-                        <p id="flow-full-title" className="mt-0.5 truncate text-[15px] font-semibold text-zinc-100">
+                        <p id="flow-full-title" className="mt-0.5 truncate text-[13px] font-medium text-zinc-100">
                             {activeProject.name}
                         </p>
-                        <p className="mt-0.5 text-[11px] text-zinc-500">
+                        <p className="mt-0.5 text-[10px] text-zinc-500">
                             Venture → one staff-sync response updates all five roles. Press{' '}
-                            <kbd className="rounded border border-zinc-700 bg-zinc-800 px-1 font-mono text-[10px] text-zinc-400">Esc</kbd>{' '}
+                            <kbd className="rounded border border-white/[0.1] bg-white/[0.05] px-1 font-mono text-[9px] text-zinc-400">
+                                Esc
+                            </kbd>{' '}
                             to exit.
                         </p>
                     </div>
@@ -216,17 +226,21 @@ export function CsuiteIntelligenceGuide() {
                             type="button"
                             onClick={() => runAgentStaffSync()}
                             disabled={agentSyncRunning}
-                            className="inline-flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800 px-3.5 py-2 text-[12px] font-semibold text-zinc-200 transition hover:bg-zinc-700 disabled:opacity-50"
+                            className="inline-flex items-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[11px] font-medium text-zinc-200 transition hover:bg-white/[0.07] disabled:opacity-50"
                         >
-                            <RefreshCw className={`h-3.5 w-3.5 ${agentSyncRunning ? 'animate-spin' : ''}`} aria-hidden />
+                            <RefreshCw
+                                className={`h-3.5 w-3.5 ${agentSyncRunning ? 'animate-spin' : ''}`}
+                                strokeWidth={2}
+                                aria-hidden
+                            />
                             {agentSyncRunning ? 'Syncing…' : 'Run staff sync'}
                         </button>
                         <button
                             type="button"
                             onClick={() => setFlowStructureFullView(false)}
-                            className="inline-flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800 px-3.5 py-2 text-[12px] font-semibold text-zinc-200 transition hover:bg-zinc-700"
+                            className="inline-flex items-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[11px] font-medium text-zinc-200 transition hover:bg-white/[0.07]"
                         >
-                            <X className="h-3.5 w-3.5" aria-hidden />
+                            <X className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
                             Close
                         </button>
                     </div>
@@ -245,191 +259,194 @@ export function CsuiteIntelligenceGuide() {
             {flowPortalReady && flowFullScreenLayer ? createPortal(flowFullScreenLayer, document.body) : null}
 
             <div className="w-full min-w-0 bg-[#131314]">
-                <div className="mx-auto max-w-3xl px-5 pt-8 pb-28 sm:px-6 lg:max-w-5xl">
+                <div className="mx-auto max-w-3xl px-4 pt-6 pb-24 sm:px-5 lg:max-w-4xl">
 
-                    {/* ─── Page header ─── */}
-                    <header className="mb-10">
+                    {/* ─── Page heading: single top rule + spacing for the whole page ─── */}
+                    <header className="mb-16 max-w-2xl border-b border-white/[0.07] pb-10">
                         <SectionLabel>Intelligence Suite</SectionLabel>
-                        <h1 className="mt-2 text-2xl font-bold tracking-tight text-zinc-50 sm:text-[28px]">
+                        <h1 className="mt-1.5 text-xl font-semibold tracking-tight text-zinc-100 sm:text-[22px]">
                             Staff network &amp; process
                         </h1>
-                        <p className="mt-3 max-w-2xl text-[14px] leading-[1.7] text-zinc-400">
-                            How <span className="font-medium text-zinc-200">coordinated staff sync</span> refreshes every officer
-                            lane at once from your venture snapshot, and how{' '}
-                            <span className="font-medium text-zinc-200">day-to-day AI</span> in each desk feeds the same record so
-                            the next run stays aligned.
+                        <p className="mt-2.5 text-[13px] leading-relaxed text-zinc-500">
+                            How <span className="text-zinc-300">coordinated staff sync</span> refreshes every officer lane at once
+                            from your venture snapshot, and how <span className="text-zinc-300">day-to-day AI</span> in each desk
+                            feeds the same record so the next run stays aligned.
                         </p>
-                        <div className="mt-5 h-px bg-zinc-800" />
+                        <SuiteNavChips className="mt-6" />
                     </header>
 
                     {/* ─── Section 1: Live coordination map ─── */}
-                    <section className="mb-10" aria-labelledby="live-net">
-                        <SectionCard className="p-5 sm:p-6">
-                            <div className="mb-5">
-                                <SectionHeading
-                                    icon={GitBranch}
-                                    title="Live coordination map"
-                                    id="live-net"
-                                    right={
-                                        <button
-                                            type="button"
-                                            onClick={() => setFlowStructureFullView(true)}
-                                            className="inline-flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-[11px] font-semibold text-zinc-300 transition hover:bg-zinc-700 hover:text-zinc-100"
-                                        >
-                                            <Maximize2 className="h-3 w-3" aria-hidden />
-                                            Fullscreen
-                                        </button>
-                                    }
-                                />
-                                <p className="mt-2 pl-[38px] text-[13px] leading-relaxed text-zinc-500">
-                                    <span className="font-medium text-zinc-300">Venture → staff-sync → roles → workspaces.</span>{' '}
-                                    Sync AI staff fills the pipeline strip.
-                                </p>
-                            </div>
+                    <section className="mb-16" aria-labelledby="live-net">
+                        <SectionHeading
+                            icon={GitBranch}
+                            title="Live coordination map"
+                            id="live-net"
+                            right={
+                                <button
+                                    type="button"
+                                    onClick={() => setFlowStructureFullView(true)}
+                                    className="inline-flex items-center gap-1.5 rounded-lg border border-white/[0.1] bg-white/[0.05] px-3 py-1.5 text-[11px] font-medium text-zinc-200 transition hover:bg-white/[0.07]"
+                                >
+                                    <Maximize2 className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
+                                    Fullscreen
+                                </button>
+                            }
+                        />
+                        <p className="mt-3 max-w-2xl text-[13px] leading-relaxed text-zinc-500">
+                            <span className="text-zinc-400">Venture → staff-sync → roles → workspaces.</span> Sync AI staff fills the
+                            pipeline below.
+                        </p>
 
-                            {/* How it works — single-panel disclosure (no nested “second box”) */}
-                            <div className="mb-5 overflow-hidden rounded-xl border border-zinc-800 bg-[#1a1a1d]">
+                        <InsetPanel className="mt-6 space-y-0">
+                            <div className="overflow-hidden rounded-lg border border-white/[0.06] bg-black/20">
                                 <button
                                     type="button"
                                     onClick={() => setHowAiOpen((v) => !v)}
-                                    className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-[12px] font-medium text-zinc-200 transition hover:bg-[#1e1e21] sm:px-5 sm:py-3.5"
+                                    className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-[12px] font-medium text-zinc-200 transition hover:bg-white/[0.04]"
                                     aria-expanded={howAiOpen}
                                     aria-controls="how-ai-updates"
                                     id="how-ai-toggle"
                                 >
                                     <span>How sync &amp; desk updates work</span>
-                                    <ChevronDown
-                                        className={`h-4 w-4 shrink-0 text-zinc-500 transition-transform ${howAiOpen ? 'rotate-180' : ''}`}
-                                        aria-hidden
-                                    />
+                                    {howAiOpen ? (
+                                        <Minus className="h-4 w-4 shrink-0 text-zinc-400" strokeWidth={2} aria-hidden />
+                                    ) : (
+                                        <Plus className="h-4 w-4 shrink-0 text-zinc-400" strokeWidth={2} aria-hidden />
+                                    )}
                                 </button>
                                 {howAiOpen ? (
                                     <div
                                         id="how-ai-updates"
-                                        className="border-t border-zinc-800 bg-[#161618] px-4 py-4 sm:px-5 sm:py-5"
+                                        className="border-t border-white/[0.06] bg-black/15 px-4 py-4"
                                         aria-labelledby="how-ai-toggle"
                                     >
                                         <ol className="list-decimal space-y-2.5 pl-4 text-[12px] leading-relaxed text-zinc-400 marker:text-zinc-600">
                                             <li>
-                                                <span className="font-medium text-zinc-200">One venture record</span> — strategy,
-                                                plan, budget, market, kanban, calendar, staff snapshot.
+                                                <span className="text-zinc-200">One venture record</span> — strategy, plan, budget,
+                                                market, kanban, calendar, staff snapshot.
                                             </li>
                                             <li>
-                                                <span className="font-medium text-zinc-200">Staff sync</span> — one model pass
-                                                returns all five desk briefs + merges; see{' '}
-                                                <code className="rounded bg-zinc-800 px-1.5 py-0.5 font-mono text-[10px] text-zinc-400">
+                                                <span className="text-zinc-200">Staff sync</span> — one model pass returns all five desk
+                                                briefs + merges; see{' '}
+                                                <code className="rounded-md border border-white/[0.06] bg-white/[0.05] px-1.5 py-0.5 font-mono text-[11px] text-zinc-300">
                                                     agentStaffSnapshot.desks.*
                                                 </code>
                                             </li>
                                             <li>
-                                                <span className="font-medium text-zinc-200">Between syncs</span> — desk AI / PA
-                                                edits merge into the same record; next sync re-reads it.
+                                                <span className="text-zinc-200">Between syncs</span> — desk AI / PA edits merge into the
+                                                same record; next sync re-reads it.
                                             </li>
                                             <li>
-                                                <span className="font-medium text-zinc-200">Map columns</span> — brief, fields,
-                                                linked surfaces; Open desk to go deeper.
+                                                <span className="text-zinc-200">Map columns</span> — brief, fields, linked surfaces; open
+                                                a desk to go deeper.
                                             </li>
                                         </ol>
                                     </div>
                                 ) : null}
                             </div>
 
-                            {/* Neural flow graph */}
-                            <SuiteIntelligenceNeuralFlow {...flowProps} variant="inline" />
+                            <div className="rounded-lg border border-white/[0.05] bg-black/20 px-2 py-4 sm:px-3">
+                                <SuiteIntelligenceNeuralFlow {...flowProps} variant="inline" />
+                            </div>
 
-                            {/* HF desk buttons */}
-                            <div className="mt-5 flex flex-wrap items-center gap-2 rounded-lg border border-zinc-800 bg-[#1e1e21] px-3 py-2.5">
-                                <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-500">
-                                    HF desk
+                            <div className="flex flex-col gap-3 rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
+                                    Hugging Face desk
                                 </span>
-                                {DESK_ORDER.map((d) => (
-                                    <button
-                                        key={d.key}
-                                        type="button"
-                                        disabled={hfSyncing}
-                                        onClick={() => {
-                                            setHfSyncResult(null);
-                                            void hfSyncRole(DESK_HF_ROLE[d.key]);
-                                        }}
-                                        className="rounded-md border border-zinc-700 bg-zinc-800 px-2.5 py-1 text-[11px] font-medium text-zinc-400 transition hover:bg-zinc-700 hover:text-zinc-200 disabled:opacity-50"
-                                    >
-                                        {d.title}
-                                    </button>
-                                ))}
+                                <div className="flex flex-wrap gap-1.5">
+                                    {DESK_ORDER.map((d) => (
+                                        <button
+                                            key={d.key}
+                                            type="button"
+                                            disabled={hfSyncing}
+                                            onClick={() => {
+                                                setHfSyncResult(null);
+                                                void hfSyncRole(DESK_HF_ROLE[d.key]);
+                                            }}
+                                            className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-2.5 py-1.5 text-[11px] font-medium text-zinc-300 transition hover:bg-white/[0.08] hover:text-zinc-100 disabled:opacity-50"
+                                        >
+                                            {d.title}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
 
                             {hfSyncResult ? (
-                                <div className="mt-4 rounded-lg border border-zinc-800 bg-[#1e1e21] p-4 text-[12px] leading-relaxed text-zinc-400">
+                                <InsetPanel variant="muted" className="text-[12px] leading-relaxed text-zinc-400">
                                     {hfSyncResult}
                                     <ModelAttribution model={hfSyncModel} />
-                                </div>
+                                </InsetPanel>
                             ) : null}
 
-                            {/* Sync CTA */}
-                            <div className="mt-6 flex flex-wrap items-center justify-center gap-4 border-t border-zinc-800 pt-5">
+                            <div className="flex flex-col gap-4 border-t border-white/[0.06] pt-5 sm:flex-row sm:items-center sm:justify-between">
                                 <button
                                     type="button"
                                     onClick={() => runAgentStaffSync()}
                                     disabled={agentSyncRunning}
-                                    className="inline-flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800 px-5 py-2.5 text-[12px] font-semibold text-zinc-200 transition hover:bg-zinc-700 disabled:opacity-50"
+                                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/[0.12] bg-white/[0.08] px-5 py-2.5 text-[12px] font-semibold text-zinc-100 shadow-sm transition hover:bg-white/[0.06] disabled:opacity-50"
                                 >
-                                    <RefreshCw className={`h-4 w-4 ${agentSyncRunning ? 'animate-spin' : ''}`} aria-hidden />
+                                    <RefreshCw
+                                        className={`h-4 w-4 ${agentSyncRunning ? 'animate-spin' : ''}`}
+                                        strokeWidth={2}
+                                        aria-hidden
+                                    />
                                     {agentSyncRunning ? 'Running staff sync…' : 'Run staff sync now'}
                                 </button>
-                                <p className="max-w-sm text-center text-[11px] leading-snug text-zinc-500 sm:text-left">
-                                    Uses your venture snapshot + headlines. Results merge into the fields shown in the graph and
-                                    surface in each desk.
+                                <p className="max-w-md text-[12px] leading-relaxed text-zinc-500 sm:text-right">
+                                    Uses your venture snapshot and headlines. Results merge into the graph and each desk.
                                 </p>
                             </div>
-                        </SectionCard>
+                        </InsetPanel>
                     </section>
 
                     {/* ─── Section 2: Role outputs ─── */}
                     {snapshot?.desks && (
-                        <section className="mb-10" aria-labelledby="desk-out">
+                        <section className="mb-16" aria-labelledby="desk-out">
                             <SectionHeading icon={Users} title="What each role prepared" id="desk-out" />
-                            <p className="mt-2 pl-[38px] text-[13px] text-zinc-500">
-                                From the last sync ({formatSyncTime(snapshot.at)}). Desk briefs are merged into your venture
-                                record.
+                            <p className="mt-3 text-[13px] text-zinc-500">
+                                Last sync <span className="text-zinc-400">{formatSyncTime(snapshot.at)}</span>. Briefs are merged into
+                                your venture record.
                             </p>
 
                             {snapshot.summary?.trim() ? (
-                                <div className="mt-5 rounded-xl border border-zinc-800 bg-[#1a1a1d] p-5">
+                                <InsetPanel className="mt-6 border-l-4 border-l-white/[0.12] pl-5">
                                     <SectionLabel>Staff synthesis</SectionLabel>
-                                    <p className="mt-2 whitespace-pre-wrap text-[13px] leading-[1.75] text-zinc-300">
+                                    <p className="mt-2 whitespace-pre-wrap text-[13px] leading-relaxed text-zinc-300">
                                         {snapshot.summary}
                                     </p>
-                                </div>
+                                </InsetPanel>
                             ) : null}
 
-                            <div className="mt-4 overflow-hidden rounded-xl border border-zinc-800 bg-[#18181b]">
-                                {deskEntries.map((row, idx) => {
+                            <div className="mt-6 space-y-2.5">
+                                {deskEntries.map((row) => {
                                     const open = openDesk === row.key;
                                     return (
                                         <div
                                             key={row.key}
-                                            className={idx > 0 ? 'border-t border-zinc-800' : ''}
+                                            className={`overflow-hidden rounded-xl border transition-colors ${
+                                                open
+                                                    ? 'border-white/[0.12] bg-white/[0.04] ring-1 ring-white/[0.06]'
+                                                    : 'border-white/[0.06] bg-white/[0.02] hover:border-white/[0.1]'
+                                            }`}
                                         >
                                             <button
                                                 type="button"
                                                 onClick={() => setOpenDesk(open ? null : row.key)}
-                                                className={`flex w-full items-center justify-between gap-3 px-5 py-3.5 text-left transition ${
-                                                    open ? 'bg-[#1a1a1d]' : 'hover:bg-[#1c1c1f]'
-                                                }`}
+                                                className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left"
                                             >
-                                                <span className="flex min-w-0 flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
-                                                    <span className="text-[14px] font-semibold text-zinc-100">{row.title}</span>
-                                                    <span className="text-[11px] text-zinc-500">{row.subtitle}</span>
+                                                <span className="min-w-0">
+                                                    <span className="block text-[13px] font-semibold text-zinc-100">{row.title}</span>
+                                                    <span className="mt-0.5 block text-[11px] text-zinc-500">{row.subtitle}</span>
                                                 </span>
                                                 {open ? (
-                                                    <ChevronDown className="h-4 w-4 shrink-0 text-zinc-500" aria-hidden />
+                                                    <Minus className="h-4 w-4 shrink-0 text-zinc-400" strokeWidth={2} aria-hidden />
                                                 ) : (
-                                                    <ChevronRight className="h-4 w-4 shrink-0 text-zinc-600" aria-hidden />
+                                                    <Plus className="h-4 w-4 shrink-0 text-zinc-500" strokeWidth={2} aria-hidden />
                                                 )}
                                             </button>
                                             {open ? (
-                                                <div className="border-t border-zinc-800 bg-[#161618] px-5 py-4">
-                                                    <p className="whitespace-pre-wrap text-[13px] leading-[1.75] text-zinc-300">
+                                                <div className="border-t border-white/[0.06] bg-black/25 px-4 py-4">
+                                                    <p className="whitespace-pre-wrap text-[12px] leading-relaxed text-zinc-400">
                                                         {row.text || '—'}
                                                     </p>
                                                 </div>
@@ -441,90 +458,86 @@ export function CsuiteIntelligenceGuide() {
                         </section>
                     )}
 
-                    {/* ─── Section 3: Focus + Trace (side by side) ─── */}
-                    <section className="mb-10 grid gap-5 lg:grid-cols-2" aria-labelledby="focus-trace">
-                        {/* Focus today */}
-                        <SectionCard className="p-5">
+                    {/* ─── Section 3: Focus + Trace ─── */}
+                    <section className="mb-16 grid gap-5 lg:grid-cols-2 lg:gap-6" aria-labelledby="focus-trace">
+                        <InsetPanel className="flex min-h-[12rem] flex-col">
                             <SectionHeading icon={Sparkles} title="Focus today" id="focus-trace" />
-                            <div className="mt-4">
+                            <p className="mt-3 text-[12px] text-zinc-500">
+                                Check items as you go. Notes are saved to your journal.
+                            </p>
+                            <div className="mt-4 min-h-0 flex-1">
                                 {focus.length > 0 ? (
-                                    <>
-                                        <p className="mb-3 text-[11px] text-zinc-500">
-                                            Check items off as you complete them. Notes are saved to journal.
-                                        </p>
-                                        <StaffFocusChecklist
-                                            lines={focus}
-                                            completedLines={activeProject?.staffFocusCompletedLines || []}
-                                            onMarkDone={(line, note) => markStaffFocusLineDone(line, note)}
-                                        />
-                                    </>
+                                    <StaffFocusChecklist
+                                        lines={focus}
+                                        completedLines={activeProject?.staffFocusCompletedLines || []}
+                                        onMarkDone={(line, note) => markStaffFocusLineDone(line, note)}
+                                        className="border-white/[0.08] bg-black/15"
+                                    />
                                 ) : (
-                                    <div className="rounded-lg border border-dashed border-zinc-700 px-4 py-8 text-center">
-                                        <p className="text-[13px] text-zinc-500">
-                                            Run a staff sync to populate today&apos;s priorities.
-                                        </p>
+                                    <div className="rounded-lg border border-dashed border-white/[0.1] bg-black/15 px-4 py-8 text-center text-[12px] text-zinc-500">
+                                        Run a staff sync to populate today&apos;s priorities.
                                     </div>
                                 )}
                             </div>
-                        </SectionCard>
+                        </InsetPanel>
 
-                        {/* Process trace */}
-                        <SectionCard className="p-5">
-                            <button
-                                type="button"
-                                onClick={() => setTraceOpen(!traceOpen)}
-                                className="flex w-full items-center justify-between gap-2 text-left"
-                            >
+                        <InsetPanel className="flex min-h-[12rem] flex-col">
+                            <div className="flex items-start justify-between gap-2">
                                 <SectionHeading icon={ListOrdered} title="Process trace" />
-                                <span className="rounded-md bg-zinc-800 px-2 py-0.5 text-[10px] font-medium text-zinc-400 transition hover:bg-zinc-700">
+                                <button
+                                    type="button"
+                                    onClick={() => setTraceOpen(!traceOpen)}
+                                    className="shrink-0 rounded-lg border border-white/[0.1] bg-white/[0.05] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-400 transition hover:bg-white/[0.08]"
+                                >
                                     {traceOpen ? 'Hide' : 'Show'}
-                                </span>
-                            </button>
-                            {traceOpen && (lastAiSyncTrace?.length ?? 0) > 0 ? (
-                                <ol className="custom-scrollbar mt-4 max-h-[min(52vh,420px)] space-y-2 overflow-y-auto pr-1">
-                                    {lastAiSyncTrace!.map((step, i) => (
-                                        <li
-                                            key={step.id + i}
-                                            className="flex gap-3 rounded-lg border border-zinc-800 bg-[#1e1e21] px-3 py-2.5"
-                                        >
-                                            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-[10px] font-bold text-zinc-400">
-                                                {i + 1}
-                                            </span>
-                                            <div className="min-w-0">
-                                                <p className="text-[12px] font-medium text-zinc-200">{step.label}</p>
-                                                {step.detail ? (
-                                                    <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-500">
-                                                        {step.detail}
-                                                    </p>
-                                                ) : null}
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ol>
-                            ) : traceOpen ? (
-                                <div className="mt-4 rounded-lg border border-dashed border-zinc-700 px-4 py-6 text-center">
-                                    <p className="text-[13px] text-zinc-500">
-                                        Run <span className="font-medium text-zinc-300">staff sync</span> in this session to see
-                                        the step-by-step trace. After refresh, use desk sections above — trace is session-only.
-                                    </p>
-                                </div>
-                            ) : null}
-                        </SectionCard>
+                                </button>
+                            </div>
+                            <p className="mt-3 text-[12px] text-zinc-500">Steps from the last staff sync in this session.</p>
+                            <div className="mt-4 min-h-0 flex-1">
+                                {traceOpen && (lastAiSyncTrace?.length ?? 0) > 0 ? (
+                                    <ol className="custom-scrollbar max-h-[min(52vh,420px)] space-y-2 overflow-y-auto pr-1">
+                                        {lastAiSyncTrace!.map((step, i) => (
+                                            <li
+                                                key={step.id + i}
+                                                className="flex gap-3 rounded-lg border border-white/[0.06] bg-black/20 px-3 py-2.5"
+                                            >
+                                                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-white/[0.08] text-[11px] font-bold text-zinc-300">
+                                                    {i + 1}
+                                                </span>
+                                                <div className="min-w-0">
+                                                    <p className="text-[12px] font-medium text-zinc-200">{step.label}</p>
+                                                    {step.detail ? (
+                                                        <p className="mt-1 text-[11px] leading-relaxed text-zinc-500">{step.detail}</p>
+                                                    ) : null}
+                                                </div>
+                                            </li>
+                                        ))}
+                                    </ol>
+                                ) : traceOpen ? (
+                                    <div className="rounded-lg border border-dashed border-white/[0.1] bg-black/15 px-4 py-6 text-[12px] leading-relaxed text-zinc-500">
+                                        Run <span className="text-zinc-400">staff sync</span> in this session to see the trace. It
+                                        does not persist after refresh.
+                                    </div>
+                                ) : (
+                                    <p className="py-2 text-[12px] text-zinc-600">Open Show to view the step list from your last sync.</p>
+                                )}
+                            </div>
+                        </InsetPanel>
                     </section>
 
-                    {/* ─── Sync activity ─── */}
-                    {syncLogs.length > 0 ? (
-                        <section className="mb-10" aria-labelledby="act-feed">
-                            <SectionHeading icon={Radio} title="Sync activity" id="act-feed" />
-                            <div className="mt-4 rounded-xl border border-zinc-800 bg-[#1a1a1d] p-4">
-                                <ul className="space-y-1">
+                    {/* ─── Sync activity (anchor always present for section nav) ─── */}
+                    <section id="act-feed" className="mb-16 scroll-mt-28" aria-labelledby="act-feed-title">
+                        <SectionHeading icon={Radio} title="Sync activity" id="act-feed-title" />
+                        {syncLogs.length > 0 ? (
+                            <InsetPanel variant="muted" className="mt-4 font-mono">
+                                <ul className="space-y-2">
                                     {syncLogs.map((log) => (
-                                        <li key={log.id} className="flex gap-3 py-1">
-                                            <span className="shrink-0 pt-px text-[10px] font-mono text-zinc-600">
+                                        <li key={log.id} className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] leading-snug">
+                                            <span className="shrink-0 text-zinc-500">
                                                 {new Date(log.timestamp).toLocaleTimeString()}
                                             </span>
                                             <span
-                                                className={`text-[12px] ${
+                                                className={`min-w-0 ${
                                                     log.type === 'error' ? 'text-red-400/90' : 'text-zinc-400'
                                                 }`}
                                             >
@@ -533,20 +546,22 @@ export function CsuiteIntelligenceGuide() {
                                         </li>
                                     ))}
                                 </ul>
-                            </div>
-                        </section>
-                    ) : null}
+                            </InsetPanel>
+                        ) : (
+                            <p className="mt-3 text-[12px] text-zinc-600">No sync activity recorded yet.</p>
+                        )}
+                    </section>
 
-                    {/* ─── Section 4: Data flow summary ─── */}
-                    <section className="mb-10" aria-labelledby="net-title">
+                    {/* ─── Section 4: Data flow ─── */}
+                    <section className="mb-16" aria-labelledby="net-title">
                         <SectionHeading icon={Layers} title="Data flow summary" id="net-title" />
-                        <p className="mt-2 pl-[38px] text-[13px] leading-relaxed text-zinc-500">
-                            The neural suite map above is this venture&apos;s live wiring.{' '}
-                            <span className="font-medium text-zinc-300">Staff sync</span> is the batched step;{' '}
-                            <span className="font-medium text-zinc-300">Desk AI</span> applies changes as you work.
+                        <p className="mt-3 max-w-2xl text-[13px] leading-relaxed text-zinc-500">
+                            The map above is this venture&apos;s wiring.{' '}
+                            <span className="text-zinc-400">Staff sync</span> is the batched step;{' '}
+                            <span className="text-zinc-400">Desk AI</span> applies changes as you work.
                         </p>
 
-                        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                        <InsetPanel className="mt-6 divide-y divide-white/[0.06] p-0">
                             {[
                                 {
                                     icon: Database,
@@ -556,7 +571,7 @@ export function CsuiteIntelligenceGuide() {
                                 {
                                     icon: Bot,
                                     label: 'Intelligence layer',
-                                    text: 'Dexo, Chief of Staff, desk chats, Boardroom, and staff sync all touch the same venture row.',
+                                    text: 'Dexo, coordination, desk chats, and staff sync all touch the same venture row.',
                                 },
                                 {
                                     icon: Users,
@@ -564,58 +579,63 @@ export function CsuiteIntelligenceGuide() {
                                     text: 'Each desk has a defined artifact type so outputs stay structured and traceable.',
                                 },
                             ].map((item) => (
-                                <div
-                                    key={item.label}
-                                    className="flex flex-col rounded-xl border border-zinc-800 bg-[#1a1a1d] p-5"
-                                >
-                                    <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-800">
-                                        <item.icon className="h-4 w-4 text-zinc-400" aria-hidden />
+                                <div key={item.label} className="flex gap-4 px-5 py-4 first:pt-5 last:pb-5">
+                                    <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/[0.06] text-zinc-100 ring-1 ring-white/[0.06]">
+                                        <item.icon className="h-[18px] w-[18px]" strokeWidth={1.9} aria-hidden />
                                     </div>
-                                    <p className="mb-1.5 text-[12px] font-semibold uppercase tracking-[0.08em] text-zinc-300">
-                                        {item.label}
-                                    </p>
-                                    <p className="text-[12px] leading-relaxed text-zinc-500">{item.text}</p>
+                                    <div className="min-w-0">
+                                        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                                            {item.label}
+                                        </p>
+                                        <p className="mt-1.5 text-[13px] leading-relaxed text-zinc-400">{item.text}</p>
+                                    </div>
                                 </div>
                             ))}
-                        </div>
+                        </InsetPanel>
                     </section>
 
-                    {/* ─── Section 5: How decisions are shaped ─── */}
-                    <section className="mb-10">
-                        <SectionHeading icon={Shield} title="How decisions are shaped" />
-                        <div className="mt-4 space-y-0 divide-y divide-zinc-800 rounded-xl border border-zinc-800 bg-[#1a1a1d]">
-                            {[
-                                {
-                                    label: 'Executive overview',
-                                    text: 'Reflects what you and desks recorded — not invented KPIs.',
-                                },
-                                {
-                                    label: 'Boardroom',
-                                    text: 'Runs a multi-officer loop with conflict checks before consensus.',
-                                },
-                                {
-                                    label: 'Chat rail',
-                                    text: 'Uses room-themed prompts so follow-ups match the surface you are in.',
-                                },
-                            ].map((item) => (
-                                <div key={item.label} className="flex gap-4 px-5 py-4">
-                                    <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-600" aria-hidden />
-                                    <p className="text-[13px] leading-relaxed text-zinc-400">
-                                        <span className="font-medium text-zinc-200">{item.label}</span> — {item.text}
-                                    </p>
-                                </div>
-                            ))}
-                        </div>
+                    {/* ─── Section 5: Decisions ─── */}
+                    <section className="mb-16">
+                        <SectionHeading icon={Shield} title="How decisions are shaped" id="decisions-shape" />
+                        <InsetPanel className="mt-6">
+                            <ul className="space-y-4">
+                                {[
+                                    {
+                                        label: 'Executive overview',
+                                        text: 'Reflects what you and desks recorded — not invented KPIs.',
+                                    },
+                                    {
+                                        label: 'Staff sync',
+                                        text: 'One batched pass refreshes all desk briefs from the same venture snapshot.',
+                                    },
+                                    {
+                                        label: 'Chat rail',
+                                        text: 'Uses room-themed prompts so follow-ups match the surface you are in.',
+                                    },
+                                ].map((item) => (
+                                    <li key={item.label} className="flex gap-3 text-[13px] leading-relaxed text-zinc-400">
+                                        <span
+                                            className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-500"
+                                            aria-hidden
+                                        />
+                                        <span>
+                                            <span className="font-medium text-zinc-200">{item.label}</span>
+                                            <span className="text-zinc-500"> — {item.text}</span>
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </InsetPanel>
                     </section>
 
-                    {/* ─── Section 6: Reports & artifacts ─── */}
-                    <section className="mb-10">
-                        <SectionHeading icon={FileText} title="Reports &amp; artifacts" />
-                        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                    {/* ─── Section 6: Reports ─── */}
+                    <section className="mb-12">
+                        <SectionHeading icon={FileText} title="Reports &amp; artifacts" id="reports-artifacts" />
+                        <div className="mt-6 grid gap-3 sm:grid-cols-3">
                             {[
                                 {
                                     icon: FileText,
-                                    text: 'Knowledge base / exports from desks.',
+                                    text: 'Knowledge base and exports from desks.',
                                 },
                                 {
                                     icon: RefreshCw,
@@ -626,23 +646,19 @@ export function CsuiteIntelligenceGuide() {
                                     text: 'Neural diary for qualitative threads.',
                                 },
                             ].map((item, i) => (
-                                <div
-                                    key={i}
-                                    className="flex items-start gap-3 rounded-xl border border-zinc-800 bg-[#1a1a1d] px-4 py-4"
-                                >
-                                    <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-zinc-800">
-                                        <item.icon className="h-3.5 w-3.5 text-zinc-500" aria-hidden />
+                                <InsetPanel key={i} className="flex flex-col gap-2">
+                                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/[0.06] text-zinc-100">
+                                        <item.icon className="h-[17px] w-[17px]" strokeWidth={1.9} aria-hidden />
                                     </div>
-                                    <p className="text-[13px] leading-relaxed text-zinc-400">{item.text}</p>
-                                </div>
+                                    <p className="text-[12px] leading-relaxed text-zinc-400">{item.text}</p>
+                                </InsetPanel>
                             ))}
                         </div>
                     </section>
 
-                    {/* ─── Footer ─── */}
-                    <footer className="rounded-xl border border-zinc-800 bg-[#18181b] px-5 py-4 text-[12px] leading-relaxed text-zinc-500">
-                        <span className="font-medium text-zinc-300">Privacy:</span> venture data stays in your browser
-                        (IndexedDB) unless your deployment adds server persistence. AI calls follow your backend configuration.
+                    <footer className="border-t border-white/[0.07] pt-8 text-[11px] leading-relaxed text-zinc-600">
+                        <span className="font-medium text-zinc-500">Privacy.</span> Venture data stays in your browser (IndexedDB)
+                        unless your deployment adds server persistence. AI calls follow your backend configuration.
                     </footer>
                 </div>
             </div>

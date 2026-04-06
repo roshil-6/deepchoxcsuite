@@ -18,10 +18,11 @@ const GROQ_MODEL_MAP: Record<string, string> = {
   mistral: 'llama-3.3-70b-versatile',
   phi3: 'llama-3.1-8b-instant',
   /**
-   * Google Gemma 2 9B IT on Groq (`gemma2-9b-it`). Override with `GROQ_GEMMA_MODEL` if Groq updates the id.
-   * If Groq returns “decommissioned”, set `GROQ_GEMMA_MODEL` to a current id from console.groq.com/docs/models.
+   * Desk label “Gemma 2” — Groq decommissioned `gemma2-9b-it` (see deprecations).
+   * Default routes to Groq’s recommended replacement: `llama-3.1-8b-instant`.
+   * Override with `GROQ_GEMMA_MODEL` (e.g. another current id from console.groq.com/docs/models).
    */
-  gemma2: process.env.GROQ_GEMMA_MODEL?.trim() || 'gemma2-9b-it',
+  gemma2: process.env.GROQ_GEMMA_MODEL?.trim() || 'llama-3.1-8b-instant',
 };
 
 const GROQ_DESK_IDS = new Set(Object.keys(GROQ_MODEL_MAP));
@@ -107,6 +108,92 @@ export async function chatWithGroq(
   };
 }
 
+/** Hugging Face Inference API (text generation) — Gemma and other models. */
+function hfBearerToken(): string | undefined {
+  return (
+    process.env.HF_API_TOKEN?.trim() ||
+    process.env.HUGGINGFACE_API_KEY?.trim() ||
+    process.env.HF_TOKEN?.trim()
+  );
+}
+
+/** One HF repo for desk chat — avoids gated Llama/Mistral IDs on free inference. Override with HF_CHAT_MODEL. */
+const DEFAULT_HF_CHAT_MODEL = 'google/gemma-2-2b-it';
+
+function resolveHfInferenceModel(_requested?: string): string {
+  return process.env.HF_CHAT_MODEL?.trim() || DEFAULT_HF_CHAT_MODEL;
+}
+
+/** Build a single prompt for HF text-generation (Gemma 2 IT-style turns when possible). */
+function buildHfPromptFromMessages(messages: ChatMessage[]): string {
+  const normalized = messages.filter((m) => m && typeof m.content === 'string');
+  if (normalized.length === 0) return '<start_of_turn>user\n\n<end_of_turn>\n<start_of_turn>model\n';
+  const joined = normalized.map((m) => `${m.role}: ${m.content}`).join('\n\n');
+  const clipped = joined.length > 12000 ? joined.slice(0, 11999) + '…' : joined;
+  return `<start_of_turn>user\n${clipped}\n<end_of_turn>\n<start_of_turn>model\n`;
+}
+
+export async function chatWithHuggingFace(
+  messages: ChatMessage[],
+  modelId: string | undefined
+): Promise<OllamaShapedResponse> {
+  const token = hfBearerToken();
+  if (!token) throw new Error('HF_API_TOKEN (or HUGGINGFACE_API_KEY) is not set');
+
+  const model = resolveHfInferenceModel(modelId);
+  const url = `https://api-inference.huggingface.co/models/${model}`;
+  const inputs = buildHfPromptFromMessages(messages);
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      inputs,
+      parameters: {
+        max_new_tokens: 1024,
+        temperature: 0.7,
+        top_p: 0.9,
+        return_full_text: false,
+      },
+    }),
+  });
+
+  const data = (await res.json()) as
+    | { error?: string }
+    | { generated_text?: string }[]
+    | Record<string, unknown>;
+
+  if (!res.ok) {
+    const err =
+      typeof data === 'object' && data && 'error' in data
+        ? String((data as { error?: string }).error || res.statusText)
+        : res.statusText;
+    throw new Error(err || 'Hugging Face inference failed');
+  }
+
+  if (typeof data === 'object' && data && 'error' in data && (data as { error?: string }).error) {
+    const e = String((data as { error: string }).error);
+    if (e.includes('loading')) throw new Error('Model is loading on Hugging Face — retry in ~30s.');
+    throw new Error(e);
+  }
+
+  const arr = Array.isArray(data) ? data : null;
+  const text = (arr?.[0] as { generated_text?: string } | undefined)?.generated_text?.trim() || '';
+  if (!text) {
+    throw new Error('Empty response from Hugging Face');
+  }
+
+  return {
+    model,
+    created_at: new Date().toISOString(),
+    message: { role: 'assistant', content: text },
+    done: true,
+  };
+}
+
 export async function chatWithOllama(messages: ChatMessage[], model: string | undefined): Promise<OllamaShapedResponse> {
   const url = process.env.OLLAMA_URL?.trim() || 'http://127.0.0.1:11434/api/chat';
   const response = await fetch(url, {
@@ -131,7 +218,7 @@ export function simulationResponse(messages: ChatMessage[], model: string | unde
   const last = messages[messages.length - 1];
   const lastUserMessage = last?.content || '';
   let mockResponse =
-    'I am currently disconnected from my neural engine. Set GROQ_API_KEY on the server (e.g. Render) or run Ollama locally.';
+    'I am currently disconnected from my neural engine. Set GROQ_API_KEY and/or HF_API_TOKEN (Hugging Face) on the server, or run Ollama locally.';
 
   const lower = lastUserMessage.toLowerCase();
   if (lower.includes('hello') || lower.includes('hi')) {

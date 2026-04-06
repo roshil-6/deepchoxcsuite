@@ -111,12 +111,12 @@ export function ExecModelPicker({ value, onChange, menuAbove }: Props) {
                 aria-controls={listId}
                 onClick={() => setOpen((v) => !v)}
                 title={active.blurb}
-                className="inline-flex h-8 max-w-[min(100%,200px)] items-center gap-1.5 rounded-full border border-white/[0.1] bg-white/[0.04] pl-2 pr-2 text-left text-[12px] font-medium text-zinc-200 shadow-sm transition hover:border-white/[0.16] hover:bg-white/[0.08] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/35 sm:h-8 sm:max-w-[240px] sm:pl-2.5 sm:pr-2.5"
+                className="inline-flex h-8 max-w-[min(100%,220px)] items-center gap-1.5 rounded-full border-0 bg-transparent pl-2 pr-2 text-left text-[13px] font-medium text-zinc-200 transition hover:bg-white/[0.08] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 sm:max-w-[260px]"
             >
-                <Sparkles className="h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
+                <Sparkles className="h-4 w-4 shrink-0 text-zinc-400" aria-hidden />
                 <span className="min-w-0 truncate tabular-nums">{active.label}</span>
                 <ChevronDown
-                    className={`h-3.5 w-3.5 shrink-0 text-zinc-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+                    className={`h-4 w-4 shrink-0 text-zinc-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
                     aria-hidden
                 />
             </button>
