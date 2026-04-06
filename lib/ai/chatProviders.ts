@@ -7,20 +7,35 @@ type ChatMessage = { role: string; content: string };
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
-/** Map UI / Ollama-style ids to current Groq model names — override with GROQ_MODEL env. */
+/**
+ * Map UI / Ollama-style ids to Groq `model` strings.
+ * Keep in sync with https://console.groq.com/docs/deprecations — retired IDs break requests.
+ */
 const GROQ_MODEL_MAP: Record<string, string> = {
   llama3: 'llama-3.3-70b-versatile',
   'llama3.2': 'llama-3.1-8b-instant',
-  mistral: 'mixtral-8x7b-32768',
+  /** mixtral-8x7b-32768 retired on Groq; use a current production text model */
+  mistral: 'llama-3.3-70b-versatile',
   phi3: 'llama-3.1-8b-instant',
-  gemma2: 'gemma2-9b-it',
+  /** gemma2-9b-it retired Oct 2025 → llama-3.1-8b-instant per Groq */
+  gemma2: 'llama-3.1-8b-instant',
 };
 
+const GROQ_DESK_IDS = new Set(Object.keys(GROQ_MODEL_MAP));
+
+/**
+ * Resolves which Groq model to call.
+ * - Desk picker ids (`llama3`, `gemma2`, …) always use the map above (not overridden by `GROQ_MODEL`).
+ * - `GROQ_MODEL` is the **default** when no known desk id is sent (e.g. server routes that pass `'llama3'` or omit model).
+ */
 export function resolveGroqModel(requested?: string): string {
   const fromEnv = process.env.GROQ_MODEL?.trim();
-  if (fromEnv) return fromEnv;
-  const id = (requested || 'llama3').trim();
-  return GROQ_MODEL_MAP[id] || GROQ_MODEL_MAP.llama3;
+  const raw = (requested || '').trim();
+
+  if (raw && GROQ_DESK_IDS.has(raw)) {
+    return GROQ_MODEL_MAP[raw]!;
+  }
+  return fromEnv || GROQ_MODEL_MAP.llama3;
 }
 
 export function toOpenAiMessages(messages: ChatMessage[]): { role: 'system' | 'user' | 'assistant'; content: string }[] {
