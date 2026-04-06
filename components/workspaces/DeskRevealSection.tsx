@@ -7,6 +7,8 @@ export type DeskRevealSectionProps = {
     title: string;
     subtitle?: string;
     badge?: React.ReactNode;
+    /** Anchor for in-page navigation (e.g. desk jump links) */
+    id?: string;
     /** When true, section starts expanded */
     defaultOpen?: boolean;
     children: React.ReactNode;
@@ -26,6 +28,7 @@ export function DeskRevealSection({
     title,
     subtitle,
     badge,
+    id,
     defaultOpen = false,
     children,
     className,
@@ -34,20 +37,29 @@ export function DeskRevealSection({
 }: DeskRevealSectionProps) {
     const [open, setOpen] = useState(defaultOpen);
     const headingId = useId();
-    const frame = `${FRAME[variant]} ${className ?? ''}`.trim();
+    const frame = `${FRAME[variant]} overflow-hidden ${className ?? ''}`.trim();
 
     return (
-        <section className={frame}>
+        <section id={id} className={[id ? 'scroll-mt-4' : '', frame].filter(Boolean).join(' ')}>
             <button
                 type="button"
                 id={headingId}
                 onClick={() => setOpen((o) => !o)}
-                className={`flex w-full items-start gap-3 rounded-xl px-4 py-3.5 text-left transition sm:px-5 sm:py-4 ${
-                    variant === 'brand' ? 'hover:bg-brand-input/50' : 'hover:bg-white/[0.04]'
+                className={`flex w-full items-start gap-3 px-4 py-3.5 text-left transition sm:px-5 sm:py-4 ${
+                    variant === 'brand'
+                        ? open
+                            ? 'bg-brand-input/25 hover:bg-brand-input/40'
+                            : 'hover:bg-brand-input/45'
+                        : open
+                          ? 'bg-white/[0.03] hover:bg-white/[0.05]'
+                          : 'hover:bg-white/[0.04]'
                 }`}
                 aria-expanded={open}
             >
-                <span className="mt-0.5 shrink-0 text-zinc-500" aria-hidden>
+                <span
+                    className={`mt-0.5 shrink-0 ${variant === 'brand' ? 'text-brand-muted' : 'text-zinc-500'}`}
+                    aria-hidden
+                >
                     {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                 </span>
                 <span className="min-w-0 flex-1">
@@ -72,7 +84,11 @@ export function DeskRevealSection({
             </button>
             {open ? (
                 <div
-                    className={`border-t border-white/[0.06] px-4 pb-4 pt-3 sm:px-5 sm:pb-5 ${variant === 'brand' ? 'border-brand-border/80' : ''} ${innerClassName ?? ''}`}
+                    className={`border-t px-4 pb-4 pt-3 sm:px-5 sm:pb-5 ${
+                        variant === 'brand'
+                            ? 'border-brand-border/70 bg-brand-bg/40'
+                            : 'border-white/[0.06] bg-zinc-950/30'
+                    } ${innerClassName ?? ''}`}
                     role="region"
                     aria-labelledby={headingId}
                 >

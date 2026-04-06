@@ -287,12 +287,12 @@ export function CsuiteIntelligenceGuide() {
                                 </p>
                             </div>
 
-                            {/* How it works — collapsible */}
-                            <div className="mb-5">
+                            {/* How it works — single-panel disclosure (no nested “second box”) */}
+                            <div className="mb-5 overflow-hidden rounded-xl border border-zinc-800 bg-[#1a1a1d]">
                                 <button
                                     type="button"
                                     onClick={() => setHowAiOpen((v) => !v)}
-                                    className="flex w-full items-center justify-between gap-2 rounded-lg border border-zinc-800 bg-[#222225] px-4 py-2.5 text-left text-[12px] font-medium text-zinc-300 transition hover:bg-zinc-800"
+                                    className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-[12px] font-medium text-zinc-200 transition hover:bg-[#1e1e21] sm:px-5 sm:py-3.5"
                                     aria-expanded={howAiOpen}
                                     aria-controls="how-ai-updates"
                                     id="how-ai-toggle"
@@ -306,7 +306,7 @@ export function CsuiteIntelligenceGuide() {
                                 {howAiOpen ? (
                                     <div
                                         id="how-ai-updates"
-                                        className="mt-2 rounded-lg border border-zinc-800 bg-[#1e1e21] px-4 py-4"
+                                        className="border-t border-zinc-800 bg-[#161618] px-4 py-4 sm:px-5 sm:py-5"
                                         aria-labelledby="how-ai-toggle"
                                     >
                                         <ol className="list-decimal space-y-2.5 pl-4 text-[12px] leading-relaxed text-zinc-400 marker:text-zinc-600">
@@ -402,24 +402,22 @@ export function CsuiteIntelligenceGuide() {
                                 </div>
                             ) : null}
 
-                            <div className="mt-4 space-y-2">
-                                {deskEntries.map((row) => {
+                            <div className="mt-4 overflow-hidden rounded-xl border border-zinc-800 bg-[#18181b]">
+                                {deskEntries.map((row, idx) => {
                                     const open = openDesk === row.key;
                                     return (
                                         <div
                                             key={row.key}
-                                            className={`overflow-hidden rounded-xl border transition-colors ${
-                                                open
-                                                    ? 'border-zinc-700 bg-[#1a1a1d]'
-                                                    : 'border-zinc-800 bg-[#18181b]'
-                                            }`}
+                                            className={idx > 0 ? 'border-t border-zinc-800' : ''}
                                         >
                                             <button
                                                 type="button"
                                                 onClick={() => setOpenDesk(open ? null : row.key)}
-                                                className="flex w-full items-center justify-between gap-3 px-5 py-3.5 text-left transition hover:bg-[#1e1e21]"
+                                                className={`flex w-full items-center justify-between gap-3 px-5 py-3.5 text-left transition ${
+                                                    open ? 'bg-[#1a1a1d]' : 'hover:bg-[#1c1c1f]'
+                                                }`}
                                             >
-                                                <span className="flex items-baseline gap-2.5">
+                                                <span className="flex min-w-0 flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
                                                     <span className="text-[14px] font-semibold text-zinc-100">{row.title}</span>
                                                     <span className="text-[11px] text-zinc-500">{row.subtitle}</span>
                                                 </span>
@@ -430,7 +428,7 @@ export function CsuiteIntelligenceGuide() {
                                                 )}
                                             </button>
                                             {open ? (
-                                                <div className="border-t border-zinc-800 px-5 py-4">
+                                                <div className="border-t border-zinc-800 bg-[#161618] px-5 py-4">
                                                     <p className="whitespace-pre-wrap text-[13px] leading-[1.75] text-zinc-300">
                                                         {row.text || '—'}
                                                     </p>

@@ -271,24 +271,25 @@ export function ScoutTerminal() {
                             </span>
                         }
                     >
-                        <div className="space-y-3 text-[12px] leading-relaxed text-brand-muted">
-                            <p>
-                                <span className="font-medium text-brand-text">Venture:</span> {activeProject.name}
-                            </p>
-                            {strategicSnippet ? (
-                                <div className="rounded-lg border border-brand-border/80 bg-brand-bg/60 p-3">
-                                    <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted/90">From strategy (CEO desk)</p>
-                                    <p className="mt-1.5 text-brand-text/95">{strategicSnippet}</p>
-                                </div>
-                            ) : (
-                                <p className="text-brand-muted">
-                                    No strategic intent or vision in the CEO strategy yet — add a line there to sharpen market search terms.
-                                </p>
-                            )}
+                        <div className="overflow-hidden rounded-xl border border-brand-border bg-brand-bg/40 divide-y divide-brand-border/60">
+                            <div className="px-4 py-3 sm:px-5">
+                                <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Venture</p>
+                                <p className="mt-1 text-[13px] font-medium text-brand-text">{activeProject.name}</p>
+                            </div>
+                            <div className="px-4 py-3 sm:px-5">
+                                <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Strategy (CEO desk)</p>
+                                {strategicSnippet ? (
+                                    <p className="mt-1.5 text-[12px] leading-relaxed text-brand-text/95">{strategicSnippet}</p>
+                                ) : (
+                                    <p className="mt-1.5 text-[12px] text-brand-muted">
+                                        No strategic intent or vision yet — add one on the CEO desk to sharpen searches.
+                                    </p>
+                                )}
+                            </div>
                             {userNotesSnippet ? (
-                                <div className="rounded-lg border border-brand-border/80 bg-brand-bg/60 p-3">
-                                    <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted/90">From venture notes</p>
-                                    <p className="mt-1.5 text-brand-text/95">{userNotesSnippet}</p>
+                                <div className="px-4 py-3 sm:px-5">
+                                    <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Venture notes</p>
+                                    <p className="mt-1.5 text-[12px] leading-relaxed text-brand-text/95">{userNotesSnippet}</p>
                                 </div>
                             ) : null}
                         </div>
@@ -298,39 +299,39 @@ export function ScoutTerminal() {
                         variant="brand"
                         defaultOpen
                         title="Research by CSO frame"
-                        subtitle="Each button runs a different headline search for this venture. Capture takeaways in Intelligence brief. Large tap targets on mobile."
+                        subtitle="One panel — each cell runs a focused headline search. Summarize in Intelligence brief."
                     >
-                        <div className="grid grid-cols-1 gap-2 min-[480px]:grid-cols-2 min-[900px]:grid-cols-4 sm:gap-3">
-                            {CSO_RESEARCH_FRAMES.map((f) => {
-                                const active = csoFrame === f.id;
-                                return (
-                                    <button
-                                        key={f.id}
-                                        type="button"
-                                        onClick={() => {
-                                            setCsoFrame(f.id);
-                                            setLens('all');
-                                            setSearchQuery('');
-                                        }}
-                                        className={`flex min-h-[48px] w-full touch-manipulation flex-col items-start gap-1.5 rounded-xl border px-3 py-3 text-left transition active:scale-[0.99] sm:min-h-[52px] sm:px-4 sm:py-3.5 ${
-                                            active
-                                                ? 'border-brand-teal/45 bg-brand-input shadow-sm ring-1 ring-brand-teal/30'
-                                                : 'border-brand-border bg-brand-bg hover:border-brand-teal/20 hover:bg-brand-panel/50'
-                                        }`}
-                                    >
-                                        <span className="flex w-full items-start gap-2.5">
-                                            {f.icon}
-                                            <span className="min-w-0 flex-1">
-                                                <span className="block text-sm font-semibold text-brand-text">{f.label}</span>
-                                                <span className="mt-0.5 block text-[11px] leading-snug text-brand-muted">{f.scanHint}</span>
+                        <div className="overflow-hidden rounded-xl border border-brand-border bg-brand-border">
+                            <div className="grid grid-cols-1 gap-px sm:grid-cols-2 lg:grid-cols-4">
+                                {CSO_RESEARCH_FRAMES.map((f) => {
+                                    const active = csoFrame === f.id;
+                                    return (
+                                        <button
+                                            key={f.id}
+                                            type="button"
+                                            onClick={() => {
+                                                setCsoFrame(f.id);
+                                                setLens('all');
+                                                setSearchQuery('');
+                                            }}
+                                            className={`flex min-h-[5.5rem] w-full touch-manipulation flex-col items-start gap-1.5 px-4 py-3.5 text-left transition sm:min-h-[5.75rem] ${
+                                                active
+                                                    ? 'bg-brand-input ring-2 ring-inset ring-brand-teal/40'
+                                                    : 'bg-brand-panel/95 hover:bg-brand-input/90'
+                                            }`}
+                                        >
+                                            <span className="flex w-full items-start gap-2.5">
+                                                {f.icon}
+                                                <span className="min-w-0 flex-1">
+                                                    <span className="block text-sm font-semibold text-brand-text">{f.label}</span>
+                                                    <span className="mt-0.5 block text-[11px] leading-snug text-brand-muted">{f.scanHint}</span>
+                                                </span>
                                             </span>
-                                        </span>
-                                        <span className="w-full border-t border-brand-border/50 pt-2 text-[10px] leading-snug text-brand-muted/90">
-                                            Brief: {f.briefHint}
-                                        </span>
-                                    </button>
-                                );
-                            })}
+                                            <span className="text-[10px] leading-snug text-brand-muted/90">Brief: {f.briefHint}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
                         {csoFrame ? (
                             <p className="mt-3 text-[11px] text-brand-muted">

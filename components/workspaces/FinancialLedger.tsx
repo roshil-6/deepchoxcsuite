@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { useOffice } from '@/lib/OfficeContext';
 import {
     Wallet,
@@ -21,8 +21,17 @@ import {
     Megaphone,
     ArrowRight,
     Link2,
+    Banknote,
+    Plus,
 } from 'lucide-react';
 import type { Project, ProjectEvent, StaffAttentionItem } from '@/lib/db';
+import { mergeVentureOnboardingFromProject } from '@/lib/ventureOnboarding';
+import {
+    parseFundingLedger,
+    countFilledFundingRows,
+    buildFundingLedgerTemplate,
+    type ParsedFundingRow,
+} from '@/lib/ventureFundingStructure';
 import { DeskShell, DeskEmpty } from '@/components/workspaces/DeskShell';
 import { DeskRevealSection } from '@/components/workspaces/DeskRevealSection';
 
@@ -369,6 +378,13 @@ const LEDGER_QUICK_PROMPTS: { label: string; instruction: string }[] = [
     },
 ];
 
+/** Single funding panel: group rows so the CFO view reads top-to-bottom, not as scattered tiles. */
+const FUNDING_ROW_GROUPS: { title: string; ids: string[] }[] = [
+    { title: 'Capital & runway', ids: ['total_capital', 'secured', 'pre_launch', 'monthly_burn', 'runway_months'] },
+    { title: 'Build & go-to-market', ids: ['product_build', 'gtm', 'team_people', 'infra'] },
+    { title: 'Buffer & notes', ids: ['contingency', 'notes'] },
+];
+
 const PEER_DESKS: {
     room: 'ceo' | 'pm' | 'scout' | 'cmo';
     label: string;
@@ -382,10 +398,25 @@ const PEER_DESKS: {
     { room: 'cmo', label: 'CMO desk', short: 'CMO', fieldHint: 'GTM / narrative', icon: Megaphone },
 ];
 
+const CFO_JUMP: { id: string; label: string }[] = [
+    { id: 'cfo-funding', label: 'Funding' },
+    { id: 'cfo-connected', label: 'Roles' },
+    { id: 'cfo-snapshot', label: 'Snapshot' },
+    { id: 'cfo-topic-cards', label: 'Topics' },
+    { id: 'cfo-topic-panel', label: 'Brief' },
+    { id: 'cfo-discuss', label: 'Chat' },
+];
+
+function scrollToCfoSection(anchorId: string) {
+    document.getElementById(anchorId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 export function FinancialLedger() {
-    const { activeProject, prepopulateChat, switchRoom } = useOffice();
+    const { activeProject, prepopulateChat, switchRoom, updateBudget } = useOffice();
     const [selectedTopicId, setSelectedTopicId] = useState<TopicId>('liquidity');
     const [copiedTopic, setCopiedTopic] = useState<TopicId | null>(null);
+    const [budgetDraft, setBudgetDraft] = useState('');
+    const [budgetSavedFlash, setBudgetSavedFlash] = useState(false);
     const detailPanelRef = useRef<HTMLDivElement>(null);
 
     const selectTopic = useCallback((id: TopicId) => {
@@ -396,6 +427,39 @@ export function FinancialLedger() {
     }, []);
 
     const budgetText = activeProject?.budget ?? '';
+
+    useEffect(() => {
+        setBudgetDraft(activeProject?.budget ?? '');
+    }, [activeProject?.id, activeProject?.budget]);
+
+    const onboardingMerged = useMemo(() => {
+        if (!activeProject) return {} as Record<string, string>;
+        return mergeVentureOnboardingFromProject(activeProject);
+    }, [activeProject]);
+
+    const resourcesFromOnboarding = onboardingMerged.resources?.trim() || '';
+
+    const fundingRows = useMemo(() => parseFundingLedger(budgetDraft), [budgetDraft]);
+    const fundingFilled = countFilledFundingRows(fundingRows);
+    const fundingTotal = fundingRows.length;
+    const totalCapitalRow = fundingRows.find((r) => r.spec.id === 'total_capital');
+
+    const fundingById = useMemo(() => {
+        const m: Record<string, ParsedFundingRow> = {};
+        for (const r of fundingRows) {
+            m[r.spec.id] = r;
+        }
+        return m;
+    }, [fundingRows]);
+
+    const persistBudget = useCallback(
+        (next: string) => {
+            updateBudget(next);
+            setBudgetSavedFlash(true);
+            window.setTimeout(() => setBudgetSavedFlash(false), 1600);
+        },
+        [updateBudget]
+    );
 
     const topic = useMemo(() => {
         if (!activeProject) return null;
@@ -467,10 +531,155 @@ export function FinancialLedger() {
         <DeskShell
             eyebrow="CFO · Numbers + scenario table"
             title="Chief Financial Officer"
-            description="You work from the same venture record as every officer: strategy, product, market, GTM, and staff-sync briefs all flow here for runway, scenarios, and trade-offs. Use the links below to jump to a desk and refresh source data, then bring questions back to the CFO chat."
+            description="Structure how much capital this venture needs to get built, then tie it to runway and scenarios. The funding breakdown below parses labeled lines from your budget field; the editor saves to the same venture record the dashboard and CFO chat use."
+            tabs={
+                <nav className="flex flex-wrap gap-1" aria-label="CFO desk sections">
+                    {CFO_JUMP.map((item) => (
+                        <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => scrollToCfoSection(item.id)}
+                            className="inline-flex items-center gap-2 rounded-md border border-transparent bg-transparent px-3 py-1.5 text-xs font-medium text-brand-muted transition-colors hover:border-brand-border hover:bg-brand-input/60 hover:text-brand-text"
+                        >
+                            {item.label}
+                        </button>
+                    ))}
+                </nav>
+            }
         >
             <div className="flex flex-col gap-4">
                 <DeskRevealSection
+                    id="cfo-funding"
+                    variant="brand"
+                    defaultOpen
+                    title={`Expected funding — ${activeProject.name}`}
+                    subtitle="Use the labeled lines below (or the template) so totals, burn, and runway surface here automatically. Values are read from your venture budget field."
+                    badge={
+                        <span className="inline-flex items-center gap-1 rounded-full border border-brand-teal/30 bg-brand-teal/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-teal">
+                            <Banknote className="h-3 w-3" aria-hidden />
+                            {fundingFilled}/{fundingTotal} filled
+                        </span>
+                    }
+                >
+                    <div className="overflow-hidden rounded-xl border border-brand-border bg-brand-bg/50">
+                        {resourcesFromOnboarding && resourcesFromOnboarding !== budgetDraft.trim() ? (
+                            <div className="border-b border-brand-border/70 bg-brand-panel/30 px-4 py-3 sm:px-5">
+                                <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Onboarding · Resources</p>
+                                <p className="mt-1 text-[12px] leading-relaxed text-brand-text/95">{resourcesFromOnboarding}</p>
+                                <p className="mt-2 text-[10px] text-brand-muted">
+                                    Merge into the ledger below so this desk has one source of truth.
+                                </p>
+                            </div>
+                        ) : null}
+
+                        <div className="border-b border-brand-border/70 bg-gradient-to-r from-brand-teal/12 via-brand-teal/5 to-transparent px-4 py-4 sm:px-5">
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-muted">Total capital needed</p>
+                            {totalCapitalRow?.value ? (
+                                <p className="mt-1.5 text-lg font-semibold leading-snug text-brand-text sm:text-xl">{totalCapitalRow.value}</p>
+                            ) : (
+                                <p className="mt-1.5 text-sm leading-relaxed text-brand-muted">
+                                    Add a line starting with <span className="font-medium text-brand-text/90">Total capital needed</span> in the
+                                    editor, or use the structure template.
+                                </p>
+                            )}
+                            <div className="mt-3 h-1.5 w-full max-w-md overflow-hidden rounded-full bg-brand-border/40">
+                                <div
+                                    className="h-full rounded-full bg-brand-teal/75 transition-all duration-300"
+                                    style={{ width: `${fundingTotal ? Math.round((fundingFilled / fundingTotal) * 100) : 0}%` }}
+                                />
+                            </div>
+                            <p className="mt-2 text-[10px] text-brand-muted">
+                                {fundingFilled} of {fundingTotal} ledger lines detected with values.
+                            </p>
+                        </div>
+
+                        {FUNDING_ROW_GROUPS.map((group) => (
+                            <div key={group.title} className="border-b border-brand-border/60 last:border-b-0">
+                                <div className="bg-brand-panel/20 px-4 py-2 sm:px-5">
+                                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-brand-muted">{group.title}</p>
+                                </div>
+                                <ul className="divide-y divide-brand-border/50">
+                                    {group.ids.map((id) => {
+                                        const row = fundingById[id];
+                                        if (!row) return null;
+                                        return (
+                                            <li
+                                                key={id}
+                                                className={`flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-8 sm:px-5 ${
+                                                    row.value ? 'bg-brand-input/25' : ''
+                                                }`}
+                                            >
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="text-[12px] font-medium text-brand-text">{row.spec.label}</p>
+                                                    <p className="mt-0.5 text-[10px] leading-snug text-brand-muted">{row.spec.shortHint}</p>
+                                                </div>
+                                                <p
+                                                    className={`shrink-0 text-left text-[13px] font-medium leading-snug sm:max-w-[min(24rem,45%)] sm:text-right ${
+                                                        row.value ? 'text-brand-teal' : 'text-brand-muted'
+                                                    }`}
+                                                >
+                                                    {row.value ?? '—'}
+                                                </p>
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="mt-4 rounded-xl border border-brand-border/80 bg-brand-panel/20 p-4 sm:p-5">
+                        <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Budget &amp; ledger (venture record)</p>
+                            <div className="flex flex-wrap gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const t = buildFundingLedgerTemplate(activeProject.name);
+                                        setBudgetDraft(t);
+                                        persistBudget(t);
+                                    }}
+                                    className="inline-flex min-h-[40px] touch-manipulation items-center justify-center rounded-lg border border-brand-border bg-brand-card px-3 py-2 text-[11px] font-semibold text-brand-text hover:bg-brand-input"
+                                >
+                                    Use structure template
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const t = buildFundingLedgerTemplate(activeProject.name);
+                                        const next = budgetDraft.trim() ? `${budgetDraft.trim()}\n\n${t}` : t;
+                                        setBudgetDraft(next);
+                                        persistBudget(next);
+                                    }}
+                                    className="inline-flex min-h-[40px] touch-manipulation items-center justify-center gap-1.5 rounded-lg border border-brand-border bg-brand-bg px-3 py-2 text-[11px] font-medium text-brand-muted hover:border-brand-teal/25 hover:text-brand-text"
+                                >
+                                    <Plus className="h-3.5 w-3.5" aria-hidden />
+                                    Append template
+                                </button>
+                            </div>
+                        </div>
+                        <textarea
+                            value={budgetDraft}
+                            onChange={(e) => setBudgetDraft(e.target.value)}
+                            onBlur={() => {
+                                if (budgetDraft !== (activeProject.budget ?? '')) {
+                                    persistBudget(budgetDraft);
+                                }
+                            }}
+                            placeholder={buildFundingLedgerTemplate(activeProject.name)}
+                            rows={14}
+                            className="min-h-[220px] w-full resize-y rounded-xl border border-brand-border bg-brand-input p-4 text-[13px] leading-relaxed text-brand-text placeholder:text-brand-muted/55 focus:outline-none focus:ring-2 focus:ring-brand-teal/25"
+                            spellCheck={false}
+                        />
+                        <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-brand-muted">
+                            <span>One metric per line with a colon. Template labels map to the table above.</span>
+                            {budgetSavedFlash ? <span className="font-medium text-brand-teal">Saved to venture.</span> : <span>Blur field to save.</span>}
+                        </p>
+                    </div>
+                </DeskRevealSection>
+
+                <DeskRevealSection
+                    id="cfo-connected"
                     variant="brand"
                     defaultOpen
                     title="Connected roles"
@@ -486,82 +695,89 @@ export function FinancialLedger() {
                         CFO models cash against what CEO prioritizes, CTO ships, CSO sees in the market, and CMO pushes in GTM. Staff sync
                         refreshes every desk brief in one pass so numbers and narrative stay aligned.
                     </p>
-                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                        {PEER_DESKS.map(({ room, label, short, fieldHint, icon: Icon }) => {
-                            const live = peerStatus[room];
-                            return (
-                                <button
-                                    key={room}
-                                    type="button"
-                                    onClick={() => switchRoom(room)}
-                                    className="group flex flex-col items-start gap-2 rounded-lg border border-brand-border bg-brand-bg px-3 py-2.5 text-left transition-colors hover:border-brand-teal/30 hover:bg-brand-input/80"
-                                >
-                                    <span className="flex w-full items-center justify-between gap-1">
-                                        <span className="flex h-8 w-8 items-center justify-center rounded-md border border-brand-border bg-brand-panel text-brand-text">
-                                            <Icon className="h-4 w-4" aria-hidden />
+                    <div className="overflow-hidden rounded-xl border border-brand-border bg-brand-border">
+                        <div className="grid grid-cols-2 gap-px sm:grid-cols-4">
+                            {PEER_DESKS.map(({ room, label, short, fieldHint, icon: Icon }) => {
+                                const live = peerStatus[room];
+                                return (
+                                    <button
+                                        key={room}
+                                        type="button"
+                                        onClick={() => switchRoom(room)}
+                                        className="group flex flex-col items-start gap-2 bg-brand-panel/95 px-3 py-3 text-left transition-colors hover:bg-brand-input sm:py-2.5"
+                                    >
+                                        <span className="flex w-full items-center justify-between gap-1">
+                                            <span className="flex h-8 w-8 items-center justify-center rounded-md border border-brand-border bg-brand-panel text-brand-text">
+                                                <Icon className="h-4 w-4" aria-hidden />
+                                            </span>
+                                            <span
+                                                className={`text-[9px] font-bold uppercase tracking-wider ${
+                                                    live ? 'text-brand-teal' : 'text-brand-muted'
+                                                }`}
+                                            >
+                                                {live ? 'Active' : 'Open'}
+                                            </span>
                                         </span>
-                                        <span
-                                            className={`text-[9px] font-bold uppercase tracking-wider ${
-                                                live ? 'text-brand-teal' : 'text-brand-muted'
-                                            }`}
-                                        >
-                                            {live ? 'Active' : 'Open'}
+                                        <span className="text-[12px] font-semibold text-brand-text">{short}</span>
+                                        <span className="text-[10px] leading-snug text-brand-muted">{fieldHint}</span>
+                                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-brand-muted group-hover:text-brand-text">
+                                            {label}
+                                            <ArrowRight className="h-3 w-3 opacity-70" aria-hidden />
                                         </span>
-                                    </span>
-                                    <span className="text-[12px] font-semibold text-brand-text">{short}</span>
-                                    <span className="text-[10px] leading-snug text-brand-muted">{fieldHint}</span>
-                                    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-brand-muted group-hover:text-brand-text">
-                                        {label}
-                                        <ArrowRight className="h-3 w-3 opacity-70" aria-hidden />
-                                    </span>
-                                </button>
-                            );
-                        })}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
                 </DeskRevealSection>
 
                 <DeskRevealSection
+                    id="cfo-snapshot"
                     variant="brand"
                     defaultOpen
                     title="Venture snapshot"
-                    subtitle="Budget field size and auto-detected finance cues."
+                    subtitle="Budget field size and auto-detected finance cues — one summary strip."
                 >
-                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                        <div className="rounded-lg border border-brand-border bg-brand-panel px-4 py-3">
-                            <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Venture</p>
-                            <p className="mt-1 truncate text-sm font-medium text-brand-text">{activeProject.name}</p>
-                        </div>
-                        <div className="rounded-lg border border-brand-border bg-brand-panel px-4 py-3">
-                            <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Budget field</p>
-                            <p className="mt-1 flex flex-wrap items-baseline gap-2 text-sm font-medium text-brand-text">
-                                <span>
+                    <div className="overflow-hidden rounded-xl border border-brand-border bg-brand-bg/40">
+                        <div className="grid grid-cols-1 divide-y divide-brand-border/60 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+                            <div className="px-4 py-3 sm:px-5">
+                                <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Venture</p>
+                                <p className="mt-1 truncate text-sm font-medium text-brand-text">{activeProject.name}</p>
+                            </div>
+                            <div className="px-4 py-3 sm:px-5">
+                                <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Budget field</p>
+                                <p className="mt-1 text-sm font-medium text-brand-text">
                                     {chars.toLocaleString()} chars · {lines} lines
-                                </span>
-                            </p>
-                        </div>
-                        <div className="rounded-lg border border-brand-border bg-brand-panel px-4 py-3 sm:col-span-2 lg:col-span-2">
-                            <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Signals in text</p>
-                            <div className="mt-2 flex flex-wrap gap-1.5">
-                                {signals.length > 0 ? (
-                                    signals.map((s) => (
-                                        <span
-                                            key={s}
-                                            className={`rounded-md px-2 py-0.5 text-[10px] font-medium ${DESK_PANEL.signalChip}`}
-                                        >
-                                            {s}
-                                        </span>
-                                    ))
-                                ) : (
-                                    <span className="text-[12px] text-brand-muted">
-                                        Add burn, runway, or revenue cues — we’ll tag them.
-                                    </span>
-                                )}
+                                </p>
+                            </div>
+                            <div className="px-4 py-3 sm:px-5">
+                                <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Signals in text</p>
+                                <div className="mt-2 flex flex-wrap gap-1.5">
+                                    {signals.length > 0 ? (
+                                        signals.map((s) => (
+                                            <span
+                                                key={s}
+                                                className={`rounded-md px-2 py-0.5 text-[10px] font-medium ${DESK_PANEL.signalChip}`}
+                                            >
+                                                {s}
+                                            </span>
+                                        ))
+                                    ) : (
+                                        <span className="text-[12px] text-brand-muted">Add burn, runway, or revenue cues.</span>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </DeskRevealSection>
 
-                <DeskRevealSection variant="brand" defaultOpen title="Topics" subtitle="Tap a card to load its detail below.">
+                <DeskRevealSection
+                    id="cfo-topic-cards"
+                    variant="brand"
+                    defaultOpen
+                    title="Topics"
+                    subtitle="Tap a card to load its detail below."
+                >
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                         {TOPIC_META.map(({ id, shortLabel, icon: Icon }) => {
                             const row = map[id];
@@ -598,6 +814,7 @@ export function FinancialLedger() {
                 </DeskRevealSection>
 
                 <DeskRevealSection
+                    id="cfo-topic-panel"
                     variant="brand"
                     defaultOpen
                     title={selectedMeta.title}
@@ -612,7 +829,11 @@ export function FinancialLedger() {
                         </span>
                     }
                 >
-                <div ref={detailPanelRef} id="cfo-topic-detail" className="scroll-mt-4">
+                <div
+                    ref={detailPanelRef}
+                    id="cfo-topic-detail"
+                    className={`rounded-lg p-4 sm:p-5 ${DESK_PANEL.detailWrap}`}
+                >
                     <p className="mb-3 text-[12px] leading-snug text-brand-muted">{selectedRow.preview}</p>
 
                     <div className="space-y-3">
@@ -690,7 +911,9 @@ export function FinancialLedger() {
                 </DeskRevealSection>
 
                 <DeskRevealSection
+                    id="cfo-discuss"
                     variant="brand"
+                    defaultOpen
                     title="Discuss with CFO"
                     subtitle="Chat prompts use your budget field, desk sync, and the topic you selected."
                     badge={
