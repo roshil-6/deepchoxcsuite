@@ -4,7 +4,7 @@ export const DESK_AI_MODELS = [
   { id: 'llama3.2', label: 'Llama 3.2' },
   { id: 'mistral', label: 'Mistral' },
   { id: 'phi3', label: 'Phi-3' },
-  { id: 'gemma2', label: 'Gemma-class' },
+  { id: 'gemma2', label: 'Gemma 2' },
 ] as const;
 
 export type DeskModelId = (typeof DESK_AI_MODELS)[number]['id'];
@@ -24,8 +24,8 @@ export const EXEC_CHAT_MODEL_OPTIONS = [
   { id: 'mistral' as const, label: 'Mixtral-class', blurb: 'Routed to Llama 3.3 70B on Groq' },
   {
     id: 'gemma2' as const,
-    label: 'Gemma-class',
-    blurb: 'On Groq: Llama 3.1 8B Instant (Gemma 2 retired). Use Ollama for native Gemma.',
+    label: 'Gemma 2 9B',
+    blurb: 'Google Gemma 2 on Groq — compact & fast (override id with GROQ_GEMMA_MODEL if needed)',
   },
   { id: 'phi3' as const, label: 'Phi-3 class', blurb: 'Compact / low latency' },
 ] as const;

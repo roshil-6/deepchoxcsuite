@@ -144,18 +144,63 @@ export function countFilledFundingRows(rows: ParsedFundingRow[]): number {
 /** Suggested ledger layout — paste into venture budget field (CFO desk editor). */
 export function buildFundingLedgerTemplate(ventureName: string): string {
     const name = ventureName.trim() || 'This venture';
+    return buildLedgerTextFromFundingValues(name, {});
+}
+
+/** Keys match `FUNDING_SECTION_SPECS[].id` — use for AI JSON and merges. */
+export const FUNDING_VALUE_KEYS = [
+    'total_capital',
+    'secured',
+    'pre_launch',
+    'product_build',
+    'gtm',
+    'monthly_burn',
+    'runway_months',
+    'team_people',
+    'infra',
+    'contingency',
+    'notes',
+] as const;
+
+export type FundingValueKey = (typeof FUNDING_VALUE_KEYS)[number];
+
+/**
+ * Builds ledger text that `parseFundingLedger` understands — same line labels as the empty template.
+ * Pass partial `values` to fill only some rows (strings trimmed; empty = blank after colon).
+ */
+export function buildLedgerTextFromFundingValues(
+    ventureName: string,
+    values: Partial<Record<FundingValueKey, string>>
+): string {
+    const name = ventureName.trim() || 'This venture';
+    const v = (k: FundingValueKey) => (values[k] ?? '').trim();
+
     return `# Expected funding — ${name}
 
-Total capital needed (build + initial runway): 
-Already secured / committed: 
-Pre-launch & setup (legal, tools, early hires): 
-Product & engineering (through MVP): 
-Go-to-market (launch, marketing, first revenue): 
-Monthly cash burn (steady state): 
-Months of runway this raise should cover: 
-Team & payroll (summary): 
-Infra, cloud & tools: 
-Contingency / buffer: 
-Notes (revenue offsetting cost, grants, other capital): 
+Total capital needed (build + initial runway): ${v('total_capital')}
+Already secured / committed: ${v('secured')}
+Pre-launch & setup (legal, tools, early hires): ${v('pre_launch')}
+Product & engineering (through MVP): ${v('product_build')}
+Go-to-market (launch, marketing, first revenue): ${v('gtm')}
+Monthly cash burn (steady state): ${v('monthly_burn')}
+Months of runway this raise should cover: ${v('runway_months')}
+Team & payroll (summary): ${v('team_people')}
+Infra, cloud & tools: ${v('infra')}
+Contingency / buffer: ${v('contingency')}
+Notes (revenue offsetting cost, grants, other capital): ${v('notes')}
 `;
+}
+
+/** Merge: saved parsed values win; AI fills gaps. */
+export function mergeFundingValueRows(
+    parsed: Partial<Record<FundingValueKey, string>>,
+    ai: Partial<Record<FundingValueKey, string>>
+): Record<FundingValueKey, string> {
+    const out = {} as Record<FundingValueKey, string>;
+    for (const k of FUNDING_VALUE_KEYS) {
+        const p = parsed[k]?.trim();
+        const a = ai[k]?.trim();
+        out[k] = p || a || '';
+    }
+    return out;
 }

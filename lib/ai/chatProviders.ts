@@ -17,8 +17,11 @@ const GROQ_MODEL_MAP: Record<string, string> = {
   /** mixtral-8x7b-32768 retired on Groq; use a current production text model */
   mistral: 'llama-3.3-70b-versatile',
   phi3: 'llama-3.1-8b-instant',
-  /** gemma2-9b-it retired Oct 2025 → llama-3.1-8b-instant per Groq */
-  gemma2: 'llama-3.1-8b-instant',
+  /**
+   * Google Gemma 2 9B IT on Groq (`gemma2-9b-it`). Override with `GROQ_GEMMA_MODEL` if Groq updates the id.
+   * If Groq returns “decommissioned”, set `GROQ_GEMMA_MODEL` to a current id from console.groq.com/docs/models.
+   */
+  gemma2: process.env.GROQ_GEMMA_MODEL?.trim() || 'gemma2-9b-it',
 };
 
 const GROQ_DESK_IDS = new Set(Object.keys(GROQ_MODEL_MAP));

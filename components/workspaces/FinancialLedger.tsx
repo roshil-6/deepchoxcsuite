@@ -23,14 +23,20 @@ import {
     Link2,
     Banknote,
     Plus,
+    Loader2,
+    RefreshCw,
 } from 'lucide-react';
 import type { Project, ProjectEvent, StaffAttentionItem } from '@/lib/db';
 import { mergeVentureOnboardingFromProject } from '@/lib/ventureOnboarding';
+import { buildCfoFundingPayload } from '@/lib/cfoFundingContext';
 import {
     parseFundingLedger,
-    countFilledFundingRows,
     buildFundingLedgerTemplate,
+    buildLedgerTextFromFundingValues,
+    mergeFundingValueRows,
+    FUNDING_VALUE_KEYS,
     type ParsedFundingRow,
+    type FundingValueKey,
 } from '@/lib/ventureFundingStructure';
 import { DeskShell, DeskEmpty } from '@/components/workspaces/DeskShell';
 import { DeskRevealSection } from '@/components/workspaces/DeskRevealSection';
@@ -417,6 +423,11 @@ export function FinancialLedger() {
     const [copiedTopic, setCopiedTopic] = useState<TopicId | null>(null);
     const [budgetDraft, setBudgetDraft] = useState('');
     const [budgetSavedFlash, setBudgetSavedFlash] = useState(false);
+    const [aiFunding, setAiFunding] = useState<Partial<Record<FundingValueKey, string>> | null>(null);
+    const [aiFundingLoading, setAiFundingLoading] = useState(false);
+    const [aiFundingError, setAiFundingError] = useState<string | null>(null);
+    const [aiRefreshNonce, setAiRefreshNonce] = useState(0);
+    const autoAppliedLedgerRef = useRef<number | null>(null);
     const detailPanelRef = useRef<HTMLDivElement>(null);
 
     const selectTopic = useCallback((id: TopicId) => {
@@ -440,7 +451,6 @@ export function FinancialLedger() {
     const resourcesFromOnboarding = onboardingMerged.resources?.trim() || '';
 
     const fundingRows = useMemo(() => parseFundingLedger(budgetDraft), [budgetDraft]);
-    const fundingFilled = countFilledFundingRows(fundingRows);
     const fundingTotal = fundingRows.length;
     const totalCapitalRow = fundingRows.find((r) => r.spec.id === 'total_capital');
 
@@ -452,6 +462,32 @@ export function FinancialLedger() {
         return m;
     }, [fundingRows]);
 
+    const parsedFundingValues = useMemo(() => {
+        const m: Partial<Record<FundingValueKey, string>> = {};
+        for (const r of fundingRows) {
+            if (r.value) m[r.spec.id as FundingValueKey] = r.value;
+        }
+        return m;
+    }, [fundingRows]);
+
+    const fundingSuggestKey = useMemo(
+        () =>
+            activeProject
+                ? `${activeProject.id}-${activeProject.timestamp}-${activeProject.agentStaffSnapshot?.at ?? 0}-${aiRefreshNonce}`
+                : '',
+        [activeProject, aiRefreshNonce]
+    );
+
+    const fundingFilledWithAi = useMemo(() => {
+        let n = 0;
+        for (const k of FUNDING_VALUE_KEYS) {
+            const saved = parsedFundingValues[k]?.trim();
+            const ai = aiFunding?.[k]?.trim();
+            if (saved || ai) n++;
+        }
+        return n;
+    }, [parsedFundingValues, aiFunding]);
+
     const persistBudget = useCallback(
         (next: string) => {
             updateBudget(next);
@@ -460,6 +496,76 @@ export function FinancialLedger() {
         },
         [updateBudget]
     );
+
+    useEffect(() => {
+        if (!activeProject?.id || !fundingSuggestKey) return;
+        const ac = new AbortController();
+        let cancelled = false;
+        (async () => {
+            setAiFundingLoading(true);
+            setAiFundingError(null);
+            try {
+                const payload = buildCfoFundingPayload(activeProject);
+                const res = await fetch('/api/cfo-funding-suggest', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ payload }),
+                    signal: ac.signal,
+                });
+                const data = (await res.json()) as { ok?: boolean; error?: string; values?: Partial<Record<FundingValueKey, string>> };
+                if (cancelled) return;
+                if (!res.ok || !data.ok) {
+                    setAiFunding(null);
+                    setAiFundingError(typeof data.error === 'string' ? data.error : 'Could not load C-suite estimate');
+                    return;
+                }
+                setAiFunding(data.values ?? null);
+                setAiFundingError(null);
+            } catch (e) {
+                if (cancelled || (e instanceof Error && e.name === 'AbortError')) return;
+                setAiFunding(null);
+                setAiFundingError(e instanceof Error ? e.message : 'Request failed');
+            } finally {
+                if (!cancelled) setAiFundingLoading(false);
+            }
+        })();
+        return () => {
+            cancelled = true;
+            ac.abort();
+        };
+    }, [fundingSuggestKey]);
+
+    useEffect(() => {
+        autoAppliedLedgerRef.current = null;
+    }, [activeProject?.id]);
+
+    useEffect(() => {
+        if (!activeProject) return;
+        if (!(activeProject.budget || '').trim()) {
+            autoAppliedLedgerRef.current = null;
+        }
+    }, [activeProject?.budget, activeProject?.id]);
+
+    useEffect(() => {
+        if (!activeProject?.id || !aiFunding) return;
+        const budgetEmpty = !(activeProject.budget || '').trim();
+        if (!budgetEmpty) return;
+        const filled = Object.values(aiFunding).filter((x) => (x || '').trim()).length;
+        if (filled < 3) return;
+        if (autoAppliedLedgerRef.current === activeProject.id) return;
+        autoAppliedLedgerRef.current = activeProject.id!;
+        const text = buildLedgerTextFromFundingValues(activeProject.name, aiFunding);
+        setBudgetDraft(text);
+        persistBudget(text);
+    }, [activeProject?.id, activeProject?.budget, activeProject?.name, aiFunding, persistBudget]);
+
+    const applyMergedFundingToLedger = useCallback(() => {
+        if (!activeProject || !aiFunding) return;
+        const merged = mergeFundingValueRows(parsedFundingValues, aiFunding);
+        const text = buildLedgerTextFromFundingValues(activeProject.name, merged);
+        setBudgetDraft(text);
+        persistBudget(text);
+    }, [activeProject, aiFunding, parsedFundingValues, persistBudget]);
 
     const topic = useMemo(() => {
         if (!activeProject) return null;
@@ -531,7 +637,7 @@ export function FinancialLedger() {
         <DeskShell
             eyebrow="CFO · Numbers + scenario table"
             title="Chief Financial Officer"
-            description="Structure how much capital this venture needs to get built, then tie it to runway and scenarios. The funding breakdown below parses labeled lines from your budget field; the editor saves to the same venture record the dashboard and CFO chat use."
+            description="The funding table combines your saved ledger with an AI estimate from CEO, CTO, CSO, CMO, staff sync, and onboarding. Empty budget fields auto-fill once estimates load; review and edit the ledger below."
             tabs={
                 <nav className="flex flex-wrap gap-1" aria-label="CFO desk sections">
                     {CFO_JUMP.map((item) => (
@@ -553,14 +659,47 @@ export function FinancialLedger() {
                     variant="brand"
                     defaultOpen
                     title={`Expected funding — ${activeProject.name}`}
-                    subtitle="Use the labeled lines below (or the template) so totals, burn, and runway surface here automatically. Values are read from your venture budget field."
+                    subtitle="Saved rows and C-suite AI estimates merge in the table. Use Refresh to re-run analysis after you edit other desks."
                     badge={
                         <span className="inline-flex items-center gap-1 rounded-full border border-brand-teal/30 bg-brand-teal/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-teal">
                             <Banknote className="h-3 w-3" aria-hidden />
-                            {fundingFilled}/{fundingTotal} filled
+                            {fundingFilledWithAi}/{fundingTotal} filled
                         </span>
                     }
                 >
+                    <div className="mb-3 flex flex-wrap items-center gap-2">
+                        <button
+                            type="button"
+                            disabled={aiFundingLoading}
+                            onClick={() => setAiRefreshNonce((n) => n + 1)}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-brand-border bg-brand-card px-3 py-1.5 text-[11px] font-semibold text-brand-text hover:bg-brand-input disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            {aiFundingLoading ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+                            ) : (
+                                <RefreshCw className="h-3.5 w-3.5" aria-hidden />
+                            )}
+                            Refresh C-suite estimate
+                        </button>
+                        {aiFunding && (
+                            <button
+                                type="button"
+                                onClick={applyMergedFundingToLedger}
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-brand-border bg-brand-bg px-3 py-1.5 text-[11px] font-medium text-brand-muted hover:border-brand-teal/25 hover:text-brand-text"
+                            >
+                                Merge AI into ledger (keep saved lines)
+                            </button>
+                        )}
+                        {aiFundingLoading && (
+                            <span className="text-[11px] text-brand-muted">Analyzing venture across desks…</span>
+                        )}
+                    </div>
+                    {aiFundingError ? (
+                        <p className="mb-3 text-[11px] leading-relaxed text-brand-muted">
+                            <span className="font-medium text-brand-text">Estimate unavailable.</span> {aiFundingError}
+                        </p>
+                    ) : null}
+
                     <div className="overflow-hidden rounded-xl border border-brand-border bg-brand-bg/50">
                         {resourcesFromOnboarding && resourcesFromOnboarding !== budgetDraft.trim() ? (
                             <div className="border-b border-brand-border/70 bg-brand-panel/30 px-4 py-3 sm:px-5">
@@ -574,22 +713,26 @@ export function FinancialLedger() {
 
                         <div className="border-b border-brand-border/70 bg-gradient-to-r from-brand-teal/12 via-brand-teal/5 to-transparent px-4 py-4 sm:px-5">
                             <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-muted">Total capital needed</p>
-                            {totalCapitalRow?.value ? (
-                                <p className="mt-1.5 text-lg font-semibold leading-snug text-brand-text sm:text-xl">{totalCapitalRow.value}</p>
+                            {totalCapitalRow?.value?.trim() || aiFunding?.total_capital?.trim() ? (
+                                <p className="mt-1.5 text-lg font-semibold leading-snug text-brand-text sm:text-xl">
+                                    {totalCapitalRow?.value?.trim() || aiFunding?.total_capital?.trim()}
+                                </p>
                             ) : (
                                 <p className="mt-1.5 text-sm leading-relaxed text-brand-muted">
                                     Add a line starting with <span className="font-medium text-brand-text/90">Total capital needed</span> in the
-                                    editor, or use the structure template.
+                                    editor, use the template, or wait for the C-suite estimate when other desks have data.
                                 </p>
                             )}
                             <div className="mt-3 h-1.5 w-full max-w-md overflow-hidden rounded-full bg-brand-border/40">
                                 <div
                                     className="h-full rounded-full bg-brand-teal/75 transition-all duration-300"
-                                    style={{ width: `${fundingTotal ? Math.round((fundingFilled / fundingTotal) * 100) : 0}%` }}
+                                    style={{
+                                        width: `${fundingTotal ? Math.round((fundingFilledWithAi / fundingTotal) * 100) : 0}%`,
+                                    }}
                                 />
                             </div>
                             <p className="mt-2 text-[10px] text-brand-muted">
-                                {fundingFilled} of {fundingTotal} ledger lines detected with values.
+                                {fundingFilledWithAi} of {fundingTotal} lines with saved or estimated values.
                             </p>
                         </div>
 
@@ -602,24 +745,39 @@ export function FinancialLedger() {
                                     {group.ids.map((id) => {
                                         const row = fundingById[id];
                                         if (!row) return null;
+                                        const saved = row.value?.trim();
+                                        const aiVal = aiFunding?.[id as FundingValueKey]?.trim();
+                                        const display = saved || aiVal || '';
+                                        const isAiOnly = !saved && !!aiVal;
                                         return (
                                             <li
                                                 key={id}
                                                 className={`flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-8 sm:px-5 ${
-                                                    row.value ? 'bg-brand-input/25' : ''
+                                                    display ? 'bg-brand-input/25' : ''
                                                 }`}
                                             >
                                                 <div className="min-w-0 flex-1">
                                                     <p className="text-[12px] font-medium text-brand-text">{row.spec.label}</p>
                                                     <p className="mt-0.5 text-[10px] leading-snug text-brand-muted">{row.spec.shortHint}</p>
                                                 </div>
-                                                <p
-                                                    className={`shrink-0 text-left text-[13px] font-medium leading-snug sm:max-w-[min(24rem,45%)] sm:text-right ${
-                                                        row.value ? 'text-brand-teal' : 'text-brand-muted'
-                                                    }`}
-                                                >
-                                                    {row.value ?? '—'}
-                                                </p>
+                                                <div className="flex min-w-0 shrink-0 flex-col items-start gap-0.5 sm:max-w-[min(24rem,45%)] sm:items-end sm:text-right">
+                                                    <p
+                                                        className={`text-left text-[13px] font-medium leading-snug sm:text-right ${
+                                                            display
+                                                                ? isAiOnly
+                                                                    ? 'text-brand-muted' // AI estimate: softer until saved
+                                                                    : 'text-brand-teal'
+                                                                : 'text-brand-muted'
+                                                        }`}
+                                                    >
+                                                        {display || '—'}
+                                                    </p>
+                                                    {isAiOnly ? (
+                                                        <span className="text-[9px] font-semibold uppercase tracking-wider text-brand-teal/80">
+                                                            C-suite estimate
+                                                        </span>
+                                                    ) : null}
+                                                </div>
                                             </li>
                                         );
                                     })}
