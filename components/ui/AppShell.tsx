@@ -97,11 +97,12 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
 
             <DailySyncBanner />
 
-            <div className="relative flex min-h-0 flex-1 overflow-hidden lg:gap-5 lg:px-6 lg:pb-4 lg:pt-3">
+            <div className="relative flex min-h-0 flex-1 overflow-hidden">
                 <div className="hidden h-full min-h-0 shrink-0 items-stretch lg:flex">
                     <LeftRail onLogout={onLogout} onNewVenture={onNewVenture} />
                 </div>
 
+                <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden lg:gap-5 lg:px-6 lg:pb-4 lg:pt-3">
                 <AnimatePresence>
                     {mobileNav && (
                         <>
@@ -161,6 +162,7 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
                     desktopCollapsed={intelDesktopCollapsed}
                     onToggleDesktopCollapse={toggleIntelDesktop}
                 />
+                </div>
             </div>
 
             {bottomBar}

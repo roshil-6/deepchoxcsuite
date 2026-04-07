@@ -13,13 +13,14 @@ import { PA_SECTION_TAG } from '@/lib/paBuddy';
 type Props = {
     onLogout: () => void;
     onNewVenture: () => void;
-    /** Use inside a parent panel that already provides rounded border/shadow (e.g. mobile drawer). */
+    /** `flush` = docked rail with border-r; `floating` = rounded card (e.g. legacy desktop). */
     variant?: 'floating' | 'flush';
 };
 
-export function LeftRail({ onLogout, onNewVenture, variant = 'floating' }: Props) {
+export function LeftRail({ onLogout, onNewVenture, variant = 'flush' }: Props) {
     const { activeRoom, switchRoom, activeProject, setActiveProject, setAllProjects } = useOffice();
     const [projects, setProjects] = useState<Project[]>([]);
+    const isFlush = variant === 'flush';
 
     useEffect(() => {
         void (async () => {
@@ -33,22 +34,25 @@ export function LeftRail({ onLogout, onNewVenture, variant = 'floating' }: Props
         switchRoom(room as Parameters<typeof switchRoom>[0]);
     };
 
-    const surface =
-        variant === 'flush'
-            ? 'relative z-30 flex h-full min-h-0 w-full min-w-0 shrink-0 flex-col overflow-hidden lg:w-52'
-            : 'relative z-30 flex h-full min-h-0 w-full min-w-0 shrink-0 flex-col overflow-hidden rounded-2xl border border-white/[0.1] bg-[var(--bg)]/95 shadow-[0_12px_40px_-8px_rgba(0,0,0,0.5)] backdrop-blur-xl lg:w-52';
+    const surface = isFlush
+        ? 'relative z-30 flex h-full min-h-0 w-full min-w-0 shrink-0 flex-col overflow-hidden border-r border-[var(--border)] bg-[var(--bg)] lg:w-[260px]'
+        : 'relative z-30 flex h-full min-h-0 w-full min-w-0 shrink-0 flex-col overflow-hidden rounded-2xl border border-white/[0.1] bg-[var(--bg)]/95 shadow-[0_12px_40px_-8px_rgba(0,0,0,0.5)] backdrop-blur-xl lg:w-52';
 
     return (
         <div role="navigation" aria-label="Research workspace navigation" className={surface}>
-            <div className="flex min-h-12 shrink-0 items-center justify-between gap-1 border-b border-white/[0.06] px-2.5 py-2">
+            <div
+                className={`flex min-h-12 shrink-0 items-center justify-between gap-1 border-b border-[var(--border)] ${isFlush ? 'px-4 py-3' : 'px-2.5 py-2'}`}
+            >
                 <div className="min-w-0 overflow-hidden">
-                    <p className="truncate text-xs font-semibold tracking-tight text-[var(--text)]">DeepChox</p>
-                    <p className="truncate text-[10px] leading-tight text-[var(--muted)]">Research workspace</p>
+                    <p className="truncate text-[15px] font-medium tracking-tight text-[var(--text)]">DeepChox</p>
+                    <p className={`truncate leading-tight text-[var(--muted)] ${isFlush ? 'mt-0.5 text-[11px]' : 'text-[10px]'}`}>
+                        {isFlush ? 'Workspace' : 'Research workspace'}
+                    </p>
                 </div>
                 <StaffNotificationCenter />
             </div>
 
-            <nav className="custom-scrollbar flex flex-1 flex-col gap-px overflow-y-auto px-1.5 py-2">
+            <nav className={`custom-scrollbar flex flex-1 flex-col overflow-y-auto ${isFlush ? 'gap-0.5 px-2 py-3' : 'gap-px px-1.5 py-2'}`}>
                 {APP_NAV_ITEMS.map((item) => {
                     const Icon = item.icon;
                     const active = activeRoom === item.room;
@@ -60,27 +64,49 @@ export function LeftRail({ onLogout, onNewVenture, variant = 'floating' }: Props
                             onClick={() => go(item.room)}
                             title={item.room === 'personal_assistant' ? PA_SECTION_TAG : item.label}
                             whileTap={{ scale: 0.98 }}
-                            className={`relative flex w-full items-center gap-2.5 rounded-xl py-1.5 pl-1.5 pr-2 text-left transition-colors ${
-                                active
-                                    ? 'bg-[var(--accent-soft)] text-[var(--text)]'
-                                    : 'text-[var(--muted)] hover:bg-white/[0.04] hover:text-[var(--text)]'
-                            }`}
+                            className={
+                                isFlush
+                                    ? `group relative flex min-h-9 w-full items-center gap-3 rounded-md py-2 pl-3 pr-3 text-left text-sm transition-colors ${
+                                          active
+                                              ? 'bg-white/[0.06] text-[var(--text)]'
+                                              : 'text-[var(--muted)] hover:bg-white/[0.04] hover:text-[var(--text)]'
+                                      }`
+                                    : `relative flex w-full items-center gap-2.5 rounded-xl py-1.5 pl-1.5 pr-2 text-left transition-colors ${
+                                          active
+                                              ? 'bg-[var(--accent-soft)] text-[var(--text)]'
+                                              : 'text-[var(--muted)] hover:bg-white/[0.04] hover:text-[var(--text)]'
+                                      }`
+                            }
                         >
                             <span
-                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] text-[var(--text)] ${
-                                    active ? 'border-white/[0.16] bg-white/[0.06]' : 'text-zinc-300'
-                                }`}
+                                className={
+                                    isFlush
+                                        ? `flex h-7 w-7 shrink-0 items-center justify-center ${
+                                              active ? 'text-[var(--accent)]' : 'text-[var(--muted)] group-hover:text-[var(--text)]'
+                                          }`
+                                        : `flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] text-[var(--text)] ${
+                                              active ? 'border-white/[0.16] bg-white/[0.06]' : 'text-zinc-300'
+                                          }`
+                                }
                             >
-                                <Icon className="h-[18px] w-[18px]" strokeWidth={1.85} aria-hidden />
+                                <Icon className={isFlush ? 'h-4 w-4' : 'h-[18px] w-[18px]'} strokeWidth={isFlush ? 2 : 1.85} aria-hidden />
                             </span>
                             <span className="min-w-0 flex-1">
                                 {item.room === 'personal_assistant' ? (
                                     <span className="flex flex-col items-start gap-0">
-                                        <span className="truncate text-[11px] font-medium leading-snug">{item.label}</span>
-                                        <RelayNavHint className="!text-[9px] !leading-snug !text-[var(--muted)]" />
+                                        <span
+                                            className={`truncate font-medium leading-snug ${isFlush ? 'text-sm' : 'text-[11px]'}`}
+                                        >
+                                            {item.label}
+                                        </span>
+                                        <RelayNavHint
+                                            className={isFlush ? '!text-[10px] !leading-snug !text-[var(--muted)]' : '!text-[9px] !leading-snug !text-[var(--muted)]'}
+                                        />
                                     </span>
                                 ) : (
-                                    <span className="truncate text-[11px] font-medium leading-snug">{item.label}</span>
+                                    <span className={`truncate font-medium leading-snug ${isFlush ? 'text-sm' : 'text-[11px]'}`}>
+                                        {item.label}
+                                    </span>
                                 )}
                             </span>
                         </motion.button>
@@ -88,16 +114,18 @@ export function LeftRail({ onLogout, onNewVenture, variant = 'floating' }: Props
                 })}
             </nav>
 
-            <div className="border-t border-white/[0.06] px-1.5 py-2">
+            <div className={`border-t border-[var(--border)] ${isFlush ? 'px-2 py-3' : 'px-1.5 py-2'}`}>
                 <button
                     type="button"
                     onClick={onNewVenture}
-                    className="flex w-full items-center gap-2 rounded-xl py-1.5 pl-1.5 text-[11px] font-medium text-[var(--muted)] transition-colors hover:bg-white/[0.05] hover:text-[var(--text)]"
+                    className={`mb-2 flex w-full items-center gap-2 font-medium text-[var(--muted)] transition-colors hover:text-[var(--text)] ${
+                        isFlush ? 'h-8 px-2 text-xs hover:bg-transparent' : 'rounded-xl py-1.5 pl-1.5 text-[11px] hover:bg-white/[0.05]'
+                    }`}
                 >
-                    <Plus className="h-[18px] w-[18px] shrink-0 opacity-90" strokeWidth={1.85} aria-hidden />
+                    <Plus className={`shrink-0 opacity-90 ${isFlush ? 'h-3 w-3' : 'h-[18px] w-[18px]'}`} strokeWidth={isFlush ? 2 : 1.85} aria-hidden />
                     <span className="truncate">New venture</span>
                 </button>
-                <div className="max-h-28 space-y-px overflow-y-auto">
+                <div className={`max-h-28 overflow-y-auto ${isFlush ? 'space-y-1' : 'space-y-px'}`}>
                     {projects.map((p) => (
                         <button
                             key={p.id}
@@ -106,27 +134,47 @@ export function LeftRail({ onLogout, onNewVenture, variant = 'floating' }: Props
                                 setActiveProject(p);
                                 switchRoom('dashboard');
                             }}
-                            className={`flex w-full items-center gap-2 rounded-lg border border-transparent px-2 py-1 text-left text-[10px] transition-colors ${
-                                activeProject?.id === p.id
-                                    ? 'border-white/[0.1] bg-white/[0.05] text-[var(--text)]'
-                                    : 'text-[var(--muted)] hover:bg-white/[0.04]'
-                            }`}
+                            className={
+                                isFlush
+                                    ? `flex h-10 w-full cursor-pointer items-center rounded-lg px-4 text-left text-xs font-medium transition-colors ${
+                                          activeProject?.id === p.id
+                                              ? 'bg-white/[0.06] text-[var(--text)] ring-1 ring-white/[0.08]'
+                                              : 'text-[var(--muted)] hover:bg-white/[0.04] hover:text-[var(--text)]'
+                                      }`
+                                    : `flex w-full items-center gap-2 rounded-lg border border-transparent px-2 py-1 text-left text-[10px] transition-colors ${
+                                          activeProject?.id === p.id
+                                              ? 'border-white/[0.1] bg-white/[0.05] text-[var(--text)]'
+                                              : 'text-[var(--muted)] hover:bg-white/[0.04]'
+                                      }`
+                            }
                         >
-                            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--muted)]" />
-                            <span className="truncate">{p.name}</span>
+                            <span
+                                className={`shrink-0 rounded-full ${isFlush ? 'h-2 w-2' : 'h-1.5 w-1.5'} ${
+                                    activeProject?.id === p.id
+                                        ? 'bg-[var(--accent)]'
+                                        : isFlush
+                                          ? 'bg-zinc-600'
+                                          : 'bg-[var(--muted)]'
+                                }`}
+                            />
+                            <span className={`min-w-0 truncate ${isFlush ? 'ml-3' : ''}`}>{p.name}</span>
                         </button>
                     ))}
                 </div>
             </div>
 
-            <div className="mt-auto border-t border-white/[0.06] p-1.5">
+            <div className={`mt-auto border-t border-[var(--border)] ${isFlush ? 'p-3' : 'p-1.5'}`}>
                 <button
                     type="button"
                     onClick={onLogout}
-                    className="flex w-full items-center gap-2 rounded-xl py-2 pl-1.5 text-[11px] text-[var(--muted)] transition-colors hover:bg-white/[0.05] hover:text-[var(--text)]"
+                    className={
+                        isFlush
+                            ? 'flex h-9 w-full items-center justify-center gap-2 rounded-lg text-xs font-medium text-[var(--muted)] transition-colors hover:bg-white/[0.06] hover:text-[var(--text)]'
+                            : 'flex w-full items-center gap-2 rounded-xl py-2 pl-1.5 text-[11px] text-[var(--muted)] transition-colors hover:bg-white/[0.05] hover:text-[var(--text)]'
+                    }
                 >
-                    <LogOut className="h-[18px] w-[18px] shrink-0 opacity-90" strokeWidth={1.85} aria-hidden />
-                    <span className="truncate">Sign out</span>
+                    <LogOut className={`shrink-0 opacity-90 ${isFlush ? 'h-4 w-4' : 'h-[18px] w-[18px]'}`} strokeWidth={isFlush ? 2 : 1.85} aria-hidden />
+                    <span className="truncate">{isFlush ? 'Sign Out' : 'Sign out'}</span>
                 </button>
             </div>
         </div>
