@@ -155,11 +155,11 @@ export function ChiefOfStaff() {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-4 sm:p-5">
                 {messages.map((msg) => (
-                    <div key={msg.id} className={`flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-2 duration-500 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                    <div key={msg.id} className={`flex flex-col gap-1.5 animate-in fade-in slide-in-from-bottom-2 duration-300 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
 
-                        <div className={`max-w-[90%] text-sm leading-relaxed p-5 rounded-2xl shadow-xl backdrop-blur-md border ${msg.role === 'user'
+                        <div className={`max-w-[90%] text-sm leading-relaxed p-3.5 rounded-2xl shadow-lg backdrop-blur-md border sm:p-4 ${msg.role === 'user'
                             ? 'bg-gradient-to-br from-indigo-600 to-indigo-800 text-white rounded-tr-sm border-indigo-500/30'
                             : 'bg-zinc-900/60 text-zinc-200 border-zinc-800/50 rounded-tl-sm'
                             }`}>

@@ -140,9 +140,13 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     useEffect(() => {
         if (!dashboardExpanded || !pendingScrollId) return;
         const t = window.setTimeout(() => {
-            document.getElementById(pendingScrollId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            const el = document.getElementById(pendingScrollId);
+            if (el instanceof HTMLDetailsElement) {
+                el.open = true;
+            }
+            el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             setPendingScrollId(null);
-        }, 150);
+        }, 200);
         return () => clearTimeout(t);
     }, [dashboardExpanded, pendingScrollId]);
 
@@ -374,7 +378,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     Collapse
                                 </button>
                             </div>
-                            <div className="space-y-8 p-5 sm:p-6">
+                            <div className="space-y-5 p-4 sm:p-5">
                                 <div
                                     className="flex flex-col gap-4 sm:flex-row sm:flex-wrap"
                                     aria-label="Portfolio summary"
@@ -395,7 +399,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     </div>
                                 </div>
 
-                    <section className="flex flex-col gap-8" aria-label="Portfolio charts">
+                    <section className="flex flex-col gap-5" aria-label="Portfolio charts">
                         <div className="dash-msg">
                             <h3 className="text-[11px] font-medium text-brand-muted/90">Portfolio mix</h3>
                             <p className="mt-1 text-[10px] text-brand-muted">
@@ -520,21 +524,26 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         )}
                     </section>
 
-                    <div className="mt-12 dash-msg">
-                        <h3 className="mb-2 text-sm font-medium text-brand-text">Research desks</h3>
-                        <p className="text-xs leading-relaxed text-brand-muted">Each area produces a fixed artifact once a venture is active.</p>
-                        <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+                    <details className="dash-msg group mt-8 border border-white/[0.06] bg-white/[0.02]">
+                        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5 text-left [&::-webkit-details-marker]:hidden">
+                            <div>
+                                <h3 className="text-sm font-medium text-brand-text">Research desks</h3>
+                                <p className="mt-0.5 text-[11px] text-brand-muted">Five areas — expand to see what each saves</p>
+                            </div>
+                            <ChevronDown className="h-4 w-4 shrink-0 text-brand-muted transition-transform group-open:rotate-180" aria-hidden />
+                        </summary>
+                        <ul className="grid gap-2 border-t border-white/[0.06] px-4 py-4 sm:grid-cols-2">
                             {(['ceo', 'accountant', 'pm', 'cmo', 'scout'] as const satisfies readonly ResearchStaffRole[]).map((role) => {
                                 const row = RESEARCH_STAFF[role];
                                 return (
-                                    <li key={role} className="flex flex-col gap-1 rounded-xl bg-white/[0.04] px-3 py-3">
+                                    <li key={role} className="flex flex-col gap-0.5 rounded-lg bg-white/[0.04] px-3 py-2.5">
                                         <span className="text-[11px] font-medium leading-snug text-brand-text">{row.navTitle}</span>
-                                        <span className="min-w-0 text-[11px] leading-snug text-brand-muted">{row.navHint}</span>
+                                        <span className="min-w-0 text-[10px] leading-snug text-brand-muted">{row.navHint}</span>
                                     </li>
                                 );
                             })}
                         </ul>
-                    </div>
+                    </details>
                 </div>
             </div>
         );
@@ -542,7 +551,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
 
     return (
         <div className="w-full min-w-0 bg-brand-bg px-4 py-6 pb-14 font-sans sm:px-5 sm:py-8">
-            <div className="dash-thread space-y-9 pb-6 animate-in fade-in duration-500">
+            <div className="dash-thread space-y-6 pb-4 animate-in fade-in duration-500">
                         <header className="flex flex-col gap-5 pb-1 sm:flex-row sm:items-end sm:justify-between">
                             <div className="min-w-0">
                                 <div className="mb-2 flex items-center gap-2.5">
@@ -553,11 +562,9 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     <span className="dash-section-label !mb-0">Executive overview</span>
                                 </div>
                                 <h1 className="text-2xl font-semibold tracking-tight text-brand-text sm:text-3xl">{activeProject.name}</h1>
-                                <p className="mt-3 max-w-2xl text-sm leading-relaxed text-brand-muted">
-                                    <span className="font-medium text-brand-text/90">Goal advancement</span> and the daily office brief are{' '}
-                                    <span className="text-brand-text/80">below the header</span> on this page. Use{' '}
-                                    <span className="text-brand-muted">Surfaces → Goal advancement</span> to jump there. Expand{' '}
-                                    <span className="text-brand-muted">Dashboard</span> for charts; the chat bar stays fixed at the bottom.
+                                <p className="mt-2 max-w-xl text-[13px] leading-snug text-brand-muted">
+                                    Expand sections as you need them. <span className="text-brand-text/85">Dashboard</span> holds charts and
+                                    staff output; chat stays at the bottom.
                                 </p>
                             </div>
                             <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
@@ -591,97 +598,111 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             </div>
                         </header>
 
-                        <section id="exec-goal-advancement" className="scroll-mt-6 space-y-5" aria-labelledby="goal-advancement-heading">
-                            <h2 id="goal-advancement-heading" className="sr-only">
-                                Goal advancement dashboard
-                            </h2>
-                            {livingOffice ? (
-                                <>
-                                    <GoalAdvanceCard
-                                        progress={livingOffice.progress}
-                                        suggestedFocus={livingOffice.brief.suggestedFocus}
-                                    />
-                                    <section aria-label="Daily office" className="flex flex-col gap-5">
-                                        <MorningBriefCard brief={livingOffice.brief} />
-                                        {livingOffice.suggestedActions.length > 0 ? (
-                                            <details className="dash-msg border border-white/[0.08] bg-white/[0.03] group open:bg-white/[0.04]">
-                                                <summary className="flex cursor-pointer list-none items-center justify-between gap-2 py-2.5 pl-3 pr-3 text-left [&::-webkit-details-marker]:hidden">
-                                                    <span className="flex items-center gap-2 text-xs font-medium text-brand-text">
-                                                        <Compass className="h-3.5 w-3.5 text-zinc-400" aria-hidden />
-                                                        Leadership hints
-                                                        <span className="font-normal text-brand-muted">({livingOffice.suggestedActions.length})</span>
-                                                    </span>
-                                                    <ChevronDown className="h-4 w-4 shrink-0 text-brand-muted transition-transform group-open:rotate-180" aria-hidden />
-                                                </summary>
-                                                <div className="border-t border-white/[0.05] px-3 pb-3 pt-2">
-                                                    <p className="mb-2 text-[10px] leading-snug text-brand-muted">
-                                                        Heuristic nudges — use Personal Assistant to turn into a plan.
-                                                    </p>
-                                                    <ul className="space-y-2">
-                                                        {livingOffice.suggestedActions.map((a, idx) => (
-                                                            <li
-                                                                key={`${a.intent}-${idx}`}
-                                                                className="rounded-lg border border-white/[0.05] bg-black/15 px-2.5 py-2"
-                                                            >
-                                                                <p className="text-[9px] font-medium uppercase tracking-wide text-zinc-500">
-                                                                    {a.intent.replace(/_/g, ' ')} · {a.targetDesks.join(', ')}
-                                                                </p>
-                                                                <p className="mt-0.5 text-[12px] leading-snug text-brand-text/95">{a.summary}</p>
-                                                                {a.proposedSteps.length > 0 ? (
-                                                                    <ul className="mt-1.5 space-y-0.5 border-t border-white/[0.04] pt-1.5 text-[10px] leading-snug text-brand-muted">
-                                                                        {a.proposedSteps.map((s, i) => (
-                                                                            <li key={i} className="flex gap-1.5 text-[10px] leading-snug text-brand-muted">
-                                                                                <span className="shrink-0 text-brand-muted/45">·</span>
-                                                                                <span>{s}</span>
-                                                                            </li>
-                                                                        ))}
-                                                                    </ul>
-                                                                ) : null}
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            </details>
-                                        ) : null}
-                                        <AmbientNotificationTray items={livingOffice.notifications} />
-                                        <WeeklyReviewCard review={livingOffice.weeklyReview} />
-                                    </section>
-                                </>
-                            ) : (
-                                <div className="dash-msg border border-dashed border-white/[0.08] px-5 py-10 text-center">
-                                    <p className="text-sm text-brand-muted">Office metrics have not loaded yet for this venture.</p>
-                                    <button
-                                        type="button"
-                                        onClick={() => void refreshLivingOffice()}
-                                        className="mt-4 inline-flex items-center justify-center rounded-full bg-white/[0.08] px-4 py-2 text-xs font-medium text-brand-text transition hover:bg-white/[0.12]"
-                                    >
-                                        Load goal advancement
-                                    </button>
+                        <details
+                            id="exec-goal-advancement"
+                            className="dash-msg scroll-mt-6 border border-white/[0.08] bg-white/[0.03] group open:bg-white/[0.04]"
+                        >
+                            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5 text-left [&::-webkit-details-marker]:hidden">
+                                <div className="flex min-w-0 items-start gap-3">
+                                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/[0.06] text-brand-muted">
+                                        <Target className="h-4 w-4" aria-hidden />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <h2 className="text-sm font-semibold text-brand-text">Goal advancement</h2>
+                                        <p className="mt-0.5 text-[11px] leading-snug text-brand-muted">
+                                            {livingOffice
+                                                ? `${livingOffice.progress.percentage}% toward horizon · risk ${livingOffice.progress.risk} · expand for brief & cards`
+                                                : 'Collapsed — expand to load office metrics, brief, and reviews'}
+                                        </p>
+                                    </div>
                                 </div>
-                            )}
-                        </section>
+                                <ChevronDown className="h-4 w-4 shrink-0 text-brand-muted transition-transform group-open:rotate-180" aria-hidden />
+                            </summary>
+                            <div className="space-y-5 border-t border-white/[0.06] px-4 pb-4 pt-4">
+                                {livingOffice ? (
+                                    <>
+                                        <GoalAdvanceCard
+                                            progress={livingOffice.progress}
+                                            suggestedFocus={livingOffice.brief.suggestedFocus}
+                                        />
+                                        <section aria-label="Daily office" className="flex flex-col gap-5">
+                                            <MorningBriefCard brief={livingOffice.brief} />
+                                            {livingOffice.suggestedActions.length > 0 ? (
+                                                <details className="dash-msg border border-white/[0.08] bg-white/[0.03] group/inner open:bg-white/[0.04]">
+                                                    <summary className="flex cursor-pointer list-none items-center justify-between gap-2 py-2.5 pl-3 pr-3 text-left [&::-webkit-details-marker]:hidden">
+                                                        <span className="flex items-center gap-2 text-xs font-medium text-brand-text">
+                                                            <Compass className="h-3.5 w-3.5 text-zinc-400" aria-hidden />
+                                                            Leadership hints
+                                                            <span className="font-normal text-brand-muted">
+                                                                ({livingOffice.suggestedActions.length})
+                                                            </span>
+                                                        </span>
+                                                        <ChevronDown className="h-4 w-4 shrink-0 text-brand-muted transition-transform group-open/inner:rotate-180" aria-hidden />
+                                                    </summary>
+                                                    <div className="border-t border-white/[0.05] px-3 pb-3 pt-2">
+                                                        <p className="mb-2 text-[10px] leading-snug text-brand-muted">
+                                                            Heuristic nudges — use Personal Assistant to turn into a plan.
+                                                        </p>
+                                                        <ul className="space-y-2">
+                                                            {livingOffice.suggestedActions.map((a, idx) => (
+                                                                <li
+                                                                    key={`${a.intent}-${idx}`}
+                                                                    className="rounded-lg border border-white/[0.05] bg-black/15 px-2.5 py-2"
+                                                                >
+                                                                    <p className="text-[9px] font-medium uppercase tracking-wide text-zinc-500">
+                                                                        {a.intent.replace(/_/g, ' ')} · {a.targetDesks.join(', ')}
+                                                                    </p>
+                                                                    <p className="mt-0.5 text-[12px] leading-snug text-brand-text/95">{a.summary}</p>
+                                                                    {a.proposedSteps.length > 0 ? (
+                                                                        <ul className="mt-1.5 space-y-0.5 border-t border-white/[0.04] pt-1.5 text-[10px] leading-snug text-brand-muted">
+                                                                            {a.proposedSteps.map((s, i) => (
+                                                                                <li
+                                                                                    key={i}
+                                                                                    className="flex gap-1.5 text-[10px] leading-snug text-brand-muted"
+                                                                                >
+                                                                                    <span className="shrink-0 text-brand-muted/45">·</span>
+                                                                                    <span>{s}</span>
+                                                                                </li>
+                                                                            ))}
+                                                                        </ul>
+                                                                    ) : null}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                </details>
+                                            ) : null}
+                                            <AmbientNotificationTray items={livingOffice.notifications} />
+                                            <WeeklyReviewCard review={livingOffice.weeklyReview} />
+                                        </section>
+                                    </>
+                                ) : (
+                                    <div className="rounded-xl border border-dashed border-white/[0.08] px-5 py-8 text-center">
+                                        <p className="text-sm text-brand-muted">Office metrics have not loaded yet for this venture.</p>
+                                        <button
+                                            type="button"
+                                            onClick={() => void refreshLivingOffice()}
+                                            className="mt-4 inline-flex items-center justify-center rounded-full bg-white/[0.08] px-4 py-2 text-xs font-medium text-brand-text transition hover:bg-white/[0.12]"
+                                        >
+                                            Load goal advancement
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </details>
 
                         {activeProject.agentStaffSnapshot && (
                             <button
                                 type="button"
                                 onClick={() => openDashboard('dash-staff-snapshot')}
-                                className="group dash-msg flex w-full flex-col gap-4 text-left transition hover:bg-zinc-800/55 sm:flex-row sm:items-center sm:justify-between"
+                                title="Opens Dashboard panel and expands latest staff research"
+                                className="flex w-full items-center justify-between gap-3 rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-left text-sm font-medium text-brand-text transition hover:bg-white/[0.07]"
                             >
-                                <div className="flex min-w-0 items-start gap-3">
-                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/[0.06]">
-                                        <Sparkles className="h-5 w-5 text-brand-muted" aria-hidden />
-                                    </div>
-                                    <div className="min-w-0">
-                                        <p className="text-[11px] font-medium text-brand-muted">Featured</p>
-                                        <h2 className="mt-1 text-base font-semibold text-brand-text">Latest AI staff research</h2>
-                                        <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-brand-muted">
-                                            {activeProject.agentStaffSnapshot.summary}
-                                        </p>
-                                    </div>
-                                </div>
-                                <span className="shrink-0 text-sm font-medium text-brand-muted group-hover:text-brand-text">
-                                    Open in dashboard →
+                                <span className="flex min-w-0 items-center gap-2.5">
+                                    <Sparkles className="h-4 w-4 shrink-0 text-brand-muted" aria-hidden />
+                                    <span className="truncate">Latest staff research</span>
                                 </span>
+                                <span className="shrink-0 text-xs text-brand-muted">Open →</span>
                             </button>
                         )}
 
@@ -689,103 +710,75 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             <h2 id="exec-hub-tiles" className="dash-section-label">
                                 Surfaces
                             </h2>
-                            <p className="mb-8 max-w-prose text-sm leading-relaxed text-brand-muted">
-                                Shortcuts below; expanding <span className="text-brand-muted">Dashboard</span> opens charts and desks in one scrollable thread.
-                                Use the <span className="font-medium text-brand-text/90">chat bar</span> at the bottom.
+                            <p className="mb-3 text-[12px] leading-snug text-brand-muted">
+                                Tap a shortcut — hover for a short hint. <span className="text-brand-text/80">Dashboard</span> opens a panel of
+                                collapsible sections.
                             </p>
-                            <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap">
+                            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
                                 <button
                                     type="button"
                                     onClick={() => {
                                         setDashboardExpanded((open) => !open);
                                         setPendingScrollId(null);
                                     }}
-                                    className={`dash-msg flex min-w-0 flex-1 flex-col items-start gap-3 text-left transition sm:min-w-[14rem] ${
-                                        dashboardExpanded ? 'bg-zinc-800/55' : 'hover:bg-zinc-800/50'
+                                    className={`flex items-center gap-2 rounded-xl border border-white/[0.06] px-3 py-2.5 text-left text-xs font-semibold transition ${
+                                        dashboardExpanded ? 'bg-zinc-800/55 text-brand-text' : 'bg-white/[0.04] text-brand-text hover:bg-white/[0.07]'
                                     }`}
                                     aria-expanded={dashboardExpanded}
+                                    title="Snapshot, score, charts, staff output, activity, desks — each section expands on demand"
                                 >
-                                    <div className="flex w-full items-start justify-between gap-2">
-                                        <LayoutDashboard className="h-6 w-6 text-brand-muted" aria-hidden />
-                                        {dashboardExpanded ? (
-                                            <ChevronUp className="h-5 w-5 shrink-0 text-zinc-400" aria-hidden />
-                                        ) : null}
-                                    </div>
-                                    <div>
-                                        <h3 className="text-base font-semibold text-brand-text">Dashboard</h3>
-                                        <p className="mt-2 text-sm leading-relaxed text-brand-muted">
-                                            Snapshot, score, charts, staff research, signal, desks — opens below as one flowing thread.
-                                        </p>
-                                    </div>
+                                    <LayoutDashboard className="h-4 w-4 shrink-0 text-brand-muted" aria-hidden />
+                                    <span className="min-w-0 truncate">Dashboard</span>
+                                    {dashboardExpanded ? <ChevronUp className="ml-auto h-3.5 w-3.5 shrink-0 text-brand-muted" aria-hidden /> : null}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        document
-                                            .getElementById('exec-goal-advancement')
-                                            ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                        const el = document.getElementById('exec-goal-advancement');
+                                        if (el instanceof HTMLDetailsElement) el.open = true;
+                                        el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                                     }}
-                                    className="dash-msg flex min-w-0 flex-1 flex-col items-start gap-3 text-left transition hover:bg-zinc-800/50 sm:min-w-[14rem]"
+                                    className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.04] px-3 py-2.5 text-left text-xs font-semibold text-brand-text transition hover:bg-white/[0.07]"
+                                    title="Scroll to goal advancement — expand the row for brief and office cards"
                                 >
-                                    <Target className="h-6 w-6 text-brand-muted" aria-hidden />
-                                    <div>
-                                        <h3 className="text-base font-semibold text-brand-text">Goal advancement</h3>
-                                        <p className="mt-2 text-sm leading-relaxed text-brand-muted">
-                                            Scroll to progress bar, horizon estimate, risk, and the daily office brief on this page.
-                                        </p>
-                                    </div>
+                                    <Target className="h-4 w-4 shrink-0 text-brand-muted" aria-hidden />
+                                    <span className="min-w-0 truncate">Goals</span>
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => openDashboard('dash-signal')}
-                                    className="dash-msg flex min-w-0 flex-1 flex-col items-start gap-3 text-left transition hover:bg-zinc-800/50 sm:min-w-[14rem]"
+                                    className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.04] px-3 py-2.5 text-left text-xs font-semibold text-brand-text transition hover:bg-white/[0.07]"
+                                    title="Opens Dashboard panel to activity charts and log"
                                 >
-                                    <Activity className="h-6 w-6 text-brand-muted" aria-hidden />
-                                    <div>
-                                        <h3 className="text-base font-semibold text-brand-text">Signal &amp; activity</h3>
-                                        <p className="mt-2 text-sm leading-relaxed text-brand-muted">
-                                            Opens the dashboard panel and scrolls to signal &amp; activity.
-                                        </p>
-                                    </div>
+                                    <Activity className="h-4 w-4 shrink-0 text-brand-muted" aria-hidden />
+                                    <span className="min-w-0 truncate">Signal</span>
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => openDashboard('dash-desks')}
-                                    className="dash-msg flex min-w-0 flex-1 flex-col items-start gap-3 text-left transition hover:bg-zinc-800/50 sm:min-w-[14rem]"
+                                    className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.04] px-3 py-2.5 text-left text-xs font-semibold text-brand-text transition hover:bg-white/[0.07]"
+                                    title="Opens Dashboard panel to desk shortcuts"
                                 >
-                                    <LayoutGrid className="h-6 w-6 text-brand-muted" aria-hidden />
-                                    <div>
-                                        <h3 className="text-base font-semibold text-brand-text">Operational desks</h3>
-                                        <p className="mt-2 text-sm leading-relaxed text-brand-muted">
-                                            Opens the dashboard panel and scrolls to operational desks.
-                                        </p>
-                                    </div>
+                                    <LayoutGrid className="h-4 w-4 shrink-0 text-brand-muted" aria-hidden />
+                                    <span className="min-w-0 truncate">Desks</span>
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => switchRoom('reports')}
-                                    className="dash-msg flex min-w-0 flex-1 flex-col items-start gap-3 text-left transition hover:bg-zinc-800/50 sm:min-w-[14rem]"
+                                    className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.04] px-3 py-2.5 text-left text-xs font-semibold text-brand-text transition hover:bg-white/[0.07]"
+                                    title="Reports and saved artifacts"
                                 >
-                                    <FileText className="h-6 w-6 text-brand-muted" aria-hidden />
-                                    <div>
-                                        <h3 className="text-base font-semibold text-brand-text">Knowledge base</h3>
-                                        <p className="mt-2 text-sm leading-relaxed text-brand-muted">
-                                            Reports library and saved artifacts for this venture.
-                                        </p>
-                                    </div>
+                                    <FileText className="h-4 w-4 shrink-0 text-brand-muted" aria-hidden />
+                                    <span className="min-w-0 truncate">Knowledge</span>
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => switchRoom('calendar')}
-                                    className="dash-msg flex min-w-0 flex-1 flex-col items-start gap-3 text-left transition hover:bg-zinc-800/50 sm:min-w-[14rem]"
+                                    className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.04] px-3 py-2.5 text-left text-xs font-semibold text-brand-text transition hover:bg-white/[0.07]"
+                                    title="Milestones and events"
                                 >
-                                    <Calendar className="h-6 w-6 text-brand-muted" aria-hidden />
-                                    <div>
-                                        <h3 className="text-base font-semibold text-brand-text">Calendar</h3>
-                                        <p className="mt-2 text-sm leading-relaxed text-brand-muted">
-                                            Milestones, events, and critical dates on one timeline.
-                                        </p>
-                                    </div>
+                                    <Calendar className="h-4 w-4 shrink-0 text-brand-muted" aria-hidden />
+                                    <span className="min-w-0 truncate">Calendar</span>
                                 </button>
                             </div>
                         </section>
@@ -812,69 +805,99 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         Collapse
                                     </button>
                                 </div>
-                                <div className="space-y-8 px-4 py-6 sm:px-5 sm:py-8">
+                                <div className="space-y-2 px-3 py-4 sm:px-4 sm:py-5">
                         {activeProject.agentStaffSnapshot && (
-                    <section
-                        id="dash-staff-snapshot"
-                        className="dash-msg mb-7 bg-white/[0.03]"
-                        aria-labelledby="dash-staff-snapshot-title"
-                    >
-                        <div className="mb-3 flex flex-wrap items-center gap-2">
-                            <Sparkles className="h-4 w-4 text-zinc-400" aria-hidden />
-                            <h2 id="dash-staff-snapshot-title" className="text-sm font-medium text-brand-text">
-                                Latest AI staff research
-                            </h2>
-                            <span className="font-mono text-[10px] text-brand-muted">
-                                {new Date(activeProject.agentStaffSnapshot.at).toLocaleString()}
-                            </span>
-                        </div>
-                        <p className="text-sm leading-relaxed text-brand-text">{activeProject.agentStaffSnapshot.summary}</p>
-                        <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:flex-wrap">
-                            {(
-                                [
-                                    ['Research strategy and direction', activeProject.agentStaffSnapshot.desks.ceo],
-                                    ['Research product and delivery', activeProject.agentStaffSnapshot.desks.pm],
-                                    ['Research fund intelligence', activeProject.agentStaffSnapshot.desks.accountant],
-                                    ['Research market and landscape', activeProject.agentStaffSnapshot.desks.scout],
-                                    ['Research growth and narrative', activeProject.agentStaffSnapshot.desks.cmo],
-                                ] as const
-                            ).map(([label, text]) =>
-                                text?.trim() ? (
-                                    <div key={label} className="min-w-0 flex-1 rounded-2xl bg-white/[0.04] p-4 sm:min-w-[12rem]">
-                                        <p className="text-[10px] font-medium text-brand-muted/90">{label}</p>
-                                        <p className="mt-2 max-h-28 overflow-y-auto text-[11px] leading-snug text-brand-muted custom-scrollbar whitespace-pre-wrap">
-                                            {text}
-                                        </p>
+                            <details
+                                id="dash-staff-snapshot"
+                                className="group/staff dash-msg border border-white/[0.08] bg-white/[0.03] open:bg-white/[0.04]"
+                            >
+                                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
+                                    <div className="flex min-w-0 flex-wrap items-center gap-2">
+                                        <Sparkles className="h-4 w-4 shrink-0 text-zinc-400" aria-hidden />
+                                        <span className="text-sm font-medium text-brand-text">Latest AI staff research</span>
+                                        <span className="font-mono text-[10px] text-brand-muted">
+                                            {new Date(activeProject.agentStaffSnapshot.at).toLocaleString()}
+                                        </span>
                                     </div>
-                                ) : null
-                            )}
-                        </div>
-                    </section>
-                )}
+                                    <ChevronDown
+                                        className="h-4 w-4 shrink-0 text-brand-muted transition-transform group-open/staff:rotate-180"
+                                        aria-hidden
+                                    />
+                                </summary>
+                                <div className="border-t border-white/[0.06] px-4 pb-4 pt-4">
+                                    <p className="text-sm leading-relaxed text-brand-text">{activeProject.agentStaffSnapshot.summary}</p>
+                                    <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:flex-wrap">
+                                        {(
+                                            [
+                                                ['Research strategy and direction', activeProject.agentStaffSnapshot.desks.ceo],
+                                                ['Research product and delivery', activeProject.agentStaffSnapshot.desks.pm],
+                                                ['Research fund intelligence', activeProject.agentStaffSnapshot.desks.accountant],
+                                                ['Research market and landscape', activeProject.agentStaffSnapshot.desks.scout],
+                                                ['Research growth and narrative', activeProject.agentStaffSnapshot.desks.cmo],
+                                            ] as const
+                                        ).map(([label, text]) =>
+                                            text?.trim() ? (
+                                                <div key={label} className="min-w-0 flex-1 rounded-2xl bg-white/[0.04] p-4 sm:min-w-[12rem]">
+                                                    <p className="text-[10px] font-medium text-brand-muted/90">{label}</p>
+                                                    <p className="mt-2 max-h-28 overflow-y-auto text-[11px] leading-snug text-brand-muted custom-scrollbar whitespace-pre-wrap">
+                                                        {text}
+                                                    </p>
+                                                </div>
+                                            ) : null
+                                        )}
+                                    </div>
+                                </div>
+                            </details>
+                        )}
 
-                {activeProject.staffFocusToday && activeProject.staffFocusToday.length > 0 && (
-                    <section
-                        className="dash-msg mb-7 bg-amber-950/15"
-                        aria-labelledby="dash-focus-today"
-                    >
-                        <h2 id="dash-focus-today" className="mb-0.5 text-sm font-medium text-amber-100/95">
-                            Today’s focus — from latest staff sync
-                        </h2>
-                        <p className="mb-2.5 text-[10px] leading-snug text-amber-100/65">
-                            Done / + note → saved to journal for Assistant &amp; next sync.
-                        </p>
-                        <StaffFocusChecklist
-                            lines={activeProject.staffFocusToday}
-                            completedLines={activeProject.staffFocusCompletedLines || []}
-                            onMarkDone={(line, note) => markStaffFocusLineDone(line, note)}
+                        {activeProject.staffFocusToday && activeProject.staffFocusToday.length > 0 && (
+                            <details
+                                id="dash-focus-today"
+                                className="group/focus dash-msg border border-amber-900/30 bg-amber-950/15 open:bg-amber-950/20"
+                            >
+                                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
+                                    <div>
+                                        <span className="text-sm font-medium text-amber-100/95">Today&apos;s focus</span>
+                                        <span className="mt-0.5 block text-[10px] text-amber-100/60">
+                                            From staff sync · {activeProject.staffFocusToday.length} line
+                                            {activeProject.staffFocusToday.length === 1 ? '' : 's'}
+                                        </span>
+                                    </div>
+                                    <ChevronDown
+                                        className="h-4 w-4 shrink-0 text-amber-200/70 transition-transform group-open/focus:rotate-180"
+                                        aria-hidden
+                                    />
+                                </summary>
+                                <div className="border-t border-amber-900/25 px-4 pb-4 pt-3">
+                                    <p className="mb-2.5 text-[10px] leading-snug text-amber-100/65">
+                                        Done / + note → saved to journal for Assistant &amp; next sync.
+                                    </p>
+                                    <StaffFocusChecklist
+                                        lines={activeProject.staffFocusToday}
+                                        completedLines={activeProject.staffFocusCompletedLines || []}
+                                        onMarkDone={(line, note) => markStaffFocusLineDone(line, note)}
+                                    />
+                                </div>
+                            </details>
+                        )}
+
+                <details
+                    id="dash-snapshot"
+                    className="group/snap dash-msg mb-2 border border-white/[0.08] bg-white/[0.03] open:bg-white/[0.04]"
+                >
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
+                        <span className="text-sm font-medium text-brand-text">
+                            Venture snapshot
+                            <span className="mt-0.5 block text-[11px] font-normal text-brand-muted">
+                                {executionScore}% execution index · expand for strategy line, drivers, and charts
+                            </span>
+                        </span>
+                        <ChevronDown
+                            className="h-4 w-4 shrink-0 text-brand-muted transition-transform group-open/snap:rotate-180"
+                            aria-hidden
                         />
-                    </section>
-                )}
-
-                <section className="mb-12" aria-labelledby="dash-snapshot">
-                    <h2 id="dash-snapshot" className="dash-section-label">
-                        Venture snapshot
-                    </h2>
+                    </summary>
+                    <div className="border-t border-white/[0.06] px-4 pb-4 pt-4">
                     <div className="flex flex-col gap-8">
                         <div className="dash-msg">
                             <p className="text-[10px] font-medium text-brand-muted/90">Strategic line</p>
@@ -1092,13 +1115,27 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             </div>
                         </div>
                     </div>
-                </section>
+                    </div>
+                </details>
 
-                <section className="mb-12" aria-labelledby="dash-signal">
-                    <h2 id="dash-signal" className="dash-section-label">
-                        Signal &amp; activity
-                    </h2>
-                    <div className="flex flex-col gap-8 lg:flex-row lg:items-stretch">
+                <details
+                    id="dash-signal"
+                    className="group/sig dash-msg mb-2 border border-white/[0.08] bg-white/[0.03] open:bg-white/[0.04]"
+                >
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
+                        <span className="text-sm font-medium text-brand-text">
+                            Signal &amp; activity
+                            <span className="mt-0.5 block text-[11px] font-normal text-brand-muted">
+                                Charts + log · expand to view
+                            </span>
+                        </span>
+                        <ChevronDown
+                            className="h-4 w-4 shrink-0 text-brand-muted transition-transform group-open/sig:rotate-180"
+                            aria-hidden
+                        />
+                    </summary>
+                    <div className="border-t border-white/[0.06] px-4 pb-4 pt-4">
+                    <div className="flex flex-col gap-5 lg:flex-row lg:items-stretch">
                         <div className="dash-msg flex min-h-0 flex-1 flex-col">
                             <div className="mb-1 flex items-start justify-between gap-3">
                                 <div>
@@ -1147,7 +1184,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 </h3>
                                 <span className="h-2 w-2 animate-pulse rounded-full bg-brand-muted" aria-hidden />
                             </div>
-                            <div className="custom-scrollbar max-h-[min(50vh,22rem)] flex-1 space-y-4 overflow-y-auto pr-1">
+                            <div className="custom-scrollbar max-h-[min(38vh,15rem)] flex-1 space-y-3 overflow-y-auto pr-1">
                                 {systemLogs.length === 0 ? (
                                     <div className="py-10 text-center text-sm text-brand-muted">No activity yet.</div>
                                 ) : (
@@ -1171,12 +1208,26 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             </div>
                         </div>
                     </div>
-                </section>
+                    </div>
+                </details>
 
-                <section className="mb-12" aria-labelledby="dash-desks">
-                    <h2 id="dash-desks" className="dash-section-label">
-                        Operational desks
-                    </h2>
+                <details
+                    id="dash-desks"
+                    className="group/dsk dash-msg mb-2 border border-white/[0.08] bg-white/[0.03] open:bg-white/[0.04]"
+                >
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
+                        <span className="text-sm font-medium text-brand-text">
+                            Operational desks
+                            <span className="mt-0.5 block text-[11px] font-normal text-brand-muted">
+                                Jump to CEO, scout, finance, product · expand to open
+                            </span>
+                        </span>
+                        <ChevronDown
+                            className="h-4 w-4 shrink-0 text-brand-muted transition-transform group-open/dsk:rotate-180"
+                            aria-hidden
+                        />
+                    </summary>
+                    <div className="border-t border-white/[0.06] px-4 pb-4 pt-4">
                     <div className="grid gap-4 sm:grid-cols-2">
                         <AgentCard
                             agent={agents.ceo}
@@ -1203,12 +1254,26 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             status={!!activeProject.productPlan ? 'active' : 'idle'}
                         />
                     </div>
-                </section>
+                    </div>
+                </details>
 
-                <section className="mb-4" aria-labelledby="dash-next">
-                    <h2 id="dash-next" className="dash-section-label">
-                        Next focus
-                    </h2>
+                <details
+                    id="dash-next"
+                    className="group/nxt dash-msg mb-2 border border-white/[0.08] bg-white/[0.03] open:bg-white/[0.04]"
+                >
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
+                        <span className="text-sm font-medium text-brand-text">
+                            Next focus
+                            <span className="mt-0.5 block text-[11px] font-normal text-brand-muted">
+                                Suggested line + shortcuts · expand
+                            </span>
+                        </span>
+                        <ChevronDown
+                            className="h-4 w-4 shrink-0 text-brand-muted transition-transform group-open/nxt:rotate-180"
+                            aria-hidden
+                        />
+                    </summary>
+                    <div className="border-t border-white/[0.06] px-4 pb-4 pt-4">
                     <div className="dash-msg flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
                         <div className="max-w-prose">
                             <p className="font-serif text-xl leading-snug text-brand-text md:text-2xl">
@@ -1240,7 +1305,8 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         </button>
                         <WorkspaceAiButton label="Ask Research across desks" />
                     </div>
-                </section>
+                    </div>
+                </details>
                                 </div>
                             </div>
                         )}

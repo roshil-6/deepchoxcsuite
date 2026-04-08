@@ -42,6 +42,9 @@ import {
 
 export type AgentRole = 'ceo' | 'pm' | 'accountant' | 'scout' | 'cmo' | 'chief_of_staff' | 'dexo' | 'shark';
 
+/** Any research desk — which block is in focus (feeds desk chat context). */
+export type DeskSectionFocus = { room: string; sectionId: string; title: string; prompt: string };
+
 export interface AgentPersona {
   /** Full line for tooltips, e.g. "strategy & direction research staff" */
   name: string;
@@ -82,6 +85,14 @@ export interface OfficeContextType {
   appendExecutiveThread: (msg: ExecutiveThreadMessage) => void;
   setExecutiveThread: (messages: ExecutiveThreadMessage[]) => void;
   clearExecutiveThread: () => void;
+
+  /** Active desk block in focus — cleared when switching rooms. */
+  deskSectionFocus: DeskSectionFocus | null;
+  setDeskSectionFocus: (v: DeskSectionFocus | null) => void;
+
+  /** Intelligence Suite: which role accordion is open (`null` = page hub). Cleared on room switch. */
+  suiteIntelOpenDesk: string | null;
+  setSuiteIntelOpenDesk: (v: string | null) => void;
 
   // Actions
   switchRoom: (room: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence') => void;
@@ -236,6 +247,8 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
   const [activeProject, setActiveProjectState] = useState<Project | null>(null);
   const [allProjects, setAllProjects] = useState<Project[]>([]);
   const [pendingChat, setPendingChat] = useState<{ role: AgentRole; message: string } | null>(null);
+  const [deskSectionFocus, setDeskSectionFocus] = useState<DeskSectionFocus | null>(null);
+  const [suiteIntelOpenDesk, setSuiteIntelOpenDesk] = useState<string | null>(null);
   const [executiveThread, setExecutiveThread] = useState<ExecutiveThreadMessage[]>([]);
   const [systemState, setSystemState] = useState<SystemState>({
     alertLevel: 'stable',
@@ -324,6 +337,8 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
   const switchRoom = (
     room: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence'
   ) => {
+    setDeskSectionFocus(null);
+    setSuiteIntelOpenDesk(null);
     setActiveRoom(room);
   };
 
@@ -763,6 +778,8 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
     setAllProjects([]);
     setActiveProjectState(null);
     setExecutiveThread([]);
+    setDeskSectionFocus(null);
+    setSuiteIntelOpenDesk(null);
     setLivingOffice(null);
     setActiveRoom('dashboard');
     setSystemState(prev => ({ ...prev, alertLevel: 'stable', isDeepWork: false }));
@@ -790,6 +807,10 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
     appendExecutiveThread,
     setExecutiveThread,
     clearExecutiveThread,
+    deskSectionFocus,
+    setDeskSectionFocus,
+    suiteIntelOpenDesk,
+    setSuiteIntelOpenDesk,
     agents: AGENT_PERSONAS,
     switchRoom,
     setActiveProject,

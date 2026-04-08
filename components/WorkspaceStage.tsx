@@ -51,7 +51,11 @@ export function WorkspaceStage({
             case 'dexo':
                 return <DexoCommandCenter />;
             case 'forge':
-                return <PitchDeckForge />;
+                return (
+                    <OperationalDesk>
+                        <PitchDeckForge />
+                    </OperationalDesk>
+                );
             case 'wargame':
                 return <WargameNexus />;
             case 'intelligence_diary':

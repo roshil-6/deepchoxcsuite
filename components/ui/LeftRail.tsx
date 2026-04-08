@@ -2,11 +2,12 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, LogOut } from 'lucide-react';
+import { Plus, LogOut, PanelRight } from 'lucide-react';
 import { useOffice } from '@/lib/OfficeContext';
 import { getAllProjects, type Project } from '@/lib/db';
 import { StaffNotificationCenter } from '@/components/StaffNotificationCenter';
-import { APP_NAV_ITEMS, type AppNavRoom } from '@/components/ui/appNav';
+import { APP_NAV_ITEMS, WORKSPACE_TITLES, type AppNavRoom } from '@/components/ui/appNav';
+import { DailySyncBanner } from '@/components/DailySyncBanner';
 import { RelayNavHint } from '@/components/pa/RelayNavHint';
 import { PA_SECTION_TAG } from '@/lib/paBuddy';
 
@@ -15,9 +16,20 @@ type Props = {
     onNewVenture: () => void;
     /** `flush` = docked rail with border-r; `floating` = rounded card (e.g. legacy desktop). */
     variant?: 'floating' | 'flush';
+    /** Desktop docked rail only: room title, venture, intel toggle, daily sync — keeps center column for desk + chat. */
+    desktopWorkspaceStrip?: boolean;
+    onToggleIntel?: () => void;
+    intelDesktopCollapsed?: boolean;
 };
 
-export function LeftRail({ onLogout, onNewVenture, variant = 'flush' }: Props) {
+export function LeftRail({
+    onLogout,
+    onNewVenture,
+    variant = 'flush',
+    desktopWorkspaceStrip = false,
+    onToggleIntel,
+    intelDesktopCollapsed = false,
+}: Props) {
     const { activeRoom, switchRoom, activeProject, setActiveProject, setAllProjects } = useOffice();
     const [projects, setProjects] = useState<Project[]>([]);
     const isFlush = variant === 'flush';
@@ -51,6 +63,38 @@ export function LeftRail({ onLogout, onNewVenture, variant = 'flush' }: Props) {
                 </div>
                 <StaffNotificationCenter />
             </div>
+
+            {desktopWorkspaceStrip && isFlush ? (
+                <>
+                    <div className="shrink-0 border-b border-[var(--border)] px-3 py-2.5">
+                        <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                                <h2 className="text-[12px] font-semibold leading-snug tracking-tight text-[var(--text)]">
+                                    {WORKSPACE_TITLES[activeRoom] ?? activeRoom}
+                                </h2>
+                                <p className="mt-0.5 truncate text-[10px] leading-tight text-[var(--muted)]">
+                                    {activeProject?.name ?? 'Select or create a venture'}
+                                </p>
+                            </div>
+                            {onToggleIntel ? (
+                                <button
+                                    type="button"
+                                    className="shrink-0 rounded-lg border border-[var(--border)] bg-white/[0.03] p-1.5 text-[var(--muted)] transition-colors hover:bg-white/[0.06] hover:text-[var(--text)]"
+                                    onClick={onToggleIntel}
+                                    aria-expanded={!intelDesktopCollapsed}
+                                    aria-label={intelDesktopCollapsed ? 'Show intelligence panel' : 'Hide intelligence panel'}
+                                    title={intelDesktopCollapsed ? 'Show alerts panel' : 'Hide alerts panel'}
+                                >
+                                    <PanelRight className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+                                </button>
+                            ) : null}
+                        </div>
+                    </div>
+                    <div className="shrink-0">
+                        <DailySyncBanner variant="rail" />
+                    </div>
+                </>
+            ) : null}
 
             <nav className={`custom-scrollbar flex flex-1 flex-col overflow-y-auto ${isFlush ? 'gap-0.5 px-2 py-3' : 'gap-px px-1.5 py-2'}`}>
                 {APP_NAV_ITEMS.map((item) => {

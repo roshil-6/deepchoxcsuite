@@ -1,114 +1,133 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useOffice } from '@/lib/OfficeContext';
 import { Download, Loader2, CheckCircle, LayoutTemplate } from 'lucide-react';
 import { DeskShell, DeskEmpty } from '@/components/workspaces/DeskShell';
 import { deskHeadline, deskHelpText } from '@/lib/researchStaffLabels';
-import { DeskRevealSection } from '@/components/workspaces/DeskRevealSection';
+import {
+    DeskMsgUser,
+    DeskMsgAssistant,
+    DeskHubRow,
+    DeskFocusToolbar,
+} from '@/components/workspaces/DeskBlockFocusUI';
 import jsPDF from 'jspdf';
 
+type ForgeKey = 'outline' | 'export';
+
+const FORGE_FOCUS: Record<ForgeKey, { title: string; prompt: string }> = {
+    outline: {
+        title: 'Deck outline',
+        prompt: 'Which venture fields map to each slide in the seven-slide export?',
+    },
+    export: {
+        title: 'Export PDF',
+        prompt: 'Generate the landscape A4 investor deck from current venture fields.',
+    },
+};
+
 export function PitchDeckForge() {
-    const { activeProject, activeRoom } = useOffice();
+    const { activeProject, activeRoom, setDeskSectionFocus } = useOffice();
     const [isGenerating, setIsGenerating] = useState(false);
     const [isComplete, setIsComplete] = useState(false);
+    const [forgeFocus, setForgeFocus] = useState<ForgeKey | null>(null);
+
+    const isCmo = activeRoom === 'cmo';
+    const deskRoom = isCmo ? 'cmo' : 'forge';
+
+    useEffect(() => {
+        setForgeFocus(null);
+        setDeskSectionFocus(null);
+    }, [activeProject?.id, setDeskSectionFocus]);
+
+    const openForgeSection = (k: ForgeKey) => {
+        const m = FORGE_FOCUS[k];
+        setDeskSectionFocus({ room: deskRoom, sectionId: k, title: m.title, prompt: m.prompt });
+        setForgeFocus(k);
+    };
+
+    const goHub = () => {
+        setDeskSectionFocus(null);
+        setForgeFocus(null);
+    };
+    const meta = forgeFocus ? FORGE_FOCUS[forgeFocus] : null;
 
     const generatePDF = async () => {
         if (!activeProject) return;
         setIsGenerating(true);
         setIsComplete(false);
 
-        // Simulate "Processing" time for effect
-        await new Promise(r => setTimeout(r, 1500));
+        await new Promise((r) => setTimeout(r, 1500));
 
         const doc = new jsPDF({
             orientation: 'landscape',
             unit: 'mm',
-            format: 'a4'
+            format: 'a4',
         });
 
-        const bg = "#111111";
-        const textLight = "#ffffff";
-        const accent = "#0D9488";
+        const bg = '#111111';
+        const textLight = '#ffffff';
+        const accent = '#0D9488';
 
-        // Helper to add a slide
-        const addSlide = (title: string, content: string | string[], notes: string = "") => {
+        const addSlide = (title: string, content: string | string[], notes: string = '') => {
             doc.addPage();
             doc.setFillColor(bg);
-            doc.rect(0, 0, 297, 210, "F");
+            doc.rect(0, 0, 297, 210, 'F');
 
-            // Header
             doc.setFontSize(24);
             doc.setTextColor(accent);
-            doc.setFont("helvetica", "bold");
+            doc.setFont('helvetica', 'bold');
             doc.text(title.toUpperCase(), 20, 30);
 
-            // Divider
             doc.setDrawColor(accent);
             doc.setLineWidth(0.5);
             doc.line(20, 35, 277, 35);
 
-            // Content
             doc.setFontSize(14);
             doc.setTextColor(textLight);
-            doc.setFont("helvetica", "normal");
+            doc.setFont('helvetica', 'normal');
 
             if (Array.isArray(content)) {
                 let y = 50;
-                content.forEach(line => {
-                    const splitText = doc.splitTextToSize("• " + line, 250);
+                content.forEach((line) => {
+                    const splitText = doc.splitTextToSize('• ' + line, 250);
                     doc.text(splitText, 25, y);
-                    y += (splitText.length * 7) + 5;
+                    y += splitText.length * 7 + 5;
                 });
             } else {
-                const splitText = doc.splitTextToSize(content || "Content pending...", 250);
+                const splitText = doc.splitTextToSize(content || 'Content pending...', 250);
                 doc.text(splitText, 25, 50);
             }
 
-            // Footer
             doc.setFontSize(8);
             doc.setTextColor(100, 100, 100);
             doc.text(`${activeProject.name} | Confidential Information`, 20, 200);
         };
 
-        // 1. Title Slide (Configured manually to be first page, overwrite default blank if needed)
-        // jsPDF starts with 1 page. We'll paint over it.
         doc.setPage(1);
         doc.setFillColor(bg);
-        doc.rect(0, 0, 297, 210, "F");
+        doc.rect(0, 0, 297, 210, 'F');
 
         doc.setFontSize(40);
         doc.setTextColor(textLight);
-        doc.setFont("helvetica", "bold");
-        doc.text(activeProject.name.toUpperCase(), 148.5, 90, { align: "center" });
+        doc.setFont('helvetica', 'bold');
+        doc.text(activeProject.name.toUpperCase(), 148.5, 90, { align: 'center' });
 
         doc.setFontSize(16);
         doc.setTextColor(accent);
-        doc.text("INVESTOR PRESENTATION", 148.5, 105, { align: "center" });
+        doc.text('INVESTOR PRESENTATION', 148.5, 105, { align: 'center' });
 
         doc.setFontSize(10);
         doc.setTextColor(150, 150, 150);
-        doc.text(`Generated by DeepChox C-Suite on ${new Date().toLocaleDateString()}`, 148.5, 180, { align: "center" });
+        doc.text(`Generated by DeepChox C-Suite on ${new Date().toLocaleDateString()}`, 148.5, 180, { align: 'center' });
 
-        // 2. Problem
-        addSlide("The Problem", activeProject.userNotes || "Define the core pain point here.");
+        addSlide('The Problem', activeProject.userNotes || 'Define the core pain point here.');
+        addSlide('The Solution', activeProject.productPlan || 'Describe your product intervention.');
+        addSlide('Market Opportunity', activeProject.marketInsights || 'Analyze the TAM, SAM, and SOM.');
+        addSlide('Business Model', activeProject.strategy || 'Explain how you capture value.');
+        addSlide('Financial Overview', activeProject.budget || 'Cost structure and revenue projections.');
+        addSlide('The Team', activeProject.teamDirectives || 'Key personnel and structure.');
 
-        // 3. Solution
-        addSlide("The Solution", activeProject.productPlan || "Describe your product intervention.");
-
-        // 4. Market Opportunity
-        addSlide("Market Opportunity", activeProject.marketInsights || "Analyze the TAM, SAM, and SOM.");
-
-        // 5. Business Model
-        addSlide("Business Model", activeProject.strategy || "Explain how you capture value.");
-
-        // 6. Financials
-        addSlide("Financial Overview", activeProject.budget || "Cost structure and revenue projections.");
-
-        // 7. Team
-        addSlide("The Team", activeProject.teamDirectives || "Key personnel and structure.");
-
-        // Save
         doc.save(`${activeProject.name.replace(/\s+/g, '_')}_Pitch_Deck.pdf`);
 
         setIsGenerating(false);
@@ -119,7 +138,59 @@ export function PitchDeckForge() {
         return <DeskEmpty>No active project loaded.</DeskEmpty>;
     }
 
-    const isCmo = activeRoom === 'cmo';
+    const outlineBody = (
+        <>
+            <div className="mb-4 flex justify-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-brand-border bg-brand-panel">
+                    <LayoutTemplate className="h-7 w-7 text-brand-muted" aria-hidden />
+                </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-left">
+                <div className="rounded-lg border border-brand-border bg-brand-panel/60 p-3">
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Slide 1</div>
+                    <div className="text-sm font-medium text-brand-text">Title & vision</div>
+                </div>
+                <div className="rounded-lg border border-brand-border bg-brand-panel/60 p-3">
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Slide 2</div>
+                    <div className="text-sm font-medium text-brand-text">The problem</div>
+                </div>
+                <div className="rounded-lg border border-brand-border bg-brand-panel/60 p-3">
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Slide 3</div>
+                    <div className="text-sm font-medium text-brand-text">The solution</div>
+                </div>
+                <div className="rounded-lg border border-brand-border bg-brand-panel/60 p-3">
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Slides 4–7</div>
+                    <div className="text-sm font-medium text-brand-text">Market, biz, money, team</div>
+                </div>
+            </div>
+        </>
+    );
+
+    const exportBody = (
+        <button
+            type="button"
+            onClick={generatePDF}
+            disabled={isGenerating}
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-zinc-600 bg-zinc-800 py-3.5 text-sm font-semibold text-zinc-100 shadow-md transition hover:bg-zinc-700 active:scale-[0.99] disabled:opacity-50"
+        >
+            {isGenerating ? (
+                <>
+                    <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
+                    Forging deck…
+                </>
+            ) : isComplete ? (
+                <>
+                    <CheckCircle className="h-5 w-5" aria-hidden />
+                    Deck downloaded
+                </>
+            ) : (
+                <>
+                    <Download className="h-5 w-5" aria-hidden />
+                    Generate pitch deck
+                </>
+            )}
+        </button>
+    );
 
     return (
         <DeskShell
@@ -129,69 +200,55 @@ export function PitchDeckForge() {
                     : `${activeProject.name} · research pitch and narrative export`
             }
             description={
-                isCmo
-                    ? deskHelpText('cmo')
-                    : 'Compile strategy, financials, and market intel into a seven-slide PDF investor deck.'
+                forgeFocus
+                    ? undefined
+                    : isCmo
+                      ? deskHelpText('cmo')
+                      : 'Compile strategy, financials, and market intel into a seven-slide PDF investor deck.'
             }
+            bodyFlush={Boolean(forgeFocus)}
+            bodyClassName={forgeFocus ? 'px-4 pb-28 pt-0 sm:px-5 sm:pb-32' : 'py-4'}
         >
-            <div className="mx-auto flex max-w-2xl flex-col gap-4 py-4">
-                <DeskRevealSection
-                    variant="brand"
-                    defaultOpen
-                    title="Deck outline"
-                    subtitle="Seven slides pulled from your venture fields (problem, solution, market, strategy, budget, team)."
-                >
-                    <div className="mb-4 flex justify-center">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-brand-border bg-brand-panel">
-                            <LayoutTemplate className="h-7 w-7 text-brand-muted" aria-hidden />
+            {forgeFocus && meta ? (
+                <>
+                    <DeskFocusToolbar onBack={goHub} title={meta.title} />
+                    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                        <div className="custom-scrollbar flex-1 space-y-3 overflow-y-auto py-3">
+                            <DeskMsgUser>
+                                <p className="text-[13px] font-semibold text-brand-text">{meta.title}</p>
+                                <p className="mt-1 text-[12px] leading-relaxed text-brand-muted">{meta.prompt}</p>
+                            </DeskMsgUser>
+                            <DeskMsgAssistant>{forgeFocus === 'outline' ? outlineBody : exportBody}</DeskMsgAssistant>
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-3 text-left">
-                        <div className="rounded-lg border border-brand-border bg-brand-panel/60 p-3">
-                            <div className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Slide 1</div>
-                            <div className="text-sm font-medium text-brand-text">Title & vision</div>
-                        </div>
-                        <div className="rounded-lg border border-brand-border bg-brand-panel/60 p-3">
-                            <div className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Slide 2</div>
-                            <div className="text-sm font-medium text-brand-text">The problem</div>
-                        </div>
-                        <div className="rounded-lg border border-brand-border bg-brand-panel/60 p-3">
-                            <div className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Slide 3</div>
-                            <div className="text-sm font-medium text-brand-text">The solution</div>
-                        </div>
-                        <div className="rounded-lg border border-brand-border bg-brand-panel/60 p-3">
-                            <div className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Slides 4–7</div>
-                            <div className="text-sm font-medium text-brand-text">Market, biz, money, team</div>
-                        </div>
-                    </div>
-                </DeskRevealSection>
-
-                <DeskRevealSection variant="brand" defaultOpen title="Export PDF" subtitle="Landscape A4 — ready to share or rehearse.">
-                    <button
-                        type="button"
-                        onClick={generatePDF}
-                        disabled={isGenerating}
-                        className="flex w-full items-center justify-center gap-2 rounded-lg border border-zinc-600 bg-zinc-800 py-3.5 text-sm font-semibold text-zinc-100 shadow-md transition hover:bg-zinc-700 active:scale-[0.99] disabled:opacity-50"
-                    >
-                        {isGenerating ? (
-                            <>
-                                <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
-                                Forging deck…
-                            </>
-                        ) : isComplete ? (
-                            <>
-                                <CheckCircle className="h-5 w-5" aria-hidden />
-                                Deck downloaded
-                            </>
-                        ) : (
-                            <>
-                                <Download className="h-5 w-5" aria-hidden />
-                                Generate pitch deck
-                            </>
-                        )}
-                    </button>
-                </DeskRevealSection>
-            </div>
+                </>
+            ) : (
+                <div className="mx-auto flex w-full max-w-2xl flex-col gap-2">
+                    <p className="text-[10px] leading-snug text-brand-muted">
+                        Tap a block — chat below scopes to it until Back. Seven slides pull from your venture fields.
+                    </p>
+                    <DeskHubRow
+                        title="Deck outline"
+                        subtitle="Seven slides pulled from venture fields (problem, solution, market, strategy, budget, team)."
+                        onOpen={() => openForgeSection('outline')}
+                        right={
+                            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.04] text-brand-muted sm:h-9 sm:w-9">
+                                <LayoutTemplate className="h-4 w-4" aria-hidden />
+                            </span>
+                        }
+                    />
+                    <DeskHubRow
+                        title="Export PDF"
+                        subtitle="Landscape A4 — ready to share or rehearse."
+                        onOpen={() => openForgeSection('export')}
+                        right={
+                            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.04] text-brand-muted sm:h-9 sm:w-9">
+                                <Download className="h-4 w-4" aria-hidden />
+                            </span>
+                        }
+                    />
+                </div>
+            )}
         </DeskShell>
     );
 }

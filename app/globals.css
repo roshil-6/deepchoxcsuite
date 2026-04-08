@@ -178,11 +178,11 @@
     }
   }
 
-  /** Fluid chart height — avoids fixed px walls */
+  /** Fluid chart height — shorter default so dashboard threads scroll less */
   .dash-chart-h {
     width: 100%;
-    min-height: 11rem;
-    height: min(32vh, 16rem);
+    min-height: 9rem;
+    height: min(24vh, 12rem);
   }
 
   /** Toasts / inline notices — minimal outline */

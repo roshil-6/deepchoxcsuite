@@ -20,9 +20,14 @@ import {
 } from 'lucide-react';
 import { useOffice } from '@/lib/OfficeContext';
 import { parseStrategy } from '@/lib/strategyDoc';
-import { DeskShell, DeskTabButton, DeskEmpty } from '@/components/workspaces/DeskShell';
+import { DeskShell, DeskEmpty } from '@/components/workspaces/DeskShell';
 import { deskHeadline, deskHelpText } from '@/lib/researchStaffLabels';
-import { DeskRevealSection } from '@/components/workspaces/DeskRevealSection';
+import {
+    DeskMsgUser,
+    DeskMsgAssistant,
+    DeskHubRow,
+    DeskFocusToolbar,
+} from '@/components/workspaces/DeskBlockFocusUI';
 import type { MarketIntelLens, MarketIntelTimeWindow, MarketResearchTopic } from '@/lib/marketIntelQuery';
 
 type IntelItem = {
@@ -96,9 +101,52 @@ const TOPIC_LABEL: Record<string, string> = {
     general: 'General',
 };
 
+type ScoutFocusKey = 'context' | 'frames' | 'controls' | 'headlines' | 'brief';
+
+const SCOUT_FOCUS_META: Record<
+    ScoutFocusKey,
+    { title: string; question: string; prompt: string; hubSub: string }
+> = {
+    context: {
+        title: 'Research context',
+        question: 'What venture and strategy signals should tune this scan?',
+        prompt:
+            'User is reviewing venture name, research strategy field, and notes that tune automated market scans. Emphasize verification and scan tuning.',
+        hubSub: 'Venture, strategy snippet, and notes feeding the scan.',
+    },
+    frames: {
+        title: 'Research scan frames',
+        question: 'Which research frame should we run next — lens, competition, momentum, or opportunity?',
+        prompt:
+            'User selects a research frame to run focused intel queries. Remind them headlines are pointers and need source checks.',
+        hubSub: 'Tap a frame to narrow what the scan emphasizes.',
+    },
+    controls: {
+        title: 'Scan controls',
+        question: 'How should we lens, time-window, or query this scan?',
+        prompt:
+            'User adjusts lens, time window, custom search, and refresh. Custom search clears frame mode; emphasize source verification.',
+        hubSub: 'Lenses, window, custom query, and run controls.',
+    },
+    headlines: {
+        title: 'Headlines & sources',
+        question: 'What are the latest headlines and how should we verify them?',
+        prompt:
+            'User reads automated headlines — stress verify sources; not advice. Queries used may appear in a disclosure.',
+        hubSub: 'Newest first when timestamps exist; open external links.',
+    },
+    brief: {
+        title: 'Intelligence brief',
+        question: 'What verified synthesis should we save for the venture record?',
+        prompt:
+            'User edits the verified market intelligence brief saved on the venture for fund intelligence, strategy, and staff sync.',
+        hubSub: 'Capture verified takeaways after reviewing headlines.',
+    },
+};
+
 export function ScoutTerminal() {
-    const { activeProject, updateMarketInsights } = useOffice();
-    const [tab, setTab] = useState<'feed' | 'brief'>('feed');
+    const { activeProject, updateMarketInsights, setDeskSectionFocus } = useOffice();
+    const [scoutFocus, setScoutFocus] = useState<ScoutFocusKey | null>(null);
     const [newsItems, setNewsItems] = useState<IntelItem[]>([]);
     const [intelMeta, setIntelMeta] = useState<IntelMeta | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -204,6 +252,23 @@ export function ScoutTerminal() {
         }
     }, [activeProject?.name, fetchVentureIntel]);
 
+    useEffect(() => {
+        setScoutFocus(null);
+        setDeskSectionFocus(null);
+    }, [activeProject?.id, setDeskSectionFocus]);
+
+    const openScoutSection = (k: ScoutFocusKey) => {
+        if (!activeProject) return;
+        const m = SCOUT_FOCUS_META[k];
+        setDeskSectionFocus({ room: 'scout', sectionId: k, title: m.title, prompt: m.prompt });
+        setScoutFocus(k);
+    };
+
+    const goScoutHub = () => {
+        setDeskSectionFocus(null);
+        setScoutFocus(null);
+    };
+
     const handleSearchKey = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') void fetchCustomIntel(searchQuery);
     };
@@ -227,38 +292,21 @@ export function ScoutTerminal() {
         ? CSO_RESEARCH_FRAMES.find((f) => f.id === csoFrame)?.scanHint ?? 'Research frame scan.'
         : `Lens: ${LENS_OPTIONS.find((l) => l.id === lens)?.label ?? 'Research all signals'}.`;
 
-    return (
-        <DeskShell
-            title={deskHeadline(activeProject.name, 'scout')}
-            description={deskHelpText('scout')}
-            tabs={
-                <>
-                    <DeskTabButton active={tab === 'feed'} onClick={() => setTab('feed')} icon={<Rss className="h-4 w-4" aria-hidden />}>
-                        Market research
-                    </DeskTabButton>
-                    <DeskTabButton active={tab === 'brief'} onClick={() => setTab('brief')} icon={<BookOpen className="h-4 w-4" aria-hidden />}>
-                        Intelligence brief
-                    </DeskTabButton>
-                </>
-            }
-        >
-            {tab === 'feed' && (
-                <div className="flex flex-col gap-3">
-                    <div className="flex gap-2 rounded-lg border border-amber-500/20 bg-amber-950/15 px-3 py-2">
-                        <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-200/75" aria-hidden />
-                        <p className="min-w-0 text-[10px] leading-snug text-amber-100/80">
-                            <span className="font-semibold text-amber-100/90">Pointers only.</span> Headlines are automated; verify sources.
-                            Not advice.
-                        </p>
-                    </div>
+    const scoutDisclaimer = (
+        <div className="flex gap-2 rounded-lg border border-amber-500/20 bg-amber-950/15 px-3 py-2">
+            <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-200/75" aria-hidden />
+            <p className="min-w-0 text-[10px] leading-snug text-amber-100/80">
+                <span className="font-semibold text-amber-100/90">Pointers only.</span> Headlines are automated; verify sources. Not advice.
+            </p>
+        </div>
+    );
 
-                    <DeskRevealSection
-                        variant="brand"
-                        density="compact"
-                        defaultOpen
-                        title="Research context"
-                        subtitle={`${activeProject.name} · Research strategy field from Research strategy and direction tunes the scan.`}
-                    >
+    const renderScoutFocusBody = (key: ScoutFocusKey) => {
+        switch (key) {
+            case 'context':
+                return (
+                    <>
+                        {scoutDisclaimer}
                         <div className="grid gap-2 sm:grid-cols-2">
                             <div className="rounded-md border border-brand-border/50 bg-brand-bg/35 px-3 py-2">
                                 <p className="text-[10px] font-semibold uppercase tracking-wide text-brand-muted">Venture</p>
@@ -279,15 +327,12 @@ export function ScoutTerminal() {
                                 <p className="mt-0.5 text-[11px] leading-snug text-brand-text/95">{userNotesSnippet}</p>
                             </div>
                         ) : null}
-                    </DeskRevealSection>
-
-                    <DeskRevealSection
-                        variant="brand"
-                        density="compact"
-                        defaultOpen
-                        title="Research scan frames"
-                        subtitle="Tap a frame to run a focused scan."
-                    >
+                    </>
+                );
+            case 'frames':
+                return (
+                    <>
+                        {scoutDisclaimer}
                         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
                             {CSO_RESEARCH_FRAMES.map((f) => {
                                 const active = csoFrame === f.id;
@@ -327,15 +372,12 @@ export function ScoutTerminal() {
                                 . Use lens row or custom search to exit frame mode.
                             </p>
                         ) : null}
-                    </DeskRevealSection>
-
-                    <DeskRevealSection
-                        variant="brand"
-                        density="compact"
-                        defaultOpen
-                        title="Scan controls"
-                        subtitle="Lenses when no frame is active. Custom search clears the frame."
-                    >
+                    </>
+                );
+            case 'controls':
+                return (
+                    <>
+                        {scoutDisclaimer}
                         <div className="mb-2 flex flex-wrap gap-1.5">
                             {LENS_OPTIONS.map((opt) => (
                                 <button
@@ -405,15 +447,13 @@ export function ScoutTerminal() {
                         {intelMeta?.heuristicNote ? (
                             <p className="mt-2 text-[10px] leading-snug text-brand-muted/90">{intelMeta.heuristicNote}</p>
                         ) : null}
-                    </DeskRevealSection>
-
-                    <DeskRevealSection
-                        variant="brand"
-                        density="compact"
-                        defaultOpen
-                        title="Headlines & sources"
-                        subtitle={`${activeScanDescription} Newest first when timestamps exist.`}
-                    >
+                    </>
+                );
+            case 'headlines':
+                return (
+                    <>
+                        {scoutDisclaimer}
+                        <p className="text-[11px] text-brand-muted">{activeScanDescription} Newest first when timestamps exist.</p>
                         {isLoading ? (
                             <div className="flex justify-center py-8">
                                 <Loader2 className="h-7 w-7 animate-spin text-brand-muted" aria-hidden />
@@ -467,39 +507,100 @@ export function ScoutTerminal() {
                                 </ul>
                             </details>
                         ) : null}
-                    </DeskRevealSection>
-
-                </div>
-            )}
-
-            {tab === 'brief' && (
-                <section className="mx-auto max-w-4xl">
-                    <DeskRevealSection
-                        variant="brand"
-                        density="compact"
-                        defaultOpen
-                        title="Intelligence brief"
-                        subtitle="Verified synthesis — saved on the venture for Research fund intelligence, Research strategy and direction, and staff sync."
-                    >
-                        <div className="mb-2 flex justify-end">
-                            <button
-                                type="button"
-                                onClick={saveBrief}
-                                className="inline-flex items-center gap-2 rounded-md border border-brand-border bg-brand-card px-3 py-1.5 text-[11px] font-semibold text-brand-text hover:bg-brand-input"
-                            >
-                                {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <Save className="h-3.5 w-3.5" aria-hidden />}
-                                Save brief
-                            </button>
-                        </div>
+                    </>
+                );
+            case 'brief':
+                return (
+                    <div className="space-y-2">
+                        <p className="text-[11px] leading-snug text-brand-muted">
+                            Verified synthesis — saved on the venture for Research fund intelligence, Research strategy and direction, and staff
+                            sync.
+                        </p>
                         <textarea
                             value={brief}
                             onChange={(e) => setBrief(e.target.value)}
                             placeholder={`After reviewing headlines, capture what you verified:\n• Segment and ideal customer profile\n• Competitors and differentiation (with sources you trust)\n• Risks and unknowns\n• Signals to watch next\n`}
                             rows={20}
-                            className="w-full rounded-md border border-brand-border bg-brand-input p-3 text-[14px] leading-relaxed text-brand-text placeholder:text-brand-muted focus:outline-none focus:ring-1 focus:ring-brand-teal/35"
+                            className="w-full max-w-4xl rounded-md border border-brand-border bg-brand-input p-3 text-[14px] leading-relaxed text-brand-text placeholder:text-brand-muted focus:outline-none focus:ring-1 focus:ring-brand-teal/35"
                         />
-                    </DeskRevealSection>
-                </section>
+                    </div>
+                );
+            default:
+                return null;
+        }
+    };
+
+    const SCOUT_HUB_ORDER: ScoutFocusKey[] = ['context', 'frames', 'controls', 'headlines', 'brief'];
+
+    const scoutHubIcon = (k: ScoutFocusKey) => {
+        const wrap = (node: React.ReactNode) => (
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.04] text-brand-muted sm:h-9 sm:w-9">{node}</span>
+        );
+        switch (k) {
+            case 'context':
+                return wrap(<Globe className="h-4 w-4" aria-hidden />);
+            case 'frames':
+                return wrap(<Target className="h-4 w-4" aria-hidden />);
+            case 'controls':
+                return wrap(<Search className="h-4 w-4" aria-hidden />);
+            case 'headlines':
+                return wrap(<Rss className="h-4 w-4" aria-hidden />);
+            case 'brief':
+                return wrap(<BookOpen className="h-4 w-4" aria-hidden />);
+            default:
+                return null;
+        }
+    };
+
+    const focusMeta = scoutFocus ? SCOUT_FOCUS_META[scoutFocus] : null;
+
+    return (
+        <DeskShell
+            className="min-h-0 flex-1"
+            title={deskHeadline(activeProject.name, 'scout')}
+            description={scoutFocus ? undefined : deskHelpText('scout')}
+            bodyFlush={Boolean(scoutFocus)}
+            bodyClassName={scoutFocus ? 'flex min-h-0 flex-1 flex-col px-4 pb-28 pt-0 sm:px-5 sm:pb-32' : undefined}
+        >
+            {scoutFocus && focusMeta ? (
+                <>
+                    <DeskFocusToolbar
+                        onBack={goScoutHub}
+                        title={focusMeta.title}
+                        onSave={scoutFocus === 'brief' ? saveBrief : undefined}
+                        saving={saving}
+                        saveLabel="Save brief"
+                    />
+                    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                        <div className="custom-scrollbar flex-1 space-y-3 overflow-y-auto py-3">
+                            <DeskMsgUser>
+                                <p className="text-[13px] font-semibold text-zinc-50">{focusMeta.title}</p>
+                                <p className="mt-1 text-[12px] leading-relaxed text-zinc-300">{focusMeta.question}</p>
+                            </DeskMsgUser>
+                            <DeskMsgAssistant>
+                                <div className="flex flex-col gap-3">{renderScoutFocusBody(scoutFocus)}</div>
+                            </DeskMsgAssistant>
+                        </div>
+                    </div>
+                </>
+            ) : (
+                <div className="space-y-2 pb-8">
+                    <p className="text-[10px] leading-snug text-brand-muted">
+                        Tap a block — other sections hide. Chat below stays on that block until you press Back.
+                    </p>
+                    {scoutDisclaimer}
+                    <div className="space-y-1.5 sm:space-y-2">
+                        {SCOUT_HUB_ORDER.map((k) => (
+                            <DeskHubRow
+                                key={k}
+                                title={SCOUT_FOCUS_META[k].title}
+                                subtitle={SCOUT_FOCUS_META[k].hubSub}
+                                onOpen={() => openScoutSection(k)}
+                                right={scoutHubIcon(k)}
+                            />
+                        ))}
+                    </div>
+                </div>
             )}
         </DeskShell>
     );

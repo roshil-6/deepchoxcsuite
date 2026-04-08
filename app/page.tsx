@@ -15,6 +15,7 @@ import { OfficeShell } from '@/components/OfficeShell';
 import { SyncToastHost } from '@/components/SyncToastHost';
 import { PersonalAssistantChatProvider } from '@/components/pa/PersonalAssistantChatContext';
 import { FloatingPABuddy } from '@/components/pa/FloatingPABuddy';
+import { DeskChatThreadSlotProvider } from '@/components/DeskChatThreadSlotContext';
 
 export default function Home() {
   const [hasStarted, setHasStarted] = useState(false);
@@ -59,27 +60,25 @@ export default function Home() {
       />
       <OfficeShell>
         <PersonalAssistantChatProvider>
+          <DeskChatThreadSlotProvider>
           <AppShell
             onLogout={() => {
               setHasStarted(false);
               setNameVentureOpen(false);
             }}
             onNewVenture={openNameVentureModal}
-            /** Floating chat: CEO uses split thread+above bar; other desks use compact aiOs. PA / Dexo are full-page or immersive. */
+            /** Floating ChatGPT-style pill + thread (same chrome as research strategy desk). Shared venture thread only on CEO; other rooms keep per-desk threads. */
             bottomBar={
               activeRoom !== 'personal_assistant' && activeRoom !== 'dexo' ? (
                 <AIInputBarShell>
-                  {activeRoom === 'ceo' ? (
-                    <ChatAssistant variant="ceoSplit" useExecutiveThread />
-                  ) : (
-                    <ChatAssistant variant="aiOs" />
-                  )}
+                  <ChatAssistant variant="ceoSplit" useExecutiveThread={activeRoom === 'ceo'} />
                 </AIInputBarShell>
               ) : null
             }
           >
             <WorkspaceStage hideWorkspaceHeader onNewVenture={openNameVentureModal} />
           </AppShell>
+          </DeskChatThreadSlotProvider>
           <FloatingPABuddy />
         </PersonalAssistantChatProvider>
         <SyncToastHost />

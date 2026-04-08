@@ -37,7 +37,12 @@ import {
     type FundingValueKey,
 } from '@/lib/ventureFundingStructure';
 import { DeskShell, DeskEmpty } from '@/components/workspaces/DeskShell';
-import { DeskRevealSection } from '@/components/workspaces/DeskRevealSection';
+import {
+    DeskMsgUser,
+    DeskMsgAssistant,
+    DeskHubRow,
+    DeskFocusToolbar,
+} from '@/components/workspaces/DeskBlockFocusUI';
 import { deskHeadline, deskHelpText, RESEARCH_STAFF } from '@/lib/researchStaffLabels';
 
 const MAX_PROMPT_CONTEXT = 7200;
@@ -172,6 +177,40 @@ const TOPIC_META: { id: TopicId; title: string; shortLabel: string; hint: string
         icon: Bell,
     },
 ];
+
+type LedgerHubKey = 'funding' | 'connected' | 'snapshot' | 'discuss' | TopicId;
+
+const LEDGER_HUB_STATIC: Record<
+    'funding' | 'connected' | 'snapshot' | 'discuss',
+    { title: string; question: string; prompt: string; hubSub: string }
+> = {
+    funding: {
+        title: 'Expected funding',
+        question: 'What capital, burn, runway, and ledger lines are we modeling?',
+        prompt:
+            'User is editing expected funding table, desk estimates, and venture budget field. Help in CFO terms; reference saved and estimated rows.',
+        hubSub: 'Table, AI estimates, template, and venture budget field.',
+    },
+    connected: {
+        title: 'Other desks',
+        question: 'Which desk should finance read to validate assumptions?',
+        prompt: 'User may jump to CEO strategy, CTO product, CSO market, or CMO GTM from fund intelligence.',
+        hubSub: 'Open peer research areas to edit source fields.',
+    },
+    snapshot: {
+        title: 'Ledger snapshot',
+        question: 'How large is the budget field and what cues appear in the text?',
+        prompt: 'User reviews venture budget field size and keyword signals for finance review.',
+        hubSub: 'Chars, lines, and detected finance signals.',
+    },
+    discuss: {
+        title: 'Discuss with this desk',
+        question: 'What should we stress-test or clarify about this venture’s finances?',
+        prompt:
+            'User uses quick prompts or opens chat with budget field and fund intelligence context; reply as CFO.',
+        hubSub: 'CFO chat and quick prompts.',
+    },
+};
 
 type TopicRow = {
     preview: string;
@@ -403,21 +442,8 @@ const PEER_DESKS: {
     { room: 'cmo', label: RESEARCH_STAFF.cmo.navTitle, short: RESEARCH_STAFF.cmo.navTitle, fieldHint: 'Go-to-market and story', icon: Megaphone },
 ];
 
-const CFO_JUMP: { id: string; label: string }[] = [
-    { id: 'cfo-funding', label: 'Funding' },
-    { id: 'cfo-connected', label: 'Desks' },
-    { id: 'cfo-snapshot', label: 'Snapshot' },
-    { id: 'cfo-topic-cards', label: 'Topics' },
-    { id: 'cfo-topic-panel', label: 'Brief' },
-    { id: 'cfo-discuss', label: 'Chat' },
-];
-
-function scrollToCfoSection(anchorId: string) {
-    document.getElementById(anchorId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
 export function FinancialLedger() {
-    const { activeProject, prepopulateChat, switchRoom, updateBudget } = useOffice();
+    const { activeProject, prepopulateChat, switchRoom, updateBudget, setDeskSectionFocus } = useOffice();
     const [selectedTopicId, setSelectedTopicId] = useState<TopicId>('liquidity');
     const [copiedTopic, setCopiedTopic] = useState<TopicId | null>(null);
     const [budgetDraft, setBudgetDraft] = useState('');
@@ -426,15 +452,59 @@ export function FinancialLedger() {
     const [aiFundingLoading, setAiFundingLoading] = useState(false);
     const [aiFundingError, setAiFundingError] = useState<string | null>(null);
     const [aiRefreshNonce, setAiRefreshNonce] = useState(0);
+    const [ledgerFocus, setLedgerFocus] = useState<LedgerHubKey | null>(null);
     const autoAppliedLedgerRef = useRef<number | null>(null);
-    const detailPanelRef = useRef<HTMLDivElement>(null);
 
-    const selectTopic = useCallback((id: TopicId) => {
-        setSelectedTopicId(id);
-        requestAnimationFrame(() => {
-            detailPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
-    }, []);
+    useEffect(() => {
+        setLedgerFocus(null);
+        setDeskSectionFocus(null);
+    }, [activeProject?.id, setDeskSectionFocus]);
+
+    const applyLedgerDeskContext = useCallback(
+        (key: LedgerHubKey | null) => {
+            if (!key || !activeProject) {
+                setDeskSectionFocus(null);
+                return;
+            }
+            if (
+                key === 'funding' ||
+                key === 'connected' ||
+                key === 'snapshot' ||
+                key === 'discuss'
+            ) {
+                const m = LEDGER_HUB_STATIC[key];
+                setDeskSectionFocus({
+                    room: 'accountant',
+                    sectionId: key,
+                    title: m.title,
+                    prompt: m.prompt,
+                });
+                return;
+            }
+            const meta = TOPIC_META.find((t) => t.id === key);
+            if (!meta) {
+                setDeskSectionFocus(null);
+                return;
+            }
+            setDeskSectionFocus({
+                room: 'accountant',
+                sectionId: key,
+                title: meta.title,
+                prompt: `${meta.hint} User focused this fund-intelligence topic; answer in CFO terms and cite venture fields.`,
+            });
+        },
+        [activeProject, setDeskSectionFocus],
+    );
+
+    const openLedgerSection = (key: LedgerHubKey) => {
+        applyLedgerDeskContext(key);
+        setLedgerFocus(key);
+    };
+
+    const goLedgerHub = () => {
+        setDeskSectionFocus(null);
+        setLedgerFocus(null);
+    };
 
     const budgetText = activeProject?.budget ?? '';
 
@@ -626,163 +696,140 @@ export function FinancialLedger() {
     if (!topic) return null;
 
     const { map, focusToday, events } = topic;
-    const selectedMeta = TOPIC_META.find((t) => t.id === selectedTopicId)!;
-    const selectedRow = map[selectedTopicId];
     const lines = budgetText.split('\n').length;
     const chars = budgetText.length;
     const signals = financeSignals(budgetText);
 
-    return (
-        <DeskShell
-            title={deskHeadline(activeProject.name, 'accountant')}
-            description={deskHelpText('accountant')}
-            tabs={
-                <nav className="flex flex-wrap gap-1" aria-label="Fund intelligence sections">
-                    {CFO_JUMP.map((item) => (
-                        <button
-                            key={item.id}
-                            type="button"
-                            onClick={() => scrollToCfoSection(item.id)}
-                            className="inline-flex items-center gap-2 rounded-md border border-transparent bg-transparent px-3 py-1.5 text-xs font-medium text-brand-muted transition-colors hover:border-brand-border hover:bg-brand-input/60 hover:text-brand-text"
-                        >
-                            {item.label}
-                        </button>
-                    ))}
-                </nav>
-            }
-        >
-            <div className="flex flex-col gap-3">
-                <DeskRevealSection
-                    id="cfo-funding"
-                    variant="brand"
-                    density="compact"
-                    defaultOpen
-                    title={`Expected funding — ${activeProject.name}`}
-                    subtitle={`Saved rows and desk estimates merge in the table (${fundingFilledWithAi}/${fundingTotal} lines filled). Refresh after you edit other areas.`}
-                >
-                    <div className="mb-3 flex flex-wrap items-center gap-2">
-                        <button
-                            type="button"
-                            disabled={aiFundingLoading}
-                            onClick={() => setAiRefreshNonce((n) => n + 1)}
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-brand-border bg-brand-card px-3 py-1.5 text-[11px] font-semibold text-brand-text hover:bg-brand-input disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                            {aiFundingLoading ? (
-                                <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
-                            ) : (
-                                <RefreshCw className="h-3.5 w-3.5" aria-hidden />
-                            )}
-                            Refresh desk estimates
-                        </button>
-                        {aiFunding && (
+    const renderLedgerFocusBody = (k: LedgerHubKey): React.ReactNode => {
+        switch (k) {
+            case 'funding':
+                return (
+                    <>
+                        <p className="mb-1 text-[11px] text-brand-muted">
+                            Saved rows and desk estimates merge in the table ({fundingFilledWithAi}/{fundingTotal} lines filled). Refresh after
+                            you edit other areas.
+                        </p>
+                        <div className="mb-3 flex flex-wrap items-center gap-2">
                             <button
                                 type="button"
-                                onClick={applyMergedFundingToLedger}
-                                className="inline-flex items-center gap-1.5 rounded-lg border border-brand-border bg-brand-bg px-3 py-1.5 text-[11px] font-medium text-brand-muted hover:border-brand-teal/25 hover:text-brand-text"
+                                disabled={aiFundingLoading}
+                                onClick={() => setAiRefreshNonce((n) => n + 1)}
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-brand-border bg-brand-card px-3 py-1.5 text-[11px] font-semibold text-brand-text hover:bg-brand-input disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                                Merge AI into ledger (keep saved lines)
+                                {aiFundingLoading ? (
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+                                ) : (
+                                    <RefreshCw className="h-3.5 w-3.5" aria-hidden />
+                                )}
+                                Refresh desk estimates
                             </button>
-                        )}
-                        {aiFundingLoading && (
-                            <span className="text-[11px] text-brand-muted">Analyzing venture across desks…</span>
-                        )}
-                    </div>
-                    {aiFundingError ? (
-                        <p className="mb-3 text-[11px] leading-relaxed text-brand-muted">
-                            <span className="font-medium text-brand-text">Estimate unavailable.</span> {aiFundingError}
-                        </p>
-                    ) : null}
-
-                    <div className="overflow-hidden rounded-lg border border-brand-border/70 bg-brand-bg/25">
-                        {resourcesFromOnboarding && resourcesFromOnboarding !== budgetDraft.trim() ? (
-                            <div className="border-b border-brand-border/60 bg-brand-panel/20 px-3 py-2.5 sm:px-4">
-                                <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Onboarding · Resources</p>
-                                <p className="mt-1 text-[12px] leading-relaxed text-brand-text/95">{resourcesFromOnboarding}</p>
-                                <p className="mt-2 text-[10px] text-brand-muted">
-                                    Merge into the ledger below so this desk has one source of truth.
-                                </p>
-                            </div>
+                            {aiFunding && (
+                                <button
+                                    type="button"
+                                    onClick={applyMergedFundingToLedger}
+                                    className="inline-flex items-center gap-1.5 rounded-lg border border-brand-border bg-brand-bg px-3 py-1.5 text-[11px] font-medium text-brand-muted hover:border-brand-teal/25 hover:text-brand-text"
+                                >
+                                    Merge AI into ledger (keep saved lines)
+                                </button>
+                            )}
+                            {aiFundingLoading && (
+                                <span className="text-[11px] text-brand-muted">Analyzing venture across desks…</span>
+                            )}
+                        </div>
+                        {aiFundingError ? (
+                            <p className="mb-3 text-[11px] leading-relaxed text-brand-muted">
+                                <span className="font-medium text-brand-text">Estimate unavailable.</span> {aiFundingError}
+                            </p>
                         ) : null}
 
-                        <div className="border-b border-brand-border/60 bg-brand-panel/15 px-3 py-3 sm:px-4">
-                            <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Total capital needed</p>
-                            {totalCapitalRow?.value?.trim() || aiFunding?.total_capital?.trim() ? (
-                                <p className="mt-1.5 text-lg font-semibold leading-snug text-brand-text sm:text-xl">
-                                    {totalCapitalRow?.value?.trim() || aiFunding?.total_capital?.trim()}
+                        <div className="overflow-hidden rounded-lg border border-brand-border/70 bg-brand-bg/25">
+                            {resourcesFromOnboarding && resourcesFromOnboarding !== budgetDraft.trim() ? (
+                                <div className="border-b border-brand-border/60 bg-brand-panel/20 px-3 py-2.5 sm:px-4">
+                                    <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Onboarding · Resources</p>
+                                    <p className="mt-1 text-[12px] leading-relaxed text-brand-text/95">{resourcesFromOnboarding}</p>
+                                    <p className="mt-2 text-[10px] text-brand-muted">
+                                        Merge into the ledger below so this desk has one source of truth.
+                                    </p>
+                                </div>
+                            ) : null}
+
+                            <div className="border-b border-brand-border/60 bg-brand-panel/15 px-3 py-3 sm:px-4">
+                                <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Total capital needed</p>
+                                {totalCapitalRow?.value?.trim() || aiFunding?.total_capital?.trim() ? (
+                                    <p className="mt-1.5 text-lg font-semibold leading-snug text-brand-text sm:text-xl">
+                                        {totalCapitalRow?.value?.trim() || aiFunding?.total_capital?.trim()}
+                                    </p>
+                                ) : (
+                                    <p className="mt-1.5 text-sm leading-relaxed text-brand-muted">
+                                        Add a line starting with <span className="font-medium text-brand-text/90">Total capital needed</span> in the
+                                        editor, use the template, or wait for desk estimates when other areas have data.
+                                    </p>
+                                )}
+                                <div className="mt-2 h-1 w-full max-w-md overflow-hidden rounded-full bg-brand-border/40">
+                                    <div
+                                        className="h-full rounded-full bg-brand-teal/75 transition-all duration-300"
+                                        style={{
+                                            width: `${fundingTotal ? Math.round((fundingFilledWithAi / fundingTotal) * 100) : 0}%`,
+                                        }}
+                                    />
+                                </div>
+                                <p className="mt-2 text-[10px] text-brand-muted">
+                                    {fundingFilledWithAi} of {fundingTotal} lines with saved or estimated values.
                                 </p>
-                            ) : (
-                                <p className="mt-1.5 text-sm leading-relaxed text-brand-muted">
-                                    Add a line starting with <span className="font-medium text-brand-text/90">Total capital needed</span> in the
-                                    editor, use the template, or wait for desk estimates when other areas have data.
-                                </p>
-                            )}
-                            <div className="mt-2 h-1 w-full max-w-md overflow-hidden rounded-full bg-brand-border/40">
-                                <div
-                                    className="h-full rounded-full bg-brand-teal/75 transition-all duration-300"
-                                    style={{
-                                        width: `${fundingTotal ? Math.round((fundingFilledWithAi / fundingTotal) * 100) : 0}%`,
-                                    }}
-                                />
                             </div>
-                            <p className="mt-2 text-[10px] text-brand-muted">
-                                {fundingFilledWithAi} of {fundingTotal} lines with saved or estimated values.
-                            </p>
+
+                            {FUNDING_ROW_GROUPS.map((group) => (
+                                <div key={group.title} className="border-b border-brand-border/50 last:border-b-0">
+                                    <div className="bg-brand-panel/10 px-3 py-1.5 sm:px-4">
+                                        <p className="text-[10px] font-medium uppercase tracking-wide text-brand-muted">{group.title}</p>
+                                    </div>
+                                    <ul className="divide-y divide-brand-border/40">
+                                        {group.ids.map((id) => {
+                                            const row = fundingById[id];
+                                            if (!row) return null;
+                                            const saved = row.value?.trim();
+                                            const aiVal = aiFunding?.[id as FundingValueKey]?.trim();
+                                            const display = saved || aiVal || '';
+                                            const isAiOnly = !saved && !!aiVal;
+                                            return (
+                                                <li
+                                                    key={id}
+                                                    className={`flex flex-col gap-0.5 px-3 py-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-4 ${
+                                                        display ? 'bg-brand-input/15' : ''
+                                                    }`}
+                                                >
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="text-[12px] font-medium text-brand-text">{row.spec.label}</p>
+                                                        <p className="text-[10px] leading-snug text-brand-muted/90">{row.spec.shortHint}</p>
+                                                    </div>
+                                                    <div className="flex min-w-0 shrink-0 flex-col items-start gap-0.5 sm:max-w-[min(24rem,45%)] sm:items-end sm:text-right">
+                                                        <p
+                                                            className={`text-left text-[13px] font-medium leading-snug sm:text-right ${
+                                                                display
+                                                                    ? isAiOnly
+                                                                        ? 'text-brand-muted'
+                                                                        : 'text-brand-teal'
+                                                                    : 'text-brand-muted'
+                                                            }`}
+                                                        >
+                                                            {display || '—'}
+                                                        </p>
+                                                        {isAiOnly ? (
+                                                            <span className="text-[9px] font-semibold uppercase tracking-wider text-brand-teal/80">
+                                                                Desk estimate
+                                                            </span>
+                                                        ) : null}
+                                                    </div>
+                                                </li>
+                                            );
+                                        })}
+                                    </ul>
+                                </div>
+                            ))}
                         </div>
 
-                        {FUNDING_ROW_GROUPS.map((group) => (
-                            <div key={group.title} className="border-b border-brand-border/50 last:border-b-0">
-                                <div className="bg-brand-panel/10 px-3 py-1.5 sm:px-4">
-                                    <p className="text-[10px] font-medium uppercase tracking-wide text-brand-muted">{group.title}</p>
-                                </div>
-                                <ul className="divide-y divide-brand-border/40">
-                                    {group.ids.map((id) => {
-                                        const row = fundingById[id];
-                                        if (!row) return null;
-                                        const saved = row.value?.trim();
-                                        const aiVal = aiFunding?.[id as FundingValueKey]?.trim();
-                                        const display = saved || aiVal || '';
-                                        const isAiOnly = !saved && !!aiVal;
-                                        return (
-                                            <li
-                                                key={id}
-                                                className={`flex flex-col gap-0.5 px-3 py-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-4 ${
-                                                    display ? 'bg-brand-input/15' : ''
-                                                }`}
-                                            >
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="text-[12px] font-medium text-brand-text">{row.spec.label}</p>
-                                                    <p className="text-[10px] leading-snug text-brand-muted/90">{row.spec.shortHint}</p>
-                                                </div>
-                                                <div className="flex min-w-0 shrink-0 flex-col items-start gap-0.5 sm:max-w-[min(24rem,45%)] sm:items-end sm:text-right">
-                                                    <p
-                                                        className={`text-left text-[13px] font-medium leading-snug sm:text-right ${
-                                                            display
-                                                                ? isAiOnly
-                                                                    ? 'text-brand-muted' // AI estimate: softer until saved
-                                                                    : 'text-brand-teal'
-                                                                : 'text-brand-muted'
-                                                        }`}
-                                                    >
-                                                        {display || '—'}
-                                                    </p>
-                                                    {isAiOnly ? (
-                                                        <span className="text-[9px] font-semibold uppercase tracking-wider text-brand-teal/80">
-                                                            Desk estimate
-                                                        </span>
-                                                    ) : null}
-                                                </div>
-                                            </li>
-                                        );
-                                    })}
-                                </ul>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="mt-3 rounded-lg border border-brand-border/70 bg-brand-panel/15 p-3 sm:p-4">
-                        <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-                            <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Budget &amp; ledger (venture record)</p>
-                            <div className="flex flex-wrap gap-2">
+                        <div className="mt-3 rounded-lg border border-brand-border/70 bg-brand-panel/15 p-3 sm:p-4">
+                            <div className="mb-2 flex flex-wrap gap-2">
                                 <button
                                     type="button"
                                     onClick={() => {
@@ -808,37 +855,34 @@ export function FinancialLedger() {
                                     Append template
                                 </button>
                             </div>
+                            <textarea
+                                value={budgetDraft}
+                                onChange={(e) => setBudgetDraft(e.target.value)}
+                                onBlur={() => {
+                                    if (budgetDraft !== (activeProject.budget ?? '')) {
+                                        persistBudget(budgetDraft);
+                                    }
+                                }}
+                                placeholder={buildFundingLedgerTemplate(activeProject.name)}
+                                rows={14}
+                                className="min-h-[220px] w-full resize-y rounded-xl border border-brand-border bg-brand-input p-4 text-[13px] leading-relaxed text-brand-text placeholder:text-brand-muted/55 focus:outline-none focus:ring-2 focus:ring-brand-teal/25"
+                                spellCheck={false}
+                            />
+                            <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-brand-muted">
+                                <span>One metric per line with a colon. Template labels map to the table above.</span>
+                                {budgetSavedFlash ? (
+                                    <span className="font-medium text-brand-teal">Saved to venture.</span>
+                                ) : (
+                                    <span>Blur field to save.</span>
+                                )}
+                            </p>
                         </div>
-                        <textarea
-                            value={budgetDraft}
-                            onChange={(e) => setBudgetDraft(e.target.value)}
-                            onBlur={() => {
-                                if (budgetDraft !== (activeProject.budget ?? '')) {
-                                    persistBudget(budgetDraft);
-                                }
-                            }}
-                            placeholder={buildFundingLedgerTemplate(activeProject.name)}
-                            rows={14}
-                            className="min-h-[220px] w-full resize-y rounded-xl border border-brand-border bg-brand-input p-4 text-[13px] leading-relaxed text-brand-text placeholder:text-brand-muted/55 focus:outline-none focus:ring-2 focus:ring-brand-teal/25"
-                            spellCheck={false}
-                        />
-                        <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-brand-muted">
-                            <span>One metric per line with a colon. Template labels map to the table above.</span>
-                            {budgetSavedFlash ? <span className="font-medium text-brand-teal">Saved to venture.</span> : <span>Blur field to save.</span>}
-                        </p>
-                    </div>
-                </DeskRevealSection>
-
-                <DeskRevealSection
-                    id="cfo-connected"
-                    variant="brand"
-                    density="compact"
-                    defaultOpen
-                    title="Other desks"
-                    subtitle="Open another research area to edit source fields."
-                >
+                    </>
+                );
+            case 'connected':
+                return (
                     <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
-                        {PEER_DESKS.map(({ room, label, short, icon: Icon }) => {
+                        {PEER_DESKS.map(({ room, short, icon: Icon }) => {
                             const live = peerStatus[room];
                             return (
                                 <button
@@ -861,16 +905,9 @@ export function FinancialLedger() {
                             );
                         })}
                     </div>
-                </DeskRevealSection>
-
-                <DeskRevealSection
-                    id="cfo-snapshot"
-                    variant="brand"
-                    density="compact"
-                    defaultOpen
-                    title="Ledger snapshot"
-                    subtitle="Size of budget field and detected cues."
-                >
+                );
+            case 'snapshot':
+                return (
                     <div className="rounded-lg border border-brand-border/60 bg-brand-bg/25">
                         <div className="grid grid-cols-1 divide-y divide-brand-border/50 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
                             <div className="px-3 py-2.5 sm:px-4">
@@ -902,196 +939,284 @@ export function FinancialLedger() {
                             </div>
                         </div>
                     </div>
-                </DeskRevealSection>
-
-                <DeskRevealSection
-                    id="cfo-topic-cards"
-                    variant="brand"
-                    density="compact"
-                    defaultOpen
-                    title="Topics"
-                    subtitle="Select — detail loads below."
-                >
-                    <div className="flex flex-wrap gap-1.5">
-                        {TOPIC_META.map(({ id, shortLabel, icon: Icon }) => {
-                            const row = map[id];
-                            const isSel = selectedTopicId === id;
-                            return (
-                                <button
-                                    key={id}
-                                    type="button"
-                                    onClick={() => selectTopic(id)}
-                                    className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-left text-[11px] font-medium transition ${
-                                        isSel
-                                            ? 'border-brand-teal/40 bg-brand-input text-brand-text'
-                                            : row.hasData
-                                              ? 'border-brand-border bg-brand-panel/50 text-brand-text hover:bg-brand-input/50'
-                                              : 'border-brand-border/60 bg-brand-bg/40 text-brand-muted hover:border-brand-border'
-                                    }`}
-                                >
-                                    <Icon className="h-3.5 w-3.5 shrink-0 opacity-80" aria-hidden />
-                                    <span>{shortLabel}</span>
-                                    <span
-                                        className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-                                            row.hasData ? 'bg-brand-teal' : 'bg-brand-border'
-                                        }`}
-                                        title={row.hasData ? 'Has data' : 'Empty'}
-                                    />
-                                </button>
-                            );
-                        })}
-                    </div>
-                </DeskRevealSection>
-
-                <DeskRevealSection
-                    id="cfo-topic-panel"
-                    variant="brand"
-                    density="compact"
-                    defaultOpen
-                    title={selectedMeta.title}
-                    subtitle={selectedMeta.hint}
-                    badge={
-                        <span
-                            className={`rounded px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
-                                selectedRow.hasData ? DESK_PANEL.badgeOn : DESK_PANEL.badgeOff
-                            }`}
-                        >
-                            {selectedRow.hasData ? 'Has data' : 'Empty'}
-                        </span>
-                    }
-                >
-                <div
-                    ref={detailPanelRef}
-                    id="cfo-topic-detail"
-                    className={`rounded-lg p-4 sm:p-5 ${DESK_PANEL.detailWrap}`}
-                >
-                    <p className="mb-3 text-[12px] leading-snug text-brand-muted">{selectedRow.preview}</p>
-
-                    <div className="space-y-3">
-                        <div>
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-muted">Latest update</p>
-                            <p className="mt-1 text-[13px] text-brand-text">
-                                {selectedRow.latest.label}
-                                {selectedRow.latest.at != null && (
-                                    <span className="text-brand-muted"> · {formatWhen(selectedRow.latest.at)}</span>
-                                )}
-                            </p>
-                        </div>
-
-                        <div>
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-muted">Insights</p>
-                            {selectedRow.insights.length > 0 ? (
-                                <ul className="mt-2 list-disc space-y-1.5 pl-4 text-[13px] leading-relaxed text-brand-text/95">
-                                    {selectedRow.insights.map((line, i) => (
-                                        <li key={i}>{line}</li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <p className="mt-2 text-[13px] leading-relaxed text-brand-muted">{selectedRow.emptyHint}</p>
-                            )}
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-2 border-t border-brand-border/50 pt-3">
-                            <button
-                                type="button"
-                                onClick={() => askCfoTopic(selectedTopicId, selectedMeta.title)}
-                                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-colors ${DESK_PANEL.askBtn}`}
-                            >
-                                <MessageSquare className="h-3.5 w-3.5" aria-hidden />
-                                Ask about this topic
-                            </button>
-                            <button
-                                type="button"
-                                disabled={selectedRow.insights.length === 0}
-                                onClick={() => copyInsights(selectedTopicId, selectedMeta.title, selectedRow.insights)}
-                                className="inline-flex items-center gap-1.5 rounded-lg border border-brand-border bg-brand-bg px-3 py-1.5 text-[11px] font-medium text-brand-text transition-colors hover:bg-brand-input disabled:cursor-not-allowed disabled:opacity-40"
-                            >
-                                {copiedTopic === selectedTopicId ? (
-                                    <Check className="h-3.5 w-3.5 text-brand-teal" aria-hidden />
-                                ) : (
-                                    <Copy className="h-3.5 w-3.5" aria-hidden />
-                                )}
-                                {copiedTopic === selectedTopicId ? 'Copied' : 'Copy bullets'}
-                            </button>
-                        </div>
-
-                        {selectedTopicId === 'ai_brief' && focusToday.length > 0 && (
-                            <div className="rounded-md border border-brand-border bg-brand-bg px-3 py-2.5">
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-muted">
-                                    Office focus today
+                );
+            case 'discuss':
+                return (
+                    <>
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="flex min-w-0 items-start gap-2">
+                                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-brand-border bg-brand-bg text-brand-text">
+                                    <Bot className="h-4 w-4" aria-hidden />
+                                </span>
+                                <p className="max-w-xl text-[11px] leading-snug text-brand-muted">
+                                    Suite chat opens with this desk’s context. Use the actions and quick prompts below.
                                 </p>
-                                <ul className="mt-2 list-disc space-y-1 pl-4 text-[12px] text-brand-muted">
-                                    {focusToday.map((line, i) => (
-                                        <li key={i}>{line}</li>
-                                    ))}
-                                </ul>
                             </div>
-                        )}
+                            <div className="flex shrink-0 flex-col gap-2 sm:items-end">
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        askCfoLedger(
+                                            'Review this financial ledger holistically. What are the top 3 risks and what should I validate next?'
+                                        )
+                                    }
+                                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-brand-border bg-brand-card px-4 py-2.5 text-xs font-semibold text-brand-text transition-colors hover:bg-brand-input sm:w-auto"
+                                >
+                                    <MessageSquare className="h-4 w-4" aria-hidden />
+                                    Discuss venture finances
+                                </button>
+                            </div>
+                        </div>
 
-                        {selectedTopicId === 'attention' && events.length > 0 && (
-                            <div className="flex items-start gap-2 rounded-md border border-brand-border bg-brand-bg/80 px-3 py-2">
-                                <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-brand-muted" aria-hidden />
-                                <div className="min-w-0 text-[12px] text-brand-muted">
-                                    <span className="font-medium text-brand-text">Upcoming: </span>
-                                    {events.map((e) => e.title).join(' · ')}
+                        <div className="mt-3 flex flex-wrap items-center gap-2">
+                            <span className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-brand-muted">
+                                <Hash className="h-3 w-3" aria-hidden />
+                                Quick prompts
+                            </span>
+                            {LEDGER_QUICK_PROMPTS.map((q) => (
+                                <button
+                                    key={q.label}
+                                    type="button"
+                                    onClick={() => askCfoLedger(q.instruction)}
+                                    className={`rounded-full border border-brand-border bg-brand-bg px-3 py-1.5 text-[11px] font-medium text-brand-muted transition-colors ${DESK_PANEL.promptHover}`}
+                                >
+                                    {q.label}
+                                </button>
+                            ))}
+                        </div>
+                    </>
+                );
+            default: {
+                const topicId = k as TopicId;
+                if (!TOPIC_META.some((t) => t.id === topicId)) return null;
+                const meta = TOPIC_META.find((t) => t.id === topicId)!;
+                const row = map[topicId];
+                return (
+                    <>
+                        <div className="mb-3 flex flex-wrap items-center gap-2">
+                            <span
+                                className={`rounded px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
+                                    row.hasData ? DESK_PANEL.badgeOn : DESK_PANEL.badgeOff
+                                }`}
+                            >
+                                {row.hasData ? 'Has data' : 'Empty'}
+                            </span>
+                            <span className="text-[11px] text-brand-muted">{meta.hint}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                            {TOPIC_META.map(({ id, shortLabel, icon: Icon }) => {
+                                const r = map[id];
+                                const isSel = topicId === id;
+                                return (
+                                    <button
+                                        key={id}
+                                        type="button"
+                                        onClick={() => {
+                                            setSelectedTopicId(id);
+                                            openLedgerSection(id);
+                                        }}
+                                        className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-left text-[11px] font-medium transition ${
+                                            isSel
+                                                ? 'border-brand-teal/40 bg-brand-input text-brand-text'
+                                                : r.hasData
+                                                  ? 'border-brand-border bg-brand-panel/50 text-brand-text hover:bg-brand-input/50'
+                                                  : 'border-brand-border/60 bg-brand-bg/40 text-brand-muted hover:border-brand-border'
+                                        }`}
+                                    >
+                                        <Icon className="h-3.5 w-3.5 shrink-0 opacity-80" aria-hidden />
+                                        <span>{shortLabel}</span>
+                                        <span
+                                            className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+                                                r.hasData ? 'bg-brand-teal' : 'bg-brand-border'
+                                            }`}
+                                            title={r.hasData ? 'Has data' : 'Empty'}
+                                        />
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        <div className={`mt-3 rounded-lg p-4 sm:p-5 ${DESK_PANEL.detailWrap}`}>
+                            <p className="mb-3 text-[12px] leading-snug text-brand-muted">{row.preview}</p>
+
+                            <div className="space-y-3">
+                                <div>
+                                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-muted">Latest update</p>
+                                    <p className="mt-1 text-[13px] text-brand-text">
+                                        {row.latest.label}
+                                        {row.latest.at != null && (
+                                            <span className="text-brand-muted"> · {formatWhen(row.latest.at)}</span>
+                                        )}
+                                    </p>
                                 </div>
+
+                                <div>
+                                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-muted">Insights</p>
+                                    {row.insights.length > 0 ? (
+                                        <ul className="mt-2 list-disc space-y-1.5 pl-4 text-[13px] leading-relaxed text-brand-text/95">
+                                            {row.insights.map((line, i) => (
+                                                <li key={i}>{line}</li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p className="mt-2 text-[13px] leading-relaxed text-brand-muted">{row.emptyHint}</p>
+                                    )}
+                                </div>
+
+                                <div className="flex flex-wrap items-center gap-2 border-t border-brand-border/50 pt-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => askCfoTopic(topicId, meta.title)}
+                                        className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-colors ${DESK_PANEL.askBtn}`}
+                                    >
+                                        <MessageSquare className="h-3.5 w-3.5" aria-hidden />
+                                        Ask about this topic
+                                    </button>
+                                    <button
+                                        type="button"
+                                        disabled={row.insights.length === 0}
+                                        onClick={() => copyInsights(topicId, meta.title, row.insights)}
+                                        className="inline-flex items-center gap-1.5 rounded-lg border border-brand-border bg-brand-bg px-3 py-1.5 text-[11px] font-medium text-brand-text transition-colors hover:bg-brand-input disabled:cursor-not-allowed disabled:opacity-40"
+                                    >
+                                        {copiedTopic === topicId ? (
+                                            <Check className="h-3.5 w-3.5 text-brand-teal" aria-hidden />
+                                        ) : (
+                                            <Copy className="h-3.5 w-3.5" aria-hidden />
+                                        )}
+                                        {copiedTopic === topicId ? 'Copied' : 'Copy bullets'}
+                                    </button>
+                                </div>
+
+                                {topicId === 'ai_brief' && focusToday.length > 0 && (
+                                    <div className="rounded-md border border-brand-border bg-brand-bg px-3 py-2.5">
+                                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-muted">Office focus today</p>
+                                        <ul className="mt-2 list-disc space-y-1 pl-4 text-[12px] text-brand-muted">
+                                            {focusToday.map((line, i) => (
+                                                <li key={i}>{line}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {topicId === 'attention' && events.length > 0 && (
+                                    <div className="flex items-start gap-2 rounded-md border border-brand-border bg-brand-bg/80 px-3 py-2">
+                                        <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-brand-muted" aria-hidden />
+                                        <div className="min-w-0 text-[12px] text-brand-muted">
+                                            <span className="font-medium text-brand-text">Upcoming: </span>
+                                            {events.map((e) => e.title).join(' · ')}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                        )}
+                        </div>
+                    </>
+                );
+            }
+        }
+    };
+
+    const ledgerFocusCopy = ledgerFocus
+        ? ledgerFocus === 'funding' ||
+          ledgerFocus === 'connected' ||
+          ledgerFocus === 'snapshot' ||
+          ledgerFocus === 'discuss'
+            ? LEDGER_HUB_STATIC[ledgerFocus]
+            : TOPIC_META.find((t) => t.id === ledgerFocus)
+        : null;
+
+    const LEDGER_STATIC_HUB: Array<'funding' | 'connected' | 'snapshot'> = ['funding', 'connected', 'snapshot'];
+
+    const ledgerHubIcon = (k: LedgerHubKey) => {
+        const wrap = (node: React.ReactNode) => (
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.04] text-brand-muted sm:h-9 sm:w-9">{node}</span>
+        );
+        if (k === 'funding') return wrap(<Wallet className="h-4 w-4" aria-hidden />);
+        if (k === 'connected') return wrap(<GitBranch className="h-4 w-4" aria-hidden />);
+        if (k === 'snapshot') return wrap(<ScanSearch className="h-4 w-4" aria-hidden />);
+        if (k === 'discuss') return wrap(<MessageSquare className="h-4 w-4" aria-hidden />);
+        const tm = TOPIC_META.find((t) => t.id === k);
+        if (tm) {
+            const Icon = tm.icon;
+            return wrap(<Icon className="h-4 w-4" aria-hidden />);
+        }
+        return null;
+    };
+
+    return (
+        <DeskShell
+            className="min-h-0 flex-1"
+            title={deskHeadline(activeProject.name, 'accountant')}
+            description={ledgerFocus ? undefined : deskHelpText('accountant')}
+            bodyFlush={Boolean(ledgerFocus)}
+            bodyClassName={ledgerFocus ? 'flex min-h-0 flex-1 flex-col px-4 pb-28 pt-0 sm:px-5 sm:pb-32' : undefined}
+        >
+            {ledgerFocus && ledgerFocusCopy ? (
+                <>
+                    <DeskFocusToolbar
+                        onBack={goLedgerHub}
+                        title={
+                            'question' in ledgerFocusCopy
+                                ? ledgerFocusCopy.title
+                                : (ledgerFocusCopy as (typeof TOPIC_META)[number]).title
+                        }
+                        onSave={ledgerFocus === 'funding' ? () => persistBudget(budgetDraft) : undefined}
+                        saveLabel="Save budget"
+                    />
+                    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                        <div className="custom-scrollbar flex-1 space-y-3 overflow-y-auto py-3">
+                            <DeskMsgUser>
+                                <p className="text-[13px] font-semibold text-zinc-50">
+                                    {'question' in ledgerFocusCopy
+                                        ? ledgerFocusCopy.title
+                                        : (ledgerFocusCopy as (typeof TOPIC_META)[number]).title}
+                                </p>
+                                <p className="mt-1 text-[12px] leading-relaxed text-zinc-300">
+                                    {'question' in ledgerFocusCopy
+                                        ? ledgerFocusCopy.question
+                                        : (ledgerFocusCopy as (typeof TOPIC_META)[number]).hint}
+                                </p>
+                            </DeskMsgUser>
+                            <DeskMsgAssistant>
+                                <div className="flex flex-col gap-3">{renderLedgerFocusBody(ledgerFocus)}</div>
+                            </DeskMsgAssistant>
+                        </div>
+                    </div>
+                </>
+            ) : (
+                <div className="space-y-2 pb-8">
+                    <p className="text-[10px] leading-snug text-brand-muted">
+                        Tap a block — other sections hide. Chat below stays on that block until you press Back.
+                    </p>
+                    <div className="space-y-1.5 sm:space-y-2">
+                        {LEDGER_STATIC_HUB.map((k) => (
+                            <DeskHubRow
+                                key={k}
+                                title={LEDGER_HUB_STATIC[k].title}
+                                subtitle={LEDGER_HUB_STATIC[k].hubSub}
+                                onOpen={() => openLedgerSection(k)}
+                                right={ledgerHubIcon(k)}
+                            />
+                        ))}
+                        {TOPIC_META.map((tm) => (
+                            <DeskHubRow
+                                key={tm.id}
+                                title={tm.title}
+                                subtitle={tm.hint}
+                                onOpen={() => {
+                                    setSelectedTopicId(tm.id);
+                                    openLedgerSection(tm.id);
+                                }}
+                                right={ledgerHubIcon(tm.id)}
+                            />
+                        ))}
+                        <DeskHubRow
+                            title={LEDGER_HUB_STATIC.discuss.title}
+                            subtitle={LEDGER_HUB_STATIC.discuss.hubSub}
+                            onOpen={() => openLedgerSection('discuss')}
+                            right={ledgerHubIcon('discuss')}
+                        />
                     </div>
                 </div>
-                </DeskRevealSection>
-
-                <DeskRevealSection
-                    id="cfo-discuss"
-                    variant="brand"
-                    density="compact"
-                    defaultOpen
-                    title="Discuss with this desk"
-                    subtitle="Chat prompts use your budget field, desk sync, and the topic you selected."
-                >
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex min-w-0 items-start gap-2">
-                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-brand-border bg-brand-bg text-brand-text">
-                                <Bot className="h-4 w-4" aria-hidden />
-                            </span>
-                            <p className="max-w-xl text-[11px] leading-snug text-brand-muted">
-                                Suite chat opens with this desk’s context. Use the actions and quick prompts below.
-                            </p>
-                        </div>
-                        <div className="flex shrink-0 flex-col gap-2 sm:items-end">
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    askCfoLedger(
-                                        'Review this financial ledger holistically. What are the top 3 risks and what should I validate next?'
-                                    )
-                                }
-                                className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-brand-border bg-brand-card px-4 py-2.5 text-xs font-semibold text-brand-text transition-colors hover:bg-brand-input sm:w-auto"
-                            >
-                                <MessageSquare className="h-4 w-4" aria-hidden />
-                                Discuss venture finances
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="mt-3 flex flex-wrap items-center gap-2">
-                        <span className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-brand-muted">
-                            <Hash className="h-3 w-3" aria-hidden />
-                            Quick prompts
-                        </span>
-                        {LEDGER_QUICK_PROMPTS.map((q) => (
-                            <button
-                                key={q.label}
-                                type="button"
-                                onClick={() => askCfoLedger(q.instruction)}
-                                className={`rounded-full border border-brand-border bg-brand-bg px-3 py-1.5 text-[11px] font-medium text-brand-muted transition-colors ${DESK_PANEL.promptHover}`}
-                            >
-                                {q.label}
-                            </button>
-                        ))}
-                    </div>
-                </DeskRevealSection>
-            </div>
+            )}
         </DeskShell>
     );
 }

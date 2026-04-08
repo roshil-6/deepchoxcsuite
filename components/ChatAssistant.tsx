@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useState, useRef, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useOffice, getAgentSystemPrompt, AgentRole } from '@/lib/OfficeContext';
 import { getChatRailTheme, getChatAgentRoleForRoom } from '@/lib/roomThemes';
 import {
@@ -20,6 +21,7 @@ import { ModelAttribution } from '@/components/ModelAttribution';
 import { EXEC_CHAT_MODEL_STORAGE_KEY, isExecChatModelId } from '@/lib/deskConstants';
 import { PA_BUDDY_NAME } from '@/lib/paBuddy';
 import { useSpeechRecognition } from '@/lib/useSpeechRecognition';
+import { useDeskChatThreadSlotState } from '@/components/DeskChatThreadSlotContext';
 
 function readStoredExecModel(): string {
     if (typeof window === 'undefined') return 'llama3';
@@ -76,7 +78,16 @@ export function ChatAssistant({
         executiveThread,
         appendExecutiveThread,
         clearExecutiveThread,
+        deskSectionFocus,
+        suiteIntelOpenDesk,
     } = useOffice();
+
+    const sidebarSectionLabel =
+        deskSectionFocus && deskSectionFocus.room === activeRoom
+            ? deskSectionFocus.title
+            : activeRoom === 'suite_intelligence' && suiteIntelOpenDesk
+              ? `Intelligence Suite · ${suiteIntelOpenDesk}`
+              : null;
 
     const [localMessages, setLocalMessages] = useState<Message[]>([]);
     const [inputValue, setInputValue] = useState('');
@@ -84,6 +95,21 @@ export function ChatAssistant({
     /** CEO split: thread panel above composer (same shell as aiOs). */
     const [ceoThreadExpanded, setCeoThreadExpanded] = useState(true);
     const expandCeoThread = useCallback(() => setCeoThreadExpanded(true), []);
+
+    const isCeoSplit = variant === 'ceoSplit';
+    const deskThreadSlotCtx = useDeskChatThreadSlotState();
+    const deskThreadSlotEl = deskThreadSlotCtx?.slot ?? null;
+    const wantsBlockInlineThread =
+        isCeoSplit &&
+        Boolean(
+            (deskSectionFocus && deskSectionFocus.room === activeRoom) ||
+                (activeRoom === 'suite_intelligence' && suiteIntelOpenDesk),
+        );
+    const focusAnchorsThread = Boolean(wantsBlockInlineThread && deskThreadSlotEl);
+
+    useEffect(() => {
+        if (focusAnchorsThread) setCeoThreadExpanded(false);
+    }, [focusAnchorsThread]);
 
     const messages: Message[] = useMemo(() => {
         if (!useExecutiveThread) return localMessages;
@@ -150,10 +176,18 @@ export function ChatAssistant({
         if (!voiceSupported || isLoading) return;
         if (!listening) {
             onComposerInteract?.();
-            if (variant === 'ceoSplit') setCeoThreadExpanded(true);
+            if (variant === 'ceoSplit' && !focusAnchorsThread) setCeoThreadExpanded(true);
         }
         toggleListening();
-    }, [voiceSupported, isLoading, listening, onComposerInteract, variant, toggleListening]);
+    }, [
+        voiceSupported,
+        isLoading,
+        listening,
+        onComposerInteract,
+        variant,
+        toggleListening,
+        focusAnchorsThread,
+    ]);
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -191,7 +225,7 @@ export function ChatAssistant({
         if ((!inputValue.trim() && !pendingChat) || isLoading || !activeProject) return;
 
         onComposerInteract?.();
-        if (variant === 'ceoSplit') setCeoThreadExpanded(true);
+        if (variant === 'ceoSplit' && !focusAnchorsThread) setCeoThreadExpanded(true);
 
         const userMessage: Message = {
             id: Date.now().toString(),
@@ -226,6 +260,13 @@ export function ChatAssistant({
                 fileContext = '\n\nATTACHED FILE DATA:\n' + activeProject.files.map(f => `--- FILE: ${f.name} ---\n${f.content.substring(0, 5000)}...\n--- END FILE ---`).join('\n');
             }
 
+            const deskSectionLine =
+                deskSectionFocus && deskSectionFocus.room === activeRoom
+                    ? `Desk block in focus: room "${deskSectionFocus.room}" · "${deskSectionFocus.title}" [id: ${deskSectionFocus.sectionId}]. Model instructions (ground answers in the venture fields in this message; do not invent facts): ${deskSectionFocus.prompt} Prioritize this block until the user presses Back or switches room.`
+                    : activeRoom === 'suite_intelligence' && suiteIntelOpenDesk
+                      ? `Intelligence Suite: user expanded the "${suiteIntelOpenDesk}" role row. Ground answers in agentStaffSnapshot.desks.${suiteIntelOpenDesk} and the venture record; do not invent facts.`
+                      : 'Desk block in focus: none (general room).';
+
             const projectContext = `
             Current Project: ${activeProject.name}
             CEO Strategy: ${activeProject.strategy || 'N/A'}
@@ -233,6 +274,7 @@ export function ChatAssistant({
             Budget: ${activeProject.budget || 'N/A'}
             Market Insights: ${activeProject.marketInsights || 'N/A'}
             Active View: ${activeRoom}
+            ${deskSectionLine}
             Executive Journal: ${activeProject.userNotes || 'N/A'}
             Team Directives: ${activeProject.teamDirectives || 'N/A'}
             ${fileContext}
@@ -313,7 +355,6 @@ export function ChatAssistant({
 
     const isBottomDock = variant === 'bottomDock' || variant === 'aiOs';
     const isInlineDesk = variant === 'inlineDesk';
-    const isCeoSplit = variant === 'ceoSplit';
     /** Shell context: floating bottom bar / desk embed — model menu opens upward */
     const isDockChrome = isBottomDock || isInlineDesk || isCeoSplit;
     /** ChatGPT-style unified composer (wide, #2f2f2f pill, soft shadow) */
@@ -327,23 +368,39 @@ export function ChatAssistant({
             {messages.length === 0 && (
                 <div
                     className={`flex select-none flex-col ${
-                        isCeoSplit
-                            ? 'items-center justify-center rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.06] to-white/[0.02] px-5 py-10 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
-                            : 'items-start rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-left sm:px-5 sm:py-4'
+                        isCeoSplit && wantsBlockInlineThread
+                            ? 'items-start py-2 text-left'
+                            : isCeoSplit
+                              ? 'items-center justify-center rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.06] to-white/[0.02] px-5 py-10 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
+                              : 'items-start rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-left sm:px-5 sm:py-4'
                     }`}
                 >
                     {isCeoSplit ? (
-                        <>
-                            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-white/[0.06] ring-1 ring-white/[0.1]">
-                                <MessageSquare className="h-5 w-5 text-zinc-400" aria-hidden />
+                        wantsBlockInlineThread ? (
+                            <div className="text-left">
+                                <p className="text-[13px] leading-relaxed text-zinc-400">{chatTheme.emptyPrompt}</p>
+                                <p className="mt-3 text-[11px] text-zinc-600">
+                                    {useExecutiveThread
+                                        ? 'Use the bar below — replies appear here (same thread as Assistant when on strategy desk).'
+                                        : 'Use the bar below — replies appear here.'}
+                                </p>
                             </div>
-                            <p className="max-w-sm text-[13px] leading-relaxed text-zinc-400">{chatTheme.emptyPrompt}</p>
-                            <p className="mt-4 text-[11px] text-zinc-600">
-                                {useExecutiveThread
-                                    ? 'Type below — same thread as the Assistant desk.'
-                                    : 'Type below — this thread is for this desk only.'}
-                            </p>
-                        </>
+                        ) : (
+                            <>
+                                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-white/[0.06] ring-1 ring-white/[0.1]">
+                                    <MessageSquare className="h-5 w-5 text-zinc-400" aria-hidden />
+                                </div>
+                                <p className="max-w-sm text-[13px] leading-relaxed text-zinc-400">{chatTheme.emptyPrompt}</p>
+                                <p className="mt-4 text-[11px] text-zinc-600">
+                                    {useExecutiveThread
+                                        ? 'Type below — same thread as the Assistant desk.'
+                                        : 'Type below — this thread is for this desk only.'}
+                                </p>
+                                {sidebarSectionLabel ? (
+                                    <p className="mt-2 text-[11px] text-zinc-500">In context: {sidebarSectionLabel}</p>
+                                ) : null}
+                            </>
+                        )
                     ) : (
                         <>
                             <p className="max-w-[280px] text-sm leading-relaxed text-zinc-300">{chatTheme.emptyPrompt}</p>
@@ -373,7 +430,7 @@ export function ChatAssistant({
                                 : 'rounded-2xl rounded-bl-md bg-white/[0.04] px-3 py-2.5 text-brand-text/95'
                         }`}
                     >
-                        {useExecutiveThread ? (
+                        {useExecutiveThread && !focusAnchorsThread ? (
                             <p className="mb-1 text-[9px] font-semibold uppercase tracking-[0.1em] text-brand-muted/80">
                                 {msg.channel === 'cos'
                                     ? 'Strategy desk'
@@ -402,11 +459,35 @@ export function ChatAssistant({
         </>
     );
 
+    const blockInlineConversation =
+        focusAnchorsThread && deskThreadSlotEl
+            ? createPortal(
+                  <div className="w-full">
+                      {messages.length > 0 || isLoading ? (
+                          <div className="mb-2 flex justify-end">
+                              <button
+                                  type="button"
+                                  onClick={() => (useExecutiveThread ? clearExecutiveThread() : setLocalMessages([]))}
+                                  className="text-[11px] text-zinc-600 transition-colors hover:text-zinc-400"
+                                  title="Clear this thread"
+                              >
+                                  Clear thread
+                              </button>
+                          </div>
+                      ) : null}
+                      <div className="space-y-3">{threadBody}</div>
+                  </div>,
+                  deskThreadSlotEl,
+              )
+            : null;
+
     return (
         <div
             className={
                 isCeoSplit
-                    ? 'flex min-h-0 w-full flex-col gap-4 overflow-visible rounded-none border-0 bg-transparent shadow-none transition-all duration-300'
+                    ? `flex min-h-0 w-full flex-col overflow-visible rounded-none border-0 bg-transparent shadow-none transition-all duration-300 ${
+                          focusAnchorsThread ? 'gap-2' : 'gap-5'
+                      }`
                     : `flex min-h-0 flex-col overflow-hidden shadow-none transition-all duration-300 ${
                           isInlineDesk && embedInShell
                               ? dockThreadEmpty
@@ -424,7 +505,9 @@ export function ChatAssistant({
                       }`
             }
         >
-            {isCeoSplit && !ceoThreadExpanded ? (
+            {blockInlineConversation}
+
+            {isCeoSplit && !ceoThreadExpanded && !focusAnchorsThread ? (
                 <button
                     type="button"
                     onClick={expandCeoThread}
@@ -438,17 +521,19 @@ export function ChatAssistant({
                 </button>
             ) : null}
 
-            {isCeoSplit && ceoThreadExpanded ? (
-                <div className="flex max-h-[min(40vh,400px)] min-h-[120px] w-full flex-col overflow-hidden rounded-[22px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl">
+            {isCeoSplit && ceoThreadExpanded && !focusAnchorsThread ? (
+                <div className="mb-1 flex max-h-[min(40vh,400px)] min-h-[120px] w-full flex-col overflow-hidden rounded-[22px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl shadow-[0_12px_40px_-12px_rgba(0,0,0,0.4)]">
                     <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/[0.05] px-3 py-2.5 sm:px-4">
                         <div className="min-w-0 flex-1">
                             <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
                                 {useExecutiveThread ? 'Research coordination' : chatTheme.roleLabel}
                             </p>
                             <p className="mt-0.5 truncate text-[12px] text-zinc-400">
-                                {useExecutiveThread
-                                    ? `Same thread as ${PA_BUDDY_NAME}`
-                                    : chatTheme.subtitle}
+                                {sidebarSectionLabel
+                                    ? `In context: ${sidebarSectionLabel}`
+                                    : useExecutiveThread
+                                      ? `Same thread as ${PA_BUDDY_NAME}`
+                                      : chatTheme.subtitle}
                             </p>
                         </div>
                         <div className="flex shrink-0 items-center gap-1">
@@ -568,6 +653,8 @@ export function ChatAssistant({
             {!isCeoSplit && !dockThreadEmpty && (
                 <div
                     className={`custom-scrollbar space-y-3 overflow-y-auto overflow-x-hidden bg-transparent px-3 pb-2 pt-3 sm:px-4 sm:pt-4 ${
+                        isAiOs && dockThreadActive ? 'mb-1.5' : ''
+                    } ${
                         isInlineDesk && dockThreadActive
                             ? 'max-h-[min(44vh,420px)] min-h-0 shrink-0'
                             : 'min-h-0 flex-1'
@@ -627,12 +714,12 @@ export function ChatAssistant({
                                 setInputValue(e.target.value);
                                 if (e.target.value.trim()) {
                                     onComposerInteract?.();
-                                    if (variant === 'ceoSplit') setCeoThreadExpanded(true);
+                                    if (variant === 'ceoSplit' && !focusAnchorsThread) setCeoThreadExpanded(true);
                                 }
                             }}
                             onFocus={() => {
                                 onComposerInteract?.();
-                                if (variant === 'ceoSplit') setCeoThreadExpanded(true);
+                                if (variant === 'ceoSplit' && !focusAnchorsThread) setCeoThreadExpanded(true);
                             }}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter' && !e.shiftKey) {

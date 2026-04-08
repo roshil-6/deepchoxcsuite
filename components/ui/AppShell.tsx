@@ -54,7 +54,7 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
 
     return (
         <div className="flex h-full min-h-0 w-full flex-col bg-[var(--bg)] pb-14 text-[var(--text)] lg:pb-0">
-            <header className="flex shrink-0 items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--bg)] px-4 py-3 sm:px-5">
+            <header className="flex shrink-0 items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--bg)] px-4 py-3 sm:px-5 lg:hidden">
                 <div className="flex min-w-0 items-center gap-2">
                     <button
                         type="button"
@@ -95,11 +95,19 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
                 </div>
             </header>
 
-            <DailySyncBanner />
+            <div className="lg:hidden">
+                <DailySyncBanner />
+            </div>
 
             <div className="relative flex min-h-0 flex-1 overflow-hidden">
                 <div className="hidden h-full min-h-0 shrink-0 items-stretch lg:flex">
-                    <LeftRail onLogout={onLogout} onNewVenture={onNewVenture} />
+                    <LeftRail
+                        onLogout={onLogout}
+                        onNewVenture={onNewVenture}
+                        desktopWorkspaceStrip
+                        onToggleIntel={toggleIntelDesktop}
+                        intelDesktopCollapsed={intelDesktopCollapsed}
+                    />
                 </div>
 
                 <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden lg:gap-5 lg:px-6 lg:pb-4 lg:pt-3">

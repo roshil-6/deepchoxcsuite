@@ -29,6 +29,7 @@ import { SuiteIntelligenceNeuralFlow } from '@/components/SuiteIntelligenceNeura
 import type { IntelligenceNavRoom } from '@/lib/suiteIntelligenceFlowGraph';
 import { RESEARCH_STAFF } from '@/lib/researchStaffLabels';
 import { SuiteNavChips } from '@/components/SuiteNavChips';
+import { DeskChatThreadMount } from '@/components/DeskChatThreadSlotContext';
 
 const DESK_ORDER: { key: keyof AgentStaffSnapshot['desks']; title: string; subtitle: string }[] = [
     { key: 'ceo', title: RESEARCH_STAFF.ceo.navTitle, subtitle: RESEARCH_STAFF.ceo.navHint },
@@ -121,6 +122,7 @@ export function CsuiteIntelligenceGuide() {
         lastAiSyncTrace,
         systemLogs,
         markStaffFocusLineDone,
+        setSuiteIntelOpenDesk,
     } = useOffice();
 
     const snapshot = activeProject?.agentStaffSnapshot;
@@ -134,6 +136,14 @@ export function CsuiteIntelligenceGuide() {
     const [howAiOpen, setHowAiOpen] = useState(false);
 
     useEffect(() => setFlowPortalReady(true), []);
+
+    useEffect(() => {
+        setSuiteIntelOpenDesk(openDesk);
+    }, [openDesk, setSuiteIntelOpenDesk]);
+
+    useEffect(() => {
+        if (!snapshot?.desks) setOpenDesk(null);
+    }, [snapshot?.desks]);
 
     useEffect(() => {
         if (!flowStructureFullView) return;
@@ -259,10 +269,10 @@ export function CsuiteIntelligenceGuide() {
             {flowPortalReady && flowFullScreenLayer ? createPortal(flowFullScreenLayer, document.body) : null}
 
             <div className="w-full min-w-0 bg-[#131314]">
-                <div className="mx-auto max-w-3xl px-4 pt-6 pb-24 sm:px-5 lg:max-w-4xl">
+                <div className="mx-auto max-w-3xl px-4 pt-5 pb-16 sm:px-5 lg:max-w-4xl">
 
                     {/* ─── Page heading: single top rule + spacing for the whole page ─── */}
-                    <header className="mb-16 max-w-2xl border-b border-white/[0.07] pb-10">
+                    <header className="mb-10 max-w-2xl border-b border-white/[0.07] pb-6">
                         <SectionLabel>Intelligence Suite</SectionLabel>
                         <h1 className="mt-1.5 text-xl font-semibold tracking-tight text-zinc-100 sm:text-[22px]">
                             Staff network &amp; process
@@ -276,7 +286,7 @@ export function CsuiteIntelligenceGuide() {
                     </header>
 
                     {/* ─── Section 1: Live coordination map ─── */}
-                    <section className="mb-16" aria-labelledby="live-net">
+                    <section className="mb-10" aria-labelledby="live-net">
                         <SectionHeading
                             icon={GitBranch}
                             title="Live coordination map"
@@ -297,7 +307,7 @@ export function CsuiteIntelligenceGuide() {
                             pipeline below.
                         </p>
 
-                        <InsetPanel className="mt-6 space-y-0">
+                        <InsetPanel className="mt-4 space-y-0">
                             <div className="overflow-hidden rounded-lg border border-white/[0.06] bg-black/20">
                                 <button
                                     type="button"
@@ -378,7 +388,7 @@ export function CsuiteIntelligenceGuide() {
                                 </InsetPanel>
                             ) : null}
 
-                            <div className="flex flex-col gap-4 border-t border-white/[0.06] pt-5 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="flex flex-col gap-3 border-t border-white/[0.06] pt-4 sm:flex-row sm:items-center sm:justify-between">
                                 <button
                                     type="button"
                                     onClick={() => runAgentStaffSync()}
@@ -401,7 +411,7 @@ export function CsuiteIntelligenceGuide() {
 
                     {/* ─── Section 2: Role outputs ─── */}
                     {snapshot?.desks && (
-                        <section className="mb-16" aria-labelledby="desk-out">
+                        <section className="mb-10" aria-labelledby="desk-out">
                             <SectionHeading icon={Users} title="What each role prepared" id="desk-out" />
                             <p className="mt-3 text-[13px] text-zinc-500">
                                 Last sync <span className="text-zinc-400">{formatSyncTime(snapshot.at)}</span>. Briefs are merged into
@@ -449,23 +459,27 @@ export function CsuiteIntelligenceGuide() {
                                                     <p className="whitespace-pre-wrap text-[12px] leading-relaxed text-zinc-400">
                                                         {row.text || '—'}
                                                     </p>
+                                                    <DeskChatThreadMount className="mt-4 max-w-3xl" />
                                                 </div>
                                             ) : null}
                                         </div>
                                     );
                                 })}
                             </div>
+                            {openDesk === null ? (
+                                <DeskChatThreadMount className="mx-auto mt-6 max-w-3xl" />
+                            ) : null}
                         </section>
                     )}
 
                     {/* ─── Section 3: Focus + Trace ─── */}
-                    <section className="mb-16 grid gap-5 lg:grid-cols-2 lg:gap-6" aria-labelledby="focus-trace">
-                        <InsetPanel className="flex min-h-[12rem] flex-col">
+                    <section className="mb-10 grid gap-4 lg:grid-cols-2 lg:gap-5" aria-labelledby="focus-trace">
+                        <InsetPanel className="flex min-h-0 max-h-[min(38vh,21rem)] flex-col">
                             <SectionHeading icon={Sparkles} title="Focus today" id="focus-trace" />
                             <p className="mt-3 text-[12px] text-zinc-500">
                                 Check items as you go. Notes are saved to your journal.
                             </p>
-                            <div className="mt-4 min-h-0 flex-1">
+                            <div className="mt-3 min-h-0 flex-1 overflow-y-auto pr-0.5 custom-scrollbar">
                                 {focus.length > 0 ? (
                                     <StaffFocusChecklist
                                         lines={focus}
@@ -481,7 +495,7 @@ export function CsuiteIntelligenceGuide() {
                             </div>
                         </InsetPanel>
 
-                        <InsetPanel className="flex min-h-[12rem] flex-col">
+                        <InsetPanel className="flex min-h-0 max-h-[min(38vh,21rem)] flex-col">
                             <div className="flex items-start justify-between gap-2">
                                 <SectionHeading icon={ListOrdered} title="Process trace" />
                                 <button
@@ -493,9 +507,9 @@ export function CsuiteIntelligenceGuide() {
                                 </button>
                             </div>
                             <p className="mt-3 text-[12px] text-zinc-500">Steps from the last staff sync in this session.</p>
-                            <div className="mt-4 min-h-0 flex-1">
+                            <div className="mt-3 min-h-0 flex-1 overflow-hidden">
                                 {traceOpen && (lastAiSyncTrace?.length ?? 0) > 0 ? (
-                                    <ol className="custom-scrollbar max-h-[min(52vh,420px)] space-y-2 overflow-y-auto pr-1">
+                                    <ol className="custom-scrollbar max-h-[min(28vh,200px)] space-y-1.5 overflow-y-auto pr-1">
                                         {lastAiSyncTrace!.map((step, i) => (
                                             <li
                                                 key={step.id + i}
@@ -526,7 +540,7 @@ export function CsuiteIntelligenceGuide() {
                     </section>
 
                     {/* ─── Sync activity (anchor always present for section nav) ─── */}
-                    <section id="act-feed" className="mb-16 scroll-mt-28" aria-labelledby="act-feed-title">
+                    <section id="act-feed" className="mb-10 scroll-mt-28" aria-labelledby="act-feed-title">
                         <SectionHeading icon={Radio} title="Sync activity" id="act-feed-title" />
                         {syncLogs.length > 0 ? (
                             <InsetPanel variant="muted" className="mt-4 font-mono">
@@ -553,7 +567,7 @@ export function CsuiteIntelligenceGuide() {
                     </section>
 
                     {/* ─── Section 4: Data flow ─── */}
-                    <section className="mb-16" aria-labelledby="net-title">
+                    <section className="mb-10" aria-labelledby="net-title">
                         <SectionHeading icon={Layers} title="Data flow summary" id="net-title" />
                         <p className="mt-3 max-w-2xl text-[13px] leading-relaxed text-zinc-500">
                             The map above is this venture&apos;s wiring.{' '}
@@ -595,7 +609,7 @@ export function CsuiteIntelligenceGuide() {
                     </section>
 
                     {/* ─── Section 5: Decisions ─── */}
-                    <section className="mb-16">
+                    <section className="mb-10">
                         <SectionHeading icon={Shield} title="How decisions are shaped" id="decisions-shape" />
                         <InsetPanel className="mt-6">
                             <ul className="space-y-4">

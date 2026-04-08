@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useLayoutEffect, useMemo, useRef } from 'react';
 import { Bell, RefreshCw } from 'lucide-react';
 import { useOffice, type AgentRole } from '@/lib/OfficeContext';
 import { useHfRoleSync, type HfDeskRole } from '@/lib/useHfRoleSync';
 import { ModelAttribution } from '@/components/ModelAttribution';
+import { useDeskChatThreadSlotState } from '@/components/DeskChatThreadSlotContext';
 
 function hfRoleForRoom(room: string): HfDeskRole | null {
     const m: Record<string, HfDeskRole> = {
@@ -74,9 +75,18 @@ function DeskSyncCorner({ room }: { room: string }) {
     );
 }
 
-/** Desk workspace — chat is the app-level floating bar (see `page.tsx`), not an inline rail. */
+/** Hub view: registers bottom slot for floating thread. Block focus: inner `DeskChatThreadMount` under Details wins. */
 export function OperationalDesk({ children }: { children: React.ReactNode }) {
-    const { activeRoom, staffAttentionPending, dismissStaffAttention } = useOffice();
+    const { activeRoom, staffAttentionPending, dismissStaffAttention, deskSectionFocus } = useOffice();
+    const slotCtx = useDeskChatThreadSlotState();
+    const hubRef = useRef<HTMLDivElement>(null);
+
+    useLayoutEffect(() => {
+        const set = slotCtx?.setDeskThreadSlot;
+        if (!set || deskSectionFocus) return;
+        const el = hubRef.current;
+        if (el) set(el);
+    }, [deskSectionFocus, slotCtx?.setDeskThreadSlot]);
 
     const deskRole = activeRoom as AgentRole;
     const waiting = staffAttentionPending.filter((i) => i.role === deskRole);
@@ -109,6 +119,7 @@ export function OperationalDesk({ children }: { children: React.ReactNode }) {
                 </div>
             )}
             <div className="min-h-0 w-full flex-1">{children}</div>
+            <div ref={hubRef} className="mx-auto w-full max-w-3xl shrink-0 px-0" aria-hidden />
         </div>
     );
 }
