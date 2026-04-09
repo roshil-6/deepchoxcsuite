@@ -128,7 +128,7 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                 <header className="sticky top-0 z-30 bg-transparent">
                     <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-x-4 gap-y-3 px-5 py-3.5 sm:px-8 lg:px-12">
                         <span className="font-sans text-[12px] font-semibold tracking-[0.12em] text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.85)]">
-                            Virtual C-Suite
+                            AI-powered team for founders
                         </span>
                         <nav
                             className="flex flex-1 flex-wrap items-center justify-end gap-x-1 gap-y-2 sm:flex-initial sm:gap-x-2 md:gap-x-3 [text-shadow:0_2px_24px_rgba(0,0,0,0.85)]"
@@ -176,20 +176,20 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                         <div className="flex w-full justify-center px-1">
                             <div className="flex w-full max-w-xl flex-col items-center text-center sm:max-w-2xl lg:max-w-3xl">
                                 <p className="font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-brand-teal sm:text-[11px]">
-                                    Virtual C-Suite
+                                    AI-powered team for founders
                                 </p>
                                 <span
                                     className="mt-2 font-[family-name:var(--font-brand-display)] text-[clamp(2.5rem,8vw,4.5rem)] font-semibold leading-[1.02] tracking-[-0.02em] text-white [text-shadow:0_2px_40px_rgba(0,0,0,0.5),0_0_48px_rgba(255,255,255,0.04)]"
                                 >
-                                    DeepChox
+                                    DEEPCHOX
                                 </span>
                                 <span
                                     className="mt-3 block h-px w-12 bg-gradient-to-r from-white/30 to-transparent"
                                     aria-hidden
                                 />
                                 <p className="mt-4 max-w-[22rem] font-sans text-[14px] font-normal leading-[1.55] text-zinc-400 sm:max-w-[26rem] sm:text-[15px] sm:leading-relaxed">
-                                    One command center for your venture — strategy, finance, product, and market intel, with
-                                    AI at every desk.
+                                    AI roles act as specialized team members — strategy, finance, product, market, and GTM — coordinated on
+                                    one venture record for solo founders.
                                 </p>
                             </div>
                         </div>
@@ -255,7 +255,7 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                         >
                             {[
                                 { t: 'One venture memory', d: 'Single source of truth' },
-                                { t: 'Desk-native AI', d: 'CEO, finance, product, scout' },
+                                { t: 'Role-based teammates', d: 'Each desk is an AI team member' },
                                 { t: 'Models in-app', d: 'Groq · Kimi · SLM' },
                             ].map(({ t, d }) => (
                                 <span
@@ -283,9 +283,9 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
 
                 <footer className="mt-auto flex flex-col items-center gap-6 border-t border-zinc-800/80 px-5 py-12 text-center sm:flex-row sm:justify-between sm:px-12 sm:text-left">
                     <div className="[text-shadow:0_2px_20px_rgba(0,0,0,0.6)]">
-                        <span className="font-sans text-[17px] font-semibold tracking-tight text-zinc-100">DeepChox</span>
+                        <span className="font-sans text-[17px] font-semibold tracking-tight text-zinc-100">DEEPCHOX</span>
                         <span className="mt-2 block font-sans text-[14px] font-normal leading-relaxed text-zinc-500">
-                            C-Suite workspace · Virtual AI office
+                            AI-powered team for founders · One venture workspace
                         </span>
                     </div>
                     <Link

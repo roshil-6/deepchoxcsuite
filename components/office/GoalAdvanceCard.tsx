@@ -20,10 +20,13 @@ function riskBadge(risk: GoalProgress['risk']): string {
 export function GoalAdvanceCard({
     progress,
     suggestedFocus,
+    detailOnly = false,
     className = '',
 }: {
     progress: GoalProgress;
     suggestedFocus?: string;
+    /** When true, omit title row (used inside an expandable office brief panel). */
+    detailOnly?: boolean;
     className?: string;
 }) {
     const { switchRoom } = useOffice();
@@ -31,28 +34,34 @@ export function GoalAdvanceCard({
 
     return (
         <div
-            className={`dash-msg !p-3.5 sm:!p-4 bg-gradient-to-br from-zinc-800/55 to-zinc-900/40 ${className}`}
+            className={`${detailOnly ? 'rounded-xl bg-black/20 p-3 ring-1 ring-white/[0.06]' : 'dash-msg !p-3.5 sm:!p-4 bg-gradient-to-br from-zinc-800/55 to-zinc-900/40'} ${className}`}
         >
-            <div className="flex flex-wrap items-start justify-between gap-2">
-                <div className="flex min-w-0 items-start gap-2.5">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/[0.08] text-zinc-400">
-                        <Target className="h-4 w-4" aria-hidden />
+            {!detailOnly ? (
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="flex min-w-0 items-start gap-2.5">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/[0.08] text-zinc-400">
+                            <Target className="h-4 w-4" aria-hidden />
+                        </div>
+                        <div className="min-w-0">
+                            <h2 className="text-sm font-semibold tracking-tight text-zinc-100">Goal advancement</h2>
+                            <p className="mt-0.5 max-w-md text-[11px] leading-snug text-zinc-500">
+                                Auto score from phases, priorities, and kanban — refresh or revisit the dashboard to recalc.
+                            </p>
+                        </div>
                     </div>
-                    <div className="min-w-0">
-                        <h2 className="text-sm font-semibold tracking-tight text-zinc-100">Goal advancement</h2>
-                        <p className="mt-0.5 max-w-md text-[11px] leading-snug text-zinc-500">
-                            Auto score from phases, priorities, and kanban — refresh or revisit the dashboard to recalc.
-                        </p>
-                    </div>
+                    <span
+                        className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${riskBadge(progress.risk)}`}
+                    >
+                        Risk · {progress.risk}
+                    </span>
                 </div>
-                <span
-                    className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${riskBadge(progress.risk)}`}
-                >
-                    Risk · {progress.risk}
-                </span>
-            </div>
+            ) : (
+                <p className="mb-3 text-[11px] leading-snug text-zinc-500">
+                    Auto score from phases, priorities, and kanban — refresh or revisit the dashboard to recalc.
+                </p>
+            )}
 
-            <div className="mt-3">
+            <div className={detailOnly ? '' : 'mt-3'}>
                 <div className="flex items-end justify-between gap-2">
                     <span className="text-3xl font-semibold tabular-nums tracking-tight text-zinc-50">{pct}%</span>
                     <span className="mb-0.5 text-[10px] text-zinc-500">toward current horizon</span>

@@ -15,7 +15,7 @@ export function SuiteNavChips({
     return (
         <nav
             className={`flex flex-wrap items-center gap-1.5 ${dense ? 'gap-1' : 'gap-1.5'} ${className}`}
-            aria-label="Intelligence Suite sections"
+            aria-label="AI team network sections"
         >
             {SUITE_INTELLIGENCE_SECTIONS.map((s) => (
                 <button

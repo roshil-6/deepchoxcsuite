@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Agent System Prompts for DEEPCHOX
+ * Agent system prompts for DEEPCHOX — AI teammates per desk
  * These are the core instructions that define how each AI agent behaves
  */
 

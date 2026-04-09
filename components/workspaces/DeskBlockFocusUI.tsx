@@ -14,15 +14,13 @@ export function DeskMsgUser({ children }: { children: React.ReactNode }) {
     );
 }
 
-/** Assistant-side “details” surface */
+/** Assistant-side details — label only; body flows on the canvas (no inner “card” around block content). */
 export function DeskMsgAssistant({ children }: { children: React.ReactNode }) {
     return (
         <>
-            <div className="flex justify-start">
-                <div className="w-full max-w-[min(100%,42rem)] rounded-2xl rounded-bl-md border border-white/[0.08] bg-zinc-950/40 px-3.5 py-3 ring-1 ring-white/[0.04] sm:px-4 sm:py-4">
-                    <p className="mb-2 text-[9px] font-semibold uppercase tracking-[0.12em] text-zinc-500">Details</p>
-                    {children}
-                </div>
+            <div className="w-full max-w-[min(100%,42rem)]">
+                <p className="mb-2 text-[9px] font-semibold uppercase tracking-[0.12em] text-zinc-500">Details</p>
+                <div className="text-[13px] leading-relaxed text-zinc-300">{children}</div>
             </div>
             <DeskChatThreadMount className="mx-0 mt-4 max-w-[min(100%,42rem)] sm:mt-5" />
         </>

@@ -10,7 +10,7 @@ import { FUNDING_VALUE_KEYS, type FundingValueKey } from '@/lib/ventureFundingSt
 
 const KEYS_LINE = FUNDING_VALUE_KEYS.join(', ');
 
-const SYSTEM = `You are a CFO analyst for an early-stage venture. You receive structured context from across the C-suite: CEO strategy, CTO product and execution board, CSO market intel, CMO GTM, CFO prior notes, staff sync summaries, onboarding, directives, and founder focus.
+const SYSTEM = `You are a CFO analyst for an early-stage venture. You receive structured context from across the founder's AI team: strategy, product and execution board, market intel, GTM, finance notes, staff sync summaries, onboarding, directives, and founder focus.
 
 Your task: estimate each funding line item as a SHORT string (max 120 characters per field). Use currency symbols and ranges when helpful (e.g. "$200k–$400k", "~$15k/mo burn"). If there is no basis in the text for a line, use an empty string "". Do not invent precise dollar amounts with zero supporting context; prefer ranges, "TBD", or qualitative notes grounded in the input.
 

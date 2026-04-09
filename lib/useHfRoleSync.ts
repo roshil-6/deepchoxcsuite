@@ -2,12 +2,13 @@
 
 import { useState, useCallback } from 'react';
 
-const DEFAULT_CTX =
-    'Early stage startup, solo founder, building AI C-suite platform called DeepChox';
+/** Default blurb when no venture context is wired into the HF demo sync. */
+export const HF_DEFAULT_COMPANY_CONTEXT =
+    'Founder using DEEPCHOX — AI-powered team for founders; each desk acts as a specialized teammate.';
 
 export type HfDeskRole = 'ceo' | 'cfo' | 'cto' | 'cmo' | 'cso';
 
-export function useHfRoleSync(companyContext: string = DEFAULT_CTX) {
+export function useHfRoleSync(companyContext: string = HF_DEFAULT_COMPANY_CONTEXT) {
     const [syncing, setSyncing] = useState(false);
     const [syncResult, setSyncResult] = useState<string | null>(null);
     const [syncModel, setSyncModel] = useState<string | null>(null);

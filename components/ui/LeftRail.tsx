@@ -51,14 +51,14 @@ export function LeftRail({
         : 'relative z-30 flex h-full min-h-0 w-full min-w-0 shrink-0 flex-col overflow-hidden rounded-2xl border border-white/[0.1] bg-[var(--bg)]/95 shadow-[0_12px_40px_-8px_rgba(0,0,0,0.5)] backdrop-blur-xl lg:w-52';
 
     return (
-        <div role="navigation" aria-label="Research workspace navigation" className={surface}>
+        <div role="navigation" aria-label="DEEPCHOX workspace navigation" className={surface}>
             <div
                 className={`flex min-h-12 shrink-0 items-center justify-between gap-1 border-b border-[var(--border)] ${isFlush ? 'px-4 py-3' : 'px-2.5 py-2'}`}
             >
                 <div className="min-w-0 overflow-hidden">
-                    <p className="truncate text-[15px] font-medium tracking-tight text-[var(--text)]">DeepChox</p>
+                    <p className="truncate text-[15px] font-medium tracking-tight text-[var(--text)]">DEEPCHOX</p>
                     <p className={`truncate leading-tight text-[var(--muted)] ${isFlush ? 'mt-0.5 text-[11px]' : 'text-[10px]'}`}>
-                        {isFlush ? 'Workspace' : 'Research workspace'}
+                        {isFlush ? 'AI-powered team for founders' : 'AI team for founders'}
                     </p>
                 </div>
                 <StaffNotificationCenter />

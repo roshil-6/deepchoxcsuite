@@ -29,7 +29,7 @@ export function ChiefOfStaff() {
     const [messages, setMessages] = useState<Message[]>([{
         id: 'welcome',
         role: 'assistant',
-        content: "I am ready to coordinate the C-Suite. What is your high-level objective?",
+        content: "I am ready to coordinate your AI team. What is your high-level objective?",
         timestamp: Date.now()
     }]);
     const [inputValue, setInputValue] = useState('');

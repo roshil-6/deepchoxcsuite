@@ -143,7 +143,7 @@ export const SUITE_ROLE_FLOW_COLUMNS: SuiteRoleFlowColumn[] = [
                 detail: 'Saved finance artifacts & exports linked to this venture.',
             },
             {
-                label: 'Research relay assistant',
+                label: 'Personal Assistant',
                 room: 'personal_assistant',
                 detail: 'Chat-first updates and venture field merges with your confirmation.',
             },

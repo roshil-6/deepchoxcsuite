@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { formatStrategyForContext } from '@/lib/ventureReadableContext';
 import { useOffice } from '@/lib/OfficeContext';
 import { Bot, Youtube, Sparkles, Send, Copy, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { safeJsonParse } from '@/lib/utils';
@@ -47,11 +48,14 @@ export function DexoChat() {
 
         try {
             // Simplified Project Context for Dexo
-            const context = activeProject ? `
-                Current Context: 
+            const context = activeProject
+                ? `
+                Current Context:
                 Project: ${activeProject.name}
-                Mission: ${activeProject.strategy}
-            ` : "No active project context.";
+                Strategy (plain language, not raw JSON):
+                ${formatStrategyForContext(activeProject.strategy)}
+            `
+                : 'No active project context.';
 
             const response = await fetch('/api/chat', {
                 method: 'POST',

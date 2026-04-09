@@ -19,20 +19,24 @@ export function AmbientNotificationTray({
     items,
     className = '',
     maxVisible = 5,
+    detailOnly = false,
 }: {
     items: OfficeNotification[];
     className?: string;
     maxVisible?: number;
+    detailOnly?: boolean;
 }) {
     const show = items.slice(0, maxVisible);
     if (show.length === 0) return null;
 
     return (
-        <div className={`dash-msg bg-zinc-800/40 ${className}`}>
-            <div className="mb-4 flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.1em] text-zinc-500">
-                <Bell className="h-3.5 w-3.5 text-zinc-400" aria-hidden />
-                Office pulse
-            </div>
+        <div className={detailOnly ? `rounded-xl bg-black/20 p-3 ring-1 ring-white/[0.06] ${className}` : `dash-msg bg-zinc-800/40 ${className}`}>
+            {!detailOnly ? (
+                <div className="mb-4 flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.1em] text-zinc-500">
+                    <Bell className="h-3.5 w-3.5 text-zinc-400" aria-hidden />
+                    Office pulse
+                </div>
+            ) : null}
             <ul className="space-y-3">
                 {show.map((n, i) => (
                     <li

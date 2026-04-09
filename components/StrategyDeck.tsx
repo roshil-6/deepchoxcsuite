@@ -91,7 +91,7 @@ export function StrategyDeck() {
                                 </div>
                                 <div className="text-center">
                                     <p className="text-sm font-bold text-white uppercase tracking-[0.3em] mb-3">Intelligence Required</p>
-                                    <p className="text-[10px] text-gray-600 uppercase tracking-widest font-bold">Awaiting Strategic Directives from Central C-Suite</p>
+                                    <p className="text-[10px] text-gray-600 uppercase tracking-widest font-bold">Awaiting strategic directives from your AI team</p>
                                 </div>
                             </div>
                         )}

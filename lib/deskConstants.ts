@@ -37,3 +37,13 @@ export const EXEC_CHAT_MODEL_STORAGE_KEY = 'deepchox-exec-chat-model';
 export function isExecChatModelId(id: string): id is ExecChatModelId {
   return EXEC_CHAT_MODEL_OPTIONS.some((o) => o.id === id);
 }
+
+/** Bottom chat portals into `OperationalDesk` hub or a focused block; avoids a floating thread card on these rooms. */
+export const OPERATIONAL_CHAT_BAR_ROOMS: ReadonlySet<string> = new Set([
+  'ceo',
+  'pm',
+  'accountant',
+  'scout',
+  'forge',
+  'cmo',
+]);

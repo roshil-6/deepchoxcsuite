@@ -6,16 +6,16 @@ import { ArrowLeft, ChevronDown, Cpu, Users, Building2 } from 'lucide-react';
 
 const faqItems = [
     {
-        q: 'Which AI models power DeepChox?',
-        a: 'Everything is wired inside the product: a built-in **SLM** for lightweight, local-friendly tasks; **Kimi V2** where we route longer reasoning and document-style work; and **Groq** for fast, low-latency responses on supported flows. The app chooses the stack—you do not paste API keys in the UI.',
+        q: 'Which AI models power DEEPCHOX?',
+        a: 'Everything is wired inside the product: a built-in **SLM** for lightweight, local-friendly tasks; **Kimi V2** where we route longer reasoning and document-style work; and **Groq** for fast, low-latency responses on supported flows. DEEPCHOX chooses the stack—you do not paste API keys in the UI.',
     },
     {
         q: 'How is the virtual office meant to work for a solo founder?',
-        a: 'You operate as the single decision-maker. DeepChox gives you **desks** (strategy, product, finance, scout, and more) that behave like specialist staff: each desk produces artifacts and updates in one venture record, so you never split context across tools.',
+        a: 'You operate as the single decision-maker. DEEPCHOX gives you **desks** where **AI roles act as teammates** (strategy, product, finance, market, GTM, and more): each produces outputs in one venture record so context never splits across tools.',
     },
     {
         q: 'How do the agents behave?',
-        a: 'Agents are **role-bound**: they answer from their desk’s mandate—CEO narrative and phases, CFO numbers and constraints, PM delivery, scout market signal—not as generic chatbots. **Staff sync** can merge research into your venture so the office stays one coherent picture.',
+        a: 'Each AI teammate is **role-bound**: they answer from their desk’s mandate—strategy narrative, finance numbers, product delivery, market signal—not as a generic chatbot. **Staff sync** refreshes all desk briefs from the same snapshot and can merge updates into your venture.',
     },
     {
         q: 'What do I do first after entering the workspace?',
@@ -54,18 +54,17 @@ export default function GuidePage() {
                         <ArrowLeft className="h-4 w-4 shrink-0" aria-hidden />
                         Back to home
                     </Link>
-                    <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-600">DeepChox</span>
+                    <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-600">DEEPCHOX</span>
                 </div>
             </header>
 
             <main className="mx-auto max-w-3xl px-5 py-14 sm:px-8 sm:py-20">
                 <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500">Product guide</p>
                 <h1 className="mt-3 font-serif text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-                    How your virtual office works
+                    How your AI-powered team for founders works
                 </h1>
                 <p className="mt-4 text-[15px] leading-relaxed text-zinc-400">
-                    Built for a <strong className="font-medium text-zinc-300">solo founder</strong>: one venture, one surface, role-shaped AI that
-                    stays aligned with how you actually run the company.
+                    Built for <strong className="font-medium text-zinc-300">founders</strong>: one venture, one surface, AI teammates at each desk that stay aligned with how you run the company.
                 </p>
 
                 <section className="mt-16 border-t border-zinc-800 pt-14">
@@ -128,7 +127,7 @@ export default function GuidePage() {
                         <h2 className="text-lg font-semibold tracking-tight text-white">AI stack (in-app)</h2>
                     </div>
                     <p className="text-[14px] leading-relaxed text-zinc-500">
-                        DeepChox routes requests across a fixed, product-managed stack—<strong className="text-zinc-400">built-in SLM</strong> for
+                        DEEPCHOX routes requests across a fixed, product-managed stack—<strong className="text-zinc-400">built-in SLM</strong> for
                         efficient on-device-friendly tasks, <strong className="text-zinc-400">Kimi V2</strong> where we need strong long-context
                         reasoning, and <strong className="text-zinc-400">Groq</strong> for high-throughput, low-latency generation. Selection is
                         automatic from inside the app; there is no “bring your own key” step in the product experience.
@@ -177,7 +176,7 @@ export default function GuidePage() {
                         className="inline-flex items-center gap-2 text-[13px] font-medium text-zinc-400 transition hover:text-white"
                     >
                         <ArrowLeft className="h-4 w-4" aria-hidden />
-                        Return to DeepChox home
+                        Return to DEEPCHOX home
                     </Link>
                 </div>
             </main>

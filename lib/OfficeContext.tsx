@@ -25,6 +25,7 @@ import { Target, ClipboardList, Calculator, ScanSearch, LayoutDashboard, Bot, Ga
 import { RESEARCH_STAFF } from '@/lib/researchStaffLabels';
 import { emptyVentureShell } from '@/lib/minimalVenture';
 import { parseStrategy, serializeStrategy } from '@/lib/strategyDoc';
+import { formatProductPlanForContext, formatStrategyForContext } from '@/lib/ventureReadableContext';
 import {
   type ExecutiveThreadMessage,
   loadExecutiveThread,
@@ -218,7 +219,7 @@ const AGENT_PERSONAS: Record<AgentRole, AgentPersona> = {
     title: RESEARCH_STAFF.dexo.navTitle,
     execOutput: RESEARCH_STAFF.dexo.navHint,
     role: 'dexo',
-    style: 'Omniscient core',
+    style: 'Cross-desk intelligence',
     description: RESEARCH_STAFF.dexo.deskHelp,
     icon: <Bot className="w-5 h-5" />,
   },
@@ -862,19 +863,20 @@ export function getHuddlePrompt(role: AgentRole, project?: Project | null): stri
     try { return json ? JSON.parse(json) : {}; } catch { return {}; }
   };
 
-  const strategy = safeParse(project.strategy); // CEO
-  const product = safeParse(project.productPlan); // PM
   const finance = safeParse(project.budget); // Accountant
   const market = safeParse(project.marketInsights); // Scout
 
+  const ceoLine = formatStrategyForContext(project.strategy);
+  const pmLine = formatProductPlanForContext(project.productPlan);
+
   // "The Spine" - Shared Context
   const baseContext = `
-    You are a member of the DEEPCHOX C-Suite.
+    You are an AI teammate inside DEEPCHOX — you act as one specialist role on the founder's team (not a generic chatbot).
     Current Project: "${project.name}"
     
-    TEAM CONTEXT (What others are doing):
-    - CEO (decision + reasoning): ${strategy.vision || "Pending"}
-    - CTO roadmap: ${product.features ? "Drafting features..." : "Pending"}
+    TEAM CONTEXT (What others are doing — plain language, not raw JSON):
+    - CEO (strategy narrative + priorities / phases summary): ${ceoLine}
+    - CTO / PM (product intent, roadmap, recent actions): ${pmLine}
     - CFO (numbers / scenarios): ${finance.burnRate ? `Burn Rate: ${finance.burnRate}` : "Pending analysis"}
     - CSO intel: ${market.signals ? "Market signals detected." : "Scanning market..."}
     
@@ -914,6 +916,7 @@ export function getAgentSystemPrompt(role: AgentRole, project?: Project | null):
     - If information is still missing after using onboarding + context, ask focused clarifying questions.
     - Your goal is ACCURACY and STRATEGIC DEPTH.
     - Quote specific parts of the user's input/files to show you analyzed it.
+    - Venture "Context" blocks are plain-language summaries of strategy and product data. Answer in normal sentences and bullets — do not dump JSON or schema-style blobs to the user unless they explicitly ask for the raw file.
 
     ${onboardingBlock}
 
@@ -1047,9 +1050,9 @@ export function getPersonalAssistantSystemPrompt(project?: Project | null): stri
   const staffHint = project?.agentStaffSnapshot?.summary
     ? `\nLAST STAFF SYNC (from the multi-desk agent run):\n${project.agentStaffSnapshot.summary}\n`
     : '';
-  return `You are the user's dedicated Personal Assistant in DeepChox — you speak for their whole AI staff: one place to steer the startup and see what matters across roles.
+  return `You are the user's dedicated Personal Assistant in DEEPCHOX — you represent their AI-powered team for founders in one place: steer the venture and see what matters across roles.
 
-You are not a single officer; you coordinate like a chief of staff. The product can also run a **Sync** that lets AI staff research and merge updates into venture sections (market intel, finance notes, directives, kanban, calendar). You may reference that latest sync summary when present.
+You are not a single desk teammate; you coordinate like a chief of staff. The product can run **Staff sync** so all AI teammates refresh briefs from the same venture snapshot and merge updates (intel, finance notes, directives, kanban, calendar). Reference that latest sync summary when present.
 
 DISCOVERY / QUESTIONS:
 - Do not pepper the user with questions. At most one question per reply when something is truly missing; prefer inferring from context and prior messages.

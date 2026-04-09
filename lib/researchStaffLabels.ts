@@ -1,5 +1,5 @@
 /**
- * User-facing copy: every primary label starts with "Research" (full words, no role abbreviations).
+ * User-facing copy: each desk is an AI role acting as a team member (no “research” or “C-suite” framing).
  * Internal `AgentRole` keys are unchanged.
  */
 export type ResearchStaffRole =
@@ -13,72 +13,72 @@ export type ResearchStaffRole =
     | 'shark';
 
 export type ResearchStaffEntry = {
-    /** Lowercase fragment after venture name — always begins with "research" */
+    /** Lowercase fragment after venture name */
     line: string;
-    /** Sidebar / chat primary label — always begins with "Research" */
+    /** Sidebar / chat primary label */
     navTitle: string;
-    /** Secondary line — always begins with "Research" */
+    /** Secondary line */
     navHint: string;
-    /** Desk helper paragraph — always begins with "Research" */
+    /** Desk helper paragraph */
     deskHelp: string;
 };
 
 export const RESEARCH_STAFF: Record<ResearchStaffRole, ResearchStaffEntry> = {
     ceo: {
-        line: 'research strategy and direction',
-        navTitle: 'Research strategy and direction',
-        navHint: 'Research into narrative, phases, and priorities',
+        line: 'strategy & direction',
+        navTitle: 'Strategy & direction',
+        navHint: 'AI teammate — narrative, phases, priorities',
         deskHelp:
-            'Research that helps you sharpen what you are building toward and how you explain it — narrative, phases, and decisions stay in one venture record.',
+            'Your AI teammate acts as strategy lead — sharpen what you are building toward and how you explain it, in one venture record.',
     },
     accountant: {
-        line: 'research fund intelligence',
-        navTitle: 'Research fund intelligence',
-        navHint: 'Research into runway, funding, and scenarios',
+        line: 'finance & runway',
+        navTitle: 'Finance & runway',
+        navHint: 'AI teammate — funding, scenarios, trade-offs',
         deskHelp:
-            'Research that helps you see capital, runway, and trade-offs together — ledger, estimates, and topics in one calm view.',
+            'Your AI teammate acts as finance lead — runway, capital, and trade-offs in one calm view.',
     },
     pm: {
-        line: 'research product and delivery',
-        navTitle: 'Research product and delivery',
-        navHint: 'Research into backlog, roadmap, and documents',
+        line: 'product & delivery',
+        navTitle: 'Product & delivery',
+        navHint: 'AI teammate — roadmap, execution board, shipping',
         deskHelp:
-            'Research that helps you ship work from backlog through done, with roadmap and planning tied to the same venture.',
+            'Your AI teammate acts as product & delivery lead — backlog through done, tied to the same venture.',
     },
     cmo: {
-        line: 'research growth and narrative',
-        navTitle: 'Research growth and narrative',
-        navHint: 'Research into message, story, and pitch',
+        line: 'growth & narrative',
+        navTitle: 'Growth & narrative',
+        navHint: 'AI teammate — GTM, messaging, pitch',
         deskHelp:
-            'Research that helps you turn venture information into a story you can rehearse or export without extra ceremony.',
+            'Your AI teammate acts as growth lead — turn venture truth into a story you can rehearse or export.',
     },
     scout: {
-        line: 'research market and landscape',
-        navTitle: 'Research market and landscape',
-        navHint: 'Research into public signals and your brief',
+        line: 'market & landscape',
+        navTitle: 'Market & landscape',
+        navHint: 'AI teammate — signals, competitors, positioning',
         deskHelp:
-            'Research that helps you use public headlines as starting points — verify sources and record what you believe in the brief.',
+            'Your AI teammate acts as market lead — use public signals as inputs; verify and record what you believe.',
     },
     chief_of_staff: {
-        line: 'research coordination',
-        navTitle: 'Research coordination',
-        navHint: 'Research into routing threads and handoffs',
+        line: 'coordination',
+        navTitle: 'Team coordination',
+        navHint: 'AI teammate — routing and handoffs',
         deskHelp:
-            'Research that helps you move work across areas without losing context — threads and routing stay with your venture.',
+            'Your AI teammate coordinates across desks so threads and context stay with your venture.',
     },
     dexo: {
-        line: 'research across desks',
-        navTitle: 'Research across desks',
-        navHint: 'Research questions that span the venture',
+        line: 'cross-desk intelligence',
+        navTitle: 'Cross-desk intelligence',
+        navHint: 'AI teammate — reads the whole venture',
         deskHelp:
-            'Research that helps when a question does not fit a single area — reading across your venture in one place.',
+            'Your AI teammate spans every desk when a question does not fit a single lane.',
     },
     shark: {
-        line: 'research capital diligence',
-        navTitle: 'Research capital diligence',
-        navHint: 'Research rehearsal for investor scrutiny',
+        line: 'investor diligence',
+        navTitle: 'Investor diligence',
+        navHint: 'AI teammate — VC-style stress test',
         deskHelp:
-            'Research that helps you stress-test assumptions before real investor conversations — adversarial and venture-scoped.',
+            'Your AI teammate stress-tests assumptions before real investor conversations — adversarial and venture-scoped.',
     },
 };
 
@@ -87,7 +87,7 @@ function capitalizeSentence(s: string): string {
     return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-/** Main desk headline: `{venture} · research …` or sentence-cased line when no venture. */
+/** Main desk headline: `{venture} · …` or sentence-cased line when no venture. */
 export function deskHeadline(ventureName: string | null | undefined, role: ResearchStaffRole): string {
     const { line } = RESEARCH_STAFF[role];
     const v = ventureName?.trim();
@@ -107,8 +107,8 @@ export function staffTooltipLine(role: ResearchStaffRole): string {
 }
 
 /**
- * Left rail / compact nav: drops the clause after ` and ` (e.g. “Research strategy and direction” → “Research strategy”).
- * Strings without ` and ` stay unchanged.
+ * Left rail / compact nav: drops the clause after ` and ` (e.g. “X and Y” → “X”).
+ * Titles use `&` so labels stay intact unless they contain “ and ”.
  */
 export function sidebarPrimaryLabel(full: string): string {
     const i = full.indexOf(' and ');

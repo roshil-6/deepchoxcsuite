@@ -17,8 +17,10 @@ import {
     LayoutGrid,
     LayoutDashboard,
     ChevronUp,
-    ChevronDown,
     Compass,
+    SunMedium,
+    Bell,
+    CalendarRange,
 } from 'lucide-react';
 import { useOffice } from '@/lib/OfficeContext';
 import { parseStrategy } from '@/lib/strategyDoc';
@@ -44,6 +46,7 @@ import { AmbientNotificationTray } from '@/components/office/AmbientNotification
 import { WeeklyReviewCard } from '@/components/office/WeeklyReviewCard';
 import { GoalAdvanceCard } from '@/components/office/GoalAdvanceCard';
 import { StaffFocusChecklist } from '@/components/office/StaffFocusChecklist';
+import { OfficeBriefPanel } from '@/components/office/OfficeBriefPanel';
 
 /**
  * Recharts Tooltip defaults omit cursor.fill, so the hover rectangle uses a light gray/white band
@@ -104,6 +107,61 @@ const DASH = {
     activity: ['#22d3ee', '#a78bfa', '#34d399', '#fbbf24', '#fb7185', '#818cf8', '#2dd4bf', '#f472b6', '#c084fc'],
 } as const;
 
+/** Tinted outlines for dashboard “message” blocks — each section reads as a generated insight, not a collapsible drawer. */
+const DASH_OUTLINE = {
+    goal: 'border-teal-500/35 bg-gradient-to-br from-teal-500/[0.07] to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
+    staff: 'border-violet-500/35 bg-gradient-to-br from-violet-500/[0.08] to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
+    focus: 'border-amber-500/40 bg-gradient-to-br from-amber-950/35 to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
+    snapshot: 'border-cyan-500/35 bg-gradient-to-br from-cyan-500/[0.07] to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
+    signal: 'border-sky-500/35 bg-gradient-to-br from-sky-500/[0.07] to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
+    desks: 'border-fuchsia-500/30 bg-gradient-to-br from-fuchsia-500/[0.06] to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
+    next: 'border-emerald-500/35 bg-gradient-to-br from-emerald-500/[0.07] to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
+    portfolio: 'border-zinc-500/30 bg-zinc-900/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
+} as const;
+
+type DashOutlineKey = keyof typeof DASH_OUTLINE;
+
+function DashMessageSection({
+    id,
+    outline,
+    icon,
+    eyebrow,
+    title,
+    subtitle,
+    children,
+    className = '',
+}: {
+    id?: string;
+    outline: DashOutlineKey;
+    icon: React.ReactNode;
+    eyebrow?: string;
+    title: string;
+    subtitle?: string;
+    children: React.ReactNode;
+    className?: string;
+}) {
+    return (
+        <section
+            id={id}
+            className={`scroll-mt-6 rounded-2xl border px-4 py-4 sm:px-5 sm:py-5 ${DASH_OUTLINE[outline]} ${className}`}
+        >
+            <header className="mb-4 flex gap-3">
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-black/20 ring-1 ring-white/[0.08]">
+                    {icon}
+                </div>
+                <div className="min-w-0 flex-1">
+                    {eyebrow ? (
+                        <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-zinc-500">{eyebrow}</p>
+                    ) : null}
+                    <h2 className={`text-sm font-semibold tracking-tight text-brand-text ${eyebrow ? 'mt-1' : ''}`}>{title}</h2>
+                    {subtitle ? <p className="mt-1 text-[11px] leading-snug text-brand-muted">{subtitle}</p> : null}
+                </div>
+            </header>
+            <div className="text-[13px] leading-relaxed text-brand-text/95">{children}</div>
+        </section>
+    );
+}
+
 export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     const {
         activeRoom,
@@ -140,11 +198,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     useEffect(() => {
         if (!dashboardExpanded || !pendingScrollId) return;
         const t = window.setTimeout(() => {
-            const el = document.getElementById(pendingScrollId);
-            if (el instanceof HTMLDetailsElement) {
-                el.open = true;
-            }
-            el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            document.getElementById(pendingScrollId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             setPendingScrollId(null);
         }, 200);
         return () => clearTimeout(t);
@@ -524,26 +578,29 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         )}
                     </section>
 
-                    <details className="dash-msg group mt-8 border border-white/[0.06] bg-white/[0.02]">
-                        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5 text-left [&::-webkit-details-marker]:hidden">
-                            <div>
-                                <h3 className="text-sm font-medium text-brand-text">Research desks</h3>
-                                <p className="mt-0.5 text-[11px] text-brand-muted">Five areas — expand to see what each saves</p>
-                            </div>
-                            <ChevronDown className="h-4 w-4 shrink-0 text-brand-muted transition-transform group-open:rotate-180" aria-hidden />
-                        </summary>
-                        <ul className="grid gap-2 border-t border-white/[0.06] px-4 py-4 sm:grid-cols-2">
+                    <DashMessageSection
+                        outline="portfolio"
+                        icon={<LayoutGrid className="h-4 w-4 text-zinc-400" aria-hidden />}
+                        eyebrow="Portfolio"
+                        title="Research desks"
+                        subtitle="What each area saves in your venture"
+                        className="mt-8"
+                    >
+                        <ul className="grid gap-2 sm:grid-cols-2">
                             {(['ceo', 'accountant', 'pm', 'cmo', 'scout'] as const satisfies readonly ResearchStaffRole[]).map((role) => {
                                 const row = RESEARCH_STAFF[role];
                                 return (
-                                    <li key={role} className="flex flex-col gap-0.5 rounded-lg bg-white/[0.04] px-3 py-2.5">
+                                    <li
+                                        key={role}
+                                        className="flex flex-col gap-0.5 rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2.5 ring-1 ring-white/[0.04]"
+                                    >
                                         <span className="text-[11px] font-medium leading-snug text-brand-text">{row.navTitle}</span>
                                         <span className="min-w-0 text-[10px] leading-snug text-brand-muted">{row.navHint}</span>
                                     </li>
                                 );
                             })}
                         </ul>
-                    </details>
+                    </DashMessageSection>
                 </div>
             </div>
         );
@@ -563,8 +620,8 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 </div>
                                 <h1 className="text-2xl font-semibold tracking-tight text-brand-text sm:text-3xl">{activeProject.name}</h1>
                                 <p className="mt-2 max-w-xl text-[13px] leading-snug text-brand-muted">
-                                    Expand sections as you need them. <span className="text-brand-text/85">Dashboard</span> holds charts and
-                                    staff output; chat stays at the bottom.
+                                    Each block below reads like a brief — color outlines group charts and staff output. Open{' '}
+                                    <span className="text-brand-text/85">Dashboard</span> for the full canvas; chat stays at the bottom.
                                 </p>
                             </div>
                             <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
@@ -598,98 +655,140 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             </div>
                         </header>
 
-                        <details
-                            id="exec-goal-advancement"
-                            className="dash-msg scroll-mt-6 border border-white/[0.08] bg-white/[0.03] group open:bg-white/[0.04]"
-                        >
-                            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5 text-left [&::-webkit-details-marker]:hidden">
-                                <div className="flex min-w-0 items-start gap-3">
-                                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/[0.06] text-brand-muted">
-                                        <Target className="h-4 w-4" aria-hidden />
-                                    </div>
-                                    <div className="min-w-0">
-                                        <h2 className="text-sm font-semibold text-brand-text">Goal advancement</h2>
-                                        <p className="mt-0.5 text-[11px] leading-snug text-brand-muted">
-                                            {livingOffice
-                                                ? `${livingOffice.progress.percentage}% toward horizon · risk ${livingOffice.progress.risk} · expand for brief & cards`
-                                                : 'Collapsed — expand to load office metrics, brief, and reviews'}
-                                        </p>
-                                    </div>
-                                </div>
-                                <ChevronDown className="h-4 w-4 shrink-0 text-brand-muted transition-transform group-open:rotate-180" aria-hidden />
-                            </summary>
-                            <div className="space-y-5 border-t border-white/[0.06] px-4 pb-4 pt-4">
-                                {livingOffice ? (
-                                    <>
+                        <section id="exec-goal-advancement" className="scroll-mt-6 space-y-3" aria-label="Office brief">
+                            <header className="pb-0.5">
+                                <p className="dash-section-label mb-1">Office brief</p>
+                                <p className="max-w-xl text-[12px] leading-snug text-brand-muted">
+                                    Each topic is its own outlined card — tap the row to expand the full brief.
+                                </p>
+                            </header>
+                            {livingOffice ? (
+                                <div className="flex flex-col gap-3">
+                                    <OfficeBriefPanel
+                                        tone="teal"
+                                        icon={<Target className="h-4 w-4 text-teal-300/90" aria-hidden />}
+                                        title="Goal advancement"
+                                        teaser={`${livingOffice.progress.percentage}% toward horizon · risk ${livingOffice.progress.risk} · score, horizon, and where to update`}
+                                    >
                                         <GoalAdvanceCard
+                                            detailOnly
                                             progress={livingOffice.progress}
                                             suggestedFocus={livingOffice.brief.suggestedFocus}
                                         />
-                                        <section aria-label="Daily office" className="flex flex-col gap-5">
-                                            <MorningBriefCard brief={livingOffice.brief} />
-                                            {livingOffice.suggestedActions.length > 0 ? (
-                                                <details className="dash-msg border border-white/[0.08] bg-white/[0.03] group/inner open:bg-white/[0.04]">
-                                                    <summary className="flex cursor-pointer list-none items-center justify-between gap-2 py-2.5 pl-3 pr-3 text-left [&::-webkit-details-marker]:hidden">
-                                                        <span className="flex items-center gap-2 text-xs font-medium text-brand-text">
-                                                            <Compass className="h-3.5 w-3.5 text-zinc-400" aria-hidden />
-                                                            Leadership hints
-                                                            <span className="font-normal text-brand-muted">
-                                                                ({livingOffice.suggestedActions.length})
-                                                            </span>
-                                                        </span>
-                                                        <ChevronDown className="h-4 w-4 shrink-0 text-brand-muted transition-transform group-open/inner:rotate-180" aria-hidden />
-                                                    </summary>
-                                                    <div className="border-t border-white/[0.05] px-3 pb-3 pt-2">
-                                                        <p className="mb-2 text-[10px] leading-snug text-brand-muted">
-                                                            Heuristic nudges — use Personal Assistant to turn into a plan.
-                                                        </p>
-                                                        <ul className="space-y-2">
-                                                            {livingOffice.suggestedActions.map((a, idx) => (
-                                                                <li
-                                                                    key={`${a.intent}-${idx}`}
-                                                                    className="rounded-lg border border-white/[0.05] bg-black/15 px-2.5 py-2"
-                                                                >
-                                                                    <p className="text-[9px] font-medium uppercase tracking-wide text-zinc-500">
-                                                                        {a.intent.replace(/_/g, ' ')} · {a.targetDesks.join(', ')}
-                                                                    </p>
-                                                                    <p className="mt-0.5 text-[12px] leading-snug text-brand-text/95">{a.summary}</p>
-                                                                    {a.proposedSteps.length > 0 ? (
-                                                                        <ul className="mt-1.5 space-y-0.5 border-t border-white/[0.04] pt-1.5 text-[10px] leading-snug text-brand-muted">
-                                                                            {a.proposedSteps.map((s, i) => (
-                                                                                <li
-                                                                                    key={i}
-                                                                                    className="flex gap-1.5 text-[10px] leading-snug text-brand-muted"
-                                                                                >
-                                                                                    <span className="shrink-0 text-brand-muted/45">·</span>
-                                                                                    <span>{s}</span>
-                                                                                </li>
-                                                                            ))}
-                                                                        </ul>
-                                                                    ) : null}
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    </div>
-                                                </details>
-                                            ) : null}
-                                            <AmbientNotificationTray items={livingOffice.notifications} />
-                                            <WeeklyReviewCard review={livingOffice.weeklyReview} />
-                                        </section>
-                                    </>
-                                ) : (
-                                    <div className="rounded-xl border border-dashed border-white/[0.08] px-5 py-8 text-center">
-                                        <p className="text-sm text-brand-muted">Office metrics have not loaded yet for this venture.</p>
-                                        <button
-                                            type="button"
-                                            onClick={() => void refreshLivingOffice()}
-                                            className="mt-4 inline-flex items-center justify-center rounded-full bg-white/[0.08] px-4 py-2 text-xs font-medium text-brand-text transition hover:bg-white/[0.12]"
+                                    </OfficeBriefPanel>
+
+                                    {(() => {
+                                        const b = livingOffice.brief;
+                                        if (!b) return null;
+                                        const hasMorning =
+                                            Boolean(b.greeting?.trim()) ||
+                                            b.priorities.length > 0 ||
+                                            b.criticalAlerts.length > 0 ||
+                                            Boolean(b.suggestedFocus?.trim());
+                                        if (!hasMorning) return null;
+                                        const teaserLine =
+                                            b.greeting?.trim() ||
+                                            b.suggestedFocus?.trim() ||
+                                            b.priorities[0] ||
+                                            (b.criticalAlerts[0] ?? 'Priorities and alerts on the desk');
+                                        return (
+                                            <OfficeBriefPanel
+                                                tone="amber"
+                                                icon={<SunMedium className="h-4 w-4 text-amber-200/90" aria-hidden />}
+                                                eyebrow="Today"
+                                                title="Morning brief"
+                                                teaser={<span className="line-clamp-2">{teaserLine}</span>}
+                                            >
+                                                <MorningBriefCard brief={b} detailOnly />
+                                            </OfficeBriefPanel>
+                                        );
+                                    })()}
+
+                                    {livingOffice.suggestedActions.length > 0 ? (
+                                        <OfficeBriefPanel
+                                            tone="sky"
+                                            icon={<Compass className="h-4 w-4 text-sky-300/90" aria-hidden />}
+                                            title="Leadership hints"
+                                            teaser={`${livingOffice.suggestedActions.length} heuristic nudges — open for summary, desks, and steps`}
                                         >
-                                            Load goal advancement
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        </details>
+                                            <div className="rounded-xl border border-sky-500/20 bg-sky-500/[0.04] p-3 sm:p-4 ring-1 ring-white/[0.05]">
+                                                <p className="text-[10px] leading-snug text-brand-muted">
+                                                    Use Personal Assistant to turn these into a concrete plan.
+                                                </p>
+                                                <ul className="mt-3 space-y-2">
+                                                    {livingOffice.suggestedActions.map((a, idx) => (
+                                                        <li
+                                                            key={`${a.intent}-${idx}`}
+                                                            className="rounded-lg border border-white/[0.08] bg-black/25 px-2.5 py-2"
+                                                        >
+                                                            <p className="text-[9px] font-medium uppercase tracking-wide text-zinc-500">
+                                                                {a.intent.replace(/_/g, ' ')} · {a.targetDesks.join(', ')}
+                                                            </p>
+                                                            <p className="mt-0.5 text-[12px] leading-snug text-brand-text/95">{a.summary}</p>
+                                                            {a.proposedSteps.length > 0 ? (
+                                                                <ul className="mt-1.5 space-y-0.5 border-t border-white/[0.04] pt-1.5 text-[10px] leading-snug text-brand-muted">
+                                                                    {a.proposedSteps.map((s, i) => (
+                                                                        <li
+                                                                            key={i}
+                                                                            className="flex gap-1.5 text-[10px] leading-snug text-brand-muted"
+                                                                        >
+                                                                            <span className="shrink-0 text-brand-muted/45">·</span>
+                                                                            <span>{s}</span>
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            ) : null}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        </OfficeBriefPanel>
+                                    ) : null}
+
+                                    {livingOffice.notifications.length > 0 ? (
+                                        <OfficeBriefPanel
+                                            tone="zinc"
+                                            icon={<Bell className="h-4 w-4 text-zinc-400" aria-hidden />}
+                                            title="Office pulse"
+                                            teaser={
+                                                <span className="line-clamp-2">
+                                                    {livingOffice.notifications[0].desk} · {livingOffice.notifications[0].message}
+                                                </span>
+                                            }
+                                        >
+                                            <AmbientNotificationTray
+                                                items={livingOffice.notifications}
+                                                detailOnly
+                                                maxVisible={8}
+                                            />
+                                        </OfficeBriefPanel>
+                                    ) : null}
+
+                                    {livingOffice.weeklyReview ? (
+                                        <OfficeBriefPanel
+                                            tone="emerald"
+                                            icon={<CalendarRange className="h-4 w-4 text-emerald-300/80" aria-hidden />}
+                                            eyebrow="Weekly"
+                                            title="Weekly office review"
+                                            teaser={`${livingOffice.weeklyReview.completedTasks} tasks (7d) · intel ${livingOffice.weeklyReview.growthChange > 0 ? '+' : ''}${livingOffice.weeklyReview.growthChange} · churn ${livingOffice.weeklyReview.churnRisk}`}
+                                        >
+                                            <WeeklyReviewCard review={livingOffice.weeklyReview} detailOnly />
+                                        </OfficeBriefPanel>
+                                    ) : null}
+                                </div>
+                            ) : (
+                                <div className="rounded-2xl border border-dashed border-teal-500/25 bg-teal-500/[0.04] px-5 py-8 text-center">
+                                    <p className="text-sm text-brand-muted">Office metrics have not loaded yet for this venture.</p>
+                                    <button
+                                        type="button"
+                                        onClick={() => void refreshLivingOffice()}
+                                        className="mt-4 inline-flex items-center justify-center rounded-full bg-white/[0.08] px-4 py-2 text-xs font-medium text-brand-text transition hover:bg-white/[0.12]"
+                                    >
+                                        Load goal advancement
+                                    </button>
+                                </div>
+                            )}
+                        </section>
 
                         {activeProject.agentStaffSnapshot && (
                             <button
@@ -711,8 +810,8 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 Surfaces
                             </h2>
                             <p className="mb-3 text-[12px] leading-snug text-brand-muted">
-                                Tap a shortcut — hover for a short hint. <span className="text-brand-text/80">Dashboard</span> opens a panel of
-                                collapsible sections.
+                                Tap a shortcut — hover for a short hint. <span className="text-brand-text/80">Dashboard</span> opens the insight
+                                canvas (outlined message-style blocks).
                             </p>
                             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
                                 <button
@@ -725,7 +824,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         dashboardExpanded ? 'bg-zinc-800/55 text-brand-text' : 'bg-white/[0.04] text-brand-text hover:bg-white/[0.07]'
                                     }`}
                                     aria-expanded={dashboardExpanded}
-                                    title="Snapshot, score, charts, staff output, activity, desks — each section expands on demand"
+                                    title="Snapshot, score, charts, staff output, activity, desks — outlined insight blocks"
                                 >
                                     <LayoutDashboard className="h-4 w-4 shrink-0 text-brand-muted" aria-hidden />
                                     <span className="min-w-0 truncate">Dashboard</span>
@@ -734,12 +833,10 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        const el = document.getElementById('exec-goal-advancement');
-                                        if (el instanceof HTMLDetailsElement) el.open = true;
-                                        el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                        document.getElementById('exec-goal-advancement')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                                     }}
                                     className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.04] px-3 py-2.5 text-left text-xs font-semibold text-brand-text transition hover:bg-white/[0.07]"
-                                    title="Scroll to goal advancement — expand the row for brief and office cards"
+                                    title="Scroll to goal advancement brief"
                                 >
                                     <Target className="h-4 w-4 shrink-0 text-brand-muted" aria-hidden />
                                     <span className="min-w-0 truncate">Goals</span>
@@ -807,99 +904,75 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 </div>
                                 <div className="space-y-2 px-3 py-4 sm:px-4 sm:py-5">
                         {activeProject.agentStaffSnapshot && (
-                            <details
+                            <DashMessageSection
                                 id="dash-staff-snapshot"
-                                className="group/staff dash-msg border border-white/[0.08] bg-white/[0.03] open:bg-white/[0.04]"
+                                outline="staff"
+                                icon={<Sparkles className="h-4 w-4 text-violet-300/90" aria-hidden />}
+                                eyebrow="Staff sync"
+                                title="Latest AI staff research"
+                                subtitle={new Date(activeProject.agentStaffSnapshot.at).toLocaleString()}
                             >
-                                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
-                                    <div className="flex min-w-0 flex-wrap items-center gap-2">
-                                        <Sparkles className="h-4 w-4 shrink-0 text-zinc-400" aria-hidden />
-                                        <span className="text-sm font-medium text-brand-text">Latest AI staff research</span>
-                                        <span className="font-mono text-[10px] text-brand-muted">
-                                            {new Date(activeProject.agentStaffSnapshot.at).toLocaleString()}
-                                        </span>
-                                    </div>
-                                    <ChevronDown
-                                        className="h-4 w-4 shrink-0 text-brand-muted transition-transform group-open/staff:rotate-180"
-                                        aria-hidden
-                                    />
-                                </summary>
-                                <div className="border-t border-white/[0.06] px-4 pb-4 pt-4">
-                                    <p className="text-sm leading-relaxed text-brand-text">{activeProject.agentStaffSnapshot.summary}</p>
-                                    <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:flex-wrap">
-                                        {(
-                                            [
-                                                ['Research strategy and direction', activeProject.agentStaffSnapshot.desks.ceo],
-                                                ['Research product and delivery', activeProject.agentStaffSnapshot.desks.pm],
-                                                ['Research fund intelligence', activeProject.agentStaffSnapshot.desks.accountant],
-                                                ['Research market and landscape', activeProject.agentStaffSnapshot.desks.scout],
-                                                ['Research growth and narrative', activeProject.agentStaffSnapshot.desks.cmo],
-                                            ] as const
-                                        ).map(([label, text]) =>
-                                            text?.trim() ? (
-                                                <div key={label} className="min-w-0 flex-1 rounded-2xl bg-white/[0.04] p-4 sm:min-w-[12rem]">
-                                                    <p className="text-[10px] font-medium text-brand-muted/90">{label}</p>
-                                                    <p className="mt-2 max-h-28 overflow-y-auto text-[11px] leading-snug text-brand-muted custom-scrollbar whitespace-pre-wrap">
-                                                        {text}
-                                                    </p>
-                                                </div>
-                                            ) : null
-                                        )}
-                                    </div>
+                                <p className="rounded-xl bg-black/15 px-3 py-2.5 text-sm leading-relaxed text-brand-text/95 ring-1 ring-white/[0.06]">
+                                    {activeProject.agentStaffSnapshot.summary}
+                                </p>
+                                <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                                    {(
+                                        [
+                                            ['Research strategy and direction', activeProject.agentStaffSnapshot.desks.ceo, DASH.desk.ceo],
+                                            ['Research product and delivery', activeProject.agentStaffSnapshot.desks.pm, DASH.desk.pm],
+                                            ['Research fund intelligence', activeProject.agentStaffSnapshot.desks.accountant, DASH.desk.finance],
+                                            ['Research market and landscape', activeProject.agentStaffSnapshot.desks.scout, DASH.desk.scout],
+                                            ['Research growth and narrative', activeProject.agentStaffSnapshot.desks.cmo, '#f472b6'],
+                                        ] as const
+                                    ).map(([label, text, color]) =>
+                                        text?.trim() ? (
+                                            <div
+                                                key={label}
+                                                className="min-w-0 flex-1 rounded-xl border border-white/[0.08] bg-black/20 p-3.5 sm:min-w-[11rem]"
+                                                style={{ borderLeftWidth: 3, borderLeftColor: color }}
+                                            >
+                                                <p className="text-[10px] font-medium text-brand-muted/90">{label}</p>
+                                                <p className="mt-2 text-[11px] leading-snug text-brand-text/90 whitespace-pre-wrap">
+                                                    {text}
+                                                </p>
+                                            </div>
+                                        ) : null
+                                    )}
                                 </div>
-                            </details>
+                            </DashMessageSection>
                         )}
 
                         {activeProject.staffFocusToday && activeProject.staffFocusToday.length > 0 && (
-                            <details
+                            <DashMessageSection
                                 id="dash-focus-today"
-                                className="group/focus dash-msg border border-amber-900/30 bg-amber-950/15 open:bg-amber-950/20"
+                                outline="focus"
+                                icon={<Zap className="h-4 w-4 text-amber-300/90" aria-hidden />}
+                                eyebrow="Today"
+                                title="Focus from staff sync"
+                                subtitle={`${activeProject.staffFocusToday.length} line${activeProject.staffFocusToday.length === 1 ? '' : 's'} · check off below`}
                             >
-                                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
-                                    <div>
-                                        <span className="text-sm font-medium text-amber-100/95">Today&apos;s focus</span>
-                                        <span className="mt-0.5 block text-[10px] text-amber-100/60">
-                                            From staff sync · {activeProject.staffFocusToday.length} line
-                                            {activeProject.staffFocusToday.length === 1 ? '' : 's'}
-                                        </span>
-                                    </div>
-                                    <ChevronDown
-                                        className="h-4 w-4 shrink-0 text-amber-200/70 transition-transform group-open/focus:rotate-180"
-                                        aria-hidden
-                                    />
-                                </summary>
-                                <div className="border-t border-amber-900/25 px-4 pb-4 pt-3">
-                                    <p className="mb-2.5 text-[10px] leading-snug text-amber-100/65">
-                                        Done / + note → saved to journal for Assistant &amp; next sync.
-                                    </p>
-                                    <StaffFocusChecklist
-                                        lines={activeProject.staffFocusToday}
-                                        completedLines={activeProject.staffFocusCompletedLines || []}
-                                        onMarkDone={(line, note) => markStaffFocusLineDone(line, note)}
-                                    />
-                                </div>
-                            </details>
+                                <p className="mb-3 text-[10px] leading-snug text-amber-100/70">
+                                    Done / + note → saved to journal for Assistant &amp; next sync.
+                                </p>
+                                <StaffFocusChecklist
+                                    lines={activeProject.staffFocusToday}
+                                    completedLines={activeProject.staffFocusCompletedLines || []}
+                                    onMarkDone={(line, note) => markStaffFocusLineDone(line, note)}
+                                />
+                            </DashMessageSection>
                         )}
 
-                <details
+                <DashMessageSection
                     id="dash-snapshot"
-                    className="group/snap dash-msg mb-2 border border-white/[0.08] bg-white/[0.03] open:bg-white/[0.04]"
+                    outline="snapshot"
+                    icon={<LayoutDashboard className="h-4 w-4 text-cyan-300/90" aria-hidden />}
+                    eyebrow="Venture"
+                    title="Execution snapshot"
+                    subtitle={`${executionScore}% execution index · strategy line, drivers, and charts`}
+                    className="mb-2"
                 >
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
-                        <span className="text-sm font-medium text-brand-text">
-                            Venture snapshot
-                            <span className="mt-0.5 block text-[11px] font-normal text-brand-muted">
-                                {executionScore}% execution index · expand for strategy line, drivers, and charts
-                            </span>
-                        </span>
-                        <ChevronDown
-                            className="h-4 w-4 shrink-0 text-brand-muted transition-transform group-open/snap:rotate-180"
-                            aria-hidden
-                        />
-                    </summary>
-                    <div className="border-t border-white/[0.06] px-4 pb-4 pt-4">
-                    <div className="flex flex-col gap-8">
-                        <div className="dash-msg">
+                    <div className="flex flex-col gap-6">
+                        <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/[0.04] p-3.5 sm:p-4">
                             <p className="text-[10px] font-medium text-brand-muted/90">Strategic line</p>
                             <p className="mt-2 line-clamp-6 text-sm leading-relaxed text-brand-text">
                                 {intentPreview || 'Pin strategic intent and narrative under Research strategy and direction to populate this summary.'}
@@ -942,7 +1015,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 </div>
                             </div>
                         </div>
-                        <div className="dash-msg">
+                        <div className="rounded-xl border border-cyan-500/15 bg-cyan-500/[0.03] p-3.5 sm:p-4">
                             <div className="mb-1 flex flex-wrap items-baseline justify-between gap-2">
                                 <h3 className="text-sm font-medium text-brand-text">Score drivers</h3>
                                 <span className="text-[10px] text-brand-muted">Current snapshot · not a time series</span>
@@ -996,10 +1069,9 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 </li>
                             </ul>
                         </div>
-                    </div>
 
-                    <div className="mt-10 flex flex-col gap-8 lg:flex-row lg:flex-wrap">
-                        <div className="dash-msg min-w-0 flex-1 lg:min-w-[18rem]">
+                    <div className="mt-8 flex flex-col gap-6 lg:flex-row lg:flex-wrap">
+                        <div className="min-w-0 flex-1 rounded-xl border border-violet-500/20 bg-violet-500/[0.04] p-3.5 lg:min-w-[18rem]">
                             <h3 className="text-sm font-medium text-brand-text">Phase status</h3>
                             <p className="mt-0.5 text-[10px] text-brand-muted">
                                 Timeline ·{' '}
@@ -1042,7 +1114,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 <p className="mt-8 py-6 text-center text-sm text-brand-muted">No phases defined yet.</p>
                             )}
                         </div>
-                        <div className="dash-msg min-w-0 flex-1 lg:min-w-[18rem]">
+                        <div className="min-w-0 flex-1 rounded-xl border border-rose-500/25 bg-rose-500/[0.05] p-3.5 lg:min-w-[18rem]">
                             <h3 className="text-sm font-medium text-brand-text">Priority completion</h3>
                             <p className="mt-0.5 text-[10px] text-brand-muted">
                                 <span className="text-violet-400/90">Complete</span> vs{' '}
@@ -1083,7 +1155,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 <p className="mt-8 py-6 text-center text-sm text-brand-muted">No priorities listed yet.</p>
                             )}
                         </div>
-                        <div className="dash-msg min-w-0 flex-1 lg:min-w-[18rem]">
+                        <div className="min-w-0 flex-1 rounded-xl border border-amber-500/25 bg-amber-500/[0.05] p-3.5 lg:min-w-[18rem]">
                             <h3 className="text-sm font-medium text-brand-text">Desk artifact coverage</h3>
                             <p className="mt-0.5 text-[10px] text-brand-muted">
                                 One color per desk role · 100% = artifact saved
@@ -1116,27 +1188,19 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         </div>
                     </div>
                     </div>
-                </details>
+                </DashMessageSection>
 
-                <details
+                <DashMessageSection
                     id="dash-signal"
-                    className="group/sig dash-msg mb-2 border border-white/[0.08] bg-white/[0.03] open:bg-white/[0.04]"
+                    outline="signal"
+                    icon={<Activity className="h-4 w-4 text-sky-300/90" aria-hidden />}
+                    eyebrow="Telemetry"
+                    title="Signal & activity"
+                    subtitle="Charts and live log stream"
+                    className="mb-2"
                 >
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
-                        <span className="text-sm font-medium text-brand-text">
-                            Signal &amp; activity
-                            <span className="mt-0.5 block text-[11px] font-normal text-brand-muted">
-                                Charts + log · expand to view
-                            </span>
-                        </span>
-                        <ChevronDown
-                            className="h-4 w-4 shrink-0 text-brand-muted transition-transform group-open/sig:rotate-180"
-                            aria-hidden
-                        />
-                    </summary>
-                    <div className="border-t border-white/[0.06] px-4 pb-4 pt-4">
                     <div className="flex flex-col gap-5 lg:flex-row lg:items-stretch">
-                        <div className="dash-msg flex min-h-0 flex-1 flex-col">
+                        <div className="flex min-h-0 min-w-0 flex-1 flex-col rounded-xl border border-sky-500/20 bg-sky-500/[0.04] p-3.5">
                             <div className="mb-1 flex items-start justify-between gap-3">
                                 <div>
                                     <h3 className="text-sm font-medium text-brand-text">Activity by source</h3>
@@ -1176,59 +1240,50 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             )}
                         </div>
 
-                        <div className="dash-msg flex min-h-[14rem] flex-1 flex-col lg:min-h-[16rem]">
-                            <div className="mb-4 flex items-center justify-between">
+                        <div className="flex min-h-0 min-w-0 flex-1 flex-col rounded-xl border border-indigo-500/25 bg-indigo-500/[0.05] p-3.5 lg:min-h-[12rem]">
+                            <div className="mb-3 flex items-center justify-between">
                                 <h3 className="flex items-center gap-2 text-sm font-medium text-brand-text">
-                                    <Activity className="h-4 w-4 text-brand-muted" aria-hidden />
-                                    Activity
+                                    <Activity className="h-4 w-4 text-indigo-300/80" aria-hidden />
+                                    Activity log
                                 </h3>
-                                <span className="h-2 w-2 animate-pulse rounded-full bg-brand-muted" aria-hidden />
+                                <span className="h-2 w-2 animate-pulse rounded-full bg-indigo-400/50" aria-hidden />
                             </div>
-                            <div className="custom-scrollbar max-h-[min(38vh,15rem)] flex-1 space-y-3 overflow-y-auto pr-1">
+                            <div className="space-y-2.5">
                                 {systemLogs.length === 0 ? (
-                                    <div className="py-10 text-center text-sm text-brand-muted">No activity yet.</div>
+                                    <div className="py-8 text-center text-sm text-brand-muted">No activity yet.</div>
                                 ) : (
                                     systemLogs.map((log) => (
                                         <div
                                             key={log.id}
-                                            className="rounded-2xl bg-white/[0.04] px-4 py-3"
+                                            className="rounded-xl border border-white/[0.06] bg-black/20 px-3 py-2.5 ring-1 ring-white/[0.03]"
                                         >
-                                            <div className="mb-1.5 flex flex-wrap items-center gap-2">
-                                                <span className="rounded-full bg-white/[0.06] px-2.5 py-0.5 text-[10px] font-medium text-brand-muted">
+                                            <div className="mb-1 flex flex-wrap items-center gap-2">
+                                                <span className="rounded-full bg-white/[0.08] px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide text-brand-muted">
                                                     {log.source}
                                                 </span>
                                                 <span className="font-mono text-[10px] text-brand-muted">
                                                     {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                 </span>
                                             </div>
-                                            <p className="text-[15px] leading-relaxed text-brand-text">{log.message}</p>
+                                            <p className="text-[13px] leading-relaxed text-brand-text/95">{log.message}</p>
                                         </div>
                                     ))
                                 )}
                             </div>
                         </div>
                     </div>
-                    </div>
-                </details>
+                </DashMessageSection>
 
-                <details
+                <DashMessageSection
                     id="dash-desks"
-                    className="group/dsk dash-msg mb-2 border border-white/[0.08] bg-white/[0.03] open:bg-white/[0.04]"
+                    outline="desks"
+                    icon={<LayoutGrid className="h-4 w-4 text-fuchsia-300/90" aria-hidden />}
+                    eyebrow="Navigation"
+                    title="Operational desks"
+                    subtitle="Jump to strategy, product, finance, market"
+                    className="mb-2"
                 >
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
-                        <span className="text-sm font-medium text-brand-text">
-                            Operational desks
-                            <span className="mt-0.5 block text-[11px] font-normal text-brand-muted">
-                                Jump to CEO, scout, finance, product · expand to open
-                            </span>
-                        </span>
-                        <ChevronDown
-                            className="h-4 w-4 shrink-0 text-brand-muted transition-transform group-open/dsk:rotate-180"
-                            aria-hidden
-                        />
-                    </summary>
-                    <div className="border-t border-white/[0.06] px-4 pb-4 pt-4">
-                    <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid gap-3 sm:grid-cols-2">
                         <AgentCard
                             agent={agents.ceo}
                             activeRoom={activeRoom}
@@ -1254,28 +1309,19 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             status={!!activeProject.productPlan ? 'active' : 'idle'}
                         />
                     </div>
-                    </div>
-                </details>
+                </DashMessageSection>
 
-                <details
+                <DashMessageSection
                     id="dash-next"
-                    className="group/nxt dash-msg mb-2 border border-white/[0.08] bg-white/[0.03] open:bg-white/[0.04]"
+                    outline="next"
+                    icon={<Compass className="h-4 w-4 text-emerald-300/90" aria-hidden />}
+                    eyebrow="Suggested next"
+                    title="Where to steer next"
+                    subtitle="One line + shortcuts"
+                    className="mb-2"
                 >
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
-                        <span className="text-sm font-medium text-brand-text">
-                            Next focus
-                            <span className="mt-0.5 block text-[11px] font-normal text-brand-muted">
-                                Suggested line + shortcuts · expand
-                            </span>
-                        </span>
-                        <ChevronDown
-                            className="h-4 w-4 shrink-0 text-brand-muted transition-transform group-open/nxt:rotate-180"
-                            aria-hidden
-                        />
-                    </summary>
-                    <div className="border-t border-white/[0.06] px-4 pb-4 pt-4">
-                    <div className="dash-msg flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-                        <div className="max-w-prose">
+                    <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+                        <div className="max-w-prose rounded-xl border border-emerald-500/25 bg-emerald-500/[0.05] p-4 md:p-5">
                             <p className="font-serif text-xl leading-snug text-brand-text md:text-2xl">
                                 {phaseActive > 0
                                     ? `Drive the active timeline phase — ${phaseDone} of ${phaseTotal} phases complete.`
@@ -1305,8 +1351,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         </button>
                         <WorkspaceAiButton label="Ask Research across desks" />
                     </div>
-                    </div>
-                </details>
+                </DashMessageSection>
                                 </div>
                             </div>
                         )}

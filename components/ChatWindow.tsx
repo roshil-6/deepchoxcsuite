@@ -6,6 +6,7 @@ import { useOffice, getAgentSystemPrompt, AgentRole } from '@/lib/OfficeContext'
 import { updateProjectField } from '@/lib/db';
 import { Send, User, Sparkles, Paperclip, ArrowUp, Bot, Terminal, Shield, Wifi, Cpu, Activity, Lock, Smartphone, Settings, MoreVertical } from 'lucide-react';
 import { ModelAttribution } from '@/components/ModelAttribution';
+import { formatProductPlanForContext, formatStrategyForContext } from '@/lib/ventureReadableContext';
 
 interface Message {
   id: string;
@@ -155,8 +156,10 @@ export function ChatWindow({ onProjectUpdate }: ChatWindowProps) {
 
       const projectContext = `
 Current Project: ${activeProject.name}
-CEO Strategy: ${activeProject.strategy || 'Not yet defined'}
-Product Plan: ${activeProject.productPlan || 'Not yet defined'}
+CEO Strategy (readable summary, not raw JSON):
+${formatStrategyForContext(activeProject.strategy)}
+Product Plan (readable summary, not raw JSON):
+${formatProductPlanForContext(activeProject.productPlan)}
 Budget: ${activeProject.budget || 'Not yet defined'}
 Market Insights: ${activeProject.marketInsights || 'Not yet defined'}
 Org Structure: ${activeProject.orgStructure ? JSON.stringify(activeProject.orgStructure.map(n => ({ role: n.role, name: n.name }))) : 'None'}

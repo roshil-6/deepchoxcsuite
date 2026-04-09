@@ -111,13 +111,7 @@ export function WorkspaceStage({
                 }}
             />
 
-            <div
-                className={
-                    activeRoom === 'dexo'
-                        ? 'relative z-10 flex flex-1 flex-col p-0'
-                        : 'relative z-10 flex flex-1 flex-col py-3 animate-in fade-in duration-300 sm:py-4'
-                }
-            >
+            <div className="relative z-10 flex flex-1 flex-col py-3 animate-in fade-in duration-300 sm:py-4">
                 {!shell.immersive && !hideWorkspaceHeader && (
                     <header className="mb-2 flex shrink-0 items-center justify-between gap-3 border-b border-white/[0.04] pb-2.5">
                         <h1 className="text-sm font-normal tracking-normal text-brand-text/95 sm:text-[15px]">

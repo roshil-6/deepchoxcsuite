@@ -71,6 +71,12 @@ export interface Project {
 
   /** JSON string: Living Office Engine continuity (see lib/office/officeMemory.ts). */
   officeEngineMemoryJson?: string;
+
+  /**
+   * Founder-authored instructions for how AI staff should coordinate on this venture
+   * (priorities, tone, which lanes matter). Sent with the staff-sync snapshot.
+   */
+  agentCoordinationBrief?: string;
 }
 
 export interface DeskDocument {

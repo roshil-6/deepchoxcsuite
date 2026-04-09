@@ -56,6 +56,8 @@ export interface SyncProjectDTO {
   events: { title: string; type: string; date: number }[];
   kanban: { title: string; status: string }[];
   journalPreview: { content: string; timestamp: number }[];
+  /** Optional: how the founder wants desks to coordinate (staff sync reads this). */
+  agentCoordinationBrief?: string;
 }
 
 export function projectToSyncDto(p: Project): SyncProjectDTO {
@@ -77,5 +79,8 @@ export function projectToSyncDto(p: Project): SyncProjectDTO {
       status: String(t.status || ''),
     })),
     journalPreview: journal.slice(0, 5).map((j) => ({ content: j.content.slice(0, 500), timestamp: j.timestamp })),
+    ...(p.agentCoordinationBrief?.trim()
+      ? { agentCoordinationBrief: p.agentCoordinationBrief.trim().slice(0, 4000) }
+      : {}),
   };
 }

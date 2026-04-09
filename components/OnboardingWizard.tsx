@@ -80,7 +80,7 @@ export function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) 
                     <div className="absolute inset-0 w-32 h-32 rounded-full border-t-2 border-[#0D9488] animate-spin"></div>
                 </div>
                 <h2 className="text-3xl font-extrabold text-zinc-100 mt-12 mb-4 tracking-tight">Synthesizing Executive Brief</h2>
-                <p className="text-zinc-500 font-bold uppercase tracking-[0.3em] text-xs">Aligning C-Suite Intelligence Units</p>
+                <p className="text-zinc-500 font-bold uppercase tracking-[0.3em] text-xs">Syncing AI teammates to your venture</p>
 
                 <div className="mt-12 w-64 h-1.5 bg-zinc-900 rounded-full overflow-hidden border border-zinc-800">
                     <div className="h-full bg-[#0D9488] animate-[loading_2.5s_ease-in-out]"></div>

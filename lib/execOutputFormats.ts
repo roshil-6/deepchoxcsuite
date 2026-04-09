@@ -1,5 +1,5 @@
 /**
- * Canonical executive output contracts: each C-suite role has a fixed deliverable shape
+ * Canonical executive output contracts: each desk / AI teammate role has a fixed deliverable shape
  * (decision memos, finance scenarios, architecture, GTM/messaging, competitive intel).
  */
 export const EXEC_OUTPUT_ROLES = [

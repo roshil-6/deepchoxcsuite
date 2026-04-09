@@ -18,10 +18,11 @@ import {
     AudioLines,
 } from 'lucide-react';
 import { ModelAttribution } from '@/components/ModelAttribution';
-import { EXEC_CHAT_MODEL_STORAGE_KEY, isExecChatModelId } from '@/lib/deskConstants';
+import { EXEC_CHAT_MODEL_STORAGE_KEY, isExecChatModelId, OPERATIONAL_CHAT_BAR_ROOMS } from '@/lib/deskConstants';
 import { PA_BUDDY_NAME } from '@/lib/paBuddy';
 import { useSpeechRecognition } from '@/lib/useSpeechRecognition';
 import { useDeskChatThreadSlotState } from '@/components/DeskChatThreadSlotContext';
+import { formatProductPlanForContext, formatStrategyForContext } from '@/lib/ventureReadableContext';
 
 function readStoredExecModel(): string {
     if (typeof window === 'undefined') return 'llama3';
@@ -93,18 +94,19 @@ export function ChatAssistant({
     const [inputValue, setInputValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     /** CEO split: thread panel above composer (same shell as aiOs). */
-    const [ceoThreadExpanded, setCeoThreadExpanded] = useState(true);
+    /** Floating thread above the dock: closed until the user expands (chevron) or sends a message. */
+    const [ceoThreadExpanded, setCeoThreadExpanded] = useState(false);
     const expandCeoThread = useCallback(() => setCeoThreadExpanded(true), []);
 
     const isCeoSplit = variant === 'ceoSplit';
     const deskThreadSlotCtx = useDeskChatThreadSlotState();
     const deskThreadSlotEl = deskThreadSlotCtx?.slot ?? null;
+    /** Portal thread into workspace (hub slot or under Details) — stream layout, no floating “coordination” card. */
     const wantsBlockInlineThread =
         isCeoSplit &&
-        Boolean(
-            (deskSectionFocus && deskSectionFocus.room === activeRoom) ||
-                (activeRoom === 'suite_intelligence' && suiteIntelOpenDesk),
-        );
+        Boolean(deskThreadSlotEl) &&
+        (OPERATIONAL_CHAT_BAR_ROOMS.has(activeRoom) ||
+            (activeRoom === 'suite_intelligence' && Boolean(suiteIntelOpenDesk)));
     const focusAnchorsThread = Boolean(wantsBlockInlineThread && deskThreadSlotEl);
 
     useEffect(() => {
@@ -176,7 +178,6 @@ export function ChatAssistant({
         if (!voiceSupported || isLoading) return;
         if (!listening) {
             onComposerInteract?.();
-            if (variant === 'ceoSplit' && !focusAnchorsThread) setCeoThreadExpanded(true);
         }
         toggleListening();
     }, [
@@ -186,7 +187,6 @@ export function ChatAssistant({
         onComposerInteract,
         variant,
         toggleListening,
-        focusAnchorsThread,
     ]);
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -269,8 +269,10 @@ export function ChatAssistant({
 
             const projectContext = `
             Current Project: ${activeProject.name}
-            CEO Strategy: ${activeProject.strategy || 'N/A'}
-            Product Plan: ${activeProject.productPlan || 'N/A'}
+            CEO Strategy (readable summary — not raw JSON):
+            ${formatStrategyForContext(activeProject.strategy)}
+            Product / PM plan (readable summary — not raw JSON):
+            ${formatProductPlanForContext(activeProject.productPlan)}
             Budget: ${activeProject.budget || 'N/A'}
             Market Insights: ${activeProject.marketInsights || 'N/A'}
             Active View: ${activeRoom}
@@ -522,44 +524,37 @@ export function ChatAssistant({
             ) : null}
 
             {isCeoSplit && ceoThreadExpanded && !focusAnchorsThread ? (
-                <div className="mb-1 flex max-h-[min(40vh,400px)] min-h-[120px] w-full flex-col overflow-hidden rounded-[22px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl shadow-[0_12px_40px_-12px_rgba(0,0,0,0.4)]">
-                    <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/[0.05] px-3 py-2.5 sm:px-4">
-                        <div className="min-w-0 flex-1">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
-                                {useExecutiveThread ? 'Research coordination' : chatTheme.roleLabel}
-                            </p>
-                            <p className="mt-0.5 truncate text-[12px] text-zinc-400">
-                                {sidebarSectionLabel
-                                    ? `In context: ${sidebarSectionLabel}`
-                                    : useExecutiveThread
-                                      ? `Same thread as ${PA_BUDDY_NAME}`
-                                      : chatTheme.subtitle}
-                            </p>
-                        </div>
-                        <div className="flex shrink-0 items-center gap-1">
+                <div className="mb-1 flex max-h-[min(40vh,400px)] min-h-[80px] w-full flex-col overflow-hidden">
+                    <div className="mb-1 flex shrink-0 items-center justify-between gap-2">
+                        {sidebarSectionLabel ? (
+                            <p className="min-w-0 truncate text-[11px] text-zinc-600">{sidebarSectionLabel}</p>
+                        ) : (
+                            <span className="text-[11px] text-zinc-600">
+                                {useExecutiveThread ? `Shared with ${PA_BUDDY_NAME}` : chatTheme.subtitle}
+                            </span>
+                        )}
+                        <div className="flex shrink-0 items-center gap-2">
                             <button
                                 type="button"
                                 onClick={() => (useExecutiveThread ? clearExecutiveThread() : setLocalMessages([]))}
-                                className="rounded-lg px-2.5 py-1.5 text-[11px] text-zinc-500 transition-colors hover:bg-white/[0.06] hover:text-zinc-200"
+                                className="text-[11px] text-zinc-600 transition-colors hover:text-zinc-400"
                                 title="Clear thread"
                             >
-                                Clear
+                                Clear thread
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setCeoThreadExpanded(false)}
-                                className="rounded-lg p-2 text-zinc-500 transition hover:bg-white/[0.06] hover:text-zinc-300"
+                                className="rounded-lg p-1.5 text-zinc-600 transition hover:bg-white/[0.06] hover:text-zinc-400"
                                 aria-label="Minimize thread"
-                                title="Hide thread (focus the box below or send to show again)"
+                                title="Hide thread"
                             >
                                 <ChevronDown className="h-4 w-4" aria-hidden />
                             </button>
                         </div>
                     </div>
-                    <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
-                        <div className="mx-auto w-full max-w-3xl space-y-3 px-4 pb-3 pt-3 sm:px-5">
-                            {threadBody}
-                        </div>
+                    <div className="custom-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto overflow-x-hidden px-0.5">
+                        {threadBody}
                     </div>
                 </div>
             ) : null}
@@ -714,12 +709,10 @@ export function ChatAssistant({
                                 setInputValue(e.target.value);
                                 if (e.target.value.trim()) {
                                     onComposerInteract?.();
-                                    if (variant === 'ceoSplit' && !focusAnchorsThread) setCeoThreadExpanded(true);
                                 }
                             }}
                             onFocus={() => {
                                 onComposerInteract?.();
-                                if (variant === 'ceoSplit' && !focusAnchorsThread) setCeoThreadExpanded(true);
                             }}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter' && !e.shiftKey) {

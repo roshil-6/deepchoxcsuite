@@ -30,8 +30,9 @@ const syne = Syne({
 });
 
 export const metadata: Metadata = {
-  title: 'DEEPCHOX - Virtual AI Office',
-  description: 'Zero-Data, Report-First Multi-Agent Business Application',
+  title: 'DEEPCHOX — AI-powered team for founders',
+  description:
+    'DEEPCHOX is an AI-powered team for founders — strategy, product, finance, market, and GTM roles as teammates on one venture record.',
   icons: {
     icon: [{ url: '/deepchox-mark.svg', type: 'image/svg+xml' }],
     apple: '/deepchox-mark.svg',

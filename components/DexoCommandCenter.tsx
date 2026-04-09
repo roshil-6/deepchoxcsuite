@@ -2,8 +2,11 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useOffice, getAgentSystemPrompt } from '@/lib/OfficeContext';
-import { Send, Sparkles } from 'lucide-react';
+import { Send } from 'lucide-react';
 import { ModelAttribution } from '@/components/ModelAttribution';
+import { DeskShell } from '@/components/workspaces/DeskShell';
+import { deskHeadline, deskHelpText } from '@/lib/researchStaffLabels';
+import { formatProductPlanForContext, formatStrategyForContext } from '@/lib/ventureReadableContext';
 
 interface Message {
     id: string;
@@ -11,27 +14,6 @@ interface Message {
     content: string;
     timestamp: number;
     model?: string;
-}
-
-/** Distinctive Dexo mark — flat geometry, aligned with suite brand tokens */
-function DexoMark({ className = '' }: { className?: string }) {
-    return (
-        <div
-            className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-brand-border bg-brand-panel ${className}`}
-            aria-hidden
-        >
-            <svg viewBox="0 0 40 40" className="h-10 w-10 text-brand-text" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                    d="M8 12c0-2.2 1.8-4 4-4h10l10 10v14c0 2.2-1.8 4-4 4H12c-2.2 0-4-1.8-4-4V12z"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinejoin="round"
-                />
-                <path d="M22 8v8h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                <circle cx="20" cy="24" r="2" className="fill-brand-teal" />
-            </svg>
-        </div>
-    );
 }
 
 export function DexoCommandCenter() {
@@ -101,8 +83,10 @@ export function DexoCommandCenter() {
             const context = activeProject
                 ? `
                 PROJECT: ${activeProject.name}
-                Strategy: ${activeProject.strategy || '—'}
-                Product: ${activeProject.productPlan || '—'}
+                Strategy (plain language, not raw JSON):
+                ${formatStrategyForContext(activeProject.strategy)}
+                Product plan (plain language, not raw JSON):
+                ${formatProductPlanForContext(activeProject.productPlan)}
                 Budget: ${activeProject.budget || '—'}
                 Market: ${activeProject.marketInsights || '—'}
                 Notes: ${activeProject.userNotes || '—'}
@@ -156,27 +140,16 @@ export function DexoCommandCenter() {
     };
 
     return (
-        <div className="flex w-full min-w-0 flex-1 flex-col bg-brand-bg text-brand-text lg:flex-row">
-            <aside className="hidden w-56 shrink-0 flex-col border-r border-brand-border/80 bg-brand-bg p-6 lg:flex">
-                <DexoMark />
-                <h1 className="mt-5 text-[15px] font-semibold tracking-tight text-brand-text">Dexo</h1>
-                <p className="mt-1 text-xs leading-relaxed text-brand-muted">Core intelligence — one place to steer the suite.</p>
-                <div className="mt-8 flex items-center gap-2 text-xs text-brand-muted">
-                    <Sparkles className="h-3.5 w-3.5 shrink-0 text-brand-teal" aria-hidden />
-                    <span className="truncate">{activeProject ? activeProject.name : 'No venture selected'}</span>
-                </div>
-            </aside>
-
-            <div className="flex min-w-0 flex-1 flex-col bg-brand-bg">
-                <header className="flex shrink-0 items-center gap-4 border-b border-brand-border bg-brand-panel/40 px-4 py-4 lg:hidden">
-                    <DexoMark className="!h-12 !w-12" />
-                    <div>
-                        <h1 className="text-[15px] font-semibold text-brand-text">Dexo</h1>
-                        <p className="text-xs text-brand-muted">Core intelligence</p>
-                    </div>
-                </header>
-
-                <div className="space-y-6 bg-brand-bg px-4 py-6 sm:px-8">
+        <DeskShell
+            className="min-h-0 flex-1"
+            eyebrow="Dexo"
+            title={deskHeadline(activeProject?.name, 'dexo')}
+            description={deskHelpText('dexo')}
+            bodyFlush
+            bodyClassName="flex min-h-0 min-w-0 flex-1 flex-col"
+        >
+            <div className="flex min-h-[min(28rem,70vh)] min-w-0 flex-1 flex-col lg:min-h-[min(36rem,72vh)]">
+                <div className="custom-scrollbar min-h-0 flex-1 space-y-6 overflow-y-auto px-5 py-5 sm:px-6 sm:py-5">
                     {messages.map((msg) => (
                         <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
                             {msg.role === 'assistant' && (
@@ -198,14 +171,12 @@ export function DexoCommandCenter() {
                             </div>
                         </div>
                     ))}
-                    {isLoading && (
-                        <p className="pl-10 text-sm text-brand-muted sm:pl-12">Thinking…</p>
-                    )}
+                    {isLoading && <p className="pl-10 text-sm text-brand-muted sm:pl-12">Thinking…</p>}
                     <div ref={messagesEndRef} />
                 </div>
 
-                <div className="shrink-0 border-t border-brand-border/80 bg-brand-bg p-4 sm:p-5">
-                    <div className="mx-auto flex max-w-4xl gap-2">
+                <div className="shrink-0 border-t border-brand-border/60 bg-brand-panel/15 px-5 py-4 sm:px-6">
+                    <div className="mx-auto flex max-w-3xl gap-2">
                         <textarea
                             ref={textareaRef}
                             value={inputValue}
@@ -231,6 +202,6 @@ export function DexoCommandCenter() {
                     </div>
                 </div>
             </div>
-        </div>
+        </DeskShell>
     );
 }

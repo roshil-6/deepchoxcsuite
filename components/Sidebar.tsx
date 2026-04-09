@@ -24,8 +24,8 @@ interface SidebarProps {
   onNewVenture: () => void;
 }
 
-/** Research areas in the rail (VC gauntlet / shark excluded — overlaps coordination bar) */
-const C_SUITE_ORDER = ['ceo', 'accountant', 'pm', 'cmo', 'scout', 'chief_of_staff', 'dexo'] as const;
+/** Desk teammates in the rail (VC gauntlet / shark excluded — overlaps coordination bar) */
+const TEAM_DESK_ORDER = ['ceo', 'accountant', 'pm', 'cmo', 'scout', 'chief_of_staff', 'dexo'] as const;
 
 export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
   const { activeRoom, switchRoom, agents, activeProject, setActiveProject, setAllProjects, staffAttentionPending } = useOffice();
@@ -57,8 +57,8 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
     >
       <div className="relative flex min-h-[3.5rem] shrink-0 items-center justify-between gap-2 border-b border-brand-border px-4 py-3">
         <div className="min-w-0">
-          <h1 className="text-[15px] font-medium tracking-tight text-brand-text">DeepChox</h1>
-          <p className="mt-0.5 text-[11px] text-brand-muted">Workspace</p>
+          <h1 className="text-[15px] font-medium tracking-tight text-brand-text">DEEPCHOX</h1>
+          <p className="mt-0.5 text-[11px] text-brand-muted">AI-powered team for founders</p>
         </div>
         <StaffNotificationCenter />
       </div>
@@ -83,11 +83,11 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
           />
         </NavSection>
 
-        {/* Intelligence Layers */}
-        <NavSection label="Suite">
+        {/* Coordination & shared surfaces */}
+        <NavSection label="Network">
           <NavItem
             icon={<GitBranch className="w-4 h-4" />}
-            label="Suite intelligence"
+            label="AI team network"
             isActive={activeRoom === 'suite_intelligence'}
             onClick={() => switchRoom('suite_intelligence')}
           />
@@ -96,9 +96,9 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
           <NavItem icon={<FileText className="w-4 h-4" />} label="Knowledge Base" isActive={activeRoom === 'reports'} onClick={() => switchRoom('reports')} />
         </NavSection>
 
-        {/* Agents */}
-        <NavSection label="Research staff">
-          {C_SUITE_ORDER.map((role) => {
+        {/* AI teammates */}
+        <NavSection label="Teammates">
+          {TEAM_DESK_ORDER.map((role) => {
             const agent = agents[role];
             const pendingN = staffAttentionPending.filter((i) => i.role === role).length;
             return (

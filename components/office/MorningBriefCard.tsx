@@ -6,9 +6,11 @@ import type { MorningBrief } from '@/types/office';
 
 export function MorningBriefCard({
     brief,
+    detailOnly = false,
     className = '',
 }: {
     brief: MorningBrief | null;
+    detailOnly?: boolean;
     className?: string;
 }) {
     if (!brief) return null;
@@ -17,21 +19,23 @@ export function MorningBriefCard({
     if (!hasBody && !brief.greeting) return null;
 
     return (
-        <div
-            className={`dash-msg bg-zinc-800/45 ${className}`}
-        >
-            <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-200/90">
-                    <SunMedium className="h-5 w-5" aria-hidden />
+        <div className={detailOnly ? `rounded-xl bg-black/20 p-3 ring-1 ring-white/[0.06] ${className}` : `dash-msg bg-zinc-800/45 ${className}`}>
+            {!detailOnly ? (
+                <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-200/90">
+                        <SunMedium className="h-5 w-5" aria-hidden />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                        <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">Morning brief</p>
+                        <p className="mt-1 text-sm font-medium leading-snug text-zinc-100">{brief.greeting}</p>
+                    </div>
                 </div>
-                <div className="min-w-0 flex-1">
-                    <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">Morning brief</p>
-                    <p className="mt-1 text-sm font-medium leading-snug text-zinc-100">{brief.greeting}</p>
-                </div>
-            </div>
+            ) : brief.greeting ? (
+                <p className="mb-3 text-sm font-medium leading-snug text-zinc-200">{brief.greeting}</p>
+            ) : null}
 
             {brief.priorities.length > 0 ? (
-                <ul className="mt-4 space-y-2 border-t border-white/[0.06] pt-4">
+                <ul className={`space-y-2 ${detailOnly ? 'mt-0' : 'mt-4 border-t border-white/[0.06] pt-4'}`}>
                     {brief.priorities.map((p, i) => (
                         <li key={`${i}-${p.slice(0, 24)}`} className="flex gap-2 text-sm text-zinc-300">
                             <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-zinc-500" aria-hidden />

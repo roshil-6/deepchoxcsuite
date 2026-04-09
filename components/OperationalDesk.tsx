@@ -88,6 +88,14 @@ export function OperationalDesk({ children }: { children: React.ReactNode }) {
         if (el) set(el);
     }, [deskSectionFocus, slotCtx?.setDeskThreadSlot]);
 
+    /** Clear hub slot when leaving an operational desk so dashboard/other rooms do not keep a stale DOM target. */
+    useLayoutEffect(() => {
+        const set = slotCtx?.setDeskThreadSlot;
+        return () => {
+            set?.(null);
+        };
+    }, [slotCtx?.setDeskThreadSlot]);
+
     const deskRole = activeRoom as AgentRole;
     const waiting = staffAttentionPending.filter((i) => i.role === deskRole);
 

@@ -9,7 +9,7 @@ function clip(s: string, max: number): string {
     return `${t.slice(0, max - 1).trim()}…`;
 }
 
-/** Serializable bundle for `/api/cfo-funding-suggest` — all C-suite surfaces the CFO model can use. */
+/** Serializable bundle for `/api/cfo-funding-suggest` — venture fields the CFO model can use. */
 export type CfoFundingPayload = {
     ventureName: string;
     strategy: string;
