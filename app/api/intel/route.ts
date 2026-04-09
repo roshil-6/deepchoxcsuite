@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { XMLParser } from 'fast-xml-parser';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rateLimit';
 import { intelLegacyLabelFromTitle, intelTitleToImpactResult } from '@/lib/impact/adapters/intelAdapter';
 import {
     buildMarketIntelQueries,
@@ -80,7 +81,14 @@ function mapRssItem(item: RawRssItem) {
  * Venture market scan: Google News RSS only. Headlines are third-party; open links to verify.
  * Supports legacy body `{ query: string }` or structured research `{ ventureName, lens, timeWindow, ... }`.
  */
+// 30 requests per minute per IP — RSS fetches are external but cheap.
+const RATE_LIMIT = 30;
+
 export async function POST(req: Request) {
+    const ip = getClientIp(req);
+    const rl = checkRateLimit(`intel:${ip}`, RATE_LIMIT);
+    if (!rl.ok) return rateLimitResponse(rl.resetAt);
+
     const disclaimer =
         'These headlines come from Google News search (third-party publishers). They are not fact-checked by this app. Open each article and verify claims before using them in decisions.';
 

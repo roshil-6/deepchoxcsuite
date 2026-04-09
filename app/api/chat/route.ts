@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { chatWithGroq, chatWithHuggingFace, chatWithOllama, simulationResponse } from '@/lib/ai/chatProviders';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rateLimit';
+import { sanitizeMessages } from '@/lib/sanitize';
 
 type Body = {
   messages: { role: string; content: string }[];
@@ -24,10 +26,21 @@ function hfTokenPresent(): boolean {
   );
 }
 
+// 30 requests per minute per IP for chat.
+const RATE_LIMIT = 30;
+
 export async function POST(req: Request) {
+  // --- Rate limiting ---
+  const ip = getClientIp(req);
+  const rl = checkRateLimit(`chat:${ip}`, RATE_LIMIT);
+  if (!rl.ok) return rateLimitResponse(rl.resetAt);
+
   try {
-    const { messages, model } = (await req.json()) as Body;
-    if (!Array.isArray(messages) || messages.length === 0) {
+    const body = (await req.json()) as Body;
+    // Sanitize message content and whitelist roles before forwarding to AI providers.
+    const messages = sanitizeMessages(body.messages);
+    const { model } = body;
+    if (messages.length === 0) {
       return NextResponse.json({ error: 'messages required' }, { status: 400 });
     }
 

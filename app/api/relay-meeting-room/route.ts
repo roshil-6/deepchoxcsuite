@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { chatWithGroq } from '@/lib/ai/chatProviders';
 import type { Project } from '@/lib/db';
 import { buildHeuristicMeetingPlan, normalizeRelayMeetingGoTo, type RelayMeetingStep } from '@/lib/relayMeetingRoom';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rateLimit';
 
 const MEETING_ROOM_SYSTEM = `You are the "Meeting Room" guide inside DeepChox Relay — a founder-facing product. Your job is to read the venture JSON and output a clear, ordered plan of what to do NEXT in the app (which screen / desk), in plain English.
 
@@ -55,7 +56,14 @@ function parseSteps(raw: unknown): RelayMeetingStep[] {
     return out.slice(0, 12);
 }
 
+// 20 requests per minute per IP.
+const RATE_LIMIT = 20;
+
 export async function POST(req: Request) {
+    const ip = getClientIp(req);
+    const rl = checkRateLimit(`relay:${ip}`, RATE_LIMIT);
+    if (!rl.ok) return rateLimitResponse(rl.resetAt);
+
     try {
         const body = (await req.json()) as { project?: Record<string, unknown> };
         const project = body.project;
