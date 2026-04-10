@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { chatWithGroq } from '@/lib/ai/chatProviders';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rateLimit';
 
 /** Desk-style id passed to `resolveGroqModel` — default Gemma for CFO funding JSON. */
 function cfoFundingGroqDeskId(): string {
@@ -28,7 +29,14 @@ function stripJsonFence(raw: string): string {
     return s.trim();
 }
 
+// 20 requests per minute per IP.
+const RATE_LIMIT = 20;
+
 export async function POST(req: Request) {
+    const ip = getClientIp(req);
+    const rl = checkRateLimit(`cfo-funding:${ip}`, RATE_LIMIT);
+    if (!rl.ok) return rateLimitResponse(rl.resetAt);
+
     if (!process.env.GROQ_API_KEY?.trim()) {
         return NextResponse.json(
             { ok: false, error: 'GROQ_API_KEY not configured on the server.' },

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { chatWithGroq } from '@/lib/ai/chatProviders';
 import type { AgentSyncPayload, AiSyncTraceStep, SyncProjectDTO } from '@/lib/agentStaffTypes';
 import { parseStrategy } from '@/lib/strategyDoc';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rateLimit';
 
 const SYNC_SYSTEM = `You are the combined AI staff of a growing startup: CEO strategy, CTO product & execution, CFO finance, CSO market intel, and CMO GTM. The user pressed "Sync" — you must research across the venture snapshot and public news context, then output ONE JSON object only (no markdown fence).
 
@@ -76,7 +77,14 @@ async function fetchIntelHeadlines(req: Request, project: SyncProjectDTO): Promi
   }
 }
 
+// 15 requests per minute per IP — triggers a full Groq inference pass.
+const RATE_LIMIT = 15;
+
 export async function POST(req: Request) {
+  const ip = getClientIp(req);
+  const rl = checkRateLimit(`agent-sync:${ip}`, RATE_LIMIT);
+  if (!rl.ok) return rateLimitResponse(rl.resetAt);
+
   try {
     if (!process.env.GROQ_API_KEY?.trim()) {
       return NextResponse.json(

@@ -23,16 +23,13 @@ export type DeskRevealSectionProps = {
 };
 
 const FRAME: Record<NonNullable<DeskRevealSectionProps['variant']>, string> = {
-    zinc: 'rounded-xl border border-white/[0.08] bg-zinc-900/20',
-    brand: 'rounded-xl border border-brand-border/70 bg-brand-panel/15',
+    zinc: 'rounded-xl border border-white/[0.07] bg-[var(--color-brand-card)]',
+    brand: 'rounded-xl border border-white/[0.07] bg-[var(--color-brand-card)]',
 };
 
 function frameClass(variant: DeskRevealSectionProps['variant'], density: DeskRevealSectionProps['density']): string {
-    if (density === 'compact' && variant === 'brand') {
-        return 'rounded-lg border border-brand-border/60 bg-brand-panel/10';
-    }
-    if (density === 'compact' && variant === 'zinc') {
-        return 'rounded-lg border border-white/[0.06] bg-zinc-900/15';
+    if (density === 'compact') {
+        return 'rounded-xl border border-white/[0.07] bg-[var(--color-brand-card)]';
     }
     return FRAME[variant ?? 'zinc'];
 }

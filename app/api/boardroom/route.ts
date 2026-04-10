@@ -3,6 +3,7 @@ import { chatWithGroq } from '@/lib/ai/chatProviders';
 import { AGENT_DEFINITIONS } from '@/lib/orchestrator/AgentDefinitions';
 import { normalizeExecutiveBoardResponse } from '@/lib/orchestrator/boardroomNormalize';
 import type { ExecutiveRole } from '@/lib/orchestrator/types';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rateLimit';
 
 const ROLES: ExecutiveRole[] = ['CEO', 'CFO', 'CMO', 'CTO', 'CSO'];
 const MAX_CONTEXT = 14_000;
@@ -19,7 +20,14 @@ function stripJsonFence(raw: string): string {
     return t.trim();
 }
 
+// 20 requests per minute per IP.
+const RATE_LIMIT = 20;
+
 export async function POST(req: Request) {
+    const ip = getClientIp(req);
+    const rl = checkRateLimit(`boardroom:${ip}`, RATE_LIMIT);
+    if (!rl.ok) return rateLimitResponse(rl.resetAt);
+
     try {
         const body = (await req.json()) as { role?: string; context?: string };
         const role = body.role;

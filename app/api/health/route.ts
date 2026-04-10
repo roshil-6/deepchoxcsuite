@@ -1,11 +1,37 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rateLimit';
 
 function redactConnectionInfo(message: string): string {
   return message.replace(/postgresql:\/\/[^:]+:[^@]+@/gi, 'postgresql://***:***@');
 }
 
-export async function GET() {
+/**
+ * GET /api/health
+ *
+ * Public response: minimal { ok, timestamp } only.
+ * Detailed diagnostics require the HEALTH_TOKEN env var to be set and
+ * passed as ?token=<HEALTH_TOKEN> — keeps infra info off the public internet.
+ */
+export async function GET(req: Request) {
+  // Rate-limit the health endpoint to prevent enumeration / hammering.
+  const ip = getClientIp(req);
+  const rl = checkRateLimit(`health:${ip}`, 60);
+  if (!rl.ok) return rateLimitResponse(rl.resetAt);
+
+  const url = new URL(req.url);
+  const providedToken = url.searchParams.get('token') ?? '';
+  const expectedToken = process.env.HEALTH_TOKEN?.trim() ?? '';
+
+  // Only expose internal details when a HEALTH_TOKEN is configured AND matches.
+  const authorized = expectedToken.length > 0 && providedToken === expectedToken;
+
+  if (!authorized) {
+    // Public callers (load balancers, uptime monitors) only need a simple ping.
+    return NextResponse.json({ ok: true, timestamp: new Date().toISOString() });
+  }
+
+  // --- Authorized diagnostic check ---
   const databaseUrlConfigured = Boolean(process.env.DATABASE_URL?.trim());
   let database = false;
   let databaseError: string | undefined;
@@ -24,7 +50,6 @@ export async function GET() {
   return NextResponse.json({
     ok: true,
     database,
-    /** False means Render Web Service does not have DATABASE_URL — add Internal URL from Postgres. */
     databaseUrlConfigured,
     ...(databaseError ? { databaseError } : {}),
     groqConfigured: Boolean(process.env.GROQ_API_KEY?.trim()),

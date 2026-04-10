@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rateLimit";
+import { sanitizePromptInput } from "@/lib/sanitize";
 
 const SYNC_PROMPTS = {
   cso: (ctx) => `You are a Chief Strategy Officer. Analyze competitive landscape for: ${ctx}. Give: 1) Top 3 competitors 2) Their weaknesses 3) Our opportunity.`,
@@ -8,11 +10,36 @@ const SYNC_PROMPTS = {
   ceo: (ctx) => `You are a CEO advisor. Strategic overview for: ${ctx}. Give: 1) Biggest priority this week 2) Key decision needed 3) One thing to stop doing.`,
 };
 
-export async function POST(request) {
-  try {
-    const { role, companyContext } = await request.json();
+// 10 requests per minute per IP — HuggingFace inference is expensive.
+const RATE_LIMIT = 10;
 
-    const promptText = SYNC_PROMPTS[role]?.(companyContext) ||
+export async function POST(request) {
+  // --- Rate limiting ---
+  const ip = getClientIp(request);
+  const rl = checkRateLimit(`sync:${ip}`, RATE_LIMIT);
+  if (!rl.ok) return rateLimitResponse(rl.resetAt);
+
+  // --- API key presence check (fail fast — never fall back to empty string) ---
+  const hfToken = process.env.HF_API_TOKEN?.trim() || process.env.HUGGINGFACE_API_KEY?.trim();
+  if (!hfToken) {
+    return NextResponse.json(
+      { error: "AI service not configured. HF_API_TOKEN is missing." },
+      { status: 503 }
+    );
+  }
+
+  try {
+    const body = await request.json();
+    const role = typeof body.role === "string" ? body.role : "";
+    // Sanitize user-controlled field before prompt interpolation
+    const companyContext = sanitizePromptInput(body.companyContext, 6_000);
+
+    if (!companyContext) {
+      return NextResponse.json({ error: "companyContext is required" }, { status: 400 });
+    }
+
+    const promptText =
+      SYNC_PROMPTS[role]?.(companyContext) ||
       `Analyze this startup and give key insights: ${companyContext}`;
 
     const fullPrompt = `<start_of_turn>user
@@ -26,7 +53,7 @@ ${promptText}
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${process.env.HF_API_TOKEN || process.env.HUGGINGFACE_API_KEY || ""}`,
+          Authorization: `Bearer ${hfToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -53,7 +80,11 @@ ${promptText}
       model: "Gemma 2B (HuggingFace)"
     });
 
-  } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch {
+    // Do not leak internal error details to the client.
+    return NextResponse.json(
+      { error: "AI service error. Please try again." },
+      { status: 500 }
+    );
   }
 }
