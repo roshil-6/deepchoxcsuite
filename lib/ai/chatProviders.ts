@@ -1,9 +1,9 @@
 /**
- * Server-side chat routing: Gemini (OpenAI-compatible), Groq, HuggingFace, Ollama.
+ * Server-side chat routing: OpenAI, Groq, HuggingFace, Ollama.
  * Client payloads stay Ollama-shaped; we normalize responses to `{ message: { role, content } }`.
  *
  * Provider priority (first available key wins):
- *   1. GEMINI_API_KEY  → Google Gemini (gemini-2.0-flash by default)
+ *   1. OPENAI_API_KEY  → OpenAI (gpt-4o-mini by default)
  *   2. GROQ_API_KEY    → Groq (llama-3.3-70b-versatile by default)
  *   3. HF_API_TOKEN    → Hugging Face Inference (gemma-2-2b-it by default)
  *   4. OLLAMA_URL      → local Ollama
@@ -79,40 +79,35 @@ async function callOpenAICompatible(
   };
 }
 
-// ─── Gemini ───────────────────────────────────────────────────────────────────
+// ─── OpenAI ───────────────────────────────────────────────────────────────────
 
-const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/openai';
+const OPENAI_BASE_URL = 'https://api.openai.com/v1';
 
-/**
- * Model map for Gemini. Override default with GEMINI_MODEL env var.
- * gemini-2.0-flash: fast and capable — good default for all desks.
- * gemini-1.5-pro: more capable, slower, higher cost.
- */
-const GEMINI_MODEL_MAP: Record<string, string> = {
-  llama3: 'gemini-2.0-flash',
-  'llama3.2': 'gemini-2.0-flash',
-  mistral: 'gemini-2.0-flash',
-  phi3: 'gemini-2.0-flash',
-  gemma2: 'gemini-2.0-flash',
+const OPENAI_MODEL_MAP: Record<string, string> = {
+  llama3: 'gpt-4o-mini',
+  'llama3.2': 'gpt-4o-mini',
+  mistral: 'gpt-4o-mini',
+  phi3: 'gpt-4o-mini',
+  gemma2: 'gpt-4o-mini',
 };
 
-export function resolveGeminiModel(requested?: string): string {
-  const fromEnv = process.env.GEMINI_MODEL?.trim();
+export function resolveOpenAIModel(requested?: string): string {
+  const fromEnv = process.env.OPENAI_MODEL?.trim();
   const raw = (requested || '').trim();
-  if (raw && GEMINI_MODEL_MAP[raw]) return GEMINI_MODEL_MAP[raw]!;
-  return fromEnv || 'gemini-2.0-flash';
+  if (raw && OPENAI_MODEL_MAP[raw]) return OPENAI_MODEL_MAP[raw]!;
+  return fromEnv || 'gpt-4o-mini';
 }
 
-export async function chatWithGemini(
+export async function chatWithOpenAI(
   messages: ChatMessage[],
   modelId: string | undefined,
   options?: { responseJsonObject?: boolean; temperature?: number }
 ): Promise<OllamaShapedResponse> {
-  const apiKey = process.env.GEMINI_API_KEY?.trim();
-  if (!apiKey) throw new Error('GEMINI_API_KEY is not set');
+  const apiKey = process.env.OPENAI_API_KEY?.trim();
+  if (!apiKey) throw new Error('OPENAI_API_KEY is not set');
 
-  const model = resolveGeminiModel(modelId);
-  return callOpenAICompatible(GEMINI_BASE_URL, apiKey, model, messages, options);
+  const model = resolveOpenAIModel(modelId);
+  return callOpenAICompatible(OPENAI_BASE_URL, apiKey, model, messages, options);
 }
 
 // ─── Groq ─────────────────────────────────────────────────────────────────────
@@ -160,10 +155,6 @@ function hfBearerToken(): string | undefined {
 
 const DEFAULT_HF_CHAT_MODEL = 'google/gemma-2-2b-it';
 
-function resolveHfInferenceModel(_requested?: string): string {
-  return process.env.HF_CHAT_MODEL?.trim() || DEFAULT_HF_CHAT_MODEL;
-}
-
 function buildHfPromptFromMessages(messages: ChatMessage[]): string {
   const normalized = messages.filter((m) => m && typeof m.content === 'string');
   if (normalized.length === 0) return '<start_of_turn>user\n\n<end_of_turn>\n<start_of_turn>model\n';
@@ -177,43 +168,28 @@ export async function chatWithHuggingFace(
   modelId: string | undefined
 ): Promise<OllamaShapedResponse> {
   const token = hfBearerToken();
-  if (!token) throw new Error('HF_API_TOKEN (or HUGGINGFACE_API_KEY) is not set');
+  if (!token) throw new Error('HF_API_TOKEN is not set');
 
-  const model = resolveHfInferenceModel(modelId);
+  const model = process.env.HF_CHAT_MODEL?.trim() || DEFAULT_HF_CHAT_MODEL;
   const url = `https://api-inference.huggingface.co/models/${model}`;
   const inputs = buildHfPromptFromMessages(messages);
 
   const res = await fetch(url, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       inputs,
-      parameters: {
-        max_new_tokens: 1024,
-        temperature: 0.7,
-        top_p: 0.9,
-        return_full_text: false,
-      },
+      parameters: { max_new_tokens: 1024, temperature: 0.7, top_p: 0.9, return_full_text: false },
     }),
   });
 
-  const data = (await res.json()) as
-    | { error?: string }
-    | { generated_text?: string }[]
-    | Record<string, unknown>;
+  const data = (await res.json()) as { error?: string }[] | { error?: string } | Record<string, unknown>;
 
   if (!res.ok) {
-    const err =
-      typeof data === 'object' && data && 'error' in data
-        ? String((data as { error?: string }).error || res.statusText)
-        : res.statusText;
+    const err = typeof data === 'object' && data && 'error' in data ? String((data as { error?: string }).error || res.statusText) : res.statusText;
     throw new Error(err || 'Hugging Face inference failed');
   }
-
-  if (typeof data === 'object' && data && 'error' in data && (data as { error?: string }).error) {
+  if (typeof data === 'object' && !Array.isArray(data) && (data as { error?: string }).error) {
     const e = String((data as { error: string }).error);
     if (e.includes('loading')) throw new Error('Model is loading on Hugging Face — retry in ~30s.');
     throw new Error(e);
@@ -223,12 +199,7 @@ export async function chatWithHuggingFace(
   const text = (arr?.[0] as { generated_text?: string } | undefined)?.generated_text?.trim() || '';
   if (!text) throw new Error('Empty response from Hugging Face');
 
-  return {
-    model,
-    created_at: new Date().toISOString(),
-    message: { role: 'assistant', content: text },
-    done: true,
-  };
+  return { model, created_at: new Date().toISOString(), message: { role: 'assistant', content: text }, done: true };
 }
 
 // ─── Ollama ───────────────────────────────────────────────────────────────────
@@ -240,7 +211,6 @@ export async function chatWithOllama(messages: ChatMessage[], model: string | un
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ model: model || 'llama3', messages, stream: false }),
   });
-
   if (!response.ok) throw new Error(`Ollama API returned ${response.status}`);
   return (await response.json()) as OllamaShapedResponse;
 }
@@ -250,49 +220,31 @@ export async function chatWithOllama(messages: ChatMessage[], model: string | un
 export function simulationResponse(messages: ChatMessage[], model: string | undefined): OllamaShapedResponse {
   const last = messages[messages.length - 1];
   const lower = (last?.content || '').toLowerCase();
-  let mockResponse =
-    'I am currently disconnected from my neural engine. Set GEMINI_API_KEY (Google Gemini) or GROQ_API_KEY on the server, or run Ollama locally.';
+  let mockResponse = 'I am currently disconnected. Set OPENAI_API_KEY on the server to activate the AI team.';
 
   if (lower.includes('hello') || lower.includes('hi')) {
     mockResponse = 'Greetings. Dexo Core is online (Simulation Mode). How can I assist?';
   } else if (lower.includes('investor') || lower.includes('pitch')) {
-    mockResponse =
-      'I can assist with that. I recommend focusing on your unit economics and clear value proposition. Shall I draft an outline?';
-  } else if (model === 'llama3' && messages.some((m) => m.role === 'system' && m.content.includes('Shark'))) {
-    mockResponse = JSON.stringify({
-      response: 'That answer is vague. I need concrete numbers. What is your CAC vs LTV? (Simulation Mode)',
-      rating: 'fail',
-    });
+    mockResponse = 'I can assist with that. I recommend focusing on your unit economics and clear value proposition. Shall I draft an outline?';
   }
 
-  return {
-    model: 'simulation-fallback',
-    created_at: new Date().toISOString(),
-    message: { role: 'assistant', content: mockResponse },
-    done: true,
-  };
+  return { model: 'simulation-fallback', created_at: new Date().toISOString(), message: { role: 'assistant', content: mockResponse }, done: true };
 }
 
 // ─── resolveChat — auto-selects provider by available keys ───────────────────
-/**
- * Picks the best available provider at runtime.
- * Routes that previously called `chatWithGroq` directly should use this instead
- * so they automatically benefit from whichever key is configured.
- *
- * Priority: Gemini → Groq → HuggingFace → Ollama → Simulation
- */
+
 export async function resolveChat(
   messages: ChatMessage[],
   modelId?: string,
   options?: { responseJsonObject?: boolean; temperature?: number }
 ): Promise<OllamaShapedResponse & { _provider: string }> {
-  const geminiKey = process.env.GEMINI_API_KEY?.trim();
+  const openaiKey = process.env.OPENAI_API_KEY?.trim();
   const groqKey = process.env.GROQ_API_KEY?.trim();
   const hfKey = hfBearerToken();
 
-  if (geminiKey) {
-    const out = await chatWithGemini(messages, modelId, options);
-    return { ...out, _provider: `Gemini · ${out.model}` };
+  if (openaiKey) {
+    const out = await chatWithOpenAI(messages, modelId, options);
+    return { ...out, _provider: `OpenAI · ${out.model}` };
   }
   if (groqKey) {
     const out = await chatWithGroq(messages, modelId, options);

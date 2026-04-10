@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { chatWithGemini, chatWithGroq, chatWithHuggingFace, chatWithOllama, simulationResponse } from '@/lib/ai/chatProviders';
+import { chatWithOpenAI, chatWithGroq, chatWithHuggingFace, chatWithOllama, simulationResponse } from '@/lib/ai/chatProviders';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rateLimit';
 import { sanitizeMessages } from '@/lib/sanitize';
 
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'messages required' }, { status: 400 });
     }
 
-    const geminiKey = process.env.GEMINI_API_KEY?.trim();
+    const openaiKey = process.env.OPENAI_API_KEY?.trim();
     const groqKey = process.env.GROQ_API_KEY?.trim();
     const hasHf = hfTokenPresent();
 
@@ -56,13 +56,13 @@ export async function POST(req: Request) {
       }
     }
 
-    // Gemini — primary when GEMINI_API_KEY is set
-    if (geminiKey) {
+    // OpenAI — primary when OPENAI_API_KEY is set
+    if (openaiKey) {
       try {
-        const out = await chatWithGemini(messages, model);
-        return NextResponse.json({ ...out, model: `Gemini · ${out.model}` });
+        const out = await chatWithOpenAI(messages, model);
+        return NextResponse.json({ ...out, model: `OpenAI · ${out.model}` });
       } catch (e) {
-        console.error('Gemini chat error:', e);
+        console.error('OpenAI chat error:', e);
         // Fall through to next provider
       }
     }

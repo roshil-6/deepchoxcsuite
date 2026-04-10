@@ -53,7 +53,7 @@ export async function GET(req: Request) {
     databaseUrlConfigured,
     ...(databaseError ? { databaseError } : {}),
     aiConfigured: Boolean(
-      process.env.GEMINI_API_KEY?.trim() ||
+      process.env.OPENAI_API_KEY?.trim() ||
       process.env.GROQ_API_KEY?.trim() ||
       process.env.HF_API_TOKEN?.trim()
     ),

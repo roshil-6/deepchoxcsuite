@@ -78,12 +78,12 @@ export async function POST(request) {
   const rl = checkRateLimit(`sync:${ip}`, RATE_LIMIT);
   if (!rl.ok) return rateLimitResponse(rl.resetAt);
 
-  // --- API key presence check (Gemini → HF fallback) ---
-  const geminiKey = process.env.GEMINI_API_KEY?.trim();
+  // --- API key presence check (OpenAI → HF fallback) ---
+  const openaiKey = process.env.OPENAI_API_KEY?.trim();
   const hfToken = process.env.HF_API_TOKEN?.trim() || process.env.HUGGINGFACE_API_KEY?.trim();
-  if (!geminiKey && !hfToken) {
+  if (!openaiKey && !hfToken) {
     return NextResponse.json(
-      { error: "AI service not configured. Set GEMINI_API_KEY or HF_API_TOKEN." },
+      { error: "AI service not configured. Set OPENAI_API_KEY or HF_API_TOKEN." },
       { status: 503 }
     );
   }
@@ -103,14 +103,14 @@ export async function POST(request) {
 
     let text, modelLabel;
 
-    if (geminiKey) {
+    if (openaiKey) {
       const res = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+        "https://api.openai.com/v1/chat/completions",
         {
           method: "POST",
-          headers: { Authorization: `Bearer ${geminiKey}`, "Content-Type": "application/json" },
+          headers: { Authorization: `Bearer ${openaiKey}`, "Content-Type": "application/json" },
           body: JSON.stringify({
-            model: process.env.GEMINI_MODEL?.trim() || "gemini-2.0-flash",
+            model: "gpt-4o-mini",
             messages: [{ role: "user", content: promptText }],
             temperature: 0.6,
             max_tokens: 800,
@@ -118,9 +118,9 @@ export async function POST(request) {
         }
       );
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error?.message || "Gemini request failed");
+      if (!res.ok) throw new Error(data.error?.message || "OpenAI request failed");
       text = data.choices?.[0]?.message?.content || "Analysis unavailable.";
-      modelLabel = "Gemini";
+      modelLabel = "OpenAI";
     } else {
       const fullPrompt = `<start_of_turn>user\n${promptText}\n<end_of_turn>\n<start_of_turn>model\n`;
       const hfResponse = await fetch(
