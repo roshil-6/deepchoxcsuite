@@ -15,7 +15,7 @@ const faqItems = [
     },
     {
         q: 'How do the agents behave?',
-        a: 'Each AI teammate is **role-bound**: they answer from their desk’s mandate—strategy narrative, finance numbers, product delivery, market signal—not as a generic chatbot. **Staff sync** refreshes all desk briefs from the same snapshot and can merge updates into your venture.',
+        a: 'Each AI teammate is **role-bound**: they answer from their desk's mandate—strategy narrative, finance numbers, product delivery, market signal—not as a generic chatbot. **Staff sync** refreshes all desk briefs from the same snapshot and can merge updates into your venture.',
     },
     {
         q: 'What do I do first after entering the workspace?',
@@ -126,8 +126,8 @@ export default function GuidePage() {
                         <Cpu className="h-5 w-5 text-zinc-500" strokeWidth={1.5} aria-hidden />
                         <h2 className="text-lg font-semibold tracking-tight text-white">AI stack</h2>
                     </div>
-                    <p className=”text-[14px] leading-relaxed text-zinc-500”>
-                        DEEPCHOX runs on <strong className=”text-zinc-400”>OpenAI GPT</strong> — every desk, every sync, every boardroom call. Each AI role has a specialised system prompt that makes it a domain expert (strategy, finance, product, GTM, market intelligence). The routing is automatic; there is no model-picking step in the product experience.
+                    <p className="text-[14px] leading-relaxed text-zinc-500">
+                        DEEPCHOX runs on <strong className="text-zinc-400">OpenAI GPT</strong> — every desk, every sync, every boardroom call. Each AI role has a specialised system prompt that makes it a domain expert (strategy, finance, product, GTM, market intelligence). The routing is automatic; there is no model-picking step in the product experience.
                     </p>
                 </section>
 
