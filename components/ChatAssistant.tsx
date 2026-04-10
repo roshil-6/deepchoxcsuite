@@ -327,7 +327,7 @@ export function ChatAssistant({
             const errMsg: Message = {
                 id: Date.now().toString(),
                 role: 'assistant',
-                content: 'Connection error. Ensure the intelligence engine (Ollama) is active.',
+                content: 'Connection error. The AI team is temporarily unreachable — please try again.',
                 timestamp: Date.now(),
             };
             if (useExecutiveThread) {
@@ -464,20 +464,21 @@ export function ChatAssistant({
     const blockInlineConversation =
         focusAnchorsThread && deskThreadSlotEl
             ? createPortal(
-                  <div className="w-full">
+                  <div className="w-full rounded-xl border border-white/[0.07] bg-[var(--color-brand-card)] px-4 py-4">
                       {messages.length > 0 || isLoading ? (
-                          <div className="mb-2 flex justify-end">
+                          <div className="mb-3 flex items-center justify-between">
+                              <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-white/30">Thread</span>
                               <button
                                   type="button"
                                   onClick={() => (useExecutiveThread ? clearExecutiveThread() : setLocalMessages([]))}
-                                  className="text-[11px] text-zinc-600 transition-colors hover:text-zinc-400"
+                                  className="text-[11px] text-white/30 transition-colors hover:text-white/60"
                                   title="Clear this thread"
                               >
                                   Clear thread
                               </button>
                           </div>
                       ) : null}
-                      <div className="space-y-3">{threadBody}</div>
+                      <div className="flex flex-col gap-3">{threadBody}</div>
                   </div>,
                   deskThreadSlotEl,
               )
