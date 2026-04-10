@@ -7,7 +7,7 @@ import { ArrowLeft, ChevronDown, Cpu, Users, Building2 } from 'lucide-react';
 const faqItems = [
     {
         q: 'Which AI models power DEEPCHOX?',
-        a: 'Everything is wired inside the product: a built-in **SLM** for lightweight, local-friendly tasks; **Kimi V2** where we route longer reasoning and document-style work; and **Groq** for fast, low-latency responses on supported flows. DEEPCHOX chooses the stack—you do not paste API keys in the UI.',
+        a: 'DEEPCHOX is powered by **OpenAI GPT** — fast, capable, and consistent across every desk. Each AI role (CEO, CFO, PM, CMO, Scout) runs on the same model with a specialised system prompt that makes it an expert in its domain. DEEPCHOX chooses the routing — you focus on your venture.',
     },
     {
         q: 'How is the virtual office meant to work for a solo founder?',
@@ -124,13 +124,10 @@ export default function GuidePage() {
                 <section className="mt-16 border-t border-zinc-800 pt-14">
                     <div className="mb-8 flex items-center gap-3">
                         <Cpu className="h-5 w-5 text-zinc-500" strokeWidth={1.5} aria-hidden />
-                        <h2 className="text-lg font-semibold tracking-tight text-white">AI stack (in-app)</h2>
+                        <h2 className="text-lg font-semibold tracking-tight text-white">AI stack</h2>
                     </div>
-                    <p className="text-[14px] leading-relaxed text-zinc-500">
-                        DEEPCHOX routes requests across a fixed, product-managed stack—<strong className="text-zinc-400">built-in SLM</strong> for
-                        efficient on-device-friendly tasks, <strong className="text-zinc-400">Kimi V2</strong> where we need strong long-context
-                        reasoning, and <strong className="text-zinc-400">Groq</strong> for high-throughput, low-latency generation. Selection is
-                        automatic from inside the app; there is no “bring your own key” step in the product experience.
+                    <p className=”text-[14px] leading-relaxed text-zinc-500”>
+                        DEEPCHOX runs on <strong className=”text-zinc-400”>OpenAI GPT</strong> — every desk, every sync, every boardroom call. Each AI role has a specialised system prompt that makes it a domain expert (strategy, finance, product, GTM, market intelligence). The routing is automatic; there is no model-picking step in the product experience.
                     </p>
                 </section>
 

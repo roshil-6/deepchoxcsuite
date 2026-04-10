@@ -162,7 +162,7 @@ export function buildHeuristicMeetingPlan(project: Project): { intro: string; st
         goToLabel: 'Stay in Relay',
     });
 
-    const intro = `Here’s a practical order for “${project.name}” based on what’s filled in your venture right now. Tap a desk to jump there, or use Refresh plan for AI-generated steps when Groq is configured.`;
+    const intro = `Here’s a practical order for “${project.name}” based on what’s filled in your venture right now. Tap a desk to jump there, or use Refresh plan for AI-generated steps when AI is configured.`;
 
     return { intro, steps: steps.slice(0, 10) };
 }
