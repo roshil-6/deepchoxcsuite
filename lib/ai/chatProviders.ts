@@ -1,46 +1,18 @@
 /**
- * Server-side chat routing: Groq (OpenAI-compatible) and Ollama.
+ * Server-side chat routing: Gemini (OpenAI-compatible), Groq, HuggingFace, Ollama.
  * Client payloads stay Ollama-shaped; we normalize responses to `{ message: { role, content } }`.
+ *
+ * Provider priority (first available key wins):
+ *   1. GEMINI_API_KEY  → Google Gemini (gemini-2.0-flash by default)
+ *   2. GROQ_API_KEY    → Groq (llama-3.3-70b-versatile by default)
+ *   3. HF_API_TOKEN    → Hugging Face Inference (gemma-2-2b-it by default)
+ *   4. OLLAMA_URL      → local Ollama
+ *   5. Simulation      → offline fallback
  */
 
 type ChatMessage = { role: string; content: string };
 
-const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-
-/**
- * Map UI / Ollama-style ids to Groq `model` strings.
- * Keep in sync with https://console.groq.com/docs/deprecations — retired IDs break requests.
- */
-const GROQ_MODEL_MAP: Record<string, string> = {
-  llama3: 'llama-3.3-70b-versatile',
-  'llama3.2': 'llama-3.1-8b-instant',
-  /** mixtral-8x7b-32768 retired on Groq; use a current production text model */
-  mistral: 'llama-3.3-70b-versatile',
-  phi3: 'llama-3.1-8b-instant',
-  /**
-   * Desk label “Gemma 2” — Groq decommissioned `gemma2-9b-it` (see deprecations).
-   * Default routes to Groq’s recommended replacement: `llama-3.1-8b-instant`.
-   * Override with `GROQ_GEMMA_MODEL` (e.g. another current id from console.groq.com/docs/models).
-   */
-  gemma2: process.env.GROQ_GEMMA_MODEL?.trim() || 'llama-3.1-8b-instant',
-};
-
-const GROQ_DESK_IDS = new Set(Object.keys(GROQ_MODEL_MAP));
-
-/**
- * Resolves which Groq model to call.
- * - Desk picker ids (`llama3`, `gemma2`, …) always use the map above (not overridden by `GROQ_MODEL`).
- * - `GROQ_MODEL` is the **default** when no known desk id is sent (e.g. server routes that pass `'llama3'` or omit model).
- */
-export function resolveGroqModel(requested?: string): string {
-  const fromEnv = process.env.GROQ_MODEL?.trim();
-  const raw = (requested || '').trim();
-
-  if (raw && GROQ_DESK_IDS.has(raw)) {
-    return GROQ_MODEL_MAP[raw]!;
-  }
-  return fromEnv || GROQ_MODEL_MAP.llama3;
-}
+// ─── Shared helpers ──────────────────────────────────────────────────────────
 
 export function toOpenAiMessages(messages: ChatMessage[]): { role: 'system' | 'user' | 'assistant'; content: string }[] {
   return messages
@@ -58,15 +30,13 @@ export interface OllamaShapedResponse {
   done: boolean;
 }
 
-export async function chatWithGroq(
+async function callOpenAICompatible(
+  baseUrl: string,
+  apiKey: string,
+  model: string,
   messages: ChatMessage[],
-  modelId: string | undefined,
   options?: { responseJsonObject?: boolean; temperature?: number }
 ): Promise<OllamaShapedResponse> {
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) throw new Error('GROQ_API_KEY is not set');
-
-  const model = resolveGroqModel(modelId);
   const temperature = options?.responseJsonObject
     ? (options.temperature ?? 0.35)
     : (options?.temperature ?? 0.7);
@@ -80,7 +50,9 @@ export async function chatWithGroq(
     body.response_format = { type: 'json_object' };
   }
 
-  const res = await fetch(GROQ_URL, {
+  const url = baseUrl.endsWith('/') ? `${baseUrl}chat/completions` : `${baseUrl}/chat/completions`;
+
+  const res = await fetch(url, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -95,8 +67,7 @@ export async function chatWithGroq(
   };
 
   if (!res.ok) {
-    const errText = data.error?.message || res.statusText || 'Groq request failed';
-    throw new Error(errText);
+    throw new Error(data.error?.message || res.statusText || 'Request failed');
   }
 
   const content = data.choices?.[0]?.message?.content ?? '';
@@ -108,7 +79,77 @@ export async function chatWithGroq(
   };
 }
 
-/** Hugging Face Inference API (text generation) — Gemma and other models. */
+// ─── Gemini ───────────────────────────────────────────────────────────────────
+
+const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/openai';
+
+/**
+ * Model map for Gemini. Override default with GEMINI_MODEL env var.
+ * gemini-2.0-flash: fast and capable — good default for all desks.
+ * gemini-1.5-pro: more capable, slower, higher cost.
+ */
+const GEMINI_MODEL_MAP: Record<string, string> = {
+  llama3: 'gemini-2.0-flash',
+  'llama3.2': 'gemini-2.0-flash',
+  mistral: 'gemini-2.0-flash',
+  phi3: 'gemini-2.0-flash',
+  gemma2: 'gemini-2.0-flash',
+};
+
+export function resolveGeminiModel(requested?: string): string {
+  const fromEnv = process.env.GEMINI_MODEL?.trim();
+  const raw = (requested || '').trim();
+  if (raw && GEMINI_MODEL_MAP[raw]) return GEMINI_MODEL_MAP[raw]!;
+  return fromEnv || 'gemini-2.0-flash';
+}
+
+export async function chatWithGemini(
+  messages: ChatMessage[],
+  modelId: string | undefined,
+  options?: { responseJsonObject?: boolean; temperature?: number }
+): Promise<OllamaShapedResponse> {
+  const apiKey = process.env.GEMINI_API_KEY?.trim();
+  if (!apiKey) throw new Error('GEMINI_API_KEY is not set');
+
+  const model = resolveGeminiModel(modelId);
+  return callOpenAICompatible(GEMINI_BASE_URL, apiKey, model, messages, options);
+}
+
+// ─── Groq ─────────────────────────────────────────────────────────────────────
+
+const GROQ_URL = 'https://api.groq.com/openai/v1';
+
+const GROQ_MODEL_MAP: Record<string, string> = {
+  llama3: 'llama-3.3-70b-versatile',
+  'llama3.2': 'llama-3.1-8b-instant',
+  mistral: 'llama-3.3-70b-versatile',
+  phi3: 'llama-3.1-8b-instant',
+  gemma2: process.env.GROQ_GEMMA_MODEL?.trim() || 'llama-3.1-8b-instant',
+};
+
+const GROQ_DESK_IDS = new Set(Object.keys(GROQ_MODEL_MAP));
+
+export function resolveGroqModel(requested?: string): string {
+  const fromEnv = process.env.GROQ_MODEL?.trim();
+  const raw = (requested || '').trim();
+  if (raw && GROQ_DESK_IDS.has(raw)) return GROQ_MODEL_MAP[raw]!;
+  return fromEnv || GROQ_MODEL_MAP.llama3;
+}
+
+export async function chatWithGroq(
+  messages: ChatMessage[],
+  modelId: string | undefined,
+  options?: { responseJsonObject?: boolean; temperature?: number }
+): Promise<OllamaShapedResponse> {
+  const apiKey = process.env.GROQ_API_KEY?.trim();
+  if (!apiKey) throw new Error('GROQ_API_KEY is not set');
+
+  const model = resolveGroqModel(modelId);
+  return callOpenAICompatible(GROQ_URL, apiKey, model, messages, options);
+}
+
+// ─── HuggingFace ──────────────────────────────────────────────────────────────
+
 function hfBearerToken(): string | undefined {
   return (
     process.env.HF_API_TOKEN?.trim() ||
@@ -117,14 +158,12 @@ function hfBearerToken(): string | undefined {
   );
 }
 
-/** One HF repo for desk chat — avoids gated Llama/Mistral IDs on free inference. Override with HF_CHAT_MODEL. */
 const DEFAULT_HF_CHAT_MODEL = 'google/gemma-2-2b-it';
 
 function resolveHfInferenceModel(_requested?: string): string {
   return process.env.HF_CHAT_MODEL?.trim() || DEFAULT_HF_CHAT_MODEL;
 }
 
-/** Build a single prompt for HF text-generation (Gemma 2 IT-style turns when possible). */
 function buildHfPromptFromMessages(messages: ChatMessage[]): string {
   const normalized = messages.filter((m) => m && typeof m.content === 'string');
   if (normalized.length === 0) return '<start_of_turn>user\n\n<end_of_turn>\n<start_of_turn>model\n';
@@ -182,9 +221,7 @@ export async function chatWithHuggingFace(
 
   const arr = Array.isArray(data) ? data : null;
   const text = (arr?.[0] as { generated_text?: string } | undefined)?.generated_text?.trim() || '';
-  if (!text) {
-    throw new Error('Empty response from Hugging Face');
-  }
+  if (!text) throw new Error('Empty response from Hugging Face');
 
   return {
     model,
@@ -194,33 +231,28 @@ export async function chatWithHuggingFace(
   };
 }
 
+// ─── Ollama ───────────────────────────────────────────────────────────────────
+
 export async function chatWithOllama(messages: ChatMessage[], model: string | undefined): Promise<OllamaShapedResponse> {
   const url = process.env.OLLAMA_URL?.trim() || 'http://127.0.0.1:11434/api/chat';
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: model || 'llama3',
-      messages,
-      stream: false,
-    }),
+    body: JSON.stringify({ model: model || 'llama3', messages, stream: false }),
   });
 
-  if (!response.ok) {
-    throw new Error(`Ollama API returned ${response.status}`);
-  }
-
-  const data = (await response.json()) as OllamaShapedResponse;
-  return data;
+  if (!response.ok) throw new Error(`Ollama API returned ${response.status}`);
+  return (await response.json()) as OllamaShapedResponse;
 }
+
+// ─── Simulation fallback ──────────────────────────────────────────────────────
 
 export function simulationResponse(messages: ChatMessage[], model: string | undefined): OllamaShapedResponse {
   const last = messages[messages.length - 1];
-  const lastUserMessage = last?.content || '';
+  const lower = (last?.content || '').toLowerCase();
   let mockResponse =
-    'I am currently disconnected from my neural engine. Set GROQ_API_KEY and/or HF_API_TOKEN (Hugging Face) on the server, or run Ollama locally.';
+    'I am currently disconnected from my neural engine. Set GEMINI_API_KEY (Google Gemini) or GROQ_API_KEY on the server, or run Ollama locally.';
 
-  const lower = lastUserMessage.toLowerCase();
   if (lower.includes('hello') || lower.includes('hi')) {
     mockResponse = 'Greetings. Dexo Core is online (Simulation Mode). How can I assist?';
   } else if (lower.includes('investor') || lower.includes('pitch')) {
@@ -239,4 +271,42 @@ export function simulationResponse(messages: ChatMessage[], model: string | unde
     message: { role: 'assistant', content: mockResponse },
     done: true,
   };
+}
+
+// ─── resolveChat — auto-selects provider by available keys ───────────────────
+/**
+ * Picks the best available provider at runtime.
+ * Routes that previously called `chatWithGroq` directly should use this instead
+ * so they automatically benefit from whichever key is configured.
+ *
+ * Priority: Gemini → Groq → HuggingFace → Ollama → Simulation
+ */
+export async function resolveChat(
+  messages: ChatMessage[],
+  modelId?: string,
+  options?: { responseJsonObject?: boolean; temperature?: number }
+): Promise<OllamaShapedResponse & { _provider: string }> {
+  const geminiKey = process.env.GEMINI_API_KEY?.trim();
+  const groqKey = process.env.GROQ_API_KEY?.trim();
+  const hfKey = hfBearerToken();
+
+  if (geminiKey) {
+    const out = await chatWithGemini(messages, modelId, options);
+    return { ...out, _provider: `Gemini · ${out.model}` };
+  }
+  if (groqKey) {
+    const out = await chatWithGroq(messages, modelId, options);
+    return { ...out, _provider: `Groq · ${out.model}` };
+  }
+  if (hfKey) {
+    const out = await chatWithHuggingFace(messages, modelId);
+    return { ...out, _provider: `HuggingFace · ${out.model}` };
+  }
+  try {
+    const out = await chatWithOllama(messages, modelId);
+    return { ...out, _provider: `Ollama · ${out.model}` };
+  } catch {
+    const out = simulationResponse(messages, modelId);
+    return { ...out, _provider: 'Simulation' };
+  }
 }

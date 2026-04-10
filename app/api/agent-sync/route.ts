@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { chatWithGroq } from '@/lib/ai/chatProviders';
+import { resolveChat as chatWithGroq } from '@/lib/ai/chatProviders';
 import type { AgentSyncPayload, AiSyncTraceStep, SyncProjectDTO } from '@/lib/agentStaffTypes';
 import { parseStrategy } from '@/lib/strategyDoc';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rateLimit';

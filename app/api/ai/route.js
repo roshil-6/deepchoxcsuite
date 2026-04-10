@@ -66,11 +66,12 @@ export async function POST(request) {
   const rl = checkRateLimit(`ai:${ip}`, RATE_LIMIT);
   if (!rl.ok) return rateLimitResponse(rl.resetAt);
 
-  // --- API key presence check (fail fast — never fall back to empty string) ---
+  // --- API key presence check (Gemini → HF fallback) ---
+  const geminiKey = process.env.GEMINI_API_KEY?.trim();
   const hfToken = process.env.HF_API_TOKEN?.trim() || process.env.HUGGINGFACE_API_KEY?.trim();
-  if (!hfToken) {
+  if (!geminiKey && !hfToken) {
     return NextResponse.json(
-      { error: "AI service not configured. HF_API_TOKEN is missing." },
+      { error: "AI service not configured. Set GEMINI_API_KEY or HF_API_TOKEN." },
       { status: 503 }
     );
   }
@@ -87,59 +88,59 @@ export async function POST(request) {
     }
 
     const systemPrompt = SYSTEM_PROMPTS[role] || SYSTEM_PROMPTS.assistant;
+    const messages = [
+      { role: "system", content: `${systemPrompt}\n\nCompany Context:\n${companyContext || "Early stage startup, pre-revenue, solo founder."}` },
+      { role: "user", content: message },
+    ];
 
-    const fullPrompt = `<start_of_turn>system
-${systemPrompt}
-
-Company Context:
-${companyContext || "Early stage startup, pre-revenue, solo founder."}
-<end_of_turn>
-<start_of_turn>user
-${message}
-<end_of_turn>
-<start_of_turn>model
-`;
-
-    const hfResponse = await fetch(
-      "https://api-inference.huggingface.co/models/google/gemma-2-2b-it",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${hfToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          inputs: fullPrompt,
-          parameters: {
-            max_new_tokens: 512,
-            temperature: 0.7,
-            top_p: 0.9,
-            do_sample: true,
-            return_full_text: false,
+    // Use Gemini when available, fall back to HuggingFace
+    let text, modelLabel;
+    if (geminiKey) {
+      const geminiRes = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${geminiKey}`,
+            "Content-Type": "application/json",
           },
-        }),
+          body: JSON.stringify({
+            model: process.env.GEMINI_MODEL?.trim() || "gemini-2.0-flash",
+            messages,
+            temperature: 0.7,
+            max_tokens: 512,
+          }),
+        }
+      );
+      const data = await geminiRes.json();
+      if (!geminiRes.ok) throw new Error(data.error?.message || "Gemini request failed");
+      text = data.choices?.[0]?.message?.content || "No response generated.";
+      modelLabel = "Gemini";
+    } else {
+      const fullPrompt = `<start_of_turn>system\n${systemPrompt}\n\nCompany Context:\n${companyContext || "Early stage startup, pre-revenue, solo founder."}\n<end_of_turn>\n<start_of_turn>user\n${message}\n<end_of_turn>\n<start_of_turn>model\n`;
+      const hfResponse = await fetch(
+        "https://api-inference.huggingface.co/models/google/gemma-2-2b-it",
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${hfToken}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            inputs: fullPrompt,
+            parameters: { max_new_tokens: 512, temperature: 0.7, top_p: 0.9, do_sample: true, return_full_text: false },
+          }),
+        }
+      );
+      const data = await hfResponse.json();
+      if (data.error) {
+        if (data.error.includes("loading")) {
+          return NextResponse.json({ response: null, loading: true, message: "Model warming up, please retry in 20 seconds" });
+        }
+        throw new Error(data.error);
       }
-    );
-
-    const data = await hfResponse.json();
-
-    if (data.error) {
-      if (data.error.includes("loading")) {
-        return NextResponse.json({
-          response: null,
-          loading: true,
-          message: "Model warming up, please retry in 20 seconds"
-        });
-      }
-      throw new Error(data.error);
+      text = data[0]?.generated_text || "No response generated.";
+      modelLabel = "Gemma 2B (HuggingFace)";
     }
 
-    const text = data[0]?.generated_text || "No response generated.";
-    return NextResponse.json({
-      response: text,
-      loading: false,
-      model: "Gemma 2B (HuggingFace)"
-    });
+    return NextResponse.json({ response: text, loading: false, model: modelLabel });
 
   } catch {
     // Do not leak internal error details to the client.

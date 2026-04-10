@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { chatWithGroq } from '@/lib/ai/chatProviders';
+import { resolveChat as chatWithGroq } from '@/lib/ai/chatProviders';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rateLimit';
 
 const SYSTEM = `You are helping founders onboard into a venture workspace. From the user's text (notes, pitch paste, voice transcript, or document text), extract structured fields.

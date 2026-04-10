@@ -52,7 +52,11 @@ export async function GET(req: Request) {
     database,
     databaseUrlConfigured,
     ...(databaseError ? { databaseError } : {}),
-    groqConfigured: Boolean(process.env.GROQ_API_KEY?.trim()),
+    aiConfigured: Boolean(
+      process.env.GEMINI_API_KEY?.trim() ||
+      process.env.GROQ_API_KEY?.trim() ||
+      process.env.HF_API_TOKEN?.trim()
+    ),
     ollamaUrl: process.env.OLLAMA_URL || null,
     timestamp: new Date().toISOString(),
   });

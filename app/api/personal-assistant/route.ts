@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { chatWithGroq } from '@/lib/ai/chatProviders';
+import { resolveChat as chatWithGroq } from '@/lib/ai/chatProviders';
 import { parsePersonalAssistantUpdatesFromModel } from '@/lib/paApplyUpdates';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rateLimit';
 

@@ -78,11 +78,12 @@ export async function POST(request) {
   const rl = checkRateLimit(`sync:${ip}`, RATE_LIMIT);
   if (!rl.ok) return rateLimitResponse(rl.resetAt);
 
-  // --- API key presence check (fail fast — never fall back to empty string) ---
+  // --- API key presence check (Gemini → HF fallback) ---
+  const geminiKey = process.env.GEMINI_API_KEY?.trim();
   const hfToken = process.env.HF_API_TOKEN?.trim() || process.env.HUGGINGFACE_API_KEY?.trim();
-  if (!hfToken) {
+  if (!geminiKey && !hfToken) {
     return NextResponse.json(
-      { error: "AI service not configured. HF_API_TOKEN is missing." },
+      { error: "AI service not configured. Set GEMINI_API_KEY or HF_API_TOKEN." },
       { status: 503 }
     );
   }
@@ -90,7 +91,6 @@ export async function POST(request) {
   try {
     const body = await request.json();
     const role = typeof body.role === "string" ? body.role : "";
-    // Sanitize user-controlled field before prompt interpolation
     const companyContext = sanitizePromptInput(body.companyContext, 6_000);
 
     if (!companyContext) {
@@ -99,45 +99,45 @@ export async function POST(request) {
 
     const promptText =
       SYNC_PROMPTS[role]?.(companyContext) ||
-      `Analyze this startup and give key insights: ${companyContext}`;
+      `You are a startup advisor on DEEPCHOX. Analyze this venture and give key insights across strategy, finance, product, GTM, and market intelligence:\n\n${companyContext}`;
 
-    const fullPrompt = `<start_of_turn>user
-${promptText}
-<end_of_turn>
-<start_of_turn>model
-`;
+    let text, modelLabel;
 
-    const hfResponse = await fetch(
-      "https://api-inference.huggingface.co/models/google/gemma-2-2b-it",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${hfToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          inputs: fullPrompt,
-          parameters: {
-            max_new_tokens: 600,
+    if (geminiKey) {
+      const res = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${geminiKey}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: process.env.GEMINI_MODEL?.trim() || "gemini-2.0-flash",
+            messages: [{ role: "user", content: promptText }],
             temperature: 0.6,
-            return_full_text: false,
-          },
-        }),
-      }
-    );
-
-    const data = await hfResponse.json();
-
-    if (data.error?.includes("loading")) {
-      return NextResponse.json({ loading: true });
+            max_tokens: 800,
+          }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || "Gemini request failed");
+      text = data.choices?.[0]?.message?.content || "Analysis unavailable.";
+      modelLabel = "Gemini";
+    } else {
+      const fullPrompt = `<start_of_turn>user\n${promptText}\n<end_of_turn>\n<start_of_turn>model\n`;
+      const hfResponse = await fetch(
+        "https://api-inference.huggingface.co/models/google/gemma-2-2b-it",
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${hfToken}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ inputs: fullPrompt, parameters: { max_new_tokens: 600, temperature: 0.6, return_full_text: false } }),
+        }
+      );
+      const data = await hfResponse.json();
+      if (data.error?.includes("loading")) return NextResponse.json({ loading: true });
+      text = data[0]?.generated_text || "Analysis unavailable.";
+      modelLabel = "Gemma 2B (HuggingFace)";
     }
 
-    const text = data[0]?.generated_text || "Analysis unavailable.";
-    return NextResponse.json({
-      result: text,
-      loading: false,
-      model: "Gemma 2B (HuggingFace)"
-    });
+    return NextResponse.json({ result: text, loading: false, model: modelLabel });
 
   } catch {
     // Do not leak internal error details to the client.

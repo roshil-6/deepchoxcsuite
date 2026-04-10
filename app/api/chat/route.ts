@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { chatWithGroq, chatWithHuggingFace, chatWithOllama, simulationResponse } from '@/lib/ai/chatProviders';
+import { chatWithGemini, chatWithGroq, chatWithHuggingFace, chatWithOllama, simulationResponse } from '@/lib/ai/chatProviders';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rateLimit';
 import { sanitizeMessages } from '@/lib/sanitize';
 
@@ -30,106 +30,94 @@ function hfTokenPresent(): boolean {
 const RATE_LIMIT = 30;
 
 export async function POST(req: Request) {
-  // --- Rate limiting ---
   const ip = getClientIp(req);
   const rl = checkRateLimit(`chat:${ip}`, RATE_LIMIT);
   if (!rl.ok) return rateLimitResponse(rl.resetAt);
 
   try {
     const body = (await req.json()) as Body;
-    // Sanitize message content and whitelist roles before forwarding to AI providers.
     const messages = sanitizeMessages(body.messages);
     const { model } = body;
     if (messages.length === 0) {
       return NextResponse.json({ error: 'messages required' }, { status: 400 });
     }
 
+    const geminiKey = process.env.GEMINI_API_KEY?.trim();
     const groqKey = process.env.GROQ_API_KEY?.trim();
     const hasHf = hfTokenPresent();
 
-    // Optional: use local Ollama for desk chat even when Groq is configured (real Gemma/Mistral tags, etc.)
+    // Force Ollama if configured
     if (deskChatForceOllama()) {
       try {
         const out = await chatWithOllama(messages, model);
-        return NextResponse.json({
-          ...out,
-          model: out.model ? `Ollama · ${out.model}` : 'Ollama',
-        });
-      } catch (fetchError) {
-        console.warn('DESK_CHAT_FORCE_OLLAMA: Ollama unavailable, falling back to Groq or simulation.', fetchError);
+        return NextResponse.json({ ...out, model: out.model ? `Ollama · ${out.model}` : 'Ollama' });
+      } catch {
+        console.warn('DESK_CHAT_FORCE_OLLAMA: Ollama unavailable, falling through.');
       }
     }
 
-    // Hugging Face Inference (e.g. Gemma) — use when CHAT_USE_HF=1, or when no Groq key (HF-only hosting)
+    // Gemini — primary when GEMINI_API_KEY is set
+    if (geminiKey) {
+      try {
+        const out = await chatWithGemini(messages, model);
+        return NextResponse.json({ ...out, model: `Gemini · ${out.model}` });
+      } catch (e) {
+        console.error('Gemini chat error:', e);
+        // Fall through to next provider
+      }
+    }
+
+    // HuggingFace first if CHAT_USE_HF=1 or no Groq key
     if (hasHf && (chatUseHuggingFaceFirst() || !groqKey)) {
       try {
         const out = await chatWithHuggingFace(messages, model);
-        return NextResponse.json({
-          ...out,
-          model: `Hugging Face · ${out.model}`,
-        });
+        return NextResponse.json({ ...out, model: `Hugging Face · ${out.model}` });
       } catch (e) {
         console.error('Hugging Face chat error:', e);
-        const msg = e instanceof Error ? e.message : 'Hugging Face error';
         if (!groqKey) {
+          const msg = e instanceof Error ? e.message : 'Hugging Face error';
           return NextResponse.json({
             created_at: new Date().toISOString(),
-            message: {
-              role: 'assistant',
-              content: `Could not complete the request via Hugging Face: ${msg}. Check HF_API_TOKEN and HF_CHAT_MODEL (see https://huggingface.co/docs/api-inference).`,
-            },
+            message: { role: 'assistant', content: `Could not complete the request: ${msg}` },
             done: true,
           });
         }
-        console.warn('HF failed, falling back to Groq.', e);
       }
     }
 
-    // Groq when GROQ_API_KEY is set — on failure, try HF if token present (Gemma / backup)
+    // Groq
     if (groqKey) {
       try {
         const out = await chatWithGroq(messages, model);
-        return NextResponse.json({
-          ...out,
-          model: `Groq · ${out.model}`,
-        });
+        return NextResponse.json({ ...out, model: `Groq · ${out.model}` });
       } catch (e) {
         console.error('Groq error:', e);
-        const msg = e instanceof Error ? e.message : 'Groq error';
         if (hasHf) {
           try {
             const out = await chatWithHuggingFace(messages, model);
-            return NextResponse.json({
-              ...out,
-              model: `Hugging Face · ${out.model}`,
-            });
+            return NextResponse.json({ ...out, model: `Hugging Face · ${out.model}` });
           } catch (hfErr) {
             console.error('HF fallback after Groq failed:', hfErr);
           }
         }
+        const msg = e instanceof Error ? e.message : 'Groq error';
         return NextResponse.json({
           created_at: new Date().toISOString(),
-          message: {
-            role: 'assistant',
-            content: `Could not complete the request via Groq: ${msg}. Check that GROQ_MODEL is a current model (see https://console.groq.com/docs/deprecations). If you use Hugging Face instead, set HF_API_TOKEN and CHAT_USE_HF=1 or remove GROQ_API_KEY.`,
-          },
+          message: { role: 'assistant', content: `Could not complete the request via Groq: ${msg}` },
           done: true,
         });
       }
     }
 
-    // Local / remote Ollama
+    // Ollama fallback
     try {
       const out = await chatWithOllama(messages, model);
-      return NextResponse.json({
-        ...out,
-        model: out.model ? `Ollama · ${out.model}` : 'Ollama',
-      });
-    } catch (fetchError) {
-      console.warn('Ollama unavailable, using simulation.', fetchError);
+      return NextResponse.json({ ...out, model: out.model ? `Ollama · ${out.model}` : 'Ollama' });
+    } catch {
+      console.warn('Ollama unavailable, using simulation.');
     }
 
-    // Demo fallback
+    // Simulation
     const out = simulationResponse(messages, model);
     return NextResponse.json({ ...out, model: 'Simulation' });
   } catch (error) {
