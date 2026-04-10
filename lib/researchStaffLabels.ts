@@ -1,6 +1,7 @@
 /**
- * User-facing copy: each desk is an AI role acting as a team member (no “research” or “C-suite” framing).
- * Internal `AgentRole` keys are unchanged.
+ * AI staff voice — each desk speaks as a team member who OWNS an area.
+ * The copy is first-person, active, and specific. Every label answers
+ * "what am I doing for the founder RIGHT NOW?"
  */
 export type ResearchStaffRole =
     | 'ceo'
@@ -17,68 +18,78 @@ export type ResearchStaffEntry = {
     line: string;
     /** Sidebar / chat primary label */
     navTitle: string;
-    /** Secondary line */
+    /** Secondary line — what the role handles (compact) */
     navHint: string;
-    /** Desk helper paragraph */
+    /** Desk welcome — the AI role speaking to the founder in first person */
     deskHelp: string;
+    /** One-line pitch of what the desk delivers — used in tiles/grids */
+    valueStatement: string;
 };
 
 export const RESEARCH_STAFF: Record<ResearchStaffRole, ResearchStaffEntry> = {
     ceo: {
         line: 'strategy & direction',
         navTitle: 'Strategy & direction',
-        navHint: 'AI teammate — narrative, phases, priorities',
+        navHint: 'Narrative, phases, priorities, intent',
         deskHelp:
-            'Your AI teammate acts as strategy lead — sharpen what you are building toward and how you explain it, in one venture record.',
+            'I own your strategic narrative. I keep the mission, vision, phases, and priorities in one place so every other desk pulls from a single source of truth. When direction drifts, I flag it.',
+        valueStatement: 'Keeps your venture story sharp and every desk aligned to one plan.',
     },
     accountant: {
         line: 'finance & runway',
         navTitle: 'Finance & runway',
-        navHint: 'AI teammate — funding, scenarios, trade-offs',
+        navHint: 'Runway, capital, burn, funding readiness',
         deskHelp:
-            'Your AI teammate acts as finance lead — runway, capital, and trade-offs in one calm view.',
+            'I track your runway and model burn scenarios. When capital decisions need attention — raise timing, allocation trade-offs, or red-flag spending — I surface them before they become problems.',
+        valueStatement: 'Models your burn, flags capital risk, and keeps runway visible.',
     },
     pm: {
         line: 'product & delivery',
         navTitle: 'Product & delivery',
-        navHint: 'AI teammate — roadmap, execution board, shipping',
+        navHint: 'Roadmap, execution board, shipping cadence',
         deskHelp:
-            'Your AI teammate acts as product & delivery lead — backlog through done, tied to the same venture.',
+            'I manage what gets built and shipped. The execution board, backlog, and delivery cadence live here. When priorities from strategy change, I translate them into concrete tasks.',
+        valueStatement: 'Turns strategy into tasks on the execution board and tracks delivery.',
     },
     cmo: {
         line: 'growth & narrative',
         navTitle: 'Growth & narrative',
-        navHint: 'AI teammate — GTM, messaging, pitch',
+        navHint: 'GTM, messaging, positioning, pitch',
         deskHelp:
-            'Your AI teammate acts as growth lead — turn venture truth into a story you can rehearse or export.',
+            'I shape how the world sees your venture. Positioning, go-to-market channels, and your pitch narrative all live here. I pull from strategy to keep messaging truthful and current.',
+        valueStatement: 'Crafts your pitch and GTM story from venture truth, not guesses.',
     },
     scout: {
         line: 'market & landscape',
         navTitle: 'Market & landscape',
-        navHint: 'AI teammate — signals, competitors, positioning',
+        navHint: 'Competitors, trends, signals, positioning',
         deskHelp:
-            'Your AI teammate acts as market lead — use public signals as inputs; verify and record what you believe.',
+            'I scan the landscape so you do not get surprised. Competitor moves, market signals, and positioning gaps — I pull from public sources and flag what matters for your specific venture.',
+        valueStatement: 'Watches competitors and market signals so you move with context.',
     },
     chief_of_staff: {
         line: 'coordination',
         navTitle: 'Team coordination',
-        navHint: 'AI teammate — routing and handoffs',
+        navHint: 'Cross-desk routing and handoffs',
         deskHelp:
-            'Your AI teammate coordinates across desks so threads and context stay with your venture.',
+            'I make sure threads do not get lost between desks. When a strategy shift affects product, or when finance data changes the GTM timeline, I route the context to the right place.',
+        valueStatement: 'Routes context between desks so nothing falls through the cracks.',
     },
     dexo: {
         line: 'cross-desk intelligence',
         navTitle: 'Cross-desk intelligence',
-        navHint: 'AI teammate — reads the whole venture',
+        navHint: 'Full-venture analysis, pattern recognition',
         deskHelp:
-            'Your AI teammate spans every desk when a question does not fit a single lane.',
+            'I read across every desk simultaneously. When a question spans strategy, product, and finance at once, I synthesize the full picture instead of sending you desk to desk.',
+        valueStatement: 'Synthesizes the full venture picture when questions span multiple areas.',
     },
     shark: {
         line: 'investor diligence',
         navTitle: 'Investor diligence',
-        navHint: 'AI teammate — VC-style stress test',
+        navHint: 'VC-style stress test, gap analysis',
         deskHelp:
-            'Your AI teammate stress-tests assumptions before real investor conversations — adversarial and venture-scoped.',
+            'I stress-test your venture the way an investor would. Gaps in the model, weak assumptions, missing proof points — better to find them here than in a real pitch.',
+        valueStatement: 'Finds the gaps in your story before investors do.',
     },
 };
 
@@ -107,8 +118,8 @@ export function staffTooltipLine(role: ResearchStaffRole): string {
 }
 
 /**
- * Left rail / compact nav: drops the clause after ` and ` (e.g. “X and Y” → “X”).
- * Titles use `&` so labels stay intact unless they contain “ and ”.
+ * Left rail / compact nav: drops the clause after ` and ` (e.g. "X and Y" → "X").
+ * Titles use `&` so labels stay intact unless they contain " and ".
  */
 export function sidebarPrimaryLabel(full: string): string {
     const i = full.indexOf(' and ');

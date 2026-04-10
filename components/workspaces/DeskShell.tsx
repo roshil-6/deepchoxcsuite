@@ -2,13 +2,6 @@
 
 import React from 'react';
 
-const HEADER_PAD = 'px-5 py-5 sm:px-6 sm:py-5';
-const BODY_PAD = 'px-5 py-4 sm:px-6 sm:py-5';
-
-function shellClass(base: string, extra?: string) {
-    return extra ? `${base} ${extra}` : base;
-}
-
 export type DeskShellProps = {
     /** Optional kicker above the title */
     eyebrow?: string;
@@ -28,7 +21,9 @@ export type DeskShellProps = {
 };
 
 /**
- * Shared desk surface — calm header, helper copy, optional tabs; no role badges.
+ * Shared desk surface — clean header with role identity, helper copy, optional tabs.
+ * The design makes the AI role feel present: the description speaks in first person,
+ * the layout gives the content room to breathe.
  */
 export function DeskShell({
     eyebrow,
@@ -42,31 +37,45 @@ export function DeskShell({
     bodyClassName,
 }: DeskShellProps) {
     return (
-        <div className={shellClass('flex w-full min-w-0 flex-col bg-brand-bg', className)}>
-            <header
-                className={shellClass(
-                    'shrink-0 border-b border-brand-border/50 bg-gradient-to-b from-brand-panel/25 to-transparent',
-                    HEADER_PAD
-                )}
-            >
-                {eyebrow ? (
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-muted/90">{eyebrow}</p>
-                ) : null}
-                <h1
-                    className={`text-[1.05rem] font-semibold leading-snug tracking-tight text-brand-text sm:text-lg ${eyebrow ? 'mt-1.5' : ''}`}
-                >
-                    {title}
-                </h1>
-                {description ? (
-                    <p className="mt-2.5 max-w-3xl text-[13px] font-normal leading-relaxed text-brand-muted">{description}</p>
-                ) : null}
+        <div className={`flex w-full min-w-0 flex-col bg-[var(--color-brand-bg)] ${className ?? ''}`}>
+            {/* ── Desk header ── */}
+            <header className="shrink-0 border-b border-white/[0.06] px-5 py-4 sm:px-6 sm:py-5">
+                <div className="flex items-start gap-3">
+                    {/* Accent indicator — subtle presence of the AI role */}
+                    <div className="mt-1 h-5 w-0.5 shrink-0 rounded-full bg-white/20" aria-hidden />
+                    <div className="min-w-0 flex-1">
+                        {eyebrow ? (
+                            <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--muted)]">
+                                {eyebrow}
+                            </p>
+                        ) : null}
+                        <h1
+                            className={`text-base font-semibold leading-snug tracking-tight text-[var(--text)] sm:text-[17px] ${eyebrow ? 'mt-1' : ''}`}
+                        >
+                            {title}
+                        </h1>
+                        {description ? (
+                            <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-[var(--muted)]">
+                                {description}
+                            </p>
+                        ) : null}
+                    </div>
+                </div>
                 {tabs ? (
-                    <div className="mt-4 flex flex-wrap gap-1 border-t border-brand-border/35 pt-3">{tabs}</div>
+                    <div className="ml-5 mt-4 flex flex-wrap gap-1 border-t border-white/[0.05] pt-3">{tabs}</div>
                 ) : null}
             </header>
-            <div className={`${bodyFlush ? 'p-0' : BODY_PAD} ${bodyClassName ?? ''}`}>{children}</div>
+
+            {/* ── Desk body ── */}
+            <div className={`${bodyFlush ? 'p-0' : 'px-5 py-4 sm:px-6 sm:py-5'} ${bodyClassName ?? ''}`}>
+                {children}
+            </div>
+
+            {/* ── Desk footer ── */}
             {footer ? (
-                <div className="shrink-0 border-t border-brand-border/60 bg-brand-panel/20 px-5 py-3 sm:px-6">{footer}</div>
+                <div className="shrink-0 border-t border-white/[0.06] bg-white/[0.01] px-5 py-3 sm:px-6">
+                    {footer}
+                </div>
             ) : null}
         </div>
     );
@@ -90,10 +99,10 @@ export function DeskTabButton({
         <button
             type={type}
             onClick={onClick}
-            className={`inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${
+            className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
                 active
-                    ? 'border-brand-border/80 bg-brand-input text-brand-text'
-                    : 'border-transparent bg-transparent text-brand-muted hover:border-brand-border/60 hover:bg-brand-input/50 hover:text-brand-text'
+                    ? 'border-white/[0.1] bg-white/[0.06] text-[var(--text)]'
+                    : 'border-transparent bg-transparent text-[var(--muted)] hover:border-white/[0.07] hover:bg-white/[0.04] hover:text-[var(--text)]'
             }`}
         >
             {icon}
@@ -104,7 +113,9 @@ export function DeskTabButton({
 
 export function DeskEmpty({ children, className }: { children: React.ReactNode; className?: string }) {
     return (
-        <div className={shellClass('flex min-h-[min(50vh,24rem)] items-center justify-center p-8 text-sm text-brand-muted', className)}>
+        <div
+            className={`flex min-h-[min(50vh,24rem)] items-center justify-center p-8 text-sm text-[var(--muted)] ${className ?? ''}`}
+        >
             {children}
         </div>
     );

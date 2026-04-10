@@ -578,29 +578,29 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         )}
                     </section>
 
-                    <DashMessageSection
-                        outline="portfolio"
-                        icon={<LayoutGrid className="h-4 w-4 text-zinc-400" aria-hidden />}
-                        eyebrow="Portfolio"
-                        title="Research desks"
-                        subtitle="What each area saves in your venture"
-                        className="mt-8"
-                    >
-                        <ul className="grid gap-2 sm:grid-cols-2">
+                    <section className="mt-8" aria-label="Your AI team">
+                        <p className="dash-section-label">Your AI team</p>
+                        <p className="mb-4 text-sm text-brand-muted">
+                            Five AI teammates — each owns an area of your venture. They read from the same record and coordinate through staff sync.
+                        </p>
+                        <div className="grid gap-3 sm:grid-cols-2">
                             {(['ceo', 'accountant', 'pm', 'cmo', 'scout'] as const satisfies readonly ResearchStaffRole[]).map((role) => {
                                 const row = RESEARCH_STAFF[role];
                                 return (
-                                    <li
+                                    <div
                                         key={role}
-                                        className="flex flex-col gap-0.5 rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2.5 ring-1 ring-white/[0.04]"
+                                        className="flex items-start gap-3 rounded-xl border border-white/[0.07] bg-[var(--color-brand-card)] px-4 py-3.5 transition-colors hover:border-white/[0.12]"
                                     >
-                                        <span className="text-[11px] font-medium leading-snug text-brand-text">{row.navTitle}</span>
-                                        <span className="min-w-0 text-[10px] leading-snug text-brand-muted">{row.navHint}</span>
-                                    </li>
+                                        <div className="mt-0.5 h-4 w-0.5 shrink-0 rounded-full bg-white/20" aria-hidden />
+                                        <div className="min-w-0">
+                                            <p className="text-[13px] font-medium leading-snug text-brand-text">{row.navTitle}</p>
+                                            <p className="mt-1 text-[11px] leading-snug text-brand-muted">{row.valueStatement}</p>
+                                        </div>
+                                    </div>
                                 );
                             })}
-                        </ul>
-                    </DashMessageSection>
+                        </div>
+                    </section>
                 </div>
             </div>
         );
@@ -620,8 +620,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 </div>
                                 <h1 className="text-2xl font-semibold tracking-tight text-brand-text sm:text-3xl">{activeProject.name}</h1>
                                 <p className="mt-2 max-w-xl text-[13px] leading-snug text-brand-muted">
-                                    Each block below reads like a brief — color outlines group charts and staff output. Open{' '}
-                                    <span className="text-brand-text/85">Dashboard</span> for the full canvas; chat stays at the bottom.
+                                    Your AI team is active. Each section below is an update from a desk — expand any brief for the full picture. Chat bar below for direct instructions.
                                 </p>
                             </div>
                             <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
@@ -807,11 +806,10 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
 
                         <section aria-labelledby="exec-hub-tiles">
                             <h2 id="exec-hub-tiles" className="dash-section-label">
-                                Surfaces
+                                Quick access
                             </h2>
                             <p className="mb-3 text-[12px] leading-snug text-brand-muted">
-                                Tap a shortcut — hover for a short hint. <span className="text-brand-text/80">Dashboard</span> opens the insight
-                                canvas (outlined message-style blocks).
+                                Jump to any surface — each one reads from the same venture record and updates in real time.
                             </p>
                             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
                                 <button
