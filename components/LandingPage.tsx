@@ -128,7 +128,7 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                 <header className="sticky top-0 z-30 bg-transparent">
                     <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-x-4 gap-y-3 px-5 py-3.5 sm:px-8 lg:px-12">
                         <span className="font-sans text-[12px] font-semibold tracking-[0.12em] text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.85)]">
-                            AI-powered team for founders
+                            The AI C-Suite for solo founders
                         </span>
                         <nav
                             className="flex flex-1 flex-wrap items-center justify-end gap-x-1 gap-y-2 sm:flex-initial sm:gap-x-2 md:gap-x-3 [text-shadow:0_2px_24px_rgba(0,0,0,0.85)]"
@@ -176,7 +176,7 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                         <div className="flex w-full justify-center px-1">
                             <div className="flex w-full max-w-xl flex-col items-center text-center sm:max-w-2xl lg:max-w-3xl">
                                 <p className="font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-brand-teal sm:text-[11px]">
-                                    AI-powered team for founders
+                                    The AI C-Suite for solo founders
                                 </p>
                                 <span
                                     className="mt-2 font-[family-name:var(--font-brand-display)] text-[clamp(2.5rem,8vw,4.5rem)] font-semibold leading-[1.02] tracking-[-0.02em] text-white [text-shadow:0_2px_40px_rgba(0,0,0,0.5),0_0_48px_rgba(255,255,255,0.04)]"
@@ -188,8 +188,7 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                                     aria-hidden
                                 />
                                 <p className="mt-4 max-w-[22rem] font-sans text-[14px] font-normal leading-[1.55] text-zinc-400 sm:max-w-[26rem] sm:text-[15px] sm:leading-relaxed">
-                                    AI roles act as specialized team members — strategy, finance, product, market, and GTM — coordinated on
-                                    one venture record for solo founders.
+                                    Five AI executives — strategy, finance, product, GTM, and market intelligence — coordinated on one venture record. Run your company like a funded team, without the headcount.
                                 </p>
                             </div>
                         </div>
@@ -231,7 +230,7 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                         </div>
 
                         <h1 className="font-serif mx-auto mt-5 max-w-[22ch] text-balance text-[clamp(2.15rem,6vw,4.25rem)] font-semibold leading-[1.08] tracking-[0.015em] text-white sm:mt-6 sm:max-w-[24ch] [text-shadow:0_4px_40px_rgba(0,0,0,0.55)]">
-                            Where venture and intelligence meet
+                            The AI that runs your company, not just your tasks
                         </h1>
                     </div>
                 </section>
@@ -241,11 +240,10 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
 
                     <div className="mt-12 grid gap-10 text-left lg:mt-14 lg:grid-cols-2 lg:gap-x-16 lg:gap-y-0">
                             <p className="font-serif text-[clamp(1.35rem,2.8vw,1.85rem)] font-normal italic leading-[1.55] text-zinc-200 lg:leading-[1.5] [text-shadow:0_2px_20px_rgba(0,0,0,0.5)]">
-                                One company. One office. Every desk pulling in the same direction.
+                                Every other AI answers questions. DEEPCHOX runs operations.
                             </p>
                             <p className="font-sans text-[clamp(1.05rem,2.1vw,1.25rem)] font-normal leading-[1.75] text-zinc-300 lg:text-[1.35rem] lg:leading-[1.8]">
-                                Run strategy, specialist desks, and AI staff on a single venture record—so your story, roadmap, and numbers
-                                stay aligned without jumping between tools.
+                                Five specialist desks — strategy, finance, product, GTM, market intel — all coordinated on one venture record. Each desk knows what the others are doing. The founder gets a full company view, not five disconnected chat windows.
                             </p>
                         </div>
 
@@ -254,9 +252,9 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                             role="list"
                         >
                             {[
-                                { t: 'One venture memory', d: 'Single source of truth' },
-                                { t: 'Role-based teammates', d: 'Each desk is an AI team member' },
-                                { t: 'Models in-app', d: 'Groq · Kimi · SLM' },
+                                { t: 'Coordinated AI team', d: 'Five executives. One venture record. All aligned.' },
+                                { t: 'Decisions, not chat', d: 'Each desk gives a call, not a list of options' },
+                                { t: 'Built for solo founders', d: 'One person running a whole company — this is for you' },
                             ].map(({ t, d }) => (
                                 <span
                                     key={t}
@@ -285,7 +283,7 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                     <div className="[text-shadow:0_2px_20px_rgba(0,0,0,0.6)]">
                         <span className="font-sans text-[17px] font-semibold tracking-tight text-zinc-100">DEEPCHOX</span>
                         <span className="mt-2 block font-sans text-[14px] font-normal leading-relaxed text-zinc-500">
-                            AI-powered team for founders · One venture workspace
+                            The AI C-Suite for solo founders · Run your company, not just your tasks
                         </span>
                     </div>
                     <Link
