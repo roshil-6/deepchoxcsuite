@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { chatWithGroq } from '@/lib/ai/chatProviders';
+import { resolveChat as chatWithGroq } from '@/lib/ai/chatProviders';
 import type { Project } from '@/lib/db';
 import { buildHeuristicMeetingPlan, normalizeRelayMeetingGoTo, type RelayMeetingStep } from '@/lib/relayMeetingRoom';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rateLimit';

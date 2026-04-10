@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { chatWithGroq } from '@/lib/ai/chatProviders';
+import { resolveChat as chatWithGroq } from '@/lib/ai/chatProviders';
 import { AGENT_DEFINITIONS } from '@/lib/orchestrator/AgentDefinitions';
 import { normalizeExecutiveBoardResponse } from '@/lib/orchestrator/boardroomNormalize';
 import type { ExecutiveRole } from '@/lib/orchestrator/types';
