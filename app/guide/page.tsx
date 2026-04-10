@@ -15,7 +15,7 @@ const faqItems = [
     },
     {
         q: 'How do the agents behave?',
-        a: 'Each AI teammate is **role-bound**: they answer from their desk's mandate—strategy narrative, finance numbers, product delivery, market signal—not as a generic chatbot. **Staff sync** refreshes all desk briefs from the same snapshot and can merge updates into your venture.',
+        a: "Each AI teammate is **role-bound**: they answer from their desk's mandate—strategy narrative, finance numbers, product delivery, market signal—not as a generic chatbot. **Staff sync** refreshes all desk briefs from the same snapshot and can merge updates into your venture.",
     },
     {
         q: 'What do I do first after entering the workspace?',
