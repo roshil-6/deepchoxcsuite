@@ -10,27 +10,27 @@ export type PlanId = 'free' | 'pro';
 export interface Plan {
     id: PlanId;
     name: string;
+    /** Display price string, e.g. "Free" or "₹300" */
     price: string;
     priceNote: string;
-    /** Max ventures (projects). null = unlimited */
-    maxVentures: number | null;
-    /** Max staff syncs per day. null = unlimited */
-    maxSyncsPerDay: number | null;
     features: {
-        // Core (both tiers)
+        // ── Core — available to everyone ──────────────────────────────────
         allDesks: boolean;
         personalAssistant: boolean;
         dashboard: boolean;
         pitchDeckExport: boolean;
-        // Gated — Pro only
         multipleVentures: boolean;
         relayMeetingRoom: boolean;
         vcGauntlet: boolean;
         wargameNexus: boolean;
         intelligenceSuite: boolean;
-        fileUploads: boolean;
-        livingOfficeMemory: boolean;
-        unlimitedSync: boolean;
+        // ── Pro-exclusive automated intelligence ──────────────────────────
+        /** Daily AI briefing auto-delivered every morning without user prompting */
+        executiveBriefingAutopilot: boolean;
+        /** Full multi-round adversarial simulation + board stress-test + downloadable report */
+        wargameMultiRound: boolean;
+        /** Cross-venture AI synthesis — portfolio-level patterns & synergy detection */
+        crossVentureIntelligence: boolean;
     };
 }
 
@@ -40,30 +40,6 @@ export const PLANS: Record<PlanId, Plan> = {
         name: 'Founder',
         price: 'Free',
         priceNote: 'No credit card needed',
-        maxVentures: 1,
-        maxSyncsPerDay: 1,
-        features: {
-            allDesks: true,
-            personalAssistant: true,
-            dashboard: true,
-            pitchDeckExport: true,
-            multipleVentures: false,
-            relayMeetingRoom: false,
-            vcGauntlet: false,
-            wargameNexus: false,
-            intelligenceSuite: false,
-            fileUploads: false,
-            livingOfficeMemory: false,
-            unlimitedSync: false,
-        },
-    },
-    pro: {
-        id: 'pro',
-        name: 'Co-Founder',
-        price: '$29',
-        priceNote: 'per month · cancel anytime',
-        maxVentures: null,
-        maxSyncsPerDay: null,
         features: {
             allDesks: true,
             personalAssistant: true,
@@ -74,9 +50,31 @@ export const PLANS: Record<PlanId, Plan> = {
             vcGauntlet: true,
             wargameNexus: true,
             intelligenceSuite: true,
-            fileUploads: true,
-            livingOfficeMemory: true,
-            unlimitedSync: true,
+            // Pro-exclusive
+            executiveBriefingAutopilot: false,
+            wargameMultiRound: false,
+            crossVentureIntelligence: false,
+        },
+    },
+    pro: {
+        id: 'pro',
+        name: 'Co-Founder Pro',
+        price: '₹300',
+        priceNote: 'per month · cancel anytime',
+        features: {
+            allDesks: true,
+            personalAssistant: true,
+            dashboard: true,
+            pitchDeckExport: true,
+            multipleVentures: true,
+            relayMeetingRoom: true,
+            vcGauntlet: true,
+            wargameNexus: true,
+            intelligenceSuite: true,
+            // Pro-exclusive
+            executiveBriefingAutopilot: true,
+            wargameMultiRound: true,
+            crossVentureIntelligence: true,
         },
     },
 };
@@ -84,14 +82,24 @@ export const PLANS: Record<PlanId, Plan> = {
 export const FREE_PLAN = PLANS.free;
 export const PRO_PLAN = PLANS.pro;
 
-/** Human-readable label for each Pro feature, used in upgrade prompts */
-export const PRO_FEATURE_LABELS: Record<string, string> = {
-    multipleVentures: 'Multiple ventures',
-    relayMeetingRoom: 'Relay Meeting Room',
-    vcGauntlet: 'VC Gauntlet — pitch practice',
-    wargameNexus: 'Wargame Nexus — scenario planning',
-    intelligenceSuite: 'Intelligence Suite',
-    fileUploads: 'File uploads & document context',
-    livingOfficeMemory: 'Living Office Memory',
-    unlimitedSync: 'Unlimited staff syncs',
-};
+/** The three Pro-exclusive intelligence features — used in upgrade prompts and pricing UI */
+export const PRO_INTELLIGENCE_FEATURES = [
+    {
+        key: 'executiveBriefingAutopilot',
+        name: 'Executive Briefing Autopilot',
+        description:
+            'Daily AI brief auto-delivered every morning — venture progress, risks flagged, priorities, and market intel without you asking.',
+    },
+    {
+        key: 'wargameMultiRound',
+        name: 'Wargame Multi-Round Simulation',
+        description:
+            'Full adversarial simulation with competitor counter-moves across multiple rounds, board stress-test mode, and downloadable scenario reports.',
+    },
+    {
+        key: 'crossVentureIntelligence',
+        name: 'Cross-Venture Intelligence',
+        description:
+            'AI layer that spots patterns, resource conflicts, and synergies across all your ventures simultaneously — portfolio-level decisions.',
+    },
+] as const;

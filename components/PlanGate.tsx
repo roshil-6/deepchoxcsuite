@@ -15,7 +15,12 @@
 import React, { useState } from 'react';
 import { Lock, Sparkles } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
-import { PRO_FEATURE_LABELS, type Plan } from '@/lib/plans';
+import { PRO_INTELLIGENCE_FEATURES, type Plan } from '@/lib/plans';
+
+/** Build a quick lookup from feature key → human label using the Pro features list */
+const PRO_FEATURE_LABELS: Record<string, string> = Object.fromEntries(
+    PRO_INTELLIGENCE_FEATURES.map((f) => [f.key, f.name]),
+);
 import { UpgradeModal } from '@/components/UpgradeModal';
 
 interface PlanGateProps {
@@ -40,7 +45,7 @@ export function PlanGate({ feature, label, lockedFallback, children }: PlanGateP
 
     return (
         <>
-            <UpgradeModal open={modalOpen} onClose={() => setModalOpen(false)} highlight={featureLabel} />
+            <UpgradeModal open={modalOpen} onClose={() => setModalOpen(false)} />
             <div className="flex min-h-[min(55vh,28rem)] w-full flex-col items-center justify-center gap-5 px-6 py-12 text-center">
                 {/* Lock badge */}
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
@@ -68,7 +73,7 @@ export function PlanGate({ feature, label, lockedFallback, children }: PlanGateP
                     Upgrade to Pro
                 </button>
 
-                <p className="text-[10px] text-zinc-700">$29 / month · cancel anytime</p>
+                <p className="text-[10px] text-zinc-700">&#8377;300/mo (~$4) &middot; cancel anytime</p>
             </div>
         </>
     );
