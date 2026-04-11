@@ -16,16 +16,11 @@ import { SyncToastHost } from '@/components/SyncToastHost';
 import { PersonalAssistantChatProvider } from '@/components/pa/PersonalAssistantChatContext';
 import { FloatingPABuddy } from '@/components/pa/FloatingPABuddy';
 import { DeskChatThreadSlotProvider } from '@/components/DeskChatThreadSlotContext';
-import { useSubscription } from '@/hooks/useSubscription';
-import { UpgradeModal } from '@/components/UpgradeModal';
-import { PLANS } from '@/lib/plans';
 
 export default function Home() {
   const [hasStarted, setHasStarted] = useState(false);
   const [nameVentureOpen, setNameVentureOpen] = useState(false);
-  const [upgradeOpen, setUpgradeOpen] = useState(false);
-  const { setActiveProject, setAllProjects, switchRoom, allProjects, activeRoom } = useOffice();
-  const { plan } = useSubscription();
+  const { setActiveProject, setAllProjects, switchRoom, activeRoom } = useOffice();
 
   /** Create a shell venture (optional name) and open Personal Assistant for chat-first setup. */
   const createVentureWithName = async (name: string) => {
@@ -48,15 +43,7 @@ export default function Home() {
     setNameVentureOpen(true);
   };
 
-  /** Gate new ventures against free plan limit */
-  const openNameVentureModal = () => {
-    const limit = plan.maxVentures;
-    if (limit !== null && allProjects.length >= limit) {
-      setUpgradeOpen(true);
-      return;
-    }
-    setNameVentureOpen(true);
-  };
+  const openNameVentureModal = () => setNameVentureOpen(true);
 
   // Show landing page
   if (!hasStarted) {
@@ -70,11 +57,6 @@ export default function Home() {
         open={nameVentureOpen}
         onClose={() => setNameVentureOpen(false)}
         onConfirm={(name) => void createVentureWithName(name)}
-      />
-      <UpgradeModal
-        open={upgradeOpen}
-        onClose={() => setUpgradeOpen(false)}
-        highlight="Multiple ventures"
       />
       <OfficeShell>
         <PersonalAssistantChatProvider>

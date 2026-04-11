@@ -23,7 +23,6 @@ import { RoomChrome } from './RoomChrome';
 import { getWorkspaceShellTheme } from '@/lib/roomThemes';
 import { WORKSPACE_TITLES } from '@/components/ui/appNav';
 import { User } from 'lucide-react';
-import { PlanGate } from '@/components/PlanGate';
 
 function workspaceTitle(room: string) {
     return WORKSPACE_TITLES[room] ?? 'Workspace';
@@ -59,31 +58,15 @@ export function WorkspaceStage({
                     </OperationalDesk>
                 );
             case 'wargame':
-                return (
-                    <PlanGate feature="wargameNexus" label="Wargame Nexus — scenario planning">
-                        <WargameNexus />
-                    </PlanGate>
-                );
+                return <WargameNexus />;
             case 'vc_gauntlet':
-                return (
-                    <PlanGate feature="vcGauntlet" label="VC Gauntlet — pitch practice">
-                        <VCGauntlet />
-                    </PlanGate>
-                );
+                return <VCGauntlet />;
             case 'intelligence_diary':
-                return (
-                    <PlanGate feature="livingOfficeMemory" label="Intelligence Diary">
-                        <IntelligenceDiary />
-                    </PlanGate>
-                );
+                return <IntelligenceDiary />;
             case 'personal_assistant':
                 return <PersonalAssistant />;
             case 'suite_intelligence':
-                return (
-                    <PlanGate feature="intelligenceSuite" label="Intelligence Suite">
-                        <CsuiteIntelligenceGuide />
-                    </PlanGate>
-                );
+                return <CsuiteIntelligenceGuide />;
             case 'ceo':
                 return (
                     <OperationalDesk>
