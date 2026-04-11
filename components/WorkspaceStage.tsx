@@ -14,6 +14,7 @@ import { FoundersOffice } from './FoundersOffice';
 import { DexoCommandCenter } from './DexoCommandCenter';
 import { PitchDeckForge } from './PitchDeckForge';
 import { WargameNexus } from './WargameNexus';
+import { VCGauntlet } from './VCGauntlet';
 import { OperationalDesk } from './OperationalDesk';
 import { IntelligenceDiary } from './IntelligenceDiary';
 import { PersonalAssistant } from './PersonalAssistant';
@@ -58,6 +59,8 @@ export function WorkspaceStage({
                 );
             case 'wargame':
                 return <WargameNexus />;
+            case 'vc_gauntlet':
+                return <VCGauntlet />;
             case 'intelligence_diary':
                 return <IntelligenceDiary />;
             case 'personal_assistant':

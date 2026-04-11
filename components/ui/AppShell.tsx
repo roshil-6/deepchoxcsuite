@@ -9,6 +9,7 @@ import { WorkspacePanel } from '@/components/ui/WorkspacePanel';
 import { ContextPanel } from '@/components/ui/ContextPanel';
 import { useOffice } from '@/lib/OfficeContext';
 import { WORKSPACE_TITLES } from '@/components/ui/appNav';
+import { UpgradeModal } from '@/components/UpgradeModal';
 
 const INTEL_DESKTOP_COLLAPSED_KEY = 'deepchox-intel-panel-collapsed';
 
@@ -33,6 +34,7 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
     const [mobileContext, setMobileContext] = useState(false);
     const [mobileNav, setMobileNav] = useState(false);
     const [intelDesktopCollapsed, setIntelDesktopCollapsed] = useState(false);
+    const [upgradeOpen, setUpgradeOpen] = useState(false);
 
     useEffect(() => {
         setIntelDesktopCollapsed(readIntelDesktopCollapsed());
@@ -104,6 +106,7 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
                     <LeftRail
                         onLogout={onLogout}
                         onNewVenture={onNewVenture}
+                        onUpgrade={() => setUpgradeOpen(true)}
                         desktopWorkspaceStrip
                         onToggleIntel={toggleIntelDesktop}
                         intelDesktopCollapsed={intelDesktopCollapsed}
@@ -145,6 +148,7 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
                                         variant="flush"
                                         onLogout={onLogout}
                                         onNewVenture={onNewVenture}
+                                        onUpgrade={() => { setMobileNav(false); setUpgradeOpen(true); }}
                                     />
                                 </div>
                             </motion.aside>
@@ -193,6 +197,7 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
                     Intel
                 </button>
             </nav>
+            <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} />
         </div>
     );
 }

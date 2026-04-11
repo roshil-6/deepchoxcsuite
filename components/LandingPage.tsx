@@ -2,10 +2,49 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Mail, Lock, User, Shield, Volume2, VolumeX } from 'lucide-react';
+import { ArrowRight, Brain, Check, Mail, Lock, Network, Sparkles, Target, User, Shield, Volume2, VolumeX } from 'lucide-react';
 
 /** Default hero video — `public/landing-hero-demo.mp4`. Override with `NEXT_PUBLIC_LANDING_HERO_VIDEO_URL` (full URL). */
 export const LANDING_HERO_VIDEO_DEFAULT = '/landing-hero-demo.mp4';
+
+const FREE_PRICING_ITEMS = [
+    'All 11 AI desks and rooms',
+    'Unlimited ventures',
+    'Personal Assistant + Meeting Room',
+    'Strategy, Finance, Product & GTM desks',
+    'Wargame Nexus (1 round)',
+    'VC Gauntlet — pitch practice',
+    'Intelligence Suite & Reports',
+    'Manual executive briefings on demand',
+    'Calendar, Kanban & Pitch Forge',
+];
+
+const LANDING_PRO_FEATURES = [
+    {
+        icon: Brain,
+        name: 'Executive Briefing Autopilot',
+        desc: 'Daily AI brief auto-delivered every morning — progress, risks flagged, priorities, and market intel without asking.',
+        color: 'text-violet-400',
+        bg: 'bg-violet-400/[0.07]',
+        border: 'border-violet-400/20',
+    },
+    {
+        icon: Target,
+        name: 'Wargame Multi-Round Simulation',
+        desc: 'Full adversarial simulation with competitor counter-moves, board stress-test mode, and downloadable scenario reports.',
+        color: 'text-rose-400',
+        bg: 'bg-rose-400/[0.07]',
+        border: 'border-rose-400/20',
+    },
+    {
+        icon: Network,
+        name: 'Cross-Venture Intelligence',
+        desc: 'AI layer that finds patterns, conflicts, and synergies across all your ventures simultaneously — portfolio-level decisions.',
+        color: 'text-sky-400',
+        bg: 'bg-sky-400/[0.07]',
+        border: 'border-sky-400/20',
+    },
+] as const;
 
 interface LandingPageProps {
     onStart: () => void;
@@ -35,6 +74,8 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
     /** Browsers allow autoplay only when muted — user can enable sound via control */
     const [heroVideoMuted, setHeroVideoMuted] = useState(true);
     const heroVideoRef = useRef<HTMLVideoElement>(null);
+    const pricingRef = useRef<HTMLElement>(null);
+    const [landingBilling, setLandingBilling] = useState<'monthly' | 'yearly'>('monthly');
 
     const handleBgPointer = (e: React.PointerEvent<HTMLDivElement>) => {
         const rect = e.currentTarget.getBoundingClientRect();
@@ -146,6 +187,13 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                             >
                                 FAQ
                             </Link>
+                            <button
+                                type="button"
+                                onClick={() => pricingRef.current?.scrollIntoView({ behavior: 'smooth' })}
+                                className="hidden rounded-md px-3 py-2.5 font-sans text-[16px] font-semibold leading-none text-zinc-300 transition-colors hover:text-white sm:inline"
+                            >
+                                Pricing
+                            </button>
                             <span className="hidden h-6 w-px bg-zinc-600/90 sm:block" aria-hidden />
                             <button
                                 type="button"
@@ -235,7 +283,7 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                     </div>
                 </section>
 
-                <section className="mx-auto w-full max-w-[56rem] flex-1 px-5 pb-24 pt-6 sm:px-10 sm:pb-32 lg:max-w-[72rem] lg:px-14">
+                <section className="mx-auto w-full max-w-[56rem] px-5 pb-16 pt-6 sm:px-10 sm:pb-24 lg:max-w-[72rem] lg:px-14">
                     <div className="mx-auto h-px w-32 bg-gradient-to-r from-transparent via-zinc-500 to-transparent sm:w-40" aria-hidden />
 
                     <div className="mt-12 grid gap-10 text-left lg:mt-14 lg:grid-cols-2 lg:gap-x-16 lg:gap-y-0">
@@ -277,6 +325,194 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                                 Read the product guide
                             </Link>
                         </p>
+                </section>
+
+                {/* ── Pricing ── */}
+                <section
+                    id="pricing"
+                    ref={pricingRef}
+                    className="mx-auto w-full max-w-[56rem] px-5 pb-24 pt-4 sm:px-10 sm:pb-32 lg:max-w-[72rem] lg:px-14"
+                >
+                    <div
+                        className="mx-auto mb-14 h-px w-32 bg-gradient-to-r from-transparent via-zinc-500 to-transparent sm:w-40"
+                        aria-hidden
+                    />
+
+                    {/* Section heading */}
+                    <div className="mb-10 text-center">
+                        <p className="font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-brand-teal">
+                            Pricing
+                        </p>
+                        <h2 className="font-[family-name:var(--font-brand-display)] mx-auto mt-3 max-w-[22ch] text-balance text-[clamp(1.6rem,4vw,2.75rem)] font-semibold leading-tight tracking-[-0.01em] text-white">
+                            Start free. Upgrade when you need the edge.
+                        </h2>
+                        <p className="mx-auto mt-3 max-w-xl font-sans text-[15px] leading-relaxed text-zinc-400">
+                            Every desk, room, and AI tool is free forever. Pro adds three automated intelligence
+                            features that run your company while you focus.
+                        </p>
+                    </div>
+
+                    {/* Billing toggle */}
+                    <div className="mb-8 flex justify-center">
+                        <div className="inline-flex items-center rounded-full border border-zinc-700/60 bg-black/40 p-1 backdrop-blur-sm">
+                            <button
+                                type="button"
+                                onClick={() => setLandingBilling('monthly')}
+                                className={`rounded-full px-5 py-2 font-sans text-[13px] font-semibold transition ${
+                                    landingBilling === 'monthly'
+                                        ? 'bg-zinc-800 text-zinc-100 shadow-sm'
+                                        : 'text-zinc-500 hover:text-zinc-300'
+                                }`}
+                            >
+                                Monthly
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setLandingBilling('yearly')}
+                                className={`flex items-center gap-2 rounded-full px-5 py-2 font-sans text-[13px] font-semibold transition ${
+                                    landingBilling === 'yearly'
+                                        ? 'bg-zinc-800 text-zinc-100 shadow-sm'
+                                        : 'text-zinc-500 hover:text-zinc-300'
+                                }`}
+                            >
+                                Yearly
+                                <span className="rounded-full bg-amber-400/20 px-2 py-0.5 font-sans text-[10px] font-bold uppercase text-amber-400">
+                                    Save 17%
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Plan cards */}
+                    <div className="mx-auto grid max-w-3xl gap-4 sm:grid-cols-2">
+
+                        {/* Free card */}
+                        <div className="flex flex-col rounded-2xl border border-zinc-800/80 bg-zinc-900/30 p-6 backdrop-blur-sm">
+                            <p className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">
+                                Founder
+                            </p>
+                            <p className="mt-3 font-sans text-[34px] font-bold leading-none text-zinc-200">
+                                Free
+                            </p>
+                            <p className="mt-1 font-sans text-[13px] text-zinc-600">
+                                forever, no card required
+                            </p>
+                            <div className="my-5 h-px bg-zinc-800/80" />
+                            <ul className="flex-1 space-y-2.5">
+                                {FREE_PRICING_ITEMS.map((item) => (
+                                    <li
+                                        key={item}
+                                        className="flex items-start gap-2.5 font-sans text-[13px] text-zinc-500"
+                                    >
+                                        <Check
+                                            className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-600"
+                                            aria-hidden
+                                        />
+                                        {item}
+                                    </li>
+                                ))}
+                            </ul>
+                            <button
+                                type="button"
+                                onClick={continueAsGuest}
+                                className="mt-6 w-full rounded-xl border border-zinc-700 bg-transparent py-3 font-sans text-[14px] font-semibold text-zinc-300 transition hover:border-zinc-500 hover:text-white"
+                            >
+                                Get started free
+                            </button>
+                        </div>
+
+                        {/* Pro card */}
+                        <div className="relative flex flex-col overflow-hidden rounded-2xl border border-amber-400/30 bg-gradient-to-b from-zinc-900/80 to-black/60 p-6 backdrop-blur-sm">
+                            <div
+                                className="pointer-events-none absolute -right-14 -top-14 h-44 w-44 rounded-full bg-amber-400/10 blur-3xl"
+                                aria-hidden
+                            />
+                            <div className="relative flex flex-1 flex-col">
+                                <div className="flex items-center gap-2">
+                                    <Sparkles className="h-3.5 w-3.5 text-amber-400" aria-hidden />
+                                    <p className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400/90">
+                                        Co-Founder Pro
+                                    </p>
+                                </div>
+
+                                {/* Price */}
+                                {landingBilling === 'monthly' ? (
+                                    <>
+                                        <div className="mt-3 flex items-end gap-2">
+                                            <p className="font-sans text-[34px] font-bold leading-none text-zinc-100">
+                                                &#8377;300
+                                            </p>
+                                            <span className="mb-1 font-sans text-[15px] text-zinc-500">/mo</span>
+                                            <span className="mb-1 font-sans text-[13px] text-zinc-600">(~$4)</span>
+                                        </div>
+                                        <p className="mt-1 font-sans text-[13px] text-zinc-600">
+                                            billed monthly &middot; cancel anytime
+                                        </p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="mt-3 flex items-end gap-2">
+                                            <p className="font-sans text-[34px] font-bold leading-none text-zinc-100">
+                                                &#8377;250
+                                            </p>
+                                            <span className="mb-1 font-sans text-[15px] text-zinc-500">/mo</span>
+                                            <span className="mb-1 font-sans text-[13px] text-zinc-600">(~$3.33)</span>
+                                        </div>
+                                        <p className="mt-1 font-sans text-[13px] text-zinc-600">
+                                            &#8377;2,999/yr (~$40) &middot; billed annually
+                                        </p>
+                                    </>
+                                )}
+
+                                <div className="my-5 h-px bg-amber-400/10" />
+
+                                {/* 3 Pro features */}
+                                <p className="mb-3 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-amber-400/60">
+                                    Pro-exclusive intelligence
+                                </p>
+                                <div className="flex-1 space-y-3">
+                                    {LANDING_PRO_FEATURES.map(
+                                        ({ icon: Icon, name, desc, color, bg, border }) => (
+                                            <div
+                                                key={name}
+                                                className={`flex gap-3 rounded-xl border ${border} ${bg} p-3`}
+                                            >
+                                                <span className={`mt-0.5 shrink-0 ${color}`}>
+                                                    <Icon className="h-4 w-4" aria-hidden />
+                                                </span>
+                                                <div>
+                                                    <p className="font-sans text-[12px] font-semibold leading-snug text-zinc-200">
+                                                        {name}
+                                                    </p>
+                                                    <p className="mt-0.5 font-sans text-[11px] leading-snug text-zinc-500">
+                                                        {desc}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ),
+                                    )}
+                                </div>
+
+                                <p className="mt-3 font-sans text-[12px] text-zinc-500">
+                                    + everything in Free
+                                </p>
+
+                                <button
+                                    type="button"
+                                    onClick={onStart}
+                                    className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white py-3 font-sans text-[14px] font-bold text-zinc-900 shadow-[0_2px_24px_rgba(255,255,255,0.12)] transition hover:bg-zinc-100 active:scale-[0.98]"
+                                >
+                                    <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
+                                    {landingBilling === 'monthly'
+                                        ? 'Get Pro — ₹300/mo'
+                                        : 'Get Pro — ₹2,999/yr'}
+                                </button>
+                                <p className="mt-2 text-center font-sans text-[10px] text-zinc-600">
+                                    Instant access &middot; cancel anytime &middot; no questions asked
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </section>
 
                 <footer className="mt-auto flex flex-col items-center gap-6 border-t border-zinc-800/80 px-5 py-12 text-center sm:flex-row sm:justify-between sm:px-12 sm:text-left">
