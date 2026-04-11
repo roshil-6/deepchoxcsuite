@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, LogOut, PanelRight } from 'lucide-react';
+import { Plus, LogOut, PanelRight, Sparkles } from 'lucide-react';
 import { useOffice } from '@/lib/OfficeContext';
 import { getAllProjects, type Project } from '@/lib/db';
 import { StaffNotificationCenter } from '@/components/StaffNotificationCenter';
@@ -10,10 +10,12 @@ import { APP_NAV_ITEMS, WORKSPACE_TITLES, type AppNavRoom } from '@/components/u
 import { DailySyncBanner } from '@/components/DailySyncBanner';
 import { RelayNavHint } from '@/components/pa/RelayNavHint';
 import { PA_SECTION_TAG } from '@/lib/paBuddy';
+import { useSubscription } from '@/hooks/useSubscription';
 
 type Props = {
     onLogout: () => void;
     onNewVenture: () => void;
+    onUpgrade?: () => void;
     /** `flush` = docked rail with border-r; `floating` = rounded card (e.g. legacy desktop). */
     variant?: 'floating' | 'flush';
     /** Desktop docked rail only: room title, venture, intel toggle, daily sync — keeps center column for desk + chat. */
@@ -25,12 +27,14 @@ type Props = {
 export function LeftRail({
     onLogout,
     onNewVenture,
+    onUpgrade,
     variant = 'flush',
     desktopWorkspaceStrip = false,
     onToggleIntel,
     intelDesktopCollapsed = false,
 }: Props) {
     const { activeRoom, switchRoom, activeProject, setActiveProject, setAllProjects } = useOffice();
+    const { isPro } = useSubscription();
     const [projects, setProjects] = useState<Project[]>([]);
     const isFlush = variant === 'flush';
 
@@ -207,7 +211,22 @@ export function LeftRail({
                 </div>
             </div>
 
-            <div className={`mt-auto border-t border-[var(--border)] ${isFlush ? 'p-3' : 'p-1.5'}`}>
+            <div className={`mt-auto border-t border-[var(--border)] ${isFlush ? 'space-y-1.5 p-3' : 'space-y-1 p-1.5'}`}>
+                {/* Upgrade CTA — free plan only */}
+                {!isPro && (
+                    <button
+                        type="button"
+                        onClick={() => onUpgrade?.()}
+                        className={
+                            isFlush
+                                ? 'flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-amber-400/25 bg-amber-400/[0.07] text-xs font-semibold text-amber-400/90 transition-colors hover:bg-amber-400/[0.13] hover:text-amber-300'
+                                : 'flex w-full items-center gap-2 rounded-xl border border-amber-400/20 bg-amber-400/[0.06] py-2 pl-2.5 text-[11px] font-semibold text-amber-400/80 transition-colors hover:bg-amber-400/[0.12]'
+                        }
+                    >
+                        <Sparkles className={`shrink-0 ${isFlush ? 'h-3.5 w-3.5' : 'h-[15px] w-[15px]'}`} aria-hidden />
+                        <span className="truncate">Upgrade to Pro</span>
+                    </button>
+                )}
                 <button
                     type="button"
                     onClick={onLogout}

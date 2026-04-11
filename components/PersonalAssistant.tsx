@@ -12,13 +12,18 @@ import {
 import { RelayMeetingRoom } from '@/components/pa/RelayMeetingRoom';
 import { PA_BUDDY_NAME, PA_BUDDY_TAGLINE } from '@/lib/paBuddy';
 import { DeskShell, DeskTabButton } from '@/components/workspaces/DeskShell';
+import { ProBadge } from '@/components/PlanGate';
+import { UpgradeModal } from '@/components/UpgradeModal';
+import { useSubscription } from '@/hooks/useSubscription';
 
 type RelayMode = 'chat' | 'meeting';
 
 function PersonalAssistantLayout() {
     const { activeProject, switchRoom } = useOffice();
     const { sendMessage, requestExecutiveBriefing, loading } = usePersonalAssistantChat();
+    const { can } = useSubscription();
     const [relayMode, setRelayMode] = useState<RelayMode>('chat');
+    const [upgradeOpen, setUpgradeOpen] = useState(false);
 
     const strategyDoc = parseStrategy(activeProject?.strategy || '');
     const priorities = strategyDoc.priorities || [];
@@ -57,15 +62,23 @@ function PersonalAssistantLayout() {
             </DeskTabButton>
             <DeskTabButton
                 active={relayMode === 'meeting'}
-                onClick={() => setRelayMode('meeting')}
+                onClick={() => {
+                    if (!can('relayMeetingRoom')) { setUpgradeOpen(true); return; }
+                    setRelayMode('meeting');
+                }}
                 icon={<Video className="h-3.5 w-3.5" aria-hidden />}
             >
-                Meeting
+                <span className="flex items-center gap-1.5">
+                    Meeting
+                    {!can('relayMeetingRoom') && <ProBadge />}
+                </span>
             </DeskTabButton>
         </>
     );
 
     return (
+        <>
+        <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} highlight="Relay Meeting Room" />
         <DeskShell
             eyebrow={activeProject.name}
             title={PA_BUDDY_NAME}
@@ -154,6 +167,7 @@ function PersonalAssistantLayout() {
                 <RelayMeetingRoom onSwitchToChat={() => setRelayMode('chat')} />
             )}
         </DeskShell>
+        </>
     );
 }
 

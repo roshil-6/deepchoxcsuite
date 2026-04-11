@@ -17,6 +17,9 @@ import {
 } from 'lucide-react';
 import { StaffNotificationCenter } from '@/components/StaffNotificationCenter';
 import { RESEARCH_STAFF, sidebarPrimaryLabel } from '@/lib/researchStaffLabels';
+import { useSubscription } from '@/hooks/useSubscription';
+import { UpgradeModal } from '@/components/UpgradeModal';
+import { Sparkles } from 'lucide-react';
 
 interface SidebarProps {
   onLogout: () => void;
@@ -29,6 +32,8 @@ const TEAM_DESK_ORDER = ['ceo', 'accountant', 'pm', 'cmo', 'scout', 'chief_of_st
 
 export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
   const { activeRoom, switchRoom, agents, activeProject, setActiveProject, setAllProjects, staffAttentionPending } = useOffice();
+  const { isPro } = useSubscription();
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   const [projects, setProjects] = useState<Project[]>([]);
 
@@ -169,12 +174,24 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
       </div>
 
       {/* Footer */}
-      <div className="mt-auto border-t border-brand-border p-3">
+      <div className="mt-auto border-t border-brand-border p-3 space-y-1.5">
+        {/* Upgrade CTA — only on free plan */}
+        {!isPro && (
+          <button
+            type="button"
+            onClick={() => setUpgradeOpen(true)}
+            className="flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-amber-400/20 bg-amber-400/[0.06] text-xs font-semibold text-amber-400/90 transition-colors hover:bg-amber-400/[0.12] hover:text-amber-300"
+          >
+            <Sparkles className="h-3.5 w-3.5" aria-hidden />
+            Upgrade to Pro
+          </button>
+        )}
         <button onClick={onLogout} className="flex h-9 w-full items-center justify-center gap-2 rounded-lg text-xs font-medium text-brand-muted transition-colors hover:bg-white/[0.06] hover:text-brand-text">
           <LogOut className="w-4 h-4" />
           Sign Out
         </button>
       </div>
+      <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} />
 
     </motion.div>
   );

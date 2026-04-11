@@ -14,6 +14,7 @@ import { FoundersOffice } from './FoundersOffice';
 import { DexoCommandCenter } from './DexoCommandCenter';
 import { PitchDeckForge } from './PitchDeckForge';
 import { WargameNexus } from './WargameNexus';
+import { VCGauntlet } from './VCGauntlet';
 import { OperationalDesk } from './OperationalDesk';
 import { IntelligenceDiary } from './IntelligenceDiary';
 import { PersonalAssistant } from './PersonalAssistant';
@@ -22,6 +23,7 @@ import { RoomChrome } from './RoomChrome';
 import { getWorkspaceShellTheme } from '@/lib/roomThemes';
 import { WORKSPACE_TITLES } from '@/components/ui/appNav';
 import { User } from 'lucide-react';
+import { PlanGate } from '@/components/PlanGate';
 
 function workspaceTitle(room: string) {
     return WORKSPACE_TITLES[room] ?? 'Workspace';
@@ -57,13 +59,31 @@ export function WorkspaceStage({
                     </OperationalDesk>
                 );
             case 'wargame':
-                return <WargameNexus />;
+                return (
+                    <PlanGate feature="wargameNexus" label="Wargame Nexus — scenario planning">
+                        <WargameNexus />
+                    </PlanGate>
+                );
+            case 'vc_gauntlet':
+                return (
+                    <PlanGate feature="vcGauntlet" label="VC Gauntlet — pitch practice">
+                        <VCGauntlet />
+                    </PlanGate>
+                );
             case 'intelligence_diary':
-                return <IntelligenceDiary />;
+                return (
+                    <PlanGate feature="livingOfficeMemory" label="Intelligence Diary">
+                        <IntelligenceDiary />
+                    </PlanGate>
+                );
             case 'personal_assistant':
                 return <PersonalAssistant />;
             case 'suite_intelligence':
-                return <CsuiteIntelligenceGuide />;
+                return (
+                    <PlanGate feature="intelligenceSuite" label="Intelligence Suite">
+                        <CsuiteIntelligenceGuide />
+                    </PlanGate>
+                );
             case 'ceo':
                 return (
                     <OperationalDesk>
