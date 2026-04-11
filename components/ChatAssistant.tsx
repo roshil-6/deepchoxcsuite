@@ -18,10 +18,9 @@ import {
     AudioLines,
 } from 'lucide-react';
 import { ModelAttribution } from '@/components/ModelAttribution';
-import { EXEC_CHAT_MODEL_STORAGE_KEY, isExecChatModelId, OPERATIONAL_CHAT_BAR_ROOMS } from '@/lib/deskConstants';
+import { EXEC_CHAT_MODEL_STORAGE_KEY, isExecChatModelId } from '@/lib/deskConstants';
 import { PA_BUDDY_NAME } from '@/lib/paBuddy';
 import { useSpeechRecognition } from '@/lib/useSpeechRecognition';
-import { useDeskChatThreadSlotState } from '@/components/DeskChatThreadSlotContext';
 import { formatProductPlanForContext, formatStrategyForContext } from '@/lib/ventureReadableContext';
 
 function readStoredExecModel(): string {
@@ -93,25 +92,19 @@ export function ChatAssistant({
     const [localMessages, setLocalMessages] = useState<Message[]>([]);
     const [inputValue, setInputValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    /** CEO split: thread panel above composer (same shell as aiOs). */
-    /** Floating thread above the dock: closed until the user expands (chevron) or sends a message. */
-    const [ceoThreadExpanded, setCeoThreadExpanded] = useState(false);
-    const expandCeoThread = useCallback(() => setCeoThreadExpanded(true), []);
+    /** Floating disconnected thread panel: open/expanded state + drag offset */
+    const [floatOpen, setFloatOpen] = useState(false);
+    const [floatExpanded, setFloatExpanded] = useState(false);
+    const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+    const isDraggingRef = useRef(false);
+    const dragStartRef = useRef({ mouseX: 0, mouseY: 0, offsetX: 0, offsetY: 0 });
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => setMounted(true), []);
 
     const isCeoSplit = variant === 'ceoSplit';
-    const deskThreadSlotCtx = useDeskChatThreadSlotState();
-    const deskThreadSlotEl = deskThreadSlotCtx?.slot ?? null;
-    /** Portal thread into workspace (hub slot or under Details) — stream layout, no floating “coordination” card. */
-    const wantsBlockInlineThread =
-        isCeoSplit &&
-        Boolean(deskThreadSlotEl) &&
-        (OPERATIONAL_CHAT_BAR_ROOMS.has(activeRoom) ||
-            (activeRoom === 'suite_intelligence' && Boolean(suiteIntelOpenDesk)));
-    const focusAnchorsThread = Boolean(wantsBlockInlineThread && deskThreadSlotEl);
-
-    useEffect(() => {
-        if (focusAnchorsThread) setCeoThreadExpanded(false);
-    }, [focusAnchorsThread]);
+    // Thread always floats above the message bar — never portals into desk sections
+    const wantsBlockInlineThread = false;
+    const focusAnchorsThread = false;
 
     const messages: Message[] = useMemo(() => {
         if (!useExecutiveThread) return localMessages;
@@ -225,7 +218,7 @@ export function ChatAssistant({
         if ((!inputValue.trim() && !pendingChat) || isLoading || !activeProject) return;
 
         onComposerInteract?.();
-        if (variant === 'ceoSplit' && !focusAnchorsThread) setCeoThreadExpanded(true);
+        if (variant === 'ceoSplit') { setFloatOpen(true); }
 
         const userMessage: Message = {
             id: Date.now().toString(),
@@ -461,28 +454,109 @@ export function ChatAssistant({
         </>
     );
 
-    const blockInlineConversation =
-        focusAnchorsThread && deskThreadSlotEl
-            ? createPortal(
-                  <div className="w-full rounded-xl border border-white/[0.07] bg-[var(--color-brand-card)] px-4 py-4">
-                      {messages.length > 0 || isLoading ? (
-                          <div className="mb-3 flex items-center justify-between">
-                              <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-white/30">Thread</span>
-                              <button
-                                  type="button"
-                                  onClick={() => (useExecutiveThread ? clearExecutiveThread() : setLocalMessages([]))}
-                                  className="text-[11px] text-white/30 transition-colors hover:text-white/60"
-                                  title="Clear this thread"
-                              >
-                                  Clear thread
-                              </button>
-                          </div>
-                      ) : null}
-                      <div className="flex flex-col gap-3">{threadBody}</div>
-                  </div>,
-                  deskThreadSlotEl,
-              )
-            : null;
+    // Thread never portals into desk sections
+    const blockInlineConversation = null;
+
+    const onDragHeaderMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+        if (e.button !== 0) return;
+        e.preventDefault();
+        isDraggingRef.current = true;
+        dragStartRef.current = { mouseX: e.clientX, mouseY: e.clientY, offsetX: dragOffset.x, offsetY: dragOffset.y };
+        const onMove = (ev: MouseEvent) => {
+            if (!isDraggingRef.current) return;
+            setDragOffset({
+                x: dragStartRef.current.offsetX + ev.clientX - dragStartRef.current.mouseX,
+                y: dragStartRef.current.offsetY + ev.clientY - dragStartRef.current.mouseY,
+            });
+        };
+        const onUp = () => {
+            isDraggingRef.current = false;
+            window.removeEventListener('mousemove', onMove);
+            window.removeEventListener('mouseup', onUp);
+        };
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+    }, [dragOffset.x, dragOffset.y]);
+
+    const floatingThreadPanel = isCeoSplit && mounted
+        ? createPortal(
+            <>
+                {/* Pill toggle — visible when thread has messages but panel is closed */}
+                {!floatOpen && messages.length > 0 && (
+                    <button
+                        type="button"
+                        onClick={() => setFloatOpen(true)}
+                        style={{ transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)` }}
+                        className="fixed bottom-[108px] left-1/2 z-[60] flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/[0.1] bg-[#111113] px-3.5 py-2 text-[12px] text-zinc-400 shadow-[0_4px_24px_rgba(0,0,0,0.6)] transition hover:bg-[#1a1a1c] hover:text-zinc-200 lg:left-auto lg:translate-x-0 lg:right-[360px]"
+                    >
+                        <MessageSquare className="h-3.5 w-3.5" aria-hidden />
+                        <span>Thread</span>
+                        <span className="ml-0.5 rounded-full bg-white/[0.08] px-1.5 py-px text-[10px] text-zinc-500">{messages.length}</span>
+                    </button>
+                )}
+                {/* Floating thread panel */}
+                {floatOpen && (
+                    <div
+                        style={{ transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)` }}
+                        className={`fixed bottom-[108px] left-2 right-2 z-[60] flex flex-col overflow-hidden rounded-2xl border border-white/[0.09] bg-[#0d0d0f] shadow-[0_12px_56px_rgba(0,0,0,0.75),0_0_0_1px_rgba(255,255,255,0.03)] transition-[height] duration-300 ease-in-out lg:left-auto lg:right-[360px] ${
+                            floatExpanded ? 'h-[520px] lg:w-[500px]' : 'h-[300px] lg:w-[380px]'
+                        }`}
+                    >
+                        {/* Drag-handle header */}
+                        <div
+                            onMouseDown={onDragHeaderMouseDown}
+                            className="flex shrink-0 cursor-grab select-none items-center justify-between gap-2 border-b border-white/[0.07] bg-[#111113] px-4 py-2.5 active:cursor-grabbing"
+                        >
+                            <div className="flex items-center gap-2 min-w-0">
+                                <MessageSquare className="h-3.5 w-3.5 shrink-0 text-zinc-600" aria-hidden />
+                                <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500 truncate">
+                                    {useExecutiveThread ? 'Venture Thread' : `${chatTheme.roleLabel} Thread`}
+                                </span>
+                                {messages.length > 0 && (
+                                    <span className="shrink-0 rounded-full bg-white/[0.06] px-1.5 py-px text-[10px] text-zinc-600">{messages.length}</span>
+                                )}
+                            </div>
+                            <div className="flex shrink-0 items-center gap-0.5">
+                                {messages.length > 0 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => (useExecutiveThread ? clearExecutiveThread() : setLocalMessages([]))}
+                                        className="rounded-md px-2 py-1 text-[10px] text-zinc-600 transition hover:bg-white/[0.06] hover:text-zinc-400"
+                                        title="Clear thread"
+                                    >
+                                        Clear
+                                    </button>
+                                )}
+                                <button
+                                    type="button"
+                                    onClick={() => setFloatExpanded(v => !v)}
+                                    className="rounded-md p-1.5 text-zinc-600 transition hover:bg-white/[0.06] hover:text-zinc-400"
+                                    title={floatExpanded ? 'Compact' : 'Expand'}
+                                    aria-label={floatExpanded ? 'Compact thread' : 'Expand thread'}
+                                >
+                                    {floatExpanded ? <ChevronDown className="h-3.5 w-3.5" aria-hidden /> : <ChevronUp className="h-3.5 w-3.5" aria-hidden />}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setFloatOpen(false)}
+                                    className="rounded-md p-1.5 text-zinc-600 transition hover:bg-white/[0.06] hover:text-zinc-400"
+                                    title="Close"
+                                    aria-label="Close thread"
+                                >
+                                    <X className="h-3.5 w-3.5" aria-hidden />
+                                </button>
+                            </div>
+                        </div>
+                        {/* Messages */}
+                        <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-4 py-3">
+                            <div className="flex flex-col gap-3">{threadBody}</div>
+                        </div>
+                    </div>
+                )}
+            </>,
+            document.body,
+        )
+        : null;
 
     return (
         <div
@@ -508,57 +582,7 @@ export function ChatAssistant({
                       }`
             }
         >
-            {blockInlineConversation}
-
-            {isCeoSplit && !ceoThreadExpanded && !focusAnchorsThread ? (
-                <button
-                    type="button"
-                    onClick={expandCeoThread}
-                    className="flex w-full items-center justify-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.04] px-4 py-2.5 text-sm font-medium text-zinc-500 backdrop-blur-sm transition hover:border-white/[0.1] hover:bg-white/[0.07] hover:text-zinc-300"
-                >
-                    <MessageSquare className="h-4 w-4 shrink-0 text-zinc-500" aria-hidden />
-                    <span className="min-w-0 truncate">
-                        {useExecutiveThread ? 'Research shared venture thread' : `${chatTheme.roleLabel} thread`}
-                    </span>
-                    <ChevronUp className="h-4 w-4 shrink-0 text-zinc-500" aria-hidden />
-                </button>
-            ) : null}
-
-            {isCeoSplit && ceoThreadExpanded && !focusAnchorsThread ? (
-                <div className="mb-1 flex max-h-[min(40vh,400px)] min-h-[80px] w-full flex-col overflow-hidden">
-                    <div className="mb-1 flex shrink-0 items-center justify-between gap-2">
-                        {sidebarSectionLabel ? (
-                            <p className="min-w-0 truncate text-[11px] text-zinc-600">{sidebarSectionLabel}</p>
-                        ) : (
-                            <span className="text-[11px] text-zinc-600">
-                                {useExecutiveThread ? `Shared with ${PA_BUDDY_NAME}` : chatTheme.subtitle}
-                            </span>
-                        )}
-                        <div className="flex shrink-0 items-center gap-2">
-                            <button
-                                type="button"
-                                onClick={() => (useExecutiveThread ? clearExecutiveThread() : setLocalMessages([]))}
-                                className="text-[11px] text-zinc-600 transition-colors hover:text-zinc-400"
-                                title="Clear thread"
-                            >
-                                Clear thread
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setCeoThreadExpanded(false)}
-                                className="rounded-lg p-1.5 text-zinc-600 transition hover:bg-white/[0.06] hover:text-zinc-400"
-                                aria-label="Minimize thread"
-                                title="Hide thread"
-                            >
-                                <ChevronDown className="h-4 w-4" aria-hidden />
-                            </button>
-                        </div>
-                    </div>
-                    <div className="custom-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto overflow-x-hidden px-0.5">
-                        {threadBody}
-                    </div>
-                </div>
-            ) : null}
+            {floatingThreadPanel}
 
             {isDockChrome && dockThreadActive && !embedInShell && !isCeoSplit ? (
                 <div className="flex shrink-0 items-baseline justify-between gap-2 border-b border-white/[0.04] px-1 py-2 sm:px-0">

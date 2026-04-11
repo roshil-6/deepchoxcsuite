@@ -566,87 +566,68 @@ export function PAChatSurface({ variant }: { variant: 'page' | 'float' }) {
     );
 
     const composerCore = (
-        <>
-            <div className="overflow-hidden rounded-xl border border-zinc-600 bg-zinc-800">
-                <textarea
-                    ref={textareaRef}
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            void sendMessage(input);
-                        }
-                    }}
-                    placeholder={`Message ${PA_BUDDY_NAME}…`}
-                    rows={1}
-                    disabled={loading}
-                    className="max-h-36 min-h-[44px] w-full resize-none border-none bg-transparent px-4 py-3 text-[13px] text-zinc-100 placeholder:text-zinc-500 focus:ring-0"
-                />
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".txt,.md,.csv,.json,text/plain"
-                    className="hidden"
-                    onChange={handleFileInput}
-                />
-                <div className="flex flex-wrap items-center gap-1 border-t border-zinc-600 bg-zinc-900/40 px-2 py-1.5">
-                    <span
-                        className="inline-flex h-8 shrink-0 items-center px-1 text-[10px] text-zinc-500"
-                        title="Model is set from your last choice; use workspace settings to change."
-                    >
-                        {EXEC_CHAT_MODEL_OPTIONS.find((o) => o.id === selectedModel)?.label ?? selectedModel}
-                    </span>
+        <div className="group flex items-end gap-0 rounded-full bg-[#2f2f2f] shadow-[0_0_0_1px_rgba(255,255,255,0.08)] transition-shadow focus-within:shadow-[0_0_0_1px_rgba(255,255,255,0.16),0_4px_24px_rgba(0,0,0,0.35)]">
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept=".txt,.md,.csv,.json,text/plain"
+                className="hidden"
+                onChange={handleFileInput}
+            />
+            <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={loading}
+                className="mb-[7px] ml-1.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#b4b4b4] transition-colors hover:bg-white/[0.1] disabled:opacity-40"
+                title="Attach file"
+                aria-label="Attach file"
+            >
+                <FileUp className="h-5 w-5" strokeWidth={1.8} aria-hidden />
+            </button>
+            <textarea
+                ref={textareaRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        void sendMessage(input);
+                    }
+                }}
+                placeholder={`Message ${PA_BUDDY_NAME}…`}
+                rows={1}
+                disabled={loading}
+                className="min-h-[44px] min-w-0 flex-1 resize-none border-none bg-transparent py-[11px] text-[15px] leading-[1.6] text-zinc-100 placeholder:text-[#8e8e8e] focus:outline-none focus:ring-0"
+            />
+            <div className="mb-[7px] mr-2 flex shrink-0 items-center gap-0.5">
+                {voiceSupported ? (
                     <button
                         type="button"
-                        onClick={() => fileInputRef.current?.click()}
+                        onClick={() => (listening ? stopListening() : startListening())}
                         disabled={loading}
-                        className="inline-flex h-8 shrink-0 items-center gap-1 rounded-full px-2 text-[11px] font-medium text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-zinc-100 disabled:opacity-50"
+                        className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-white/[0.1] disabled:opacity-40 ${listening ? 'bg-white/15 text-white' : 'text-[#b4b4b4]'}`}
+                        aria-pressed={listening}
+                        aria-label={listening ? 'Stop voice input' : 'Voice input'}
                     >
-                        <FileUp className="h-3.5 w-3.5 opacity-70" aria-hidden />
-                        <span className="hidden sm:inline">File</span>
+                        <Mic className={`h-5 w-5 ${listening ? 'animate-pulse' : ''}`} strokeWidth={1.8} aria-hidden />
                     </button>
-                    {voiceSupported ? (
-                        <button
-                            type="button"
-                            onClick={() => (listening ? stopListening() : startListening())}
-                            disabled={loading}
-                            className={`inline-flex h-8 shrink-0 items-center gap-1 rounded-full px-2 text-[11px] font-medium transition-colors disabled:opacity-50 ${
-                                listening ? 'text-zinc-300' : 'text-zinc-400 hover:text-zinc-100'
-                            }`}
-                            aria-pressed={listening}
-                        >
-                            <Mic className="h-3.5 w-3.5 opacity-70" aria-hidden />
-                            <span className="hidden sm:inline">{listening ? 'Stop' : 'Voice'}</span>
-                        </button>
-                    ) : null}
-                    {listening ? (
-                        <span className="text-[10px] text-zinc-400" aria-live="polite">
-                            Listening
-                        </span>
-                    ) : null}
-                    {fileLabel ? (
-                        <span className="max-w-[88px] truncate text-[10px] text-zinc-500 sm:max-w-[120px]">
-                            {fileLabel}
-                        </span>
-                    ) : null}
-                    <span className="min-w-0 flex-1" aria-hidden />
+                ) : null}
+                {input.trim() ? (
                     <button
                         type="button"
                         onClick={() => void sendMessage(input)}
-                        disabled={loading || !input.trim()}
-                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-600 text-zinc-100 transition hover:bg-zinc-500 disabled:opacity-35"
+                        disabled={loading}
+                        className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-zinc-900 transition hover:bg-zinc-200 active:scale-[0.96] disabled:opacity-30"
                         aria-label="Send"
                     >
-                        <ArrowUp className="h-4 w-4" />
+                        <ArrowUp className="h-4 w-4" strokeWidth={2.5} aria-hidden />
                     </button>
-                </div>
-                {fileError ? (
-                    <p className="border-t border-zinc-600 px-3 py-2 text-[10px] text-rose-400/90">{fileError}</p>
                 ) : null}
             </div>
-            <p className="mt-1.5 text-center text-[9px] text-zinc-500">Enter send · Shift+Enter new line</p>
-        </>
+            {fileError ? (
+                <p className="absolute bottom-full mb-1 rounded-lg bg-rose-900/80 px-3 py-1.5 text-[11px] text-rose-200">{fileError}</p>
+            ) : null}
+        </div>
     );
 
     if (isFloat) {
@@ -663,10 +644,10 @@ export function PAChatSurface({ variant }: { variant: 'page' | 'float' }) {
     }
 
     return (
-        <div className="flex min-h-0 flex-1 flex-col">
-            <div className={`mx-auto w-full min-w-0 space-y-3 px-3 pb-4 sm:space-y-3.5 sm:px-4 ${maxW}`}>{messageThread}</div>
-            <div className="sticky bottom-0 z-20 shrink-0 border-t border-white/[0.08] bg-brand-bg/95 px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-md sm:px-5">
-                <div className={`mx-auto w-full ${maxW}`}>{composerCore}</div>
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <div className={`custom-scrollbar mx-auto w-full min-w-0 flex-1 overflow-y-auto space-y-3 px-5 pb-4 pt-4 sm:space-y-3.5 sm:px-6 ${maxW}`}>{messageThread}</div>
+            <div className="shrink-0 border-t border-white/[0.06] bg-[var(--color-brand-bg)]/95 px-5 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-md sm:px-6">
+                <div className={`relative mx-auto w-full ${maxW}`}>{composerCore}</div>
             </div>
         </div>
     );
