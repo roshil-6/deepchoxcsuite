@@ -159,47 +159,44 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                             </div>
 
                             {/* Pro */}
-                            <div className="flex flex-col rounded-xl border border-white/20 bg-white p-5">
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-400">
+                            <div className="flex flex-col rounded-xl border border-zinc-800 bg-black p-5">
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
                                     Co-Founder Pro
                                 </p>
 
-                                <div className="mt-3 flex items-start gap-1">
-                                    <span className="mt-[5px] text-[15px] font-medium text-zinc-600">&#8377;</span>
-                                    <span className="text-[34px] font-semibold leading-none tracking-tight text-zinc-900">
-                                        {isYearly ? YEARLY_MONTHLY_INR : MONTHLY_INR}
+                                <div className="mt-3 flex items-end gap-2">
+                                    <span className="text-[34px] font-semibold leading-none tracking-tight text-white">
+                                        ${isYearly ? YEARLY_MONTHLY_USD : MONTHLY_USD}
                                     </span>
-                                    <div className="ml-1 mt-1.5 flex flex-col leading-tight">
-                                        <span className="text-[12px] text-zinc-500">/mo</span>
-                                        <span className="text-[10px] text-zinc-400">
-                                            (~${isYearly ? YEARLY_MONTHLY_USD : MONTHLY_USD})
-                                        </span>
-                                    </div>
+                                    <span className="mb-1 text-[12px] text-zinc-500">/mo</span>
+                                    <span className="mb-1 text-[11px] text-zinc-600">
+                                        (&#8377;{isYearly ? YEARLY_MONTHLY_INR : MONTHLY_INR})
+                                    </span>
                                 </div>
-                                <p className="mt-1.5 text-[11px] text-zinc-500">
+                                <p className="mt-1 text-[11px] text-zinc-600">
                                     {isYearly
-                                        ? `₹${YEARLY_TOTAL_INR}/yr (~$${YEARLY_TOTAL_USD}) · billed annually`
+                                        ? `$${YEARLY_TOTAL_USD}/yr (₹${YEARLY_TOTAL_INR}) · billed annually`
                                         : 'billed monthly · cancel anytime'}
                                 </p>
 
-                                <div className="my-4 h-px bg-zinc-200" />
+                                <div className="my-4 h-px bg-zinc-800" />
 
-                                <p className="mb-3 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">
+                                <p className="mb-3 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-600">
                                     Pro-exclusive
                                 </p>
                                 <div className="flex-1 space-y-3.5">
                                     {PRO_FEATURES.map(({ icon: Icon, label, desc }) => (
                                         <div key={label} className="flex gap-2.5">
-                                            <Icon className="mt-0.5 h-4 w-4 shrink-0 text-zinc-400" aria-hidden />
+                                            <Icon className="mt-0.5 h-4 w-4 shrink-0 text-zinc-500" aria-hidden />
                                             <div>
-                                                <p className="text-[11.5px] font-semibold leading-snug text-zinc-800">{label}</p>
+                                                <p className="text-[11.5px] font-semibold leading-snug text-zinc-200">{label}</p>
                                                 <p className="mt-0.5 text-[10.5px] leading-snug text-zinc-500">{desc}</p>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
 
-                                <p className="mt-3.5 text-[11px] text-zinc-400">+ everything in Free</p>
+                                <p className="mt-3.5 text-[11px] text-zinc-600">+ everything in Free</p>
                             </div>
                         </div>
 
@@ -216,11 +213,11 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                                     <button
                                         type="button"
                                         onClick={() => { activatePro(); onClose(); }}
-                                        className="w-full rounded-xl bg-white py-3.5 text-[14px] font-semibold text-zinc-900 transition hover:bg-zinc-100 active:scale-[0.98]"
+                                        className="w-full rounded-xl bg-gradient-to-r from-orange-500 to-white py-3.5 text-[14px] font-semibold text-zinc-900 transition hover:opacity-90 active:scale-[0.98]"
                                     >
                                         {isYearly
-                                            ? `Upgrade to Pro — ₹${YEARLY_TOTAL_INR}/yr (~$${YEARLY_TOTAL_USD})`
-                                            : `Upgrade to Pro — ₹${MONTHLY_INR}/mo (~$${MONTHLY_USD})`}
+                                            ? `Upgrade to Pro — $${YEARLY_TOTAL_USD}/yr (₹${YEARLY_TOTAL_INR})`
+                                            : `Upgrade to Pro — $${MONTHLY_USD}/mo (₹${MONTHLY_INR})`}
                                     </button>
                                     <p className="mt-2.5 text-center text-[10px] text-zinc-600">
                                         Instant access · cancel anytime · no questions asked

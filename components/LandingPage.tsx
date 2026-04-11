@@ -418,42 +418,39 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                             </button>
                         </div>
 
-                        {/* ── Pro card — white ── */}
-                        <div className="flex flex-col rounded-2xl border border-zinc-200 bg-white p-7">
-                            <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-400">
+                        {/* ── Pro card — black ── */}
+                        <div className="flex flex-col rounded-2xl border border-zinc-800 bg-black p-7">
+                            <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
                                 Co-Founder Pro
                             </p>
 
-                            <div className="mt-4 flex items-start gap-1">
-                                <span className="mt-[6px] font-sans text-[16px] font-medium text-zinc-500">&#8377;</span>
-                                <span className="font-sans text-[44px] font-semibold leading-none tracking-tight text-zinc-900">
-                                    {landingBilling === 'monthly' ? '300' : '250'}
+                            <div className="mt-4 flex items-end gap-2">
+                                <span className="font-sans text-[44px] font-semibold leading-none tracking-tight text-white">
+                                    ${landingBilling === 'monthly' ? '4' : '3.33'}
                                 </span>
-                                <div className="ml-1 mt-1.5 flex flex-col leading-tight">
-                                    <span className="font-sans text-[13px] text-zinc-400">/mo</span>
-                                    <span className="font-sans text-[11px] text-zinc-400">
-                                        (~${landingBilling === 'monthly' ? '4' : '3.33'})
-                                    </span>
-                                </div>
+                                <span className="mb-1.5 font-sans text-[14px] text-zinc-500">/mo</span>
+                                <span className="mb-1.5 font-sans text-[13px] text-zinc-600">
+                                    (&#8377;{landingBilling === 'monthly' ? '300' : '250'})
+                                </span>
                             </div>
-                            <p className="mt-2 font-sans text-[13px] text-zinc-500">
+                            <p className="mt-2 font-sans text-[13px] text-zinc-600">
                                 {landingBilling === 'monthly'
                                     ? 'billed monthly \u00b7 cancel anytime'
-                                    : '\u20b92,999/yr (~$40) \u00b7 billed annually'}
+                                    : '$40/yr (\u20b92,999) \u00b7 billed annually'}
                             </p>
 
-                            <div className="my-6 h-px bg-zinc-200" />
+                            <div className="my-6 h-px bg-zinc-800" />
 
-                            <p className="mb-4 font-sans text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-400">
+                            <p className="mb-4 font-sans text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-600">
                                 Pro-exclusive
                             </p>
 
                             <div className="flex-1 space-y-4">
                                 {LANDING_PRO_FEATURES.map(({ icon: Icon, name, desc }) => (
                                     <div key={name} className="flex gap-3">
-                                        <Icon className="mt-0.5 h-4 w-4 shrink-0 text-zinc-400" aria-hidden />
+                                        <Icon className="mt-0.5 h-4 w-4 shrink-0 text-zinc-500" aria-hidden />
                                         <div>
-                                            <p className="font-sans text-[13px] font-semibold leading-snug text-zinc-800">
+                                            <p className="font-sans text-[13px] font-semibold leading-snug text-zinc-200">
                                                 {name}
                                             </p>
                                             <p className="mt-0.5 font-sans text-[12px] leading-relaxed text-zinc-500">
@@ -464,16 +461,16 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                                 ))}
                             </div>
 
-                            <p className="mt-5 font-sans text-[12px] text-zinc-400">+ everything in Free</p>
+                            <p className="mt-5 font-sans text-[12px] text-zinc-600">+ everything in Free</p>
 
                             <button
                                 type="button"
                                 onClick={onStart}
-                                className="mt-5 w-full rounded-xl bg-zinc-900 py-3.5 font-sans text-[14px] font-semibold text-white transition hover:bg-zinc-800 active:scale-[0.98]"
+                                className="mt-5 w-full rounded-xl bg-gradient-to-r from-orange-500 to-white py-3.5 font-sans text-[14px] font-semibold text-zinc-900 transition hover:opacity-90 active:scale-[0.98]"
                             >
-                                {landingBilling === 'monthly' ? 'Get Pro — ₹300/mo' : 'Get Pro — ₹2,999/yr'}
+                                {landingBilling === 'monthly' ? 'Get Pro — $4/mo' : 'Get Pro — $40/yr'}
                             </button>
-                            <p className="mt-2 text-center font-sans text-[11px] text-zinc-400">
+                            <p className="mt-2 text-center font-sans text-[11px] text-zinc-600">
                                 Instant access &middot; cancel anytime
                             </p>
                         </div>
