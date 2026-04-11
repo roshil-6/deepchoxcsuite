@@ -331,36 +331,37 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                 <section
                     id="pricing"
                     ref={pricingRef}
-                    className="mx-auto w-full max-w-[56rem] px-5 pb-24 pt-4 sm:px-10 sm:pb-32 lg:max-w-[72rem] lg:px-14"
+                    className="mx-auto w-full max-w-[66rem] px-5 pb-32 pt-4 sm:px-10 sm:pb-40 lg:px-14"
                 >
                     <div
-                        className="mx-auto mb-14 h-px w-32 bg-gradient-to-r from-transparent via-zinc-500 to-transparent sm:w-40"
+                        className="mx-auto mb-16 h-px w-48 bg-gradient-to-r from-transparent via-zinc-600/80 to-transparent"
                         aria-hidden
                     />
 
                     {/* Section heading */}
-                    <div className="mb-10 text-center">
-                        <p className="font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-brand-teal">
+                    <div className="mb-12 text-center">
+                        <p className="font-sans text-[10px] font-bold uppercase tracking-[0.32em] text-brand-teal">
                             Pricing
                         </p>
-                        <h2 className="font-[family-name:var(--font-brand-display)] mx-auto mt-3 max-w-[22ch] text-balance text-[clamp(1.6rem,4vw,2.75rem)] font-semibold leading-tight tracking-[-0.01em] text-white">
-                            Start free. Upgrade when you need the edge.
+                        <h2 className="font-[family-name:var(--font-brand-display)] mx-auto mt-4 text-[clamp(2rem,5vw,3.25rem)] font-semibold leading-[1.05] tracking-[-0.025em] text-white">
+                            Start free.{' '}
+                            <span className="text-zinc-500">Go Pro when you mean it.</span>
                         </h2>
-                        <p className="mx-auto mt-3 max-w-xl font-sans text-[15px] leading-relaxed text-zinc-400">
-                            Every desk, room, and AI tool is free forever. Pro adds three automated intelligence
-                            features that run your company while you focus.
+                        <p className="mx-auto mt-4 max-w-[36rem] font-sans text-[15px] leading-relaxed text-zinc-500">
+                            Every desk, room, and tool — free forever. Pro adds three automated intelligence
+                            features that run your company while you focus elsewhere.
                         </p>
                     </div>
 
                     {/* Billing toggle */}
-                    <div className="mb-8 flex justify-center">
-                        <div className="inline-flex items-center rounded-full border border-zinc-700/60 bg-black/40 p-1 backdrop-blur-sm">
+                    <div className="mb-10 flex flex-col items-center gap-3">
+                        <div className="inline-flex items-center rounded-full border border-zinc-800 bg-zinc-950 p-1">
                             <button
                                 type="button"
                                 onClick={() => setLandingBilling('monthly')}
-                                className={`rounded-full px-5 py-2 font-sans text-[13px] font-semibold transition ${
+                                className={`rounded-full px-6 py-2 font-sans text-[13px] font-semibold transition-all ${
                                     landingBilling === 'monthly'
-                                        ? 'bg-zinc-800 text-zinc-100 shadow-sm'
+                                        ? 'bg-zinc-700 text-white shadow-sm'
                                         : 'text-zinc-500 hover:text-zinc-300'
                                 }`}
                             >
@@ -369,149 +370,182 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                             <button
                                 type="button"
                                 onClick={() => setLandingBilling('yearly')}
-                                className={`flex items-center gap-2 rounded-full px-5 py-2 font-sans text-[13px] font-semibold transition ${
+                                className={`flex items-center gap-2 rounded-full px-6 py-2 font-sans text-[13px] font-semibold transition-all ${
                                     landingBilling === 'yearly'
-                                        ? 'bg-zinc-800 text-zinc-100 shadow-sm'
+                                        ? 'bg-zinc-700 text-white shadow-sm'
                                         : 'text-zinc-500 hover:text-zinc-300'
                                 }`}
                             >
                                 Yearly
-                                <span className="rounded-full bg-amber-400/20 px-2 py-0.5 font-sans text-[10px] font-bold uppercase text-amber-400">
+                                <span className="rounded-full bg-amber-400/25 px-2 py-0.5 font-sans text-[10px] font-bold uppercase tracking-wide text-amber-300">
                                     Save 17%
                                 </span>
                             </button>
                         </div>
+                        {landingBilling === 'yearly' && (
+                            <div className="flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/[0.06] px-4 py-1.5">
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden />
+                                <span className="font-sans text-[12px] text-emerald-400">
+                                    You save &#8377;601 per year vs monthly billing
+                                </span>
+                            </div>
+                        )}
                     </div>
 
                     {/* Plan cards */}
-                    <div className="mx-auto grid max-w-3xl gap-4 sm:grid-cols-2">
+                    <div className="mx-auto grid max-w-4xl items-stretch gap-5 sm:grid-cols-2">
 
-                        {/* Free card */}
-                        <div className="flex flex-col rounded-2xl border border-zinc-800/80 bg-zinc-900/30 p-6 backdrop-blur-sm">
-                            <p className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">
-                                Founder
-                            </p>
-                            <p className="mt-3 font-sans text-[34px] font-bold leading-none text-zinc-200">
-                                Free
-                            </p>
-                            <p className="mt-1 font-sans text-[13px] text-zinc-600">
-                                forever, no card required
-                            </p>
-                            <div className="my-5 h-px bg-zinc-800/80" />
-                            <ul className="flex-1 space-y-2.5">
+                        {/* ── Free card ── */}
+                        <div className="flex flex-col rounded-3xl border border-zinc-800/70 bg-[#0a0a0b] p-8">
+                            <div>
+                                <p className="font-sans text-[10px] font-bold uppercase tracking-[0.22em] text-zinc-600">
+                                    Founder
+                                </p>
+                                <p className="mt-4 font-sans text-[52px] font-bold leading-none tracking-tight text-zinc-300">
+                                    Free
+                                </p>
+                                <p className="mt-2 font-sans text-[13px] text-zinc-600">
+                                    forever &mdash; no credit card required
+                                </p>
+                            </div>
+
+                            <div className="my-7 h-px bg-zinc-800/80" />
+
+                            <ul className="flex-1 space-y-3">
                                 {FREE_PRICING_ITEMS.map((item) => (
                                     <li
                                         key={item}
-                                        className="flex items-start gap-2.5 font-sans text-[13px] text-zinc-500"
+                                        className="flex items-center gap-3 font-sans text-[13.5px] text-zinc-400"
                                     >
-                                        <Check
-                                            className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-600"
-                                            aria-hidden
-                                        />
+                                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-zinc-700 bg-zinc-800/60">
+                                            <Check className="h-2.5 w-2.5 text-zinc-500" aria-hidden />
+                                        </span>
                                         {item}
                                     </li>
                                 ))}
                             </ul>
+
                             <button
                                 type="button"
                                 onClick={continueAsGuest}
-                                className="mt-6 w-full rounded-xl border border-zinc-700 bg-transparent py-3 font-sans text-[14px] font-semibold text-zinc-300 transition hover:border-zinc-500 hover:text-white"
+                                className="mt-8 w-full rounded-2xl border border-zinc-700 bg-transparent py-3.5 font-sans text-[14px] font-semibold text-zinc-300 transition hover:border-zinc-500 hover:bg-zinc-900/40 hover:text-white active:scale-[0.98]"
                             >
                                 Get started free
                             </button>
                         </div>
 
-                        {/* Pro card */}
-                        <div className="relative flex flex-col overflow-hidden rounded-2xl border border-amber-400/30 bg-gradient-to-b from-zinc-900/80 to-black/60 p-6 backdrop-blur-sm">
+                        {/* ── Pro card ── */}
+                        <div className="relative flex flex-col overflow-hidden rounded-3xl pt-8">
+                            {/* Recommended badge */}
+                            <div className="absolute left-0 right-0 top-0 flex justify-center">
+                                <span
+                                    className="inline-flex items-center gap-1.5 rounded-b-2xl px-4 py-1.5 font-sans text-[10px] font-bold uppercase tracking-[0.14em] text-black"
+                                    style={{
+                                        background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                                        boxShadow: '0 4px 20px rgba(251,191,36,0.45)',
+                                    }}
+                                >
+                                    <Sparkles className="h-3 w-3" aria-hidden />
+                                    Recommended
+                                </span>
+                            </div>
+
                             <div
-                                className="pointer-events-none absolute -right-14 -top-14 h-44 w-44 rounded-full bg-amber-400/10 blur-3xl"
-                                aria-hidden
-                            />
-                            <div className="relative flex flex-1 flex-col">
-                                <div className="flex items-center gap-2">
-                                    <Sparkles className="h-3.5 w-3.5 text-amber-400" aria-hidden />
-                                    <p className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400/90">
-                                        Co-Founder Pro
+                                className="flex flex-1 flex-col rounded-3xl border border-amber-400/30 p-8"
+                                style={{
+                                    background: 'linear-gradient(160deg, #150f00 0%, #0f0d0a 40%, #090909 100%)',
+                                    boxShadow: '0 0 0 1px rgba(251,191,36,0.08), 0 24px 60px rgba(251,191,36,0.12), 0 4px 20px rgba(0,0,0,0.7)',
+                                }}
+                            >
+                                {/* Glow orb */}
+                                <div
+                                    className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full"
+                                    style={{ background: 'radial-gradient(circle, rgba(251,191,36,0.18) 0%, transparent 70%)' }}
+                                    aria-hidden
+                                />
+
+                                <div className="relative">
+                                    <div className="flex items-center gap-2">
+                                        <Sparkles className="h-3.5 w-3.5 text-amber-400" aria-hidden />
+                                        <p className="font-sans text-[10px] font-bold uppercase tracking-[0.22em] text-amber-400/90">
+                                            Co-Founder Pro
+                                        </p>
+                                    </div>
+
+                                    {/* Price */}
+                                    <div className="mt-4 flex items-start gap-1.5">
+                                        <span className="mt-2.5 font-sans text-[18px] font-semibold text-zinc-300">
+                                            &#8377;
+                                        </span>
+                                        <span className="font-sans text-[52px] font-bold leading-none tracking-tight text-white">
+                                            {landingBilling === 'monthly' ? '300' : '250'}
+                                        </span>
+                                        <div className="mt-2.5 flex flex-col leading-none">
+                                            <span className="font-sans text-[14px] font-medium text-zinc-500">/mo</span>
+                                            <span className="mt-1 font-sans text-[11px] text-zinc-600">
+                                                (~${landingBilling === 'monthly' ? '4' : '3.33'})
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <p className="mt-1.5 font-sans text-[13px] text-zinc-600">
+                                        {landingBilling === 'monthly'
+                                            ? 'billed monthly \u00b7 cancel anytime'
+                                            : '\u20B92,999/yr (~$40) \u00b7 billed annually'}
                                     </p>
-                                </div>
 
-                                {/* Price */}
-                                {landingBilling === 'monthly' ? (
-                                    <>
-                                        <div className="mt-3 flex items-end gap-2">
-                                            <p className="font-sans text-[34px] font-bold leading-none text-zinc-100">
-                                                &#8377;300
-                                            </p>
-                                            <span className="mb-1 font-sans text-[15px] text-zinc-500">/mo</span>
-                                            <span className="mb-1 font-sans text-[13px] text-zinc-600">(~$4)</span>
-                                        </div>
-                                        <p className="mt-1 font-sans text-[13px] text-zinc-600">
-                                            billed monthly &middot; cancel anytime
-                                        </p>
-                                    </>
-                                ) : (
-                                    <>
-                                        <div className="mt-3 flex items-end gap-2">
-                                            <p className="font-sans text-[34px] font-bold leading-none text-zinc-100">
-                                                &#8377;250
-                                            </p>
-                                            <span className="mb-1 font-sans text-[15px] text-zinc-500">/mo</span>
-                                            <span className="mb-1 font-sans text-[13px] text-zinc-600">(~$3.33)</span>
-                                        </div>
-                                        <p className="mt-1 font-sans text-[13px] text-zinc-600">
-                                            &#8377;2,999/yr (~$40) &middot; billed annually
-                                        </p>
-                                    </>
-                                )}
+                                    <div className="my-6 h-px bg-amber-400/10" />
 
-                                <div className="my-5 h-px bg-amber-400/10" />
+                                    {/* 3 Pro features */}
+                                    <p className="mb-4 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400/55">
+                                        Pro-exclusive intelligence
+                                    </p>
 
-                                {/* 3 Pro features */}
-                                <p className="mb-3 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-amber-400/60">
-                                    Pro-exclusive intelligence
-                                </p>
-                                <div className="flex-1 space-y-3">
-                                    {LANDING_PRO_FEATURES.map(
-                                        ({ icon: Icon, name, desc, color, bg, border }) => (
+                                    <div className="space-y-3">
+                                        {LANDING_PRO_FEATURES.map(({ icon: Icon, name, desc, color, bg, border }) => (
                                             <div
                                                 key={name}
-                                                className={`flex gap-3 rounded-xl border ${border} ${bg} p-3`}
+                                                className={`flex gap-3.5 rounded-2xl border ${border} ${bg} p-4`}
                                             >
                                                 <span className={`mt-0.5 shrink-0 ${color}`}>
-                                                    <Icon className="h-4 w-4" aria-hidden />
+                                                    <Icon className="h-5 w-5" aria-hidden />
                                                 </span>
                                                 <div>
-                                                    <p className="font-sans text-[12px] font-semibold leading-snug text-zinc-200">
+                                                    <p className="font-sans text-[13px] font-semibold leading-snug text-zinc-100">
                                                         {name}
                                                     </p>
-                                                    <p className="mt-0.5 font-sans text-[11px] leading-snug text-zinc-500">
+                                                    <p className="mt-1 font-sans text-[12px] leading-relaxed text-zinc-500">
                                                         {desc}
                                                     </p>
                                                 </div>
                                             </div>
-                                        ),
-                                    )}
+                                        ))}
+                                    </div>
+
+                                    <p className="mt-4 font-sans text-[13px] text-zinc-600">
+                                        + everything in Free
+                                    </p>
+
+                                    <button
+                                        type="button"
+                                        onClick={onStart}
+                                        className="mt-6 inline-flex w-full items-center justify-center gap-2.5 rounded-2xl py-4 font-sans text-[15px] font-bold text-black transition-all active:scale-[0.98]"
+                                        style={{
+                                            background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)',
+                                            boxShadow: '0 4px 28px rgba(251,191,36,0.4)',
+                                        }}
+                                    >
+                                        <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
+                                        {landingBilling === 'monthly'
+                                            ? 'Get Pro — ₹300/mo'
+                                            : 'Get Pro — ₹2,999/yr'}
+                                    </button>
+                                    <p className="mt-2.5 text-center font-sans text-[11px] text-zinc-600">
+                                        Instant access &middot; cancel anytime &middot; no questions asked
+                                    </p>
                                 </div>
-
-                                <p className="mt-3 font-sans text-[12px] text-zinc-500">
-                                    + everything in Free
-                                </p>
-
-                                <button
-                                    type="button"
-                                    onClick={onStart}
-                                    className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white py-3 font-sans text-[14px] font-bold text-zinc-900 shadow-[0_2px_24px_rgba(255,255,255,0.12)] transition hover:bg-zinc-100 active:scale-[0.98]"
-                                >
-                                    <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
-                                    {landingBilling === 'monthly'
-                                        ? 'Get Pro — ₹300/mo'
-                                        : 'Get Pro — ₹2,999/yr'}
-                                </button>
-                                <p className="mt-2 text-center font-sans text-[10px] text-zinc-600">
-                                    Instant access &middot; cancel anytime &middot; no questions asked
-                                </p>
                             </div>
                         </div>
+
                     </div>
                 </section>
 
