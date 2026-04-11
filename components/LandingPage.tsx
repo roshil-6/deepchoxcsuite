@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Brain, Check, Mail, Lock, Network, Sparkles, Target, User, Shield, Volume2, VolumeX } from 'lucide-react';
+import { ArrowRight, Brain, Check, Mail, Lock, Network, Target, User, Shield, Volume2, VolumeX } from 'lucide-react';
 
 /** Default hero video — `public/landing-hero-demo.mp4`. Override with `NEXT_PUBLIC_LANDING_HERO_VIDEO_URL` (full URL). */
 export const LANDING_HERO_VIDEO_DEFAULT = '/landing-hero-demo.mp4';
@@ -24,25 +24,16 @@ const LANDING_PRO_FEATURES = [
         icon: Brain,
         name: 'Executive Briefing Autopilot',
         desc: 'Daily AI brief auto-delivered every morning — progress, risks flagged, priorities, and market intel without asking.',
-        color: 'text-violet-400',
-        bg: 'bg-violet-400/[0.07]',
-        border: 'border-violet-400/20',
     },
     {
         icon: Target,
         name: 'Wargame Multi-Round Simulation',
         desc: 'Full adversarial simulation with competitor counter-moves, board stress-test mode, and downloadable scenario reports.',
-        color: 'text-rose-400',
-        bg: 'bg-rose-400/[0.07]',
-        border: 'border-rose-400/20',
     },
     {
         icon: Network,
         name: 'Cross-Venture Intelligence',
         desc: 'AI layer that finds patterns, conflicts, and synergies across all your ventures simultaneously — portfolio-level decisions.',
-        color: 'text-sky-400',
-        bg: 'bg-sky-400/[0.07]',
-        border: 'border-sky-400/20',
     },
 ] as const;
 
@@ -354,14 +345,14 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                     </div>
 
                     {/* Billing toggle */}
-                    <div className="mb-10 flex flex-col items-center gap-3">
-                        <div className="inline-flex items-center rounded-full border border-zinc-800 bg-zinc-950 p-1">
+                    <div className="mb-8 flex flex-col items-center gap-2">
+                        <div className="inline-flex items-center rounded-full border border-zinc-800 p-1">
                             <button
                                 type="button"
                                 onClick={() => setLandingBilling('monthly')}
-                                className={`rounded-full px-6 py-2 font-sans text-[13px] font-semibold transition-all ${
+                                className={`rounded-full px-6 py-2 font-sans text-[13px] font-medium transition-all ${
                                     landingBilling === 'monthly'
-                                        ? 'bg-zinc-700 text-white shadow-sm'
+                                        ? 'bg-zinc-800 text-white'
                                         : 'text-zinc-500 hover:text-zinc-300'
                                 }`}
                             >
@@ -370,56 +361,49 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                             <button
                                 type="button"
                                 onClick={() => setLandingBilling('yearly')}
-                                className={`flex items-center gap-2 rounded-full px-6 py-2 font-sans text-[13px] font-semibold transition-all ${
+                                className={`flex items-center gap-2 rounded-full px-6 py-2 font-sans text-[13px] font-medium transition-all ${
                                     landingBilling === 'yearly'
-                                        ? 'bg-zinc-700 text-white shadow-sm'
+                                        ? 'bg-zinc-800 text-white'
                                         : 'text-zinc-500 hover:text-zinc-300'
                                 }`}
                             >
                                 Yearly
-                                <span className="rounded-full bg-amber-400/25 px-2 py-0.5 font-sans text-[10px] font-bold uppercase tracking-wide text-amber-300">
-                                    Save 17%
+                                <span className="rounded bg-white/10 px-1.5 py-0.5 font-sans text-[10px] font-semibold text-zinc-400">
+                                    –17%
                                 </span>
                             </button>
                         </div>
                         {landingBilling === 'yearly' && (
-                            <div className="flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/[0.06] px-4 py-1.5">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden />
-                                <span className="font-sans text-[12px] text-emerald-400">
-                                    You save &#8377;601 per year vs monthly billing
-                                </span>
-                            </div>
+                            <p className="font-sans text-[12px] text-zinc-500">
+                                Save &#8377;601 vs monthly billing
+                            </p>
                         )}
                     </div>
 
                     {/* Plan cards */}
-                    <div className="mx-auto grid max-w-4xl items-stretch gap-5 sm:grid-cols-2">
+                    <div className="mx-auto grid max-w-3xl items-stretch gap-4 sm:grid-cols-2">
 
                         {/* ── Free card ── */}
-                        <div className="flex flex-col rounded-3xl border border-zinc-800/70 bg-[#0a0a0b] p-8">
-                            <div>
-                                <p className="font-sans text-[10px] font-bold uppercase tracking-[0.22em] text-zinc-600">
-                                    Founder
-                                </p>
-                                <p className="mt-4 font-sans text-[52px] font-bold leading-none tracking-tight text-zinc-300">
-                                    Free
-                                </p>
-                                <p className="mt-2 font-sans text-[13px] text-zinc-600">
-                                    forever &mdash; no credit card required
-                                </p>
-                            </div>
+                        <div className="flex flex-col rounded-2xl border border-zinc-800 p-7">
+                            <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-600">
+                                Founder
+                            </p>
+                            <p className="mt-4 font-sans text-[44px] font-semibold leading-none tracking-tight text-white">
+                                Free
+                            </p>
+                            <p className="mt-2 font-sans text-[13px] text-zinc-600">
+                                forever &mdash; no credit card required
+                            </p>
 
-                            <div className="my-7 h-px bg-zinc-800/80" />
+                            <div className="my-6 h-px bg-zinc-800" />
 
-                            <ul className="flex-1 space-y-3">
+                            <ul className="flex-1 space-y-2.5">
                                 {FREE_PRICING_ITEMS.map((item) => (
                                     <li
                                         key={item}
-                                        className="flex items-center gap-3 font-sans text-[13.5px] text-zinc-400"
+                                        className="flex items-center gap-3 font-sans text-[13px] text-zinc-500"
                                     >
-                                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-zinc-700 bg-zinc-800/60">
-                                            <Check className="h-2.5 w-2.5 text-zinc-500" aria-hidden />
-                                        </span>
+                                        <Check className="h-3.5 w-3.5 shrink-0 text-zinc-600" aria-hidden />
                                         {item}
                                     </li>
                                 ))}
@@ -428,122 +412,70 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                             <button
                                 type="button"
                                 onClick={continueAsGuest}
-                                className="mt-8 w-full rounded-2xl border border-zinc-700 bg-transparent py-3.5 font-sans text-[14px] font-semibold text-zinc-300 transition hover:border-zinc-500 hover:bg-zinc-900/40 hover:text-white active:scale-[0.98]"
+                                className="mt-7 w-full rounded-xl border border-zinc-700 py-3 font-sans text-[14px] font-medium text-zinc-400 transition hover:border-zinc-500 hover:text-white active:scale-[0.98]"
                             >
                                 Get started free
                             </button>
                         </div>
 
-                        {/* ── Pro card ── */}
-                        <div className="relative flex flex-col overflow-hidden rounded-3xl pt-8">
-                            {/* Recommended badge */}
-                            <div className="absolute left-0 right-0 top-0 flex justify-center">
-                                <span
-                                    className="inline-flex items-center gap-1.5 rounded-b-2xl px-4 py-1.5 font-sans text-[10px] font-bold uppercase tracking-[0.14em] text-black"
-                                    style={{
-                                        background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
-                                        boxShadow: '0 4px 20px rgba(251,191,36,0.45)',
-                                    }}
-                                >
-                                    <Sparkles className="h-3 w-3" aria-hidden />
-                                    Recommended
+                        {/* ── Pro card — white ── */}
+                        <div className="flex flex-col rounded-2xl border border-zinc-200 bg-white p-7">
+                            <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-400">
+                                Co-Founder Pro
+                            </p>
+
+                            <div className="mt-4 flex items-start gap-1">
+                                <span className="mt-[6px] font-sans text-[16px] font-medium text-zinc-500">&#8377;</span>
+                                <span className="font-sans text-[44px] font-semibold leading-none tracking-tight text-zinc-900">
+                                    {landingBilling === 'monthly' ? '300' : '250'}
                                 </span>
-                            </div>
-
-                            <div
-                                className="flex flex-1 flex-col rounded-3xl border border-amber-400/30 p-8"
-                                style={{
-                                    background: 'linear-gradient(160deg, #150f00 0%, #0f0d0a 40%, #090909 100%)',
-                                    boxShadow: '0 0 0 1px rgba(251,191,36,0.08), 0 24px 60px rgba(251,191,36,0.12), 0 4px 20px rgba(0,0,0,0.7)',
-                                }}
-                            >
-                                {/* Glow orb */}
-                                <div
-                                    className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full"
-                                    style={{ background: 'radial-gradient(circle, rgba(251,191,36,0.18) 0%, transparent 70%)' }}
-                                    aria-hidden
-                                />
-
-                                <div className="relative">
-                                    <div className="flex items-center gap-2">
-                                        <Sparkles className="h-3.5 w-3.5 text-amber-400" aria-hidden />
-                                        <p className="font-sans text-[10px] font-bold uppercase tracking-[0.22em] text-amber-400/90">
-                                            Co-Founder Pro
-                                        </p>
-                                    </div>
-
-                                    {/* Price */}
-                                    <div className="mt-4 flex items-start gap-1.5">
-                                        <span className="mt-2.5 font-sans text-[18px] font-semibold text-zinc-300">
-                                            &#8377;
-                                        </span>
-                                        <span className="font-sans text-[52px] font-bold leading-none tracking-tight text-white">
-                                            {landingBilling === 'monthly' ? '300' : '250'}
-                                        </span>
-                                        <div className="mt-2.5 flex flex-col leading-none">
-                                            <span className="font-sans text-[14px] font-medium text-zinc-500">/mo</span>
-                                            <span className="mt-1 font-sans text-[11px] text-zinc-600">
-                                                (~${landingBilling === 'monthly' ? '4' : '3.33'})
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <p className="mt-1.5 font-sans text-[13px] text-zinc-600">
-                                        {landingBilling === 'monthly'
-                                            ? 'billed monthly \u00b7 cancel anytime'
-                                            : '\u20B92,999/yr (~$40) \u00b7 billed annually'}
-                                    </p>
-
-                                    <div className="my-6 h-px bg-amber-400/10" />
-
-                                    {/* 3 Pro features */}
-                                    <p className="mb-4 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400/55">
-                                        Pro-exclusive intelligence
-                                    </p>
-
-                                    <div className="space-y-3">
-                                        {LANDING_PRO_FEATURES.map(({ icon: Icon, name, desc, color, bg, border }) => (
-                                            <div
-                                                key={name}
-                                                className={`flex gap-3.5 rounded-2xl border ${border} ${bg} p-4`}
-                                            >
-                                                <span className={`mt-0.5 shrink-0 ${color}`}>
-                                                    <Icon className="h-5 w-5" aria-hidden />
-                                                </span>
-                                                <div>
-                                                    <p className="font-sans text-[13px] font-semibold leading-snug text-zinc-100">
-                                                        {name}
-                                                    </p>
-                                                    <p className="mt-1 font-sans text-[12px] leading-relaxed text-zinc-500">
-                                                        {desc}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    <p className="mt-4 font-sans text-[13px] text-zinc-600">
-                                        + everything in Free
-                                    </p>
-
-                                    <button
-                                        type="button"
-                                        onClick={onStart}
-                                        className="mt-6 inline-flex w-full items-center justify-center gap-2.5 rounded-2xl py-4 font-sans text-[15px] font-bold text-black transition-all active:scale-[0.98]"
-                                        style={{
-                                            background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)',
-                                            boxShadow: '0 4px 28px rgba(251,191,36,0.4)',
-                                        }}
-                                    >
-                                        <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
-                                        {landingBilling === 'monthly'
-                                            ? 'Get Pro — ₹300/mo'
-                                            : 'Get Pro — ₹2,999/yr'}
-                                    </button>
-                                    <p className="mt-2.5 text-center font-sans text-[11px] text-zinc-600">
-                                        Instant access &middot; cancel anytime &middot; no questions asked
-                                    </p>
+                                <div className="ml-1 mt-1.5 flex flex-col leading-tight">
+                                    <span className="font-sans text-[13px] text-zinc-400">/mo</span>
+                                    <span className="font-sans text-[11px] text-zinc-400">
+                                        (~${landingBilling === 'monthly' ? '4' : '3.33'})
+                                    </span>
                                 </div>
                             </div>
+                            <p className="mt-2 font-sans text-[13px] text-zinc-500">
+                                {landingBilling === 'monthly'
+                                    ? 'billed monthly \u00b7 cancel anytime'
+                                    : '\u20b92,999/yr (~$40) \u00b7 billed annually'}
+                            </p>
+
+                            <div className="my-6 h-px bg-zinc-200" />
+
+                            <p className="mb-4 font-sans text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-400">
+                                Pro-exclusive
+                            </p>
+
+                            <div className="flex-1 space-y-4">
+                                {LANDING_PRO_FEATURES.map(({ icon: Icon, name, desc }) => (
+                                    <div key={name} className="flex gap-3">
+                                        <Icon className="mt-0.5 h-4 w-4 shrink-0 text-zinc-400" aria-hidden />
+                                        <div>
+                                            <p className="font-sans text-[13px] font-semibold leading-snug text-zinc-800">
+                                                {name}
+                                            </p>
+                                            <p className="mt-0.5 font-sans text-[12px] leading-relaxed text-zinc-500">
+                                                {desc}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <p className="mt-5 font-sans text-[12px] text-zinc-400">+ everything in Free</p>
+
+                            <button
+                                type="button"
+                                onClick={onStart}
+                                className="mt-5 w-full rounded-xl bg-zinc-900 py-3.5 font-sans text-[14px] font-semibold text-white transition hover:bg-zinc-800 active:scale-[0.98]"
+                            >
+                                {landingBilling === 'monthly' ? 'Get Pro — ₹300/mo' : 'Get Pro — ₹2,999/yr'}
+                            </button>
+                            <p className="mt-2 text-center font-sans text-[11px] text-zinc-400">
+                                Instant access &middot; cancel anytime
+                            </p>
                         </div>
 
                     </div>
