@@ -487,7 +487,7 @@ export function ChatAssistant({
                         type="button"
                         onClick={() => setFloatOpen(true)}
                         style={{ transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)` }}
-                        className="fixed bottom-[108px] right-[340px] z-[60] flex items-center gap-2 rounded-full border border-white/[0.1] bg-[#111113] px-3.5 py-2 text-[12px] text-zinc-400 shadow-[0_4px_24px_rgba(0,0,0,0.6)] transition hover:bg-[#1a1a1c] hover:text-zinc-200 lg:right-[360px]"
+                        className="fixed bottom-[108px] left-1/2 z-[60] flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/[0.1] bg-[#111113] px-3.5 py-2 text-[12px] text-zinc-400 shadow-[0_4px_24px_rgba(0,0,0,0.6)] transition hover:bg-[#1a1a1c] hover:text-zinc-200 lg:left-auto lg:translate-x-0 lg:right-[360px]"
                     >
                         <MessageSquare className="h-3.5 w-3.5" aria-hidden />
                         <span>Thread</span>
@@ -498,8 +498,8 @@ export function ChatAssistant({
                 {floatOpen && (
                     <div
                         style={{ transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)` }}
-                        className={`fixed bottom-[108px] right-[340px] z-[60] flex flex-col overflow-hidden rounded-2xl border border-white/[0.09] bg-[#0d0d0f] shadow-[0_12px_56px_rgba(0,0,0,0.75),0_0_0_1px_rgba(255,255,255,0.03)] transition-[width,height] duration-300 ease-in-out lg:right-[360px] ${
-                            floatExpanded ? 'h-[520px] w-[500px]' : 'h-[300px] w-[380px]'
+                        className={`fixed bottom-[108px] left-2 right-2 z-[60] flex flex-col overflow-hidden rounded-2xl border border-white/[0.09] bg-[#0d0d0f] shadow-[0_12px_56px_rgba(0,0,0,0.75),0_0_0_1px_rgba(255,255,255,0.03)] transition-[height] duration-300 ease-in-out lg:left-auto lg:right-[360px] ${
+                            floatExpanded ? 'h-[520px] lg:w-[500px]' : 'h-[300px] lg:w-[380px]'
                         }`}
                     >
                         {/* Drag-handle header */}
