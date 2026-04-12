@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { resolveChat as chatWithGroq } from '@/lib/ai/chatProviders';
+import { chatWithAI as chatWithGroq } from '@/lib/ai/chatProviders';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rateLimit';
 
 const SYSTEM = `You are helping founders onboard into a venture workspace. From the user's text (notes, pitch paste, voice transcript, or document text), extract structured fields.
@@ -35,9 +35,9 @@ export async function POST(req: Request) {
   if (!rl.ok) return rateLimitResponse(rl.resetAt);
 
   try {
-    if (!process.env.GROQ_API_KEY?.trim()) {
+    if (!process.env.OPENAI_API_KEY?.trim() && !process.env.GROQ_API_KEY?.trim()) {
       return NextResponse.json(
-        { ok: false, error: 'GROQ_API_KEY is not configured on the server.' },
+        { ok: false, error: 'No AI provider key is configured on the server.' },
         { status: 503 }
       );
     }
