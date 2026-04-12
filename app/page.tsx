@@ -14,13 +14,13 @@ import { emptyVentureShell } from '@/lib/minimalVenture';
 import { OfficeShell } from '@/components/OfficeShell';
 import { SyncToastHost } from '@/components/SyncToastHost';
 import { PersonalAssistantChatProvider } from '@/components/pa/PersonalAssistantChatContext';
-import { FloatingPABuddy } from '@/components/pa/FloatingPABuddy';
+import { FloatingDexoOrb } from '@/components/Dexo/FloatingDexoOrb';
 import { DeskChatThreadSlotProvider } from '@/components/DeskChatThreadSlotContext';
 
 export default function Home() {
   const [hasStarted, setHasStarted] = useState(false);
   const [nameVentureOpen, setNameVentureOpen] = useState(false);
-  const { setActiveProject, setAllProjects, switchRoom, activeRoom } = useOffice();
+  const { setActiveProject, setAllProjects, switchRoom, activeRoom, resetSystem } = useOffice();
 
   /** Create a shell venture (optional name) and open Personal Assistant for chat-first setup. */
   const createVentureWithName = async (name: string) => {
@@ -63,6 +63,7 @@ export default function Home() {
           <DeskChatThreadSlotProvider>
           <AppShell
             onLogout={() => {
+              void resetSystem();
               setHasStarted(false);
               setNameVentureOpen(false);
             }}
@@ -79,7 +80,7 @@ export default function Home() {
             <WorkspaceStage hideWorkspaceHeader onNewVenture={openNameVentureModal} />
           </AppShell>
           </DeskChatThreadSlotProvider>
-          <FloatingPABuddy />
+          <FloatingDexoOrb />
         </PersonalAssistantChatProvider>
         <SyncToastHost />
       </OfficeShell>
