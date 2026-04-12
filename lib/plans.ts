@@ -1,20 +1,11 @@
-/**
- * DEEPCHOX — Subscription plan definitions.
- * Source of truth for every feature gate in the app.
- * When you wire up real auth/Stripe, replace `planFromStorage` with
- * a server-side check and keep these flag definitions untouched.
- */
-
 export type PlanId = 'free' | 'pro';
 
 export interface Plan {
     id: PlanId;
     name: string;
-    /** Display price string, e.g. "Free" or "₹300" */
     price: string;
     priceNote: string;
     features: {
-        // ── Core — available to everyone ──────────────────────────────────
         allDesks: boolean;
         personalAssistant: boolean;
         dashboard: boolean;
@@ -24,12 +15,8 @@ export interface Plan {
         vcGauntlet: boolean;
         wargameNexus: boolean;
         intelligenceSuite: boolean;
-        // ── Pro-exclusive automated intelligence ──────────────────────────
-        /** Daily AI briefing auto-delivered every morning without user prompting */
         executiveBriefingAutopilot: boolean;
-        /** Full multi-round adversarial simulation + board stress-test + downloadable report */
         wargameMultiRound: boolean;
-        /** Cross-venture AI synthesis — portfolio-level patterns & synergy detection */
         crossVentureIntelligence: boolean;
     };
 }
@@ -50,7 +37,6 @@ export const PLANS: Record<PlanId, Plan> = {
             vcGauntlet: true,
             wargameNexus: true,
             intelligenceSuite: true,
-            // Pro-exclusive
             executiveBriefingAutopilot: false,
             wargameMultiRound: false,
             crossVentureIntelligence: false,
@@ -71,7 +57,6 @@ export const PLANS: Record<PlanId, Plan> = {
             vcGauntlet: true,
             wargameNexus: true,
             intelligenceSuite: true,
-            // Pro-exclusive
             executiveBriefingAutopilot: true,
             wargameMultiRound: true,
             crossVentureIntelligence: true,
@@ -82,7 +67,6 @@ export const PLANS: Record<PlanId, Plan> = {
 export const FREE_PLAN = PLANS.free;
 export const PRO_PLAN = PLANS.pro;
 
-/** The three Pro-exclusive intelligence features — used in upgrade prompts and pricing UI */
 export const PRO_INTELLIGENCE_FEATURES = [
     {
         key: 'executiveBriefingAutopilot',

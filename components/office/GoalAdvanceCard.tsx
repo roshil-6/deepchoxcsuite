@@ -45,7 +45,7 @@ export function GoalAdvanceCard({
                         <div className="min-w-0">
                             <h2 className="text-sm font-semibold tracking-tight text-zinc-100">Goal advancement</h2>
                             <p className="mt-0.5 max-w-md text-[11px] leading-snug text-zinc-500">
-                                Auto score from phases, priorities, and kanban — refresh or revisit the dashboard to recalc.
+                                Scored from phases, priorities, and kanban.
                             </p>
                         </div>
                     </div>
@@ -57,7 +57,7 @@ export function GoalAdvanceCard({
                 </div>
             ) : (
                 <p className="mb-3 text-[11px] leading-snug text-zinc-500">
-                    Auto score from phases, priorities, and kanban — refresh or revisit the dashboard to recalc.
+                    Scored from phases, priorities, and kanban.
                 </p>
             )}
 
@@ -107,28 +107,12 @@ export function GoalAdvanceCard({
             ) : null}
 
             <div className="mt-3 border-t border-white/[0.06] pt-3">
-                <p className="text-[9px] font-semibold uppercase tracking-[0.1em] text-zinc-500">Where to update</p>
-                <ul className="mt-2 space-y-1 text-[11px] leading-snug text-zinc-400">
-                    <li>
-                        <span className="font-medium text-zinc-300">Timeline</span>
-                        <span className="text-zinc-500"> — </span>
-                        strategy phases &amp; dates
-                    </li>
-                    <li>
-                        <span className="font-medium text-zinc-300">CEO</span>
-                        <span className="text-zinc-500"> — </span>
-                        executive priorities &amp; strategy notes
-                    </li>
-                    <li>
-                        <span className="font-medium text-zinc-300">CTO</span>
-                        <span className="text-zinc-500"> — </span>
-                        move tasks to Completed
-                    </li>
-                    <li>
-                        <span className="font-medium text-zinc-300">{PA_BUDDY_NAME}</span>
-                        <span className="text-zinc-500"> — </span>
-                        ask to change phases, priorities, or board in chat
-                    </li>
+                <p className="text-[9px] font-semibold uppercase tracking-[0.1em] text-zinc-500">Update via</p>
+                <ul className="mt-1.5 space-y-1 text-[11px] leading-snug text-zinc-400">
+                    <li><span className="font-medium text-zinc-300">Timeline</span><span className="text-zinc-600"> · </span>phases &amp; dates</li>
+                    <li><span className="font-medium text-zinc-300">CEO</span><span className="text-zinc-600"> · </span>priorities &amp; notes</li>
+                    <li><span className="font-medium text-zinc-300">CTO</span><span className="text-zinc-600"> · </span>close completed tasks</li>
+                    <li><span className="font-medium text-zinc-300">{PA_BUDDY_NAME}</span><span className="text-zinc-600"> · </span>ask to update in chat</li>
                 </ul>
                 <div className="mt-2.5 flex flex-wrap gap-1.5">
                     <button

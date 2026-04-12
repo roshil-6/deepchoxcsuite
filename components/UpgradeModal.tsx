@@ -1,60 +1,61 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Sparkles, Check, Brain, Target, Network } from 'lucide-react';
+import { X, Check, Brain, Target, Network, ChevronDown, ChevronUp, Zap } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 
 type BillingCycle = 'monthly' | 'yearly';
 
-// ── Pricing constants ─────────────────────────────────────────────────────────
 const MONTHLY_INR = 300;
 const MONTHLY_USD = 4;
-const YEARLY_MONTHLY_INR = 250;   // ₹2999 / 12, rounded
-const YEARLY_MONTHLY_USD = 3.33;
 const YEARLY_TOTAL_INR = 2999;
 const YEARLY_TOTAL_USD = 40;
+const YEARLY_MONTHLY_INR = 250;
+const YEARLY_MONTHLY_USD = 3.33;
+const YEARLY_SAVINGS_INR = MONTHLY_INR * 12 - YEARLY_TOTAL_INR;
 
-// ── Free tier features ────────────────────────────────────────────────────────
 const FREE_ITEMS = [
-    'All 11 AI desks and rooms',
-    'Unlimited ventures',
-    'Personal Assistant + Meeting Room',
-    'Strategy, Finance, Product & GTM desks',
-    'Wargame Nexus (1 round)',
-    'VC Gauntlet — pitch practice',
-    'Intelligence Suite & Reports',
-    'Manual executive briefings on demand',
-    'Calendar, Kanban & Pitch Forge',
+    { label: 'Strategy, Finance, Product, Market & Growth desks', detail: '5 AI teammates, each scoped to their role' },
+    { label: 'Personal Assistant', detail: 'Chat-first venture setup and cross-desk coordination' },
+    { label: 'AI Staff Sync', detail: 'All desks refresh research from the same venture snapshot' },
+    { label: 'VC Gauntlet', detail: 'Investor-style stress test — adversarial Q&A on your pitch' },
+    { label: 'Wargame Nexus', detail: 'Competitive strategy simulation — one round' },
+    { label: 'Pitch Forge', detail: 'Narrative builder and slide deck exporter' },
+    { label: 'Market Intelligence & Neural Diary', detail: 'Live signals, competitor tracking, and strategic notes' },
+    { label: 'Dashboard, Kanban, Calendar & Meeting Room', detail: 'Execution score, board, timeline, and guided walkthroughs' },
+    { label: 'Unlimited ventures', detail: 'No cap on projects or venture records' },
 ];
 
-// ── Pro-exclusive intelligence features ──────────────────────────────────────
 const PRO_FEATURES = [
     {
         icon: Brain,
-        name: 'Executive Briefing Autopilot',
-        description:
-            'Daily AI brief auto-delivered every morning — venture progress, risks flagged, priorities, and market intel without you asking.',
-        color: 'text-violet-400',
-        bg: 'bg-violet-400/[0.07]',
-        border: 'border-violet-400/[0.18]',
+        label: 'Executive Briefing Autopilot',
+        tagline: 'A daily brief waiting for you — without asking.',
+        how: [
+            'Each morning DEEPCHOX scans your active ventures: overdue tasks, risks your CFO or CTO flagged, deals that went quiet, and milestones closing in.',
+            'Your PA and Strategy desks compress this into a tight 5-point brief — what needs action today, what can wait, and what is quietly going sideways.',
+            'Open the app and it is already there. Like a chief of staff who reviewed everything overnight and left a clear note before the day started.',
+        ],
     },
     {
         icon: Target,
-        name: 'Wargame Multi-Round Simulation',
-        description:
-            'Full adversarial simulation with competitor counter-moves across multiple rounds, board stress-test mode, and downloadable scenario reports.',
-        color: 'text-rose-400',
-        bg: 'bg-rose-400/[0.07]',
-        border: 'border-rose-400/[0.18]',
+        label: 'Wargame Multi-Round Simulation',
+        tagline: 'Not one stress test — the full campaign.',
+        how: [
+            'Free Wargame tests your strategy once. Multi-Round runs up to 5 back-and-forth rounds: your move, simulated competitor counter, your response — played out like a real competitive sequence.',
+            'The AI uses your actual market position, stated weaknesses, and real competitive patterns to make each counter-move feel like a genuine opponent.',
+            'You end with a board stress-test report: which scenario hurt most, which assumptions to defend, and which moves survived every round. Downloadable as PDF.',
+        ],
     },
     {
         icon: Network,
-        name: 'Cross-Venture Intelligence',
-        description:
-            'AI layer that spots patterns, resource conflicts, and synergies across all your ventures simultaneously — portfolio-level decisions.',
-        color: 'text-sky-400',
-        bg: 'bg-sky-400/[0.07]',
-        border: 'border-sky-400/[0.18]',
+        label: 'Cross-Venture Intelligence',
+        tagline: 'One layer that sees across everything you are building.',
+        how: [
+            'Every desk knows only its own venture. Cross-Venture Intelligence reads across all of them at once — surfacing connections individual desks would never catch.',
+            'Spots things like two ventures targeting the same customer, a GTM budget that could serve both, or a risk building quietly in one that is already present in another.',
+            'Once a week it sends a synthesis note — not when you ask, but when it finds something worth flagging. Low noise, high signal.',
+        ],
     },
 ] as const;
 
@@ -64,243 +65,284 @@ interface UpgradeModalProps {
 }
 
 export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
-    const { isPro, activatePro, deactivatePro } = useSubscription();
+    const { isPaidPro, isInTrial, hasUsedTrial, trialDaysLeft, trialHoursLeft, startTrial, activatePro, deactivatePro } = useSubscription();
     const [billing, setBilling] = useState<BillingCycle>('monthly');
+    const [expandedFeature, setExpandedFeature] = useState<number | null>(null);
 
     if (!open) return null;
 
+    const isYearly = billing === 'yearly';
+    const trialLabel = trialHoursLeft < 24 ? `${trialHoursLeft}h` : `${trialDaysLeft} day${trialDaysLeft !== 1 ? 's' : ''}`;
+
     return (
         <div
-            className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-4"
+            className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-5"
             role="dialog"
             aria-modal="true"
             aria-label="Upgrade to Pro"
         >
-            {/* Backdrop */}
-            <div
-                className="absolute inset-0 bg-black/78 backdrop-blur-sm"
-                onClick={onClose}
-                aria-hidden
-            />
+            <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={onClose} aria-hidden />
 
-            {/* Modal card — scrollable on small screens */}
-            <div className="relative z-10 flex max-h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0d0d0f] shadow-[0_28px_80px_rgba(0,0,0,0.9)]">
+            <div className="relative z-10 flex max-h-[94dvh] w-full max-w-[600px] flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-[#0c0c0e] shadow-[0_24px_60px_rgba(0,0,0,0.8)]">
 
-                {/* ── Header ── */}
-                <div className="flex shrink-0 items-start justify-between gap-3 border-b border-white/[0.06] px-5 py-4 sm:px-6 sm:py-5">
+                {/* Header */}
+                <div className="flex shrink-0 items-center justify-between border-b border-zinc-800/80 px-5 py-4 sm:px-6">
                     <div>
-                        <div className="flex items-center gap-2">
-                            <Sparkles className="h-3.5 w-3.5 text-amber-400" aria-hidden />
-                            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-amber-400/90">
-                                DEEPCHOX Pro
-                            </p>
-                        </div>
-                        <h2 className="mt-1.5 text-[18px] font-semibold leading-snug tracking-tight text-zinc-100 sm:text-[20px]">
-                            Unlock automated intelligence
-                        </h2>
-                        <p className="mt-0.5 text-[12px] text-zinc-500">
-                            Three features that turn your AI team into an autonomous operator
-                        </p>
+                        <p className="text-sm font-semibold text-white">Co-Founder Pro</p>
+                        <p className="mt-0.5 text-xs text-zinc-500">Automated intelligence for your AI C-Suite</p>
                     </div>
                     <button
                         type="button"
                         onClick={onClose}
-                        className="shrink-0 rounded-xl p-2 text-zinc-600 transition hover:bg-white/[0.06] hover:text-zinc-300"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-600 transition hover:bg-zinc-800 hover:text-zinc-300"
                         aria-label="Close"
                     >
-                        <X className="h-4 w-4" aria-hidden />
+                        <X className="h-4 w-4" />
                     </button>
                 </div>
 
-                {/* ── Scrollable body ── */}
+                {/* Trial active banner */}
+                {isInTrial && (
+                    <div className="flex shrink-0 items-center gap-2 border-b border-zinc-800/80 bg-orange-950/25 px-5 py-2.5 sm:px-6">
+                        <Zap className="h-3.5 w-3.5 shrink-0 text-orange-400" aria-hidden />
+                        <p className="text-xs text-zinc-300">
+                            <span className="font-semibold text-white">{trialLabel}</span>
+                            {' '}left in your trial — upgrade to keep full access
+                        </p>
+                    </div>
+                )}
+
+                {/* Body */}
                 <div className="flex-1 overflow-y-auto">
-                    <div className="p-5 sm:p-6">
+                    <div className="p-4 sm:p-5">
 
                         {/* Billing toggle */}
-                        <div className="mb-5 flex justify-center">
-                            <div className="inline-flex items-center rounded-full border border-white/[0.08] bg-white/[0.03] p-1">
-                                <button
-                                    type="button"
-                                    onClick={() => setBilling('monthly')}
-                                    className={`rounded-full px-4 py-1.5 text-[12px] font-semibold transition ${
-                                        billing === 'monthly'
-                                            ? 'bg-white/[0.1] text-zinc-100'
-                                            : 'text-zinc-500 hover:text-zinc-300'
-                                    }`}
-                                >
-                                    Monthly
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setBilling('yearly')}
-                                    className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-[12px] font-semibold transition ${
-                                        billing === 'yearly'
-                                            ? 'bg-white/[0.1] text-zinc-100'
-                                            : 'text-zinc-500 hover:text-zinc-300'
-                                    }`}
-                                >
-                                    Yearly
-                                    <span className="rounded-full bg-amber-400/20 px-1.5 py-0.5 text-[9px] font-bold uppercase text-amber-400">
-                                        Save 17%
-                                    </span>
-                                </button>
+                        {!isInTrial && (
+                            <div className="mb-4 flex flex-col items-center gap-2">
+                                <div className="inline-flex items-center rounded-full border border-zinc-800 bg-zinc-900/50 p-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => setBilling('monthly')}
+                                        className={`rounded-full px-4 py-1.5 text-xs font-medium transition-all ${
+                                            !isYearly ? 'bg-zinc-700 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'
+                                        }`}
+                                    >
+                                        Monthly
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setBilling('yearly')}
+                                        className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium transition-all ${
+                                            isYearly ? 'bg-zinc-700 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'
+                                        }`}
+                                    >
+                                        Yearly
+                                        <span className="rounded-sm bg-white/10 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-300">
+                                            –17%
+                                        </span>
+                                    </button>
+                                </div>
+                                {isYearly && (
+                                    <p className="text-[11px] text-zinc-500">
+                                        Save ₹{YEARLY_SAVINGS_INR} vs monthly
+                                    </p>
+                                )}
                             </div>
-                        </div>
+                        )}
 
-                        {/* ── Plan cards ── */}
+                        {/* Plan cards */}
                         <div className="grid gap-3 sm:grid-cols-2">
 
-                            {/* Free */}
-                            <div className="flex flex-col rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
-                                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-500">
-                                    Founder
+                            {/* Free card */}
+                            <div className="flex flex-col rounded-xl border border-zinc-800 bg-zinc-900/30 p-4 sm:p-5">
+                                <p className="text-xs font-medium text-zinc-500">Founder</p>
+                                <p className="mt-3 text-3xl font-semibold leading-none tracking-tight text-white">
+                                    Free
                                 </p>
-                                <p className="mt-2 text-[26px] font-bold leading-none text-zinc-300">Free</p>
-                                <p className="mt-0.5 text-[11px] text-zinc-600">forever, no card needed</p>
+                                <p className="mt-1.5 text-xs text-zinc-600">forever · no card needed</p>
 
-                                <div className="my-4 h-px bg-white/[0.05]" />
+                                <div className="my-4 h-px bg-zinc-800/80" />
 
-                                <ul className="flex-1 space-y-2">
+                                <ul className="flex-1 space-y-2.5">
                                     {FREE_ITEMS.map((item) => (
-                                        <li
-                                            key={item}
-                                            className="flex items-start gap-2 text-[11px] text-zinc-500"
-                                        >
-                                            <Check
-                                                className="mt-0.5 h-3 w-3 shrink-0 text-zinc-600"
-                                                aria-hidden
-                                            />
-                                            {item}
+                                        <li key={item.label} className="flex items-start gap-2">
+                                            <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-600" aria-hidden />
+                                            <div>
+                                                <p className="text-xs font-medium text-zinc-300">{item.label}</p>
+                                                <p className="text-[11px] leading-snug text-zinc-600">{item.detail}</p>
+                                            </div>
                                         </li>
                                     ))}
                                 </ul>
 
-                                {isPro && (
+                                {isPaidPro ? (
                                     <button
                                         type="button"
-                                        onClick={() => {
-                                            deactivatePro();
-                                            onClose();
-                                        }}
-                                        className="mt-4 w-full rounded-xl border border-white/[0.06] py-2 text-[11px] text-zinc-600 transition hover:text-zinc-400"
+                                        onClick={() => { deactivatePro(); onClose(); }}
+                                        className="mt-5 w-full rounded-lg border border-zinc-800 py-2.5 text-xs text-zinc-600 transition hover:border-zinc-700 hover:text-zinc-400"
                                     >
                                         Downgrade to Free
                                     </button>
+                                ) : (
+                                    <div className="mt-5 rounded-lg border border-zinc-800/60 py-2.5 text-center text-xs text-zinc-700">
+                                        {isInTrial ? 'Trial active' : 'Current plan'}
+                                    </div>
                                 )}
                             </div>
 
-                            {/* Pro */}
-                            <div className="relative flex flex-col overflow-hidden rounded-2xl border border-amber-400/25 bg-gradient-to-b from-amber-400/[0.05] to-transparent p-4">
-                                <div
-                                    className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-amber-400/10 blur-2xl"
-                                    aria-hidden
-                                />
-                                <div className="relative flex flex-1 flex-col">
-                                    <div className="flex items-center gap-1.5">
-                                        <Sparkles className="h-3 w-3 text-amber-400/80" aria-hidden />
-                                        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-amber-400/90">
-                                            Co-Founder Pro
-                                        </p>
-                                    </div>
-
-                                    {/* Price */}
-                                    {billing === 'monthly' ? (
-                                        <>
-                                            <div className="mt-2 flex items-end gap-1.5">
-                                                <p className="text-[26px] font-bold leading-none text-zinc-100">
-                                                    &#8377;{MONTHLY_INR}
-                                                </p>
-                                                <span className="mb-0.5 text-[13px] text-zinc-500">/mo</span>
-                                                <span className="mb-0.5 ml-0.5 text-[11px] text-zinc-600">
-                                                    (~${MONTHLY_USD})
-                                                </span>
-                                            </div>
-                                            <p className="mt-0.5 text-[11px] text-zinc-600">
-                                                billed monthly &middot; cancel anytime
-                                            </p>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <div className="mt-2 flex items-end gap-1.5">
-                                                <p className="text-[26px] font-bold leading-none text-zinc-100">
-                                                    &#8377;{YEARLY_MONTHLY_INR}
-                                                </p>
-                                                <span className="mb-0.5 text-[13px] text-zinc-500">/mo</span>
-                                                <span className="mb-0.5 ml-0.5 text-[11px] text-zinc-600">
-                                                    (~${YEARLY_MONTHLY_USD})
-                                                </span>
-                                            </div>
-                                            <p className="mt-0.5 text-[11px] text-zinc-600">
-                                                &#8377;{YEARLY_TOTAL_INR}/yr (~${YEARLY_TOTAL_USD}) &middot; billed annually
-                                            </p>
-                                        </>
-                                    )}
-
-                                    <div className="my-4 h-px bg-amber-400/10" />
-
-                                    {/* 3 Pro-exclusive features */}
-                                    <p className="mb-2.5 text-[9px] font-bold uppercase tracking-[0.18em] text-amber-400/60">
-                                        Pro-exclusive intelligence
-                                    </p>
-                                    <div className="flex-1 space-y-2">
-                                        {PRO_FEATURES.map(
-                                            ({ icon: Icon, name, description, color, bg, border }) => (
-                                                <div
-                                                    key={name}
-                                                    className={`flex gap-2.5 rounded-xl border ${border} ${bg} p-2.5`}
-                                                >
-                                                    <span className={`mt-0.5 shrink-0 ${color}`}>
-                                                        <Icon className="h-3.5 w-3.5" aria-hidden />
-                                                    </span>
-                                                    <div>
-                                                        <p className="text-[11px] font-semibold leading-snug text-zinc-200">
-                                                            {name}
-                                                        </p>
-                                                        <p className="mt-0.5 text-[10px] leading-snug text-zinc-500">
-                                                            {description}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            ),
-                                        )}
-                                    </div>
-
-                                    <p className="mt-3 text-[11px] text-zinc-500">
-                                        + everything in Free
-                                    </p>
+                            {/* Pro card */}
+                            <div className="relative flex flex-col rounded-xl border border-zinc-600/60 bg-zinc-900/60 p-4 ring-1 ring-white/[0.06] sm:p-5">
+                                {/* Recommended badge */}
+                                <div className="absolute -top-px left-4 rounded-b-md bg-zinc-200 px-2.5 py-0.5">
+                                    <span className="text-[10px] font-semibold text-zinc-900">Recommended</span>
                                 </div>
+
+                                <p className="mt-2 text-xs font-medium text-zinc-300">Co-Founder Pro</p>
+
+                                <div className="mt-3 flex items-end gap-1.5">
+                                    <span className="text-3xl font-semibold leading-none tracking-tight text-white">
+                                        ${isYearly ? YEARLY_MONTHLY_USD : MONTHLY_USD}
+                                    </span>
+                                    <span className="mb-0.5 text-xs text-zinc-500">/mo</span>
+                                    <span className="mb-0.5 text-xs text-zinc-600">
+                                        (₹{isYearly ? YEARLY_MONTHLY_INR : MONTHLY_INR})
+                                    </span>
+                                </div>
+                                <p className="mt-1 text-xs text-zinc-600">
+                                    {isYearly
+                                        ? `$${YEARLY_TOTAL_USD}/yr (₹${YEARLY_TOTAL_INR}) · billed annually`
+                                        : 'billed monthly · cancel anytime'}
+                                </p>
+
+                                <div className="my-4 h-px bg-zinc-800/80" />
+
+                                <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-widest text-zinc-500">
+                                    Pro only
+                                </p>
+                                <div className="flex-1 space-y-3">
+                                    {PRO_FEATURES.map(({ icon: Icon, label, tagline }) => (
+                                        <div key={label} className="flex gap-2.5">
+                                            <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-400" aria-hidden />
+                                            <div>
+                                                <p className="text-xs font-semibold leading-snug text-zinc-200">{label}</p>
+                                                <p className="mt-0.5 text-[11px] leading-snug text-zinc-500">{tagline}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <p className="mt-3 text-[11px] text-zinc-600">+ everything in Free</p>
                             </div>
                         </div>
 
-                        {/* ── CTA ── */}
+                        {/* How Pro features work */}
                         <div className="mt-4">
-                            {isPro ? (
-                                <div className="flex items-center justify-center gap-2 rounded-2xl border border-amber-400/20 bg-amber-400/[0.06] py-3.5">
-                                    <Sparkles className="h-4 w-4 text-amber-400" aria-hidden />
-                                    <span className="text-[13px] font-semibold text-amber-300">
-                                        You are on Co-Founder Pro
-                                    </span>
+                            <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
+                                How Pro features work
+                            </p>
+                            <div className="divide-y divide-zinc-800/80 rounded-xl border border-zinc-800">
+                                {PRO_FEATURES.map(({ icon: Icon, label, tagline, how }, i) => (
+                                    <div key={label}>
+                                        <button
+                                            type="button"
+                                            onClick={() => setExpandedFeature((prev) => (prev === i ? null : i))}
+                                            className="flex w-full items-start gap-3 px-4 py-3 text-left transition hover:bg-white/[0.02]"
+                                            aria-expanded={expandedFeature === i}
+                                        >
+                                            <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
+                                            <div className="min-w-0 flex-1">
+                                                <p className="text-xs font-semibold text-zinc-200">{label}</p>
+                                                <p className="mt-0.5 text-[11px] text-zinc-500">{tagline}</p>
+                                            </div>
+                                            {expandedFeature === i
+                                                ? <ChevronUp className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-600" aria-hidden />
+                                                : <ChevronDown className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-600" aria-hidden />
+                                            }
+                                        </button>
+                                        {expandedFeature === i && (
+                                            <div className="border-t border-zinc-800/60 bg-zinc-900/40 px-4 py-3.5">
+                                                <ol className="space-y-3">
+                                                    {how.map((step, si) => (
+                                                        <li key={si} className="flex gap-3">
+                                                            <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-zinc-700 text-[9px] font-bold text-zinc-500">
+                                                                {si + 1}
+                                                            </span>
+                                                            <p className="text-[12px] leading-relaxed text-zinc-400">{step}</p>
+                                                        </li>
+                                                    ))}
+                                                </ol>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* CTA */}
+                        <div className="mt-4 space-y-2">
+                            {isPaidPro ? (
+                                <div className="flex items-center justify-center gap-2 rounded-xl border border-zinc-700 py-3">
+                                    <Check className="h-3.5 w-3.5 text-zinc-400" aria-hidden />
+                                    <span className="text-sm font-medium text-zinc-300">You are on Co-Founder Pro</span>
                                 </div>
+                            ) : isInTrial ? (
+                                <>
+                                    <button
+                                        type="button"
+                                        onClick={() => { activatePro(); onClose(); }}
+                                        className="w-full rounded-xl bg-white py-3 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-100 active:scale-[0.98]"
+                                    >
+                                        Upgrade to Pro — keep full access
+                                    </button>
+                                    <p className="text-center text-[11px] text-zinc-600">
+                                        {trialLabel} left in trial · cancel anytime
+                                    </p>
+                                </>
+                            ) : !hasUsedTrial ? (
+                                <>
+                                    <button
+                                        type="button"
+                                        onClick={() => { startTrial(); onClose(); }}
+                                        className="w-full rounded-xl bg-white py-3 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-100 active:scale-[0.98]"
+                                    >
+                                        Start 3-day free trial
+                                    </button>
+                                    <p className="text-center text-[11px] text-zinc-600">
+                                        No card required · full Pro access · expires after 3 days
+                                    </p>
+                                    <div className="flex items-center gap-3 py-1">
+                                        <div className="h-px flex-1 bg-zinc-800" />
+                                        <span className="text-[10px] text-zinc-700">or pay now</span>
+                                        <div className="h-px flex-1 bg-zinc-800" />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => { activatePro(); onClose(); }}
+                                        className="w-full rounded-xl border border-zinc-700 py-2.5 text-xs font-medium text-zinc-400 transition hover:border-zinc-500 hover:text-white"
+                                    >
+                                        {isYearly
+                                            ? `Pay now — $${YEARLY_TOTAL_USD}/yr (₹${YEARLY_TOTAL_INR})`
+                                            : `Pay now — $${MONTHLY_USD}/mo (₹${MONTHLY_INR})`}
+                                    </button>
+                                </>
                             ) : (
                                 <>
                                     <button
                                         type="button"
-                                        onClick={() => {
-                                            activatePro();
-                                            onClose();
-                                        }}
-                                        className="w-full rounded-2xl bg-white py-3.5 text-[14px] font-semibold text-zinc-900 shadow-[0_2px_24px_rgba(255,255,255,0.12)] transition hover:bg-zinc-100 active:scale-[0.98]"
+                                        onClick={() => { activatePro(); onClose(); }}
+                                        className="w-full rounded-xl bg-white py-3 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-100 active:scale-[0.98]"
                                     >
-                                        {billing === 'monthly'
-                                            ? `Upgrade to Pro — ₹${MONTHLY_INR}/mo (~$${MONTHLY_USD})`
-                                            : `Upgrade to Pro — ₹${YEARLY_TOTAL_INR}/yr (~$${YEARLY_TOTAL_USD})`}
+                                        {isYearly
+                                            ? `Upgrade to Pro — $${YEARLY_TOTAL_USD}/yr (₹${YEARLY_TOTAL_INR})`
+                                            : `Upgrade to Pro — $${MONTHLY_USD}/mo (₹${MONTHLY_INR})`}
                                     </button>
-                                    <p className="mt-2.5 text-center text-[10px] text-zinc-600">
-                                        Instant access &middot; cancel anytime &middot; no questions asked
+                                    <p className="text-center text-[11px] text-zinc-600">
+                                        Instant access · cancel anytime
                                     </p>
                                 </>
                             )}
                         </div>
+
                     </div>
                 </div>
             </div>

@@ -28,18 +28,21 @@ export function ExecutiveResponseCard({
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             className={`${executiveCardClass} transition-colors hover:border-white/[0.1] ${className}`}
         >
-            <div className="space-y-5">
+            <div className="space-y-4">
                 <header>
-                    <p className="text-xs font-medium uppercase tracking-[0.12em] text-[var(--muted)]">{role}</p>
+                    <p className="text-[11px] font-semibold text-[var(--muted)]">{role}</p>
                 </header>
                 <Block label="Insight" body={insight} />
                 {recommendation ? <Block label="Recommendation" body={recommendation} /> : null}
                 {actions?.length ? (
                     <div className="space-y-1.5">
-                        <p className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--muted)] opacity-80">Actions</p>
-                        <ul className="list-inside list-disc space-y-1 text-sm leading-relaxed text-[var(--text)]/90">
+                        <p className="text-[11px] font-medium text-[var(--muted)]/70">Actions</p>
+                        <ul className="space-y-1 pl-3 text-sm leading-relaxed text-[var(--text)]/90">
                             {actions.map((line, i) => (
-                                <li key={i}>{line}</li>
+                                <li key={i} className="flex gap-2">
+                                    <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-[var(--muted)]/40" aria-hidden />
+                                    {line}
+                                </li>
                             ))}
                         </ul>
                     </div>
@@ -52,8 +55,8 @@ export function ExecutiveResponseCard({
 
 function Block({ label, body }: { label: string; body: string }) {
     return (
-        <div className="space-y-1.5">
-            <p className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--muted)] opacity-80">{label}</p>
+        <div className="space-y-1">
+            <p className="text-[11px] font-medium text-[var(--muted)]/70">{label}</p>
             <p className="text-sm leading-relaxed text-[var(--text)]/90">{body}</p>
         </div>
     );

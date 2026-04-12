@@ -350,8 +350,8 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         <div className="min-w-0">
                             <p className="dash-section-label">Office · Portfolio</p>
                             <h1 className="mt-1.5 text-2xl font-semibold tracking-tight text-brand-text sm:text-3xl">Executive overview</h1>
-                            <p className="mt-3 max-w-lg text-sm leading-relaxed text-brand-muted">
-                                Pick a tile — analytics stay folded until you want them. The chat bar below is the main control surface.
+                            <p className="mt-2 max-w-lg text-sm leading-relaxed text-brand-muted">
+                                Select a venture or create one. Chat stays pinned below.
                             </p>
                         </div>
                         <div className="flex flex-wrap items-center gap-3 text-[11px] text-brand-muted">
@@ -387,8 +387,8 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 </div>
                                 <div>
                                     <h2 className="text-base font-semibold text-brand-text">Dashboard</h2>
-                                    <p className="mt-1.5 text-sm leading-relaxed text-brand-muted">
-                                        KPIs, portfolio mix, and venture cadence — opens here, not as a separate wall of charts.
+                                    <p className="mt-1 text-sm leading-relaxed text-brand-muted">
+                                        KPIs, portfolio mix, and venture cadence.
                                     </p>
                                 </div>
                             </button>
@@ -401,9 +401,8 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     <Target className="h-6 w-6 text-brand-muted" aria-hidden />
                                     <div>
                                         <h2 className="text-base font-semibold text-brand-text">New venture</h2>
-                                        <p className="mt-1.5 text-sm leading-relaxed text-brand-muted">
-                                            Opens Personal Assistant — describe your idea in chat; the assistant asks follow-ups
-                                            (tap-to-answer) and updates your venture record as you go.
+                                        <p className="mt-1 text-sm leading-relaxed text-brand-muted">
+                                            Describe your idea in chat — the assistant builds your venture record.
                                         </p>
                                     </div>
                                 </button>
@@ -578,29 +577,29 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         )}
                     </section>
 
-                    <section className="mt-8" aria-label="Your AI team">
-                        <p className="dash-section-label">Your AI team</p>
-                        <p className="mb-4 text-sm text-brand-muted">
-                            Five AI teammates — each owns an area of your venture. They read from the same record and coordinate through staff sync.
-                        </p>
-                        <div className="grid gap-3 sm:grid-cols-2">
+                    <DashMessageSection
+                        outline="portfolio"
+                        icon={<LayoutGrid className="h-4 w-4 text-zinc-400" aria-hidden />}
+                        eyebrow="Portfolio"
+                        title="Research desks"
+                        subtitle="What each area saves in your venture"
+                        className="mt-8"
+                    >
+                        <ul className="grid gap-2 sm:grid-cols-2">
                             {(['ceo', 'accountant', 'pm', 'cmo', 'scout'] as const satisfies readonly ResearchStaffRole[]).map((role) => {
                                 const row = RESEARCH_STAFF[role];
                                 return (
-                                    <div
+                                    <li
                                         key={role}
-                                        className="flex items-start gap-3 rounded-xl border border-white/[0.07] bg-[var(--color-brand-card)] px-4 py-3.5 transition-colors hover:border-white/[0.12]"
+                                        className="flex flex-col gap-0.5 rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2.5 ring-1 ring-white/[0.04]"
                                     >
-                                        <div className="mt-0.5 h-4 w-0.5 shrink-0 rounded-full bg-white/20" aria-hidden />
-                                        <div className="min-w-0">
-                                            <p className="text-[13px] font-medium leading-snug text-brand-text">{row.navTitle}</p>
-                                            <p className="mt-1 text-[11px] leading-snug text-brand-muted">{row.valueStatement}</p>
-                                        </div>
-                                    </div>
+                                        <span className="text-[11px] font-medium leading-snug text-brand-text">{row.navTitle}</span>
+                                        <span className="min-w-0 text-[10px] leading-snug text-brand-muted">{row.navHint}</span>
+                                    </li>
                                 );
                             })}
-                        </div>
-                    </section>
+                        </ul>
+                    </DashMessageSection>
                 </div>
             </div>
         );
@@ -620,7 +619,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 </div>
                                 <h1 className="text-2xl font-semibold tracking-tight text-brand-text sm:text-3xl">{activeProject.name}</h1>
                                 <p className="mt-2 max-w-xl text-[13px] leading-snug text-brand-muted">
-                                    Your AI team is active. Each section below is an update from a desk — expand any brief for the full picture. Chat bar below for direct instructions.
+                                    Office brief below · open <span className="text-brand-text/85">Dashboard</span> for charts and staff output.
                                 </p>
                             </div>
                             <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
@@ -658,7 +657,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             <header className="pb-0.5">
                                 <p className="dash-section-label mb-1">Office brief</p>
                                 <p className="max-w-xl text-[12px] leading-snug text-brand-muted">
-                                    Each topic is its own outlined card — tap the row to expand the full brief.
+                                    Tap any row to expand.
                                 </p>
                             </header>
                             {livingOffice ? (
@@ -806,10 +805,10 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
 
                         <section aria-labelledby="exec-hub-tiles">
                             <h2 id="exec-hub-tiles" className="dash-section-label">
-                                Quick access
+                                Surfaces
                             </h2>
                             <p className="mb-3 text-[12px] leading-snug text-brand-muted">
-                                Jump to any surface — each one reads from the same venture record and updates in real time.
+                                Quick navigation across desks and views.
                             </p>
                             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
                                 <button
@@ -916,11 +915,11 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                                     {(
                                         [
-                                            ['Research strategy and direction', activeProject.agentStaffSnapshot.desks.ceo, DASH.desk.ceo],
-                                            ['Research product and delivery', activeProject.agentStaffSnapshot.desks.pm, DASH.desk.pm],
-                                            ['Research fund intelligence', activeProject.agentStaffSnapshot.desks.accountant, DASH.desk.finance],
-                                            ['Research market and landscape', activeProject.agentStaffSnapshot.desks.scout, DASH.desk.scout],
-                                            ['Research growth and narrative', activeProject.agentStaffSnapshot.desks.cmo, '#f472b6'],
+                                            ['Strategy', activeProject.agentStaffSnapshot.desks.ceo, DASH.desk.ceo],
+                                            ['Product', activeProject.agentStaffSnapshot.desks.pm, DASH.desk.pm],
+                                            ['Finance', activeProject.agentStaffSnapshot.desks.accountant, DASH.desk.finance],
+                                            ['Market', activeProject.agentStaffSnapshot.desks.scout, DASH.desk.scout],
+                                            ['Growth', activeProject.agentStaffSnapshot.desks.cmo, '#f472b6'],
                                         ] as const
                                     ).map(([label, text, color]) =>
                                         text?.trim() ? (
@@ -950,7 +949,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 subtitle={`${activeProject.staffFocusToday.length} line${activeProject.staffFocusToday.length === 1 ? '' : 's'} · check off below`}
                             >
                                 <p className="mb-3 text-[10px] leading-snug text-amber-100/70">
-                                    Done / + note → saved to journal for Assistant &amp; next sync.
+                                    Check off or add a note — saved to journal.
                                 </p>
                                 <StaffFocusChecklist
                                     lines={activeProject.staffFocusToday}
@@ -973,7 +972,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/[0.04] p-3.5 sm:p-4">
                             <p className="text-[10px] font-medium text-brand-muted/90">Strategic line</p>
                             <p className="mt-2 line-clamp-6 text-sm leading-relaxed text-brand-text">
-                                {intentPreview || 'Pin strategic intent and narrative under Research strategy and direction to populate this summary.'}
+                                {intentPreview || 'Set your strategic intent in the CEO desk to populate this.'}
                             </p>
                             <div className="mt-8 grid grid-cols-2 gap-4 border-t border-white/[0.06] pt-6 sm:grid-cols-3">
                                 <div>
@@ -1322,10 +1321,10 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         <div className="max-w-prose rounded-xl border border-emerald-500/25 bg-emerald-500/[0.05] p-4 md:p-5">
                             <p className="font-serif text-xl leading-snug text-brand-text md:text-2xl">
                                 {phaseActive > 0
-                                    ? `Drive the active timeline phase — ${phaseDone} of ${phaseTotal} phases complete.`
+                                    ? `Active phase in progress — ${phaseDone} of ${phaseTotal} phases complete.`
                                     : activeProject.strategy
-                                      ? 'Strategy record is in motion — tune phases and priorities under Research strategy and direction.'
-                                      : 'Open Research strategy and direction to set intent, timeline phases, and priorities.'}
+                                      ? 'Strategy in motion — tune phases and priorities in the CEO desk.'
+                                      : 'Open the CEO desk to set intent, timeline phases, and priorities.'}
                             </p>
                         </div>
                         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/[0.06]">
@@ -1338,7 +1337,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             onClick={() => switchRoom('ceo')}
                             className="rounded-full bg-white/[0.08] px-4 py-2.5 text-xs font-semibold text-brand-text transition hover:bg-white/[0.12]"
                         >
-                            Research strategy and direction
+                            CEO desk
                         </button>
                         <button
                             type="button"
@@ -1347,7 +1346,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         >
                             Knowledge base
                         </button>
-                        <WorkspaceAiButton label="Ask Research across desks" />
+                        <WorkspaceAiButton label="Ask across desks" />
                     </div>
                 </DashMessageSection>
                                 </div>

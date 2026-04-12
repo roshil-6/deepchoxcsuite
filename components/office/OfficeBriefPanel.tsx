@@ -38,23 +38,23 @@ export function OfficeBriefPanel({
             id={id}
             className={`group scroll-mt-6 rounded-2xl border px-3.5 py-3 sm:px-4 sm:py-3.5 ${OUTLINE[tone]} ${className}`}
         >
-            <summary className="flex cursor-pointer list-none items-start gap-3 [&::-webkit-details-marker]:hidden">
-                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-black/25 ring-1 ring-white/[0.08]">
+            <summary className="flex cursor-pointer list-none items-center gap-3 [&::-webkit-details-marker]:hidden">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-black/25 ring-1 ring-white/[0.08]">
                     {icon}
                 </div>
                 <div className="min-w-0 flex-1">
                     {eyebrow ? (
-                        <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-zinc-500">{eyebrow}</p>
+                        <p className="text-[10px] font-medium text-zinc-500">{eyebrow}</p>
                     ) : null}
                     <h3 className={`text-sm font-semibold tracking-tight text-brand-text ${eyebrow ? 'mt-0.5' : ''}`}>{title}</h3>
-                    <div className="mt-1 text-[11px] leading-snug text-brand-muted">{teaser}</div>
+                    <div className="mt-0.5 text-[11px] leading-snug text-brand-muted">{teaser}</div>
                 </div>
                 <ChevronDown
-                    className="mt-1 h-4 w-4 shrink-0 text-brand-muted transition-transform duration-200 group-open:rotate-180"
+                    className="h-4 w-4 shrink-0 text-brand-muted/60 transition-transform duration-200 group-open:rotate-180"
                     aria-hidden
                 />
             </summary>
-            <div className="mt-3 border-t border-white/[0.08] pt-3">{children}</div>
+            <div className="mt-3 border-t border-white/[0.07] pt-3">{children}</div>
         </details>
     );
 }

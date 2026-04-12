@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
-import { resolveChat as chatWithGroq } from '@/lib/ai/chatProviders';
+import { chatWithAI, hasAiKey } from '@/lib/ai/chatProviders';
 import { AGENT_DEFINITIONS } from '@/lib/orchestrator/AgentDefinitions';
 import { normalizeExecutiveBoardResponse } from '@/lib/orchestrator/boardroomNormalize';
 import type { ExecutiveRole } from '@/lib/orchestrator/types';
-import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rateLimit';
 
 const ROLES: ExecutiveRole[] = ['CEO', 'CFO', 'CMO', 'CTO', 'CSO'];
 const MAX_CONTEXT = 14_000;
@@ -20,14 +19,7 @@ function stripJsonFence(raw: string): string {
     return t.trim();
 }
 
-// 20 requests per minute per IP.
-const RATE_LIMIT = 20;
-
 export async function POST(req: Request) {
-    const ip = getClientIp(req);
-    const rl = checkRateLimit(`boardroom:${ip}`, RATE_LIMIT);
-    if (!rl.ok) return rateLimitResponse(rl.resetAt);
-
     try {
         const body = (await req.json()) as { role?: string; context?: string };
         const role = body.role;
@@ -40,8 +32,8 @@ export async function POST(req: Request) {
             return NextResponse.json({ ok: false, error: 'Context required' }, { status: 400 });
         }
 
-        if (!process.env.GROQ_API_KEY?.trim()) {
-            return NextResponse.json({ ok: false, error: 'GROQ_API_KEY not configured', useMock: true }, { status: 503 });
+        if (!hasAiKey()) {
+            return NextResponse.json({ ok: false, error: 'OPENAI_API_KEY or GROQ_API_KEY not configured', useMock: true }, { status: 503 });
         }
 
         const def = AGENT_DEFINITIONS[role];
@@ -50,7 +42,7 @@ export async function POST(req: Request) {
 Respond with a single JSON object matching this shape exactly (no markdown, no prose outside JSON):
 ${def.outputSchema}`;
 
-        const raw = await chatWithGroq(
+        const raw = await chatWithAI(
             [
                 { role: 'system', content: system },
                 {

@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
-import { resolveChat as chatWithGroq } from '@/lib/ai/chatProviders';
+import { chatWithAI, hasAiKey } from '@/lib/ai/chatProviders';
 import type { Project } from '@/lib/db';
 import { buildHeuristicMeetingPlan, normalizeRelayMeetingGoTo, type RelayMeetingStep } from '@/lib/relayMeetingRoom';
-import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rateLimit';
 
 const MEETING_ROOM_SYSTEM = `You are the "Meeting Room" guide inside DeepChox Relay — a founder-facing product. Your job is to read the venture JSON and output a clear, ordered plan of what to do NEXT in the app (which screen / desk), in plain English.
 
@@ -56,14 +55,7 @@ function parseSteps(raw: unknown): RelayMeetingStep[] {
     return out.slice(0, 12);
 }
 
-// 20 requests per minute per IP.
-const RATE_LIMIT = 20;
-
 export async function POST(req: Request) {
-    const ip = getClientIp(req);
-    const rl = checkRateLimit(`relay:${ip}`, RATE_LIMIT);
-    if (!rl.ok) return rateLimitResponse(rl.resetAt);
-
     try {
         const body = (await req.json()) as { project?: Record<string, unknown> };
         const project = body.project;
@@ -71,19 +63,19 @@ export async function POST(req: Request) {
             return NextResponse.json({ ok: false, error: 'project required' }, { status: 400 });
         }
 
-        if (!process.env.GROQ_API_KEY?.trim()) {
+        if (!hasAiKey()) {
             const h = buildHeuristicMeetingPlan(project as unknown as Project);
             return NextResponse.json({
                 ok: true,
                 source: 'heuristic',
                 intro: h.intro,
                 steps: h.steps,
-                message: 'AI suggestions need GROQ_API_KEY — showing a built-in plan from your venture fields.',
+                message: 'AI suggestions need OPENAI_API_KEY or GROQ_API_KEY — showing a built-in plan from your venture fields.',
             });
         }
 
         const ventureJson = JSON.stringify(project, null, 2).slice(0, 28000);
-        const raw = await chatWithGroq(
+        const raw = await chatWithAI(
             [
                 { role: 'system', content: MEETING_ROOM_SYSTEM },
                 { role: 'user', content: `Venture JSON:\n${ventureJson}` },
