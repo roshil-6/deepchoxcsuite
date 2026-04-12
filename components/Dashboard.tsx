@@ -375,34 +375,38 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             <button
                                 type="button"
                                 onClick={() => setPortfolioDashExpanded((o) => !o)}
-                                className={`dash-msg flex min-w-0 flex-1 flex-col items-start gap-3 text-left transition sm:min-w-[14rem] ${
-                                    portfolioDashExpanded ? 'bg-zinc-800/55' : 'hover:bg-zinc-800/50'
+                                className={`flex min-w-0 flex-1 flex-col items-start gap-4 rounded-2xl border p-5 text-left transition-all sm:min-w-[14rem] ${
+                                    portfolioDashExpanded
+                                        ? 'border-white/[0.12] bg-white/[0.05] shadow-[0_2px_12px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.07)]'
+                                        : 'border-white/[0.08] bg-white/[0.025] shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.05)] hover:border-white/[0.13] hover:bg-white/[0.04]'
                                 }`}
                             >
-                                <div className="flex w-full items-center justify-between gap-2">
-                                    <LayoutDashboard className="h-6 w-6 text-brand-muted" aria-hidden />
-                                    {portfolioDashExpanded ? (
-                                        <ChevronUp className="h-5 w-5 text-brand-muted" aria-hidden />
-                                    ) : null}
+                                <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.05]">
+                                    <LayoutDashboard className="h-4.5 w-4.5 text-brand-muted" aria-hidden />
                                 </div>
-                                <div>
-                                    <h2 className="text-base font-semibold text-brand-text">Dashboard</h2>
-                                    <p className="mt-1 text-sm leading-relaxed text-brand-muted">
-                                        KPIs, portfolio mix, and venture cadence.
-                                    </p>
+                                <div className="flex w-full items-end justify-between gap-2">
+                                    <div>
+                                        <h2 className="text-sm font-semibold text-brand-text">Dashboard</h2>
+                                        <p className="mt-0.5 text-xs leading-relaxed text-brand-muted">
+                                            KPIs, portfolio mix, and cadence.
+                                        </p>
+                                    </div>
+                                    {portfolioDashExpanded && <ChevronUp className="h-4 w-4 shrink-0 text-brand-muted/60" aria-hidden />}
                                 </div>
                             </button>
                             {onNewVenture && (
                                 <button
                                     type="button"
                                     onClick={onNewVenture}
-                                    className="dash-msg flex min-w-0 flex-1 flex-col items-start gap-3 text-left transition hover:bg-zinc-800/50 sm:min-w-[14rem]"
+                                    className="flex min-w-0 flex-1 flex-col items-start gap-4 rounded-2xl border border-white/[0.08] bg-white/[0.025] p-5 text-left shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.05)] transition-all hover:border-white/[0.13] hover:bg-white/[0.04] sm:min-w-[14rem]"
                                 >
-                                    <Target className="h-6 w-6 text-brand-muted" aria-hidden />
+                                    <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.05]">
+                                        <Target className="h-4.5 w-4.5 text-brand-muted" aria-hidden />
+                                    </div>
                                     <div>
-                                        <h2 className="text-base font-semibold text-brand-text">New venture</h2>
-                                        <p className="mt-1 text-sm leading-relaxed text-brand-muted">
-                                            Describe your idea in chat — the assistant builds your venture record.
+                                        <h2 className="text-sm font-semibold text-brand-text">New venture</h2>
+                                        <p className="mt-0.5 text-xs leading-relaxed text-brand-muted">
+                                            Describe your idea — the assistant builds your record.
                                         </p>
                                     </div>
                                 </button>
@@ -543,14 +547,14 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         key={project.id}
                                         type="button"
                                         onClick={() => setActiveProject(project)}
-                                        className="group relative flex w-full items-start gap-4 rounded-2xl bg-zinc-800/35 p-5 text-left transition-all hover:bg-zinc-800/50 sm:p-6"
+                                        className="group relative flex w-full items-center gap-4 rounded-2xl border border-white/[0.08] bg-white/[0.025] p-5 text-left shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.05)] transition-all hover:border-white/[0.13] hover:bg-white/[0.04] sm:p-5"
                                     >
-                                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/[0.06]">
-                                            <Briefcase className="h-5 w-5 text-brand-muted" aria-hidden />
+                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.05]">
+                                            <Briefcase className="h-4.5 w-4.5 text-brand-muted" aria-hidden />
                                         </div>
                                         <div className="min-w-0 flex-1">
-                                            <h3 className="truncate font-semibold text-brand-text group-hover:text-brand-text">{project.name}</h3>
-                                            <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-brand-muted">
+                                            <h3 className="truncate text-sm font-semibold text-brand-text">{project.name}</h3>
+                                            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-brand-muted">
                                                 <span>{new Date(project.timestamp).toLocaleDateString()}</span>
                                                 <span
                                                     className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-medium ${
@@ -563,7 +567,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                 </span>
                                             </div>
                                         </div>
-                                        <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-brand-muted transition group-hover:translate-x-0.5 group-hover:text-brand-muted" aria-hidden />
+                                        <ChevronRight className="h-4 w-4 shrink-0 text-brand-muted/50 transition group-hover:translate-x-0.5 group-hover:text-brand-muted" aria-hidden />
                                     </button>
                                 ))}
                             </div>
