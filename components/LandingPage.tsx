@@ -8,32 +8,31 @@ import { ArrowRight, Brain, Check, Mail, Lock, Network, Target, User, Shield, Vo
 export const LANDING_HERO_VIDEO_DEFAULT = '/landing-hero-demo.mp4';
 
 const FREE_PRICING_ITEMS = [
-    'All 11 AI desks and rooms',
-    'Unlimited ventures',
-    'Personal Assistant + Meeting Room',
-    'Strategy, Finance, Product & GTM desks',
-    'Wargame Nexus (1 round)',
-    'VC Gauntlet — pitch practice',
-    'Intelligence Suite & Reports',
-    'Manual executive briefings on demand',
-    'Calendar, Kanban & Pitch Forge',
+    'Full AI C-Suite — all 11 desks & rooms',
+    'Unlimited ventures, no cap',
+    'Strategy · Finance · Product · GTM desks',
+    'Personal Assistant & Meeting Room',
+    'VC Gauntlet pitch practice',
+    'Wargame Nexus — one-round simulation',
+    'Intelligence Suite & market reports',
+    'Kanban, Calendar & Pitch Forge',
 ];
 
 const LANDING_PRO_FEATURES = [
     {
         icon: Brain,
         name: 'Executive Briefing Autopilot',
-        desc: 'Daily AI brief auto-delivered every morning — progress, risks flagged, priorities, and market intel without asking.',
+        desc: 'A tight morning brief — delivered before you open the app. Risks flagged, priorities set, no prompting required.',
     },
     {
         icon: Target,
-        name: 'Wargame Multi-Round Simulation',
-        desc: 'Full adversarial simulation with competitor counter-moves, board stress-test mode, and downloadable scenario reports.',
+        name: 'Wargame Multi-Round',
+        desc: 'Up to 5 adversarial rounds with real counter-moves, board stress-test mode, and a downloadable scenario report.',
     },
     {
         icon: Network,
         name: 'Cross-Venture Intelligence',
-        desc: 'AI layer that finds patterns, conflicts, and synergies across all your ventures simultaneously — portfolio-level decisions.',
+        desc: 'One AI layer across all your ventures — spots conflicts, shared opportunities, and risks you would never connect alone.',
     },
 ] as const;
 

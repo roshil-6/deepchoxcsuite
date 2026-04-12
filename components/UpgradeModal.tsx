@@ -15,45 +15,45 @@ const YEARLY_MONTHLY_USD = 3.33;
 const YEARLY_SAVINGS_INR = MONTHLY_INR * 12 - YEARLY_TOTAL_INR;
 
 const FREE_ITEMS = [
-    'All 11 AI desks and rooms',
-    'Unlimited ventures',
-    'Personal Assistant + Meeting Room',
-    'Strategy, Finance, Product & GTM',
-    'Wargame Nexus (1 round)',
-    'VC Gauntlet & Intelligence Suite',
-    'Calendar, Kanban & Pitch Forge',
-    'Manual executive briefings',
+    'Full AI C-Suite — all 11 desks & rooms',
+    'Unlimited ventures, no cap',
+    'Strategy · Finance · Product · GTM desks',
+    'Personal Assistant & Meeting Room',
+    'VC Gauntlet pitch practice',
+    'Wargame Nexus — one-round simulation',
+    'Intelligence Suite & market reports',
+    'Kanban, Calendar & Pitch Forge',
 ];
 
 const PRO_FEATURES = [
     {
         icon: Brain,
         label: 'Executive Briefing Autopilot',
-        tagline: 'Your company, summarised — every morning before you start.',
+        tagline: 'A brief waiting for you — every morning, without asking.',
         how: [
-            'Every day at a scheduled time, DEEPCHOX pulls data across all your active ventures — tasks overdue, risks flagged by your CFO or CTO desk, deals that stalled, milestones approaching.',
-            'It runs this through your PA and Strategy desks to generate a tight 5-point brief: what needs your attention today, what can wait, and what looks like it is quietly going wrong.',
-            'You open the app and the brief is already there — no prompt, no setup. Think of it as a chief of staff who reviewed everything overnight and left you a note.',
+            'DEEPCHOX scans all your active ventures each morning — overdue tasks, risks your CFO or CTO flagged, deals that went quiet, milestones closing in. No prompt needed.',
+            'Your PA and Strategy desks compress this into a tight 5-point brief: what needs action today, what can wait, and what is quietly going sideways.',
+            'Open the app and it is already there. Like a chief of staff who reviewed everything overnight and left you a clear note before the day started.',
         ],
     },
     {
         icon: Target,
         label: 'Wargame Multi-Round Simulation',
-        tagline: 'Run the full battle, not just the first move.',
+        tagline: 'Not one stress test — the full campaign.',
         how: [
-            'Free Wargame runs one round — your strategy gets stress-tested once. Multi-Round runs up to 5 adversarial rounds: your move, then a simulated competitor response, then your counter, and so on.',
-            'Each round the AI plays the competitor intelligently — using your actual market context, your known weaknesses, and real competitive patterns. It does not just repeat generic threats.',
-            'At the end you get a board stress-test report: the scenario that hurt you most, the assumptions you need to defend, and the moves that held up under pressure. Downloadable as PDF.',
+            'Free Wargame tests your strategy once. Multi-Round runs up to 5 back-and-forth rounds: your move, then a simulated competitor counter, then your response — played out like a real competitive sequence.',
+            'The AI does not use generic threats. It uses your actual market position, your stated weaknesses, and real competitive patterns to make each counter-move feel like a genuine opponent.',
+            'You end with a board stress-test report: which scenario hurt most, which assumptions you need to defend, and which moves survived every round. Downloadable as PDF.',
         ],
     },
     {
         icon: Network,
         label: 'Cross-Venture Intelligence',
-        tagline: 'See what your individual ventures cannot see alone.',
+        tagline: 'One layer that sees across everything you are building.',
         how: [
-            'When you have more than one venture, each desk only knows its own context. Cross-Venture Intelligence creates a meta-layer that reads across all of them simultaneously.',
-            'It spots things like: Venture A and Venture B are both targeting the same customer segment — do they compete or complement? Your GTM budget for Venture C could fund a shared asset for Venture B. A risk flagged in one venture is present but unnoticed in another.',
-            'The output is a weekly synthesis note — not a chatbot response you have to ask for, but a proactive signal that surfaces only when something meaningful is detected. Low noise, high signal.',
+            'Every desk only knows its own venture. Cross-Venture Intelligence reads across all of them at once — spotting connections your individual desks would never surface.',
+            'It catches things like: two ventures targeting the same customer, a GTM budget that could serve both, a risk present in one that is quietly building in another.',
+            'Once a week it sends a synthesis note — not when you ask, but when it finds something worth flagging. Low noise, high signal.',
         ],
     },
 ] as const;
