@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
-import { resolveChat as chatWithGroq } from '@/lib/ai/chatProviders';
+import { chatWithAI, hasAiKey } from '@/lib/ai/chatProviders';
 import { parsePersonalAssistantUpdatesFromModel } from '@/lib/paApplyUpdates';
-import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rateLimit';
 
 type ChatTurn = { role: 'user' | 'assistant'; content: string };
 
@@ -55,19 +54,12 @@ function stripJsonFence(raw: string): string {
   return s.trim();
 }
 
-// 20 requests per minute per IP.
-const RATE_LIMIT = 20;
-
 export async function POST(req: Request) {
-  const ip = getClientIp(req);
-  const rl = checkRateLimit(`pa:${ip}`, RATE_LIMIT);
-  if (!rl.ok) return rateLimitResponse(rl.resetAt);
-
   try {
-    if (!process.env.GROQ_API_KEY?.trim()) {
+    if (!hasAiKey()) {
       // 200 so the client can read JSON without treating it as a transport failure; UI still shows data.error.
       return NextResponse.json(
-        { ok: false, error: 'GROQ_API_KEY required for Personal Assistant actions.' },
+        { ok: false, error: 'OPENAI_API_KEY or GROQ_API_KEY required for Personal Assistant actions.' },
         { status: 200 }
       );
     }
@@ -92,7 +84,7 @@ export async function POST(req: Request) {
       msgs.push({ role: m.role, content: m.content.slice(0, 24000) });
     }
 
-    const raw = await chatWithGroq(msgs, 'llama3', { responseJsonObject: true, temperature: 0.4 });
+    const raw = await chatWithAI(msgs, 'llama3', { responseJsonObject: true, temperature: 0.4 });
     const text = raw.message?.content || '{}';
     let parsed: { reply?: string; followUpOptions?: unknown; updates?: unknown };
     try {

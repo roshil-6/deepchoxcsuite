@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useOffice } from '@/lib/OfficeContext';
 import {
     Plus,
@@ -11,6 +11,8 @@ import {
     Bookmark,
     Lightbulb,
     HeartPulse,
+    Mic,
+    MicOff,
 } from 'lucide-react';
 
 export type DiaryEntry = {
@@ -36,6 +38,8 @@ export function IntelligenceDiary() {
     const [isEditing, setIsEditing] = useState(false);
     const [filterTag, setFilterTag] = useState<string | null>(null);
     const [simulatingAnalysis, setSimulatingAnalysis] = useState(false);
+    const [isRecording, setIsRecording] = useState(false);
+    const recognitionRef = useRef<SpeechRecognition | null>(null);
 
     useEffect(() => {
         if (activeProject?.diary) {
@@ -84,6 +88,42 @@ export function IntelligenceDiary() {
                 setIsEditing(false);
             }
         }
+    };
+
+    const toggleVoice = () => {
+        if (!selectedEntry) return;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const SR: any = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        if (!SR) {
+            alert('Voice input is not supported in this browser.');
+            return;
+        }
+        if (isRecording && recognitionRef.current) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (recognitionRef.current as any).stop();
+            return;
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const rec: any = new SR();
+        rec.continuous = true;
+        rec.interimResults = false;
+        rec.lang = 'en-US';
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        rec.onresult = (event: any) => {
+            const transcript = Array.from(event.results as any[])
+                .slice(event.resultIndex)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                .map((r: any) => r[0].transcript)
+                .join(' ');
+            setSelectedEntry((prev) =>
+                prev ? { ...prev, content: prev.content ? prev.content + ' ' + transcript : transcript } : prev,
+            );
+        };
+        rec.onerror = () => { setIsRecording(false); };
+        rec.onend = () => { setIsRecording(false); };
+        recognitionRef.current = rec;
+        rec.start();
+        setIsRecording(true);
     };
 
     if (!activeProject) {
@@ -299,14 +339,33 @@ export function IntelligenceDiary() {
                         <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
                             <div className="custom-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
                                 {isEditing ? (
-                                    <textarea
-                                        value={selectedEntry.content}
-                                        onChange={(e) => setSelectedEntry({ ...selectedEntry, content: e.target.value })}
-                                        placeholder="Write freely — reflections, signals, strategic notes."
-                                        autoFocus
-                                        rows={14}
-                                        className="min-h-[min(65vh,500px)] w-full flex-1 resize-y rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-4 text-[14px] leading-[1.75] text-zinc-200 outline-none transition placeholder:text-zinc-600 focus:border-white/[0.15]"
-                                    />
+                                    <div className="relative">
+                                        <textarea
+                                            value={selectedEntry.content}
+                                            onChange={(e) => setSelectedEntry({ ...selectedEntry, content: e.target.value })}
+                                            placeholder="Write freely — reflections, signals, strategic notes."
+                                            autoFocus
+                                            rows={14}
+                                            className="min-h-[min(65vh,500px)] w-full flex-1 resize-y rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-4 pb-12 text-[14px] leading-[1.75] text-zinc-200 outline-none transition placeholder:text-zinc-600 focus:border-white/[0.15]"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={toggleVoice}
+                                            title={isRecording ? 'Stop recording' : 'Voice input'}
+                                            className={`absolute bottom-3 right-3 flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition ${
+                                                isRecording
+                                                    ? 'animate-pulse border-rose-500/40 bg-rose-500/10 text-rose-400'
+                                                    : 'border-white/[0.08] bg-white/[0.04] text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.08]'
+                                            }`}
+                                        >
+                                            {isRecording ? (
+                                                <MicOff className="h-3.5 w-3.5" aria-hidden />
+                                            ) : (
+                                                <Mic className="h-3.5 w-3.5" aria-hidden />
+                                            )}
+                                            {isRecording ? 'Stop' : 'Voice'}
+                                        </button>
+                                    </div>
                                 ) : (
                                     <div className="max-w-3xl">
                                         <p className="whitespace-pre-wrap text-[14px] leading-[1.75] text-zinc-300">
