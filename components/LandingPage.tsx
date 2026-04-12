@@ -468,10 +468,10 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                                 onClick={onStart}
                                 className="mt-5 w-full rounded-xl bg-gradient-to-r from-orange-500 to-white py-3.5 font-sans text-[14px] font-semibold text-zinc-900 transition hover:opacity-90 active:scale-[0.98]"
                             >
-                                {landingBilling === 'monthly' ? 'Get Pro — $4/mo' : 'Get Pro — $40/yr'}
+                                Start 3-Day Free Trial
                             </button>
                             <p className="mt-2 text-center font-sans text-[11px] text-zinc-600">
-                                Instant access &middot; cancel anytime
+                                No card required &middot; full Pro access &middot; 3 days free
                             </p>
                         </div>
 

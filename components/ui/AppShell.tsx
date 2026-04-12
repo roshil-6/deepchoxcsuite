@@ -10,6 +10,7 @@ import { ContextPanel } from '@/components/ui/ContextPanel';
 import { useOffice } from '@/lib/OfficeContext';
 import { WORKSPACE_TITLES } from '@/components/ui/appNav';
 import { UpgradeModal } from '@/components/UpgradeModal';
+import { TrialBanner } from '@/components/TrialBanner';
 
 const INTEL_DESKTOP_COLLAPSED_KEY = 'deepchox-intel-panel-collapsed';
 
@@ -56,6 +57,7 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
 
     return (
         <div className="flex h-full min-h-0 w-full flex-col bg-[var(--bg)] pb-14 text-[var(--text)] lg:pb-0">
+            <TrialBanner onUpgrade={() => setUpgradeOpen(true)} />
             <header className="flex shrink-0 items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--bg)] px-4 py-3 sm:px-5 lg:hidden">
                 <div className="flex min-w-0 items-center gap-2">
                     <button
