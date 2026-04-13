@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, LogOut, PanelRight, Sparkles } from 'lucide-react';
 import { useOffice } from '@/lib/OfficeContext';
-import { getAllProjects, type Project } from '@/lib/db';
+import { getAllProjects } from '@/lib/db';
 import { StaffNotificationCenter } from '@/components/StaffNotificationCenter';
 import { APP_NAV_ITEMS, WORKSPACE_TITLES, type AppNavRoom } from '@/components/ui/appNav';
 import { DailySyncBanner } from '@/components/DailySyncBanner';
@@ -33,15 +33,14 @@ export function LeftRail({
     onToggleIntel,
     intelDesktopCollapsed = false,
 }: Props) {
-    const { activeRoom, switchRoom, activeProject, setActiveProject, setAllProjects } = useOffice();
+    const { activeRoom, switchRoom, activeProject, setActiveProject, setAllProjects, allProjects } = useOffice();
     const { isPro } = useSubscription();
-    const [projects, setProjects] = useState<Project[]>([]);
     const isFlush = variant === 'flush';
 
+    /** Hydrate venture list from IndexedDB; new ventures from elsewhere update `allProjects` in context — list reads that, not a stale local copy. */
     useEffect(() => {
         void (async () => {
             const all = await getAllProjects();
-            setProjects(all);
             setAllProjects(all);
         })();
     }, [setAllProjects]);
@@ -54,17 +53,17 @@ export function LeftRail({
     };
 
     const surface = isFlush
-        ? 'relative z-30 flex h-full min-h-0 w-full min-w-0 shrink-0 flex-col overflow-hidden border-r border-[var(--border)] bg-[var(--bg)] lg:w-[260px]'
+        ? 'relative z-30 flex h-full min-h-0 w-full min-w-0 shrink-0 flex-col overflow-hidden border-r border-[var(--border)] bg-[var(--bg)] lg:w-[272px]'
         : 'relative z-30 flex h-full min-h-0 w-full min-w-0 shrink-0 flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-[var(--bg)]/95 backdrop-blur-xl lg:w-52';
 
     return (
         <div role="navigation" aria-label="Deepchox workspace navigation" className={surface}>
             <div
-                className={`flex min-h-12 shrink-0 items-center justify-between gap-1 border-b border-[var(--border)] ${isFlush ? 'px-4 py-3' : 'px-2.5 py-2'}`}
+                className={`flex min-h-12 shrink-0 items-center justify-between gap-1 border-b border-[var(--border)] bg-white/[0.02] ${isFlush ? 'px-4 py-3' : 'px-2.5 py-2'}`}
             >
                 <div className="min-w-0 overflow-hidden">
                     <p className="truncate text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
-                        north<span className="text-[var(--text)]">ROC</span> LABS
+                        north<span className="text-[var(--text)]">ROSC</span> LABS
                     </p>
                     <p className="truncate text-[15px] font-semibold tracking-tight text-[var(--text)]">Deepchox</p>
                 </div>
@@ -117,10 +116,10 @@ export function LeftRail({
                             whileTap={{ scale: 0.98 }}
                             className={
                                 isFlush
-                                    ? `group relative flex min-h-9 w-full items-center gap-3 rounded-lg py-2 pl-3 pr-3 text-left text-sm transition-colors ${
+                                    ? `group relative flex min-h-11 w-full items-center gap-3 rounded-xl py-2.5 pl-3 pr-3 text-left text-sm transition-all ${
                                           active
-                                              ? 'border border-white/[0.06] bg-white/[0.06] text-[var(--text)]'
-                                              : 'border border-transparent text-[var(--muted)] hover:border-white/[0.05] hover:bg-white/[0.03] hover:text-[var(--text)]'
+                                              ? 'border border-white/[0.08] bg-white/[0.07] text-[var(--text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
+                                              : 'border border-transparent text-[var(--muted)] hover:-translate-y-px hover:border-white/[0.05] hover:bg-white/[0.03] hover:text-[var(--text)]'
                                       }`
                                     : `relative flex w-full items-center gap-2.5 rounded-xl py-1.5 pl-1.5 pr-2 text-left transition-colors ${
                                           active
@@ -132,8 +131,10 @@ export function LeftRail({
                             <span
                                 className={
                                     isFlush
-                                        ? `flex h-7 w-7 shrink-0 items-center justify-center ${
-                                              active ? 'text-[var(--accent)]' : 'text-[var(--muted)] group-hover:text-[var(--text)]'
+                                        ? `flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border ${
+                                              active
+                                                  ? 'border-white/[0.08] bg-white/[0.06] text-[var(--accent)]'
+                                                  : 'border-transparent text-[var(--muted)] group-hover:border-white/[0.06] group-hover:bg-white/[0.04] group-hover:text-[var(--text)]'
                                           }`
                                         : `flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] text-[var(--text)] ${
                                               active ? 'border-white/[0.16] bg-white/[0.06]' : 'text-zinc-300'
@@ -169,17 +170,17 @@ export function LeftRail({
                 <button
                     type="button"
                     onClick={onNewVenture}
-                    className={`mb-2 flex w-full items-center gap-2 font-medium text-[var(--muted)] transition-colors hover:text-[var(--text)] ${
-                        isFlush ? 'h-8 px-2 text-xs hover:bg-transparent' : 'rounded-xl py-1.5 pl-1.5 text-[11px] hover:bg-white/[0.05]'
+                    className={`mb-2 flex w-full items-center gap-2 font-medium text-[var(--muted)] transition-all hover:text-[var(--text)] ${
+                        isFlush ? 'executive-card-interactive h-9 px-3 text-xs' : 'rounded-xl py-1.5 pl-1.5 text-[11px] hover:bg-white/[0.05]'
                     }`}
                 >
                     <Plus className={`shrink-0 opacity-90 ${isFlush ? 'h-3 w-3' : 'h-[18px] w-[18px]'}`} strokeWidth={isFlush ? 2 : 1.85} aria-hidden />
                     <span className="truncate">New venture</span>
                 </button>
-                <div className={`max-h-28 overflow-y-auto ${isFlush ? 'space-y-1' : 'space-y-px'}`}>
-                    {projects.map((p) => (
+                <div className={`max-h-40 overflow-y-auto ${isFlush ? 'space-y-1.5' : 'space-y-px'}`}>
+                    {allProjects.map((p) => (
                         <button
-                            key={p.id}
+                            key={p.id ?? `${p.name}-${p.timestamp}`}
                             type="button"
                             onClick={() => {
                                 setActiveProject(p);
@@ -187,10 +188,10 @@ export function LeftRail({
                             }}
                             className={
                                 isFlush
-                                    ? `flex h-10 w-full cursor-pointer items-center rounded-lg px-4 text-left text-xs font-medium transition-colors ${
+                                    ? `group flex w-full cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-left text-xs font-medium transition-all ${
                                           activeProject?.id === p.id
-                                              ? 'bg-white/[0.06] text-[var(--text)] ring-1 ring-white/[0.08]'
-                                              : 'text-[var(--muted)] hover:bg-white/[0.04] hover:text-[var(--text)]'
+                                              ? 'border-white/[0.1] bg-white/[0.07] text-[var(--text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
+                                              : 'border-transparent text-[var(--muted)] hover:border-white/[0.06] hover:bg-white/[0.04] hover:text-[var(--text)]'
                                       }`
                                     : `flex w-full items-center gap-2 rounded-lg border border-transparent px-2 py-1 text-left text-[10px] transition-colors ${
                                           activeProject?.id === p.id
@@ -200,7 +201,7 @@ export function LeftRail({
                             }
                         >
                             <span
-                                className={`shrink-0 rounded-full ${isFlush ? 'h-2 w-2' : 'h-1.5 w-1.5'} ${
+                                className={`shrink-0 rounded-full ${isFlush ? 'h-2.5 w-2.5' : 'h-1.5 w-1.5'} ${
                                     activeProject?.id === p.id
                                         ? 'bg-[var(--accent)]'
                                         : isFlush
@@ -208,7 +209,14 @@ export function LeftRail({
                                           : 'bg-[var(--muted)]'
                                 }`}
                             />
-                            <span className={`min-w-0 truncate ${isFlush ? 'ml-3' : ''}`}>{p.name}</span>
+                            <span className="min-w-0 flex-1">
+                                <span className="block truncate">{p.name}</span>
+                                {isFlush ? (
+                                    <span className="mt-0.5 block text-[10px] font-normal text-[var(--muted)]/80">
+                                        {p.strategy?.trim() ? 'Strategy on file' : 'Draft venture'}
+                                    </span>
+                                ) : null}
+                            </span>
                         </button>
                     ))}
                 </div>

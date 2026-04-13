@@ -541,21 +541,26 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
   /**
    * Update the list of all projects (called after fetching from DB)
    */
-  const handleSetAllProjects = (projects: Project[]) => {
+  const handleSetAllProjects = useCallback((projects: Project[]) => {
     setAllProjects(projects);
-  };
+  }, []);
 
   /**
    * Create a new blank project (timeline + flow prefilled via `emptyVentureShell`).
+   * Persists to IndexedDB so the venture list and PA APIs see a real `id`.
    */
   const createNewProject = () => {
-    const shell = emptyVentureShell(`Project ${new Date().toLocaleDateString()}`);
-    const newProject: Project = {
-      ...shell,
-      timestamp: Date.now(),
-    };
-    setActiveProjectState(newProject);
-    setActiveRoom('ceo');
+    void (async () => {
+      const shell = emptyVentureShell(`Project ${new Date().toLocaleDateString()}`);
+      const ts = Date.now();
+      const id = await saveProject({ ...shell, timestamp: ts } as Project);
+      const saved: Project = { ...shell, id, timestamp: ts };
+      setActiveProjectState(saved);
+      activeProjectRef.current = saved;
+      const projects = await getAllProjects();
+      setAllProjects(projects);
+      setActiveRoom('ceo');
+    })();
   };
 
   /**
@@ -629,8 +634,12 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
       return;
     }
     const list = await getAllProjects();
-    const result = await runDailyOfficeCycle(String(p.id), list);
+    const result = await runDailyOfficeCycle(String(p.id), list, p);
     setLivingOffice(result);
+
+    if (result.brief.greeting === 'No venture selected.') {
+      return;
+    }
 
     const memoryBefore = getOfficeMemory(p);
     const today = new Date().toDateString();
@@ -885,7 +894,7 @@ export function getHuddlePrompt(role: AgentRole, project?: Project | null): stri
 
   // "The Spine" - Shared Context
   const baseContext = `
-    You are an AI teammate inside Deepchox (by northROCS LABS) — you act as one specialist role on the founder's team (not a generic chatbot).
+    You are an AI teammate inside Deepchox (by northROSC LABS) — you act as one specialist role on the founder's team (not a generic chatbot).
     Current Project: "${project.name}"
     
     TEAM CONTEXT (What others are doing — plain language, not raw JSON):
@@ -1015,7 +1024,7 @@ export function getAgentSystemPrompt(role: AgentRole, project?: Project | null):
     
     Example: "I understand. This requires a strategic pivot. I am assigning this to the CEO desk to draft a new plan."`,
 
-    dexo: `You are Dexo, the Central Intelligence Brain of the Deepchox Suite (by northROCS LABS).
+    dexo: `You are Dexo, the Central Intelligence Brain of the Deepchox Suite (by northROSC LABS).
     ROLE: You are the OMNISCIENT ORCHESTRATOR. You are not just an assistant; you are the strategic core.
     
     CORE DIRECTIVES:
@@ -1064,7 +1073,7 @@ export function getPersonalAssistantSystemPrompt(project?: Project | null): stri
   const staffHint = project?.agentStaffSnapshot?.summary
     ? `\nLAST STAFF SYNC (from the multi-desk agent run):\n${project.agentStaffSnapshot.summary}\n`
     : '';
-  return `You are the user's dedicated Personal Assistant in Deepchox (by northROCS LABS) — you represent their AI-powered team for founders in one place: steer the venture and see what matters across roles.
+  return `You are the user's dedicated Personal Assistant in Deepchox (by northROSC LABS) — you represent their AI-powered team for founders in one place: steer the venture and see what matters across roles.
 
 You are not a single desk teammate; you coordinate like a chief of staff. The product can run **Staff sync** so all AI teammates refresh briefs from the same venture snapshot and merge updates (intel, finance notes, directives, kanban, calendar). Reference that latest sync summary when present.
 

@@ -51,7 +51,7 @@ export function DailySyncBanner({ variant = 'banner' }: DailySyncBannerProps) {
               if (r.ok) setVisible(false);
             }}
             disabled={agentSyncRunning}
-            className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-brand-border bg-brand-input px-2 py-1.5 text-[10px] font-medium text-brand-text hover:bg-brand-card disabled:opacity-50"
+            className="executive-toolbar-button w-full rounded-lg px-2 py-1.5 text-[10px]"
           >
             <RefreshCw className={`h-3.5 w-3.5 shrink-0 ${agentSyncRunning ? 'animate-spin' : ''}`} aria-hidden />
             Sync now
@@ -59,7 +59,7 @@ export function DailySyncBanner({ variant = 'banner' }: DailySyncBannerProps) {
           <button
             type="button"
             onClick={snooze}
-            className="inline-flex w-full items-center justify-center gap-1 rounded-md py-1 text-[10px] text-brand-muted hover:bg-white/5 hover:text-brand-text"
+            className="inline-flex w-full items-center justify-center gap-1 rounded-lg py-1 text-[10px] text-brand-muted transition-colors hover:bg-white/5 hover:text-brand-text"
             title="Remind tomorrow"
             aria-label="Snooze until tomorrow"
           >
@@ -85,7 +85,7 @@ export function DailySyncBanner({ variant = 'banner' }: DailySyncBannerProps) {
             if (r.ok) setVisible(false);
           }}
           disabled={agentSyncRunning}
-          className="inline-flex items-center gap-1.5 rounded-md border border-brand-border bg-brand-input px-3 py-1.5 text-[11px] font-medium text-brand-text hover:bg-brand-card disabled:opacity-50"
+          className="executive-toolbar-button px-3 py-1.5 text-[11px]"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${agentSyncRunning ? 'animate-spin' : ''}`} aria-hidden />
           Sync now

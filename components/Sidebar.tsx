@@ -30,22 +30,16 @@ interface SidebarProps {
 const TEAM_DESK_ORDER = ['ceo', 'accountant', 'pm', 'cmo', 'scout', 'chief_of_staff', 'dexo'] as const;
 
 export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
-  const { activeRoom, switchRoom, agents, activeProject, setActiveProject, setAllProjects, staffAttentionPending } = useOffice();
+  const { activeRoom, switchRoom, agents, activeProject, setActiveProject, setAllProjects, allProjects, staffAttentionPending } = useOffice();
   const { isPro } = useSubscription();
   const [upgradeOpen, setUpgradeOpen] = useState(false);
 
-  const [projects, setProjects] = useState<Project[]>([]);
-
-  // Load projects on mount
   useEffect(() => {
-    loadProjects();
-  }, []);
-
-  const loadProjects = async () => {
-    const allProjects = await getAllProjects();
-    setProjects(allProjects);
-    setAllProjects(allProjects);
-  };
+    void (async () => {
+      const list = await getAllProjects();
+      setAllProjects(list);
+    })();
+  }, [setAllProjects]);
 
   const handleSelectProject = (project: Project) => {
     setActiveProject(project);
@@ -61,7 +55,7 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
     >
       <div className="relative flex min-h-[3.5rem] shrink-0 items-center justify-between gap-2 border-b border-brand-border px-4 py-3">
         <div className="min-w-0">
-          <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-brand-muted">northROCS LABS presents</p>
+          <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-brand-muted">northROSC LABS presents</p>
           <h1 className="text-[15px] font-semibold tracking-tight text-brand-text">Deepchox <span className="text-[9px] font-bold uppercase tracking-widest text-brand-muted align-middle">SUB</span></h1>
         </div>
         <StaffNotificationCenter />
@@ -154,9 +148,9 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
           </button>
 
           <div className="space-y-1">
-            {projects.map(p => (
+            {allProjects.map(p => (
               <div
-                key={p.id}
+                key={p.id ?? `${p.name}-${p.timestamp}`}
                 onClick={() => handleSelectProject(p)}
                 className={`group relative flex h-10 w-full cursor-pointer items-center rounded-lg px-4 transition-colors ${activeProject?.id === p.id
                   ? 'bg-white/[0.06] text-white ring-1 ring-white/[0.08]'

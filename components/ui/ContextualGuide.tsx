@@ -99,10 +99,10 @@ interface GuideHintProps {
 }
 
 const HINT_STYLES: Record<NonNullable<GuideHintProps['variant']>, string> = {
-  info: 'border-sky-500/20 bg-sky-500/[0.07] text-sky-300',
-  tip: 'border-amber-500/20 bg-amber-500/[0.07] text-amber-300',
-  warning: 'border-orange-500/22 bg-orange-500/[0.07] text-orange-300',
-  success: 'border-emerald-500/20 bg-emerald-500/[0.07] text-emerald-300',
+  info: 'border-white/[0.1] bg-white/[0.04] text-[var(--text)]',
+  tip: 'border-white/[0.1] bg-white/[0.04] text-[var(--text)]',
+  warning: 'border-amber-500/25 bg-amber-500/[0.07] text-amber-200',
+  success: 'border-emerald-500/22 bg-emerald-500/[0.07] text-emerald-200',
 };
 
 const HINT_ICON: Record<NonNullable<GuideHintProps['variant']>, React.ReactNode> = {
@@ -131,7 +131,7 @@ export function GuideHint({
 
   return (
     <div
-      className={`flex items-center gap-2.5 rounded-xl border px-3.5 py-2.5 ${styles} ${className}`}
+      className={`executive-panel flex items-center gap-2.5 px-3.5 py-2.5 ${styles} ${className}`}
       role="note"
     >
       {icon}
@@ -140,7 +140,7 @@ export function GuideHint({
         <button
           type="button"
           onClick={onAction}
-          className="shrink-0 flex items-center gap-1 text-[11px] font-semibold opacity-90 hover:opacity-100 transition-opacity"
+          className="shrink-0 flex items-center gap-1 text-[11px] font-semibold opacity-90 transition-opacity hover:opacity-100"
         >
           {action}
           <ArrowRight className="h-3 w-3" />
@@ -194,31 +194,31 @@ export function FirstRunBanner({
 
   return (
     <div
-      className={`relative rounded-2xl border border-violet-500/25 bg-gradient-to-br from-violet-500/[0.07] to-transparent px-5 py-5 ${className}`}
+      className={`executive-panel-strong relative px-5 py-5 ${className}`}
     >
       <button
         type="button"
         onClick={() => dismiss(id)}
         aria-label="Dismiss"
-        className="absolute right-3 top-3 rounded-lg p-1.5 text-zinc-600 hover:text-zinc-400 transition-colors"
+        className="absolute right-3 top-3 rounded-lg p-1.5 text-[var(--muted)] transition-colors hover:bg-white/[0.05] hover:text-[var(--text)]"
       >
         <X className="h-3.5 w-3.5" />
       </button>
 
       <div className="flex items-start gap-3">
-        <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-violet-500/15 ring-1 ring-violet-500/20">
-          <Lightbulb className="h-4 w-4 text-violet-300" />
+        <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.05]">
+          <Lightbulb className="h-4 w-4 text-[var(--accent)]" />
         </div>
         <div className="min-w-0 pr-6">
-          <p className="text-[13px] font-semibold text-zinc-100">{heading}</p>
-          <p className="mt-1.5 text-[12px] leading-relaxed text-zinc-400">{body}</p>
+          <p className="text-[13px] font-semibold text-[var(--text)]">{heading}</p>
+          <p className="mt-1.5 text-[12px] leading-relaxed text-[var(--muted)]">{body}</p>
           {(primaryAction || secondaryAction) && (
             <div className="mt-3.5 flex flex-wrap gap-2">
               {primaryAction && onPrimary && (
                 <button
                   type="button"
                   onClick={() => { onPrimary(); dismiss(id); }}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-violet-500/30 bg-violet-500/15 px-3.5 py-1.5 text-[11px] font-semibold text-violet-100 transition hover:bg-violet-500/22"
+                  className="executive-toolbar-button executive-toolbar-button-accent px-3.5 py-1.5 text-[11px]"
                 >
                   {primaryAction}
                   <ArrowRight className="h-3 w-3" />
@@ -228,7 +228,7 @@ export function FirstRunBanner({
                 <button
                   type="button"
                   onClick={() => { onSecondary(); dismiss(id); }}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.04] px-3.5 py-1.5 text-[11px] font-medium text-zinc-300 transition hover:bg-white/[0.07]"
+                  className="executive-toolbar-button px-3.5 py-1.5 text-[11px]"
                 >
                   {secondaryAction}
                 </button>
@@ -274,18 +274,18 @@ export function ActionHint({
 
   return (
     <div
-      className={`rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.06] px-4 py-4 transition-all duration-300 ${className}`}
+      className={`executive-panel px-4 py-4 transition-all duration-300 ${className}`}
     >
       <div className="flex items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2">
-          <ChevronRight className="h-3.5 w-3.5 text-emerald-400" />
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-300/80">{heading}</p>
+          <ChevronRight className="h-3.5 w-3.5 text-[var(--accent)]" />
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">{heading}</p>
         </div>
         <button
           type="button"
           onClick={() => dismiss(id)}
           aria-label="Dismiss"
-          className="rounded-md p-0.5 text-zinc-600 hover:text-zinc-400 transition-colors"
+          className="rounded-md p-0.5 text-[var(--muted)] transition-colors hover:bg-white/[0.05] hover:text-[var(--text)]"
         >
           <X className="h-3.5 w-3.5" />
         </button>
@@ -293,19 +293,19 @@ export function ActionHint({
       <ol className="space-y-2">
         {steps.map((step, i) => (
           <li key={i} className="flex items-center gap-2.5">
-            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-emerald-500/25 bg-emerald-500/10 text-[9px] font-bold text-emerald-300">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/[0.12] bg-white/[0.05] text-[9px] font-bold text-[var(--text)]">
               {i + 1}
             </span>
             {step.onClick ? (
               <button
                 type="button"
                 onClick={step.onClick}
-                className="text-[12px] text-zinc-300 hover:text-zinc-100 underline underline-offset-2 decoration-zinc-600 hover:decoration-zinc-400 transition-colors text-left"
+                className="text-left text-[12px] text-[var(--text)]/90 underline decoration-white/[0.12] underline-offset-2 transition-colors hover:text-[var(--text)] hover:decoration-white/[0.32]"
               >
                 {step.label}
               </button>
             ) : (
-              <span className="text-[12px] text-zinc-400">{step.label}</span>
+              <span className="text-[12px] text-[var(--muted)]">{step.label}</span>
             )}
           </li>
         ))}
@@ -347,7 +347,7 @@ export function GuideTooltip({ tip, children, side = 'top', className = '' }: Gu
       {show && (
         <div
           role="tooltip"
-          className={`pointer-events-none absolute z-50 w-max max-w-[220px] rounded-xl border border-white/[0.1] bg-zinc-900/95 px-3 py-2 text-[11px] leading-snug text-zinc-200 shadow-xl backdrop-blur-sm ${positionClass}`}
+          className={`pointer-events-none absolute z-50 w-max max-w-[220px] rounded-xl border border-white/[0.1] bg-[var(--surface-strong)]/95 px-3 py-2 text-[11px] leading-snug text-[var(--text)] shadow-xl backdrop-blur-sm ${positionClass}`}
         >
           {tip}
         </div>
@@ -377,21 +377,21 @@ export function EmptyStateGuide({
   className = '',
 }: EmptyStateGuideProps) {
   return (
-    <div className={`flex flex-col items-center gap-4 rounded-2xl border border-dashed border-white/[0.1] bg-white/[0.02] px-6 py-10 text-center ${className}`}>
+    <div className={`executive-empty flex flex-col items-center gap-4 px-6 py-10 text-center ${className}`}>
       {icon && (
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.04]">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.04] text-[var(--accent)]">
           {icon}
         </div>
       )}
       <div>
-        <p className="text-[13px] font-semibold text-zinc-300">{title}</p>
-        <p className="mt-1.5 max-w-xs text-[12px] leading-relaxed text-zinc-500">{description}</p>
+        <p className="text-[13px] font-semibold text-[var(--text)]">{title}</p>
+        <p className="mt-1.5 max-w-xs text-[12px] leading-relaxed text-[var(--muted)]">{description}</p>
       </div>
       {action && onAction && (
         <button
           type="button"
           onClick={onAction}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-violet-500/30 bg-violet-500/12 px-4 py-2 text-[12px] font-semibold text-violet-100 transition hover:bg-violet-500/20"
+          className="executive-toolbar-button executive-toolbar-button-accent px-4 py-2 text-[12px]"
         >
           {action}
           <ArrowRight className="h-3.5 w-3.5" />
@@ -424,10 +424,10 @@ export function ProgressTrail({ steps, className = '' }: ProgressTrailProps) {
             <div
               className={`flex h-5 w-5 items-center justify-center rounded-full border text-[9px] font-bold transition-colors ${
                 step.done
-                  ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-300'
+                  ? 'border-white/[0.14] bg-white/[0.08] text-[var(--text)]'
                   : step.active
-                    ? 'border-sky-500/40 bg-sky-500/15 text-sky-300'
-                    : 'border-white/[0.1] bg-white/[0.04] text-zinc-600'
+                    ? 'border-white/[0.14] bg-[var(--accent-soft)] text-[var(--text)]'
+                    : 'border-white/[0.1] bg-white/[0.04] text-[var(--muted)]'
               }`}
             >
               {step.done ? '✓' : i + 1}
@@ -435,17 +435,17 @@ export function ProgressTrail({ steps, className = '' }: ProgressTrailProps) {
             <span
               className={`text-[10px] font-medium transition-colors ${
                 step.done
-                  ? 'text-emerald-400/70'
+                  ? 'text-[var(--text)]/90'
                   : step.active
-                    ? 'text-sky-300'
-                    : 'text-zinc-600'
+                    ? 'text-[var(--text)]'
+                    : 'text-[var(--muted)]'
               }`}
             >
               {step.label}
             </span>
           </div>
           {i < steps.length - 1 && (
-            <div className={`mx-2 h-px w-6 transition-colors ${step.done ? 'bg-emerald-500/30' : 'bg-white/[0.07]'}`} />
+            <div className={`mx-2 h-px w-6 transition-colors ${step.done ? 'bg-white/[0.16]' : 'bg-white/[0.07]'}`} />
           )}
         </React.Fragment>
       ))}

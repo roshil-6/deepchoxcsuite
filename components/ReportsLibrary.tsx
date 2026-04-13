@@ -17,6 +17,7 @@ import {
 import { ReportCeremony } from './ReportCeremony';
 import { WorkspaceAiButton } from '@/components/workspace/WorkspaceAiButton';
 import { EXEC_OUTPUT_ROLES } from '@/lib/execOutputFormats';
+import { EmptyStateGuide } from '@/components/ui/ContextualGuide';
 
 export function ReportsLibrary() {
     const { activeProject, updateProjectField } = useOffice();
@@ -99,11 +100,12 @@ export function ReportsLibrary() {
     if (!activeProject)
         return (
             <div className="flex h-full flex-col items-center justify-center gap-4 bg-brand-bg p-12 text-brand-muted">
-                <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.04]">
-                    <FileText className="h-7 w-7 text-brand-muted" aria-hidden />
-                </div>
-                <h2 className="text-lg font-medium text-brand-text">Knowledge base</h2>
-                <p className="max-w-sm text-center text-sm text-brand-muted">Select a venture to open journals and directives.</p>
+                <EmptyStateGuide
+                    icon={<FileText className="h-7 w-7" aria-hidden />}
+                    title="Knowledge base"
+                    description="Select a venture to open journals, directives, and private working notes."
+                    className="max-w-md"
+                />
             </div>
         );
 

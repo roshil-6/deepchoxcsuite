@@ -165,12 +165,22 @@ export const db = new DeepChoxDB();
 // --- Helper Functions ---
 
 export async function saveProject(project: Project): Promise<number> {
-  const id = await db.projects.put(project);
+  const ts =
+    typeof project.timestamp === 'number' && !Number.isNaN(project.timestamp)
+      ? project.timestamp
+      : Date.now();
+  const id = await db.projects.put({ ...project, timestamp: ts });
   return id as number;
 }
 
+/** All ventures, newest first. Sorts in JS so rows with missing/invalid `timestamp` (legacy) still appear reliably. */
 export async function getAllProjects(): Promise<Project[]> {
-  return await db.projects.orderBy('timestamp').reverse().toArray();
+  const rows = await db.projects.toArray();
+  return [...rows].sort((a, b) => {
+    const ta = typeof a.timestamp === 'number' && !Number.isNaN(a.timestamp) ? a.timestamp : 0;
+    const tb = typeof b.timestamp === 'number' && !Number.isNaN(b.timestamp) ? b.timestamp : 0;
+    return tb - ta;
+  });
 }
 
 export async function deleteProject(id: number): Promise<void> {

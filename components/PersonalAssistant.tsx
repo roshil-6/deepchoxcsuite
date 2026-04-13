@@ -11,6 +11,7 @@ import {
 } from '@/components/pa/PersonalAssistantChatContext';
 import { RelayMeetingRoom } from '@/components/pa/RelayMeetingRoom';
 import { PA_BUDDY_NAME, PA_BUDDY_TAGLINE } from '@/lib/paBuddy';
+import { ceo } from '@/lib/ceoTheme';
 import { DeskShell, DeskTabButton } from '@/components/workspaces/DeskShell';
 
 type RelayMode = 'chat' | 'meeting';
@@ -52,6 +53,11 @@ function PersonalAssistantLayout() {
                 active={relayMode === 'chat'}
                 onClick={() => setRelayMode('chat')}
                 icon={<MessageCircle className="h-3.5 w-3.5" aria-hidden />}
+                className={
+                    relayMode === 'chat'
+                        ? '!border-white/[0.1] !bg-[var(--color-brand-card)] text-[var(--text)] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]'
+                        : ''
+                }
             >
                 Chat
             </DeskTabButton>
@@ -59,6 +65,11 @@ function PersonalAssistantLayout() {
                 active={relayMode === 'meeting'}
                 onClick={() => setRelayMode('meeting')}
                 icon={<Video className="h-3.5 w-3.5" aria-hidden />}
+                className={
+                    relayMode === 'meeting'
+                        ? '!border-white/[0.1] !bg-[var(--color-brand-card)] text-[var(--text)] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]'
+                        : ''
+                }
             >
                 Meeting
             </DeskTabButton>
@@ -73,77 +84,89 @@ function PersonalAssistantLayout() {
             tabs={modeTabs}
             bodyFlush
             bodyClassName="flex min-h-0 flex-1 flex-col"
-            className="flex-1"
+            className="min-h-0 flex-1"
+            headerSpineClassName="bg-gradient-to-b from-white/40 via-white/15 to-white/5"
         >
             {relayMode === 'chat' ? (
                 <>
-                    {/* ── Venture at a glance ── */}
-                    <div className="shrink-0 border-b border-white/[0.06] px-5 py-4 sm:px-6">
-                        <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
-                            <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-3">
-                                <ListChecks className="h-4 w-4 text-[var(--muted)]" aria-hidden />
-                                <p className="mt-2 font-mono text-[16px] font-semibold tabular-nums leading-none text-[var(--text)]">
-                                    {priorities.length === 0 ? '—' : `${priDone}/${priorities.length}`}
-                                </p>
-                                <p className="mt-1 text-[10px] font-medium text-[var(--muted)]">Priorities</p>
-                                <p className="text-[9px] text-[var(--muted)]/60">
-                                    {priorities.length === 0 ? 'None set' : 'done / total'}
-                                </p>
+                    {/* ── Venture pulse (matches CEO desk card language) ── */}
+                    <div className="shrink-0 border-b border-white/[0.06] px-4 py-4 sm:px-6 sm:py-5">
+                        <div
+                            className={`mx-auto max-w-3xl rounded-2xl border border-white/[0.07] bg-[var(--color-brand-card)]/85 p-4 shadow-[0_16px_48px_-28px_rgba(0,0,0,0.65)] ring-1 ring-white/[0.04] backdrop-blur-md sm:p-5 ${ceo.cardHover}`}
+                        >
+                            <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+                                <div>
+                                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
+                                        Venture pulse
+                                    </p>
+                                    <p className="mt-0.5 text-[12px] text-[var(--text)]/90">At-a-glance before you message Relay</p>
+                                </div>
                             </div>
-                            <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-3">
-                                <Layers className="h-4 w-4 text-violet-400/70" aria-hidden />
-                                <p className="mt-2 font-mono text-[16px] font-semibold tabular-nums leading-none text-[var(--text)]">
-                                    {phases.length === 0 ? '—' : `${phaseDone}/${phases.length}`}
-                                </p>
-                                <p className="mt-1 text-[10px] font-medium text-[var(--muted)]">Phases</p>
-                                <p className="text-[9px] text-[var(--muted)]/60">
-                                    {phases.length === 0
-                                        ? 'None set'
-                                        : phaseActive > 0
-                                          ? `${phaseActive} active`
-                                          : 'done / total'}
-                                </p>
+                            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                                <div className="rounded-xl border border-white/[0.06] bg-[var(--color-brand-input)]/50 px-3 py-3 transition-colors hover:border-white/[0.1]">
+                                    <ListChecks className={`h-4 w-4 ${ceo.accent}`} aria-hidden />
+                                    <p className="mt-2 font-mono text-[17px] font-semibold tabular-nums leading-none text-[var(--text)]">
+                                        {priorities.length === 0 ? '—' : `${priDone}/${priorities.length}`}
+                                    </p>
+                                    <p className="mt-1 text-[10px] font-medium text-[var(--muted)]">Priorities</p>
+                                    <p className="text-[9px] leading-tight text-[var(--muted)]/70">
+                                        {priorities.length === 0 ? 'None set' : 'done / total'}
+                                    </p>
+                                </div>
+                                <div className="rounded-xl border border-white/[0.06] bg-[var(--color-brand-input)]/50 px-3 py-3 transition-colors hover:border-white/[0.1]">
+                                    <Layers className={`h-4 w-4 ${ceo.accentMuted}`} aria-hidden />
+                                    <p className="mt-2 font-mono text-[17px] font-semibold tabular-nums leading-none text-[var(--text)]">
+                                        {phases.length === 0 ? '—' : `${phaseDone}/${phases.length}`}
+                                    </p>
+                                    <p className="mt-1 text-[10px] font-medium text-[var(--muted)]">Phases</p>
+                                    <p className="text-[9px] leading-tight text-[var(--muted)]/70">
+                                        {phases.length === 0
+                                            ? 'None set'
+                                            : phaseActive > 0
+                                              ? `${phaseActive} active`
+                                              : 'done / total'}
+                                    </p>
+                                </div>
+                                <div className="rounded-xl border border-white/[0.06] bg-[var(--color-brand-input)]/50 px-3 py-3 transition-colors hover:border-white/[0.1]">
+                                    <CalendarDays className={`h-4 w-4 ${ceo.accent}`} aria-hidden />
+                                    <p className="mt-2 font-mono text-[17px] font-semibold tabular-nums leading-none text-[var(--text)]">
+                                        {events}
+                                    </p>
+                                    <p className="mt-1 text-[10px] font-medium text-[var(--muted)]">Calendar</p>
+                                    <p className="text-[9px] leading-tight text-[var(--muted)]/70">events</p>
+                                </div>
                             </div>
-                            <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-3">
-                                <CalendarDays className="h-4 w-4 text-amber-400/70" aria-hidden />
-                                <p className="mt-2 font-mono text-[16px] font-semibold tabular-nums leading-none text-[var(--text)]">
-                                    {events}
-                                </p>
-                                <p className="mt-1 text-[10px] font-medium text-[var(--muted)]">Calendar</p>
-                                <p className="text-[9px] text-[var(--muted)]/60">events</p>
-                            </div>
-                        </div>
 
-                        {strategicLine ? (
-                            <p className="mt-3 line-clamp-2 text-[11px] leading-relaxed text-[var(--muted)]/80">
-                                {strategicLine.slice(0, 200)}{strategicLine.length > 200 ? '…' : ''}
-                            </p>
-                        ) : null}
+                            {strategicLine ? (
+                                <p className="mt-3 line-clamp-2 border-t border-white/[0.05] pt-3 text-[11px] leading-relaxed text-[var(--muted)]">
+                                    {strategicLine.slice(0, 220)}
+                                    {strategicLine.length > 220 ? '…' : ''}
+                                </p>
+                            ) : null}
 
-                        <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                            {LEADERSHIP_CHIPS.map((c) => (
+                            <div className="mt-4 flex flex-wrap gap-2 border-t border-white/[0.05] pt-4">
+                                {LEADERSHIP_CHIPS.map((c) => (
+                                    <button
+                                        key={c.label}
+                                        type="button"
+                                        title={c.display}
+                                        disabled={loading}
+                                        onClick={() => void sendMessage(c.prompt, { displayText: c.display })}
+                                        className="rounded-full border border-white/[0.08] bg-white/[0.04] px-3.5 py-1.5 text-[11px] font-medium text-[var(--text)] transition hover:border-white/[0.14] hover:bg-white/[0.07] disabled:opacity-50"
+                                    >
+                                        {c.label}
+                                    </button>
+                                ))}
                                 <button
-                                    key={c.label}
                                     type="button"
-                                    title={c.display}
+                                    onClick={() => void requestExecutiveBriefing()}
                                     disabled={loading}
-                                    onClick={() => sendMessage(c.prompt, { displayText: c.display })}
-                                    className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-[10px] font-medium text-[var(--text)] transition hover:bg-white/[0.07] disabled:opacity-50"
+                                    className={`inline-flex items-center gap-1.5 rounded-full border border-white/[0.12] px-3.5 py-1.5 text-[11px] font-semibold text-[#0a0a0a] transition hover:opacity-90 disabled:opacity-50 ${ceo.accentBg}`}
                                 >
-                                    {c.label}
-                                </button>
-                            ))}
-                            <button
-                                type="button"
-                                onClick={() => void requestExecutiveBriefing()}
-                                disabled={loading}
-                                className="rounded-lg border border-brand-teal/30 bg-brand-teal/[0.08] px-2.5 py-1.5 text-[10px] font-semibold text-[var(--text)] transition hover:bg-brand-teal/[0.15] disabled:opacity-50"
-                            >
-                                <span className="flex items-center gap-1">
-                                    <Sparkles className="h-3 w-3 text-brand-teal" aria-hidden />
+                                    <Sparkles className="h-3.5 w-3.5" aria-hidden />
                                     Summarize
-                                </span>
-                            </button>
+                                </button>
+                            </div>
                         </div>
                     </div>
 

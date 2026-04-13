@@ -151,7 +151,7 @@ export function FloatingPABuddy() {
 
     const panel = open ? (
         <div
-            className="fixed z-[10050] flex w-[min(100vw-1.5rem,400px)] flex-col overflow-hidden rounded-2xl border border-zinc-500/90 bg-zinc-950 ring-1 ring-zinc-700/50"
+            className="executive-panel-strong fixed z-[10050] flex w-[min(100vw-1.5rem,400px)] flex-col overflow-hidden"
             style={{
                 ...anchorStyle,
                 maxHeight: 'min(72vh, 580px)',
@@ -204,7 +204,7 @@ export function FloatingPABuddy() {
                 onPointerMove={onPointerMoveFab}
                 onPointerUp={onPointerUpFab}
                 onPointerCancel={onPointerCancelFab}
-                className="group relative flex h-[3.5rem] w-[3.5rem] touch-none select-none items-center justify-center rounded-full border border-zinc-500/50 bg-zinc-950 text-zinc-100 shadow-[0_10px_40px_rgba(0,0,0,0.45)] ring-[3px] ring-zinc-800/90 transition hover:border-zinc-400/70 hover:ring-zinc-600/80 active:scale-[0.97] active:cursor-grabbing"
+                className="group relative flex h-[3.5rem] w-[3.5rem] touch-none select-none items-center justify-center rounded-full border border-zinc-500/50 bg-zinc-950 text-zinc-100 shadow-[0_10px_40px_rgba(0,0,0,0.45)] ring-[3px] ring-zinc-800/90 transition hover:-translate-y-px hover:border-zinc-400/70 hover:ring-zinc-600/80 active:scale-[0.97] active:cursor-grabbing"
                 aria-label={`Open ${PA_BUDDY_NAME}`}
             >
                 <span

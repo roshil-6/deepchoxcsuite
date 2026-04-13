@@ -48,14 +48,14 @@ const DESK_HF_ROLE: Record<(typeof DESK_ORDER)[number]['key'], HfDeskRole> = {
 /** Tinted shells — same vocabulary as executive dashboard “message” blocks */
 /** Neutral panels — readable hierarchy without tinted gradients or glow */
 const INTEL_OUTLINE = {
-    flow: 'border border-zinc-800/90 bg-zinc-950/35',
-    roles: 'border border-zinc-800/90 bg-zinc-950/35',
-    focus: 'border border-zinc-800/90 bg-zinc-950/35',
-    trace: 'border border-zinc-800/90 bg-zinc-950/35',
-    activity: 'border border-zinc-800/90 bg-zinc-950/35',
-    dataflow: 'border border-zinc-800/90 bg-zinc-950/35',
-    decisions: 'border border-zinc-800/90 bg-zinc-950/35',
-    reports: 'border border-zinc-800/90 bg-zinc-950/35',
+    flow: 'executive-panel',
+    roles: 'executive-panel',
+    focus: 'executive-panel',
+    trace: 'executive-panel',
+    activity: 'executive-panel',
+    dataflow: 'executive-panel',
+    decisions: 'executive-panel',
+    reports: 'executive-panel',
 } as const;
 
 type IntelOutlineKey = keyof typeof INTEL_OUTLINE;
@@ -145,8 +145,8 @@ function InsetPanel({
 }) {
     const base =
         variant === 'muted'
-            ? 'rounded-xl border border-zinc-800/80 bg-zinc-950/50 px-4 py-3 sm:px-5 sm:py-4'
-            : 'rounded-xl border border-zinc-800/80 bg-zinc-900/30 px-4 py-4 sm:px-5 sm:py-5';
+            ? 'executive-card px-4 py-3 sm:px-5 sm:py-4'
+            : 'executive-card px-4 py-4 sm:px-5 sm:py-5';
     return <div className={`${base} ${className}`}>{children}</div>;
 }
 
@@ -277,7 +277,7 @@ export function CsuiteIntelligenceGuide() {
         <div className="w-full min-w-0 bg-[#131314]">
                 <div className="mx-auto max-w-3xl space-y-6 px-4 pt-5 pb-16 sm:px-5 lg:max-w-5xl">
                     <header className="rounded-2xl border border-zinc-800/90 bg-zinc-950/40 px-4 py-5 sm:px-5">
-                        <SectionLabel>northROC LABS · Deepchox</SectionLabel>
+                        <SectionLabel>northROSC LABS · Deepchox</SectionLabel>
                         <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
                             AI-powered team for founders
                         </p>

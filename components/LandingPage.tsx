@@ -227,7 +227,7 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                                 <div className="flex flex-col items-center">
                                     <div className="flex items-baseline gap-4 sm:gap-5">
                                         <span className="font-sans text-[clamp(2.75rem,9vw,5rem)] font-black tracking-[0.05em] text-white">
-                                            north<span className="text-brand-teal">ROC</span>
+                                            north<span className="text-brand-teal">ROSC</span>
                                         </span>
                                         <span className="font-sans text-[clamp(1.5rem,5vw,2.5rem)] font-bold tracking-[0.25em] text-zinc-400">
                                             LABS

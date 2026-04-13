@@ -292,7 +292,7 @@ export function FloatingDexoOrb() {
 
             {/* Tooltip */}
             {hovered && (
-                <div className="pointer-events-none absolute bottom-full right-0 mb-3 whitespace-nowrap rounded-xl border border-slate-700/40 bg-zinc-950/95 px-3 py-1.5 text-[11px] font-medium text-slate-300 shadow-2xl backdrop-blur-sm">
+                <div className="executive-panel-strong pointer-events-none absolute bottom-full right-0 mb-3 whitespace-nowrap px-3 py-1.5 text-[11px] font-medium text-slate-300">
                     Open Dexo
                     <span className="ml-2 text-zinc-600">· drag to move</span>
                 </div>

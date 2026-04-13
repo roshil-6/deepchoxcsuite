@@ -315,7 +315,9 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     const venturesByMonth = useMemo(() => {
         const bucket = new Map<string, number>();
         for (const p of allProjects) {
+            if (typeof p.timestamp !== 'number' || Number.isNaN(p.timestamp)) continue;
             const d = new Date(p.timestamp);
+            if (Number.isNaN(d.getTime())) continue;
             const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
             bucket.set(key, (bucket.get(key) || 0) + 1);
         }
@@ -545,18 +547,23 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             <div className={`grid gap-5 text-left ${gridVentureClass}`}>
                                 {allProjects.map((project) => (
                                     <button
-                                        key={project.id}
+                                        key={project.id ?? `${project.name}-${project.timestamp}`}
                                         type="button"
                                         onClick={() => setActiveProject(project)}
-                                        className="group relative flex w-full items-center gap-4 rounded-2xl border border-white/[0.08] bg-white/[0.025] p-5 text-left shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.05)] transition-all hover:border-white/[0.13] hover:bg-white/[0.04] sm:p-5"
+                                        className="executive-card-interactive group relative flex w-full items-center gap-4 rounded-2xl p-5 text-left sm:p-5"
                                     >
-                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.05]">
+                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.05] transition-colors group-hover:bg-white/[0.08]">
                                             <Briefcase className="h-4.5 w-4.5 text-brand-muted" aria-hidden />
                                         </div>
                                         <div className="min-w-0 flex-1">
                                             <h3 className="truncate text-sm font-semibold text-brand-text">{project.name}</h3>
                                             <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-brand-muted">
-                                                <span>{new Date(project.timestamp).toLocaleDateString()}</span>
+                                                <span>
+                                                    {typeof project.timestamp === 'number' &&
+                                                    !Number.isNaN(project.timestamp)
+                                                        ? new Date(project.timestamp).toLocaleDateString()
+                                                        : '—'}
+                                                </span>
                                                 <span
                                                     className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-medium ${
                                                         project.strategy
@@ -573,7 +580,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 ))}
                             </div>
                         ) : (
-                            <div className="dash-msg border border-dashed border-white/[0.08] px-6 py-12 text-center">
+                            <div className="executive-empty dash-msg px-6 py-12 text-center">
                                 <p className="mx-auto max-w-sm text-sm leading-relaxed text-brand-muted">
                                     No ventures yet — use <span className="text-brand-muted">New venture</span> on the left or the
                                     card above (opens Personal Assistant).

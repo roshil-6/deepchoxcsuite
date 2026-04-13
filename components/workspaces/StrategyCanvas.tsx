@@ -69,7 +69,15 @@ export function StrategyCanvas() {
                         <div className="hidden text-right sm:block">
                             <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--muted)]">Last saved</p>
                             <p className="text-xs font-mono text-[var(--text)]">
-                                {activeProject ? new Date(activeProject.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Offline'}
+                                {activeProject
+                                    ? typeof activeProject.timestamp === 'number' &&
+                                      !Number.isNaN(activeProject.timestamp)
+                                        ? new Date(activeProject.timestamp).toLocaleTimeString([], {
+                                              hour: '2-digit',
+                                              minute: '2-digit',
+                                          })
+                                        : '—'
+                                    : 'Offline'}
                             </p>
                         </div>
                         <button

@@ -39,7 +39,7 @@ export function ReportCeremony({ onClose }: { onClose: () => void }) {
         // Brand Header
         doc.setTextColor(black[0], black[1], black[2]);
         doc.setFontSize(10);
-        doc.text("northROCS LABS · Deepchox — STRATEGIC REPORT", 20, 15);
+        doc.text("northROSC LABS · Deepchox — STRATEGIC REPORT", 20, 15);
         doc.text(`CONFIDENTIAL // ${new Date().toLocaleDateString()}`, 150, 15);
 
         // Title

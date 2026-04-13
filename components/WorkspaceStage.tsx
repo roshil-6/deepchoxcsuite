@@ -102,7 +102,7 @@ export function WorkspaceStage({
     };
 
     return (
-        <div className="relative flex w-full flex-1 flex-col">
+        <div className="relative flex min-h-0 w-full flex-1 flex-col">
             <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${shell.wash}`} />
             <div
                 className="pointer-events-none absolute inset-0"
@@ -113,7 +113,9 @@ export function WorkspaceStage({
                 }}
             />
 
-            <div className={`relative z-10 flex flex-1 flex-col animate-in fade-in duration-300 ${shell.immersive ? '' : 'py-3 sm:py-4'}`}>
+            <div
+                className={`relative z-10 flex min-h-0 flex-1 flex-col animate-in fade-in duration-300 ${shell.immersive ? '' : 'py-3 sm:py-4'}`}
+            >
                 {!shell.immersive && !hideWorkspaceHeader && (
                     <header className="mb-2 flex shrink-0 items-center justify-between gap-3 border-b border-white/[0.04] pb-2.5">
                         <h1 className="text-sm font-normal tracking-normal text-brand-text/95 sm:text-[15px]">
