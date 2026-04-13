@@ -26,5 +26,8 @@ npm-debug.log*
 *.swp
 *.swo
 
+# Local agent tooling (Claude Code worktrees contain nested .git — do not commit)
+.claude/
+
 # Vercel
 .vercel
