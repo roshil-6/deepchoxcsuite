@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, PanelRight } from 'lucide-react';
+import { ChevronRight, PanelRight, Sparkles } from 'lucide-react';
 import { useOffice } from '@/lib/OfficeContext';
 import { parseStrategy } from '@/lib/strategyDoc';
 import { computeExecutionScore } from '@/lib/ventureMetrics';
@@ -10,7 +10,8 @@ import { aggregateImpact } from '@/lib/impact/impactEngine';
 import { fromExecutionScore } from '@/lib/impact/adapters/dashboardAdapter';
 import { HealthWidget } from '@/components/ui/HealthWidget';
 import { AlertWidget } from '@/components/ui/AlertWidget';
-import { executiveSurfaceClass } from '@/components/ui/cardStyles';
+import { executiveSurfaceClass, executiveToolbarButtonClass } from '@/components/ui/cardStyles';
+import { EmptyStateGuide } from '@/components/ui/ContextualGuide';
 import { WORKSPACE_TITLES } from '@/components/ui/appNav';
 
 type Props = {
@@ -112,13 +113,14 @@ export function ContextPanel({
                     </motion.div>
                 </>
             ) : (
-                <div className={`${executiveSurfaceClass} p-5`}>
-                    <h3 className="text-sm font-medium text-[var(--text)]">Intelligence</h3>
-                    <p className="mt-2 text-sm text-[var(--text)]">No venture selected</p>
-                    <p className="mt-2 text-xs leading-relaxed text-[var(--muted)]">
-                        Select or create a venture to unlock company health, routed alerts, and execution tracking for this panel.
-                    </p>
-                </div>
+                <EmptyStateGuide
+                    title="Intelligence waits on a venture"
+                    description="Select or create a venture to unlock company health, routed alerts, and execution tracking in this panel."
+                    action="Open overview"
+                    onAction={onCloseMobile}
+                    className="min-h-[13rem] justify-center"
+                    icon={<Sparkles className="h-5 w-5" aria-hidden />}
+                />
             )}
             <div className={`${executiveSurfaceClass} p-5`}>
                 <h3 className="text-sm font-medium text-[var(--text)]">Active context</h3>
@@ -183,6 +185,19 @@ export function ContextPanel({
                             ) : (
                                 <ChevronRight className="h-4 w-4" strokeWidth={1.75} aria-hidden />
                             )}
+                        </button>
+                    </div>
+                ) : null}
+
+                {!desktopCollapsed ? (
+                    <div className="hidden shrink-0 items-center justify-between gap-2 border-b border-[var(--border)] px-4 py-3 lg:flex">
+                        <div>
+                            <p className="executive-kicker">Intelligence</p>
+                            <p className="mt-1 text-xs text-[var(--muted)]">Live venture health and routed desk context</p>
+                        </div>
+                        <button type="button" className={executiveToolbarButtonClass} onClick={onToggleDesktopCollapse}>
+                            <PanelRight className="h-3.5 w-3.5" aria-hidden />
+                            Collapse
                         </button>
                     </div>
                 ) : null}

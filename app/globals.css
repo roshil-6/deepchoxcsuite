@@ -6,12 +6,17 @@
   --bg: #131314;
   --surface: #161618;
   --surface-soft: #1c1c1f;
+  --surface-strong: #202024;
   --border: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.12);
   --text: #f5f7fa;
   --muted: #a0a7b4;
   /* Neutral executive grey — no blue cast */
   --accent: #c4c9d4;
   --accent-soft: rgba(196, 201, 212, 0.12);
+  --accent-strong: rgba(196, 201, 212, 0.2);
+  --shadow-soft: 0 12px 36px -24px rgba(0, 0, 0, 0.7);
+  --shadow-panel: 0 18px 50px -28px rgba(0, 0, 0, 0.72);
 }
 
 @theme {
@@ -39,7 +44,6 @@
   --font-serif: var(--font-playfair), ui-serif, Georgia, "Times New Roman", serif;
   --font-mono: "JetBrains Mono", "monospace";
 
-  --shadow-panel: none;
   --radius-organic: 12px;
   --radius-studio-sm: 8px;
 
@@ -128,6 +132,131 @@
     background: rgba(255, 255, 255, 0.03);
     color: var(--color-office-accent);
     box-shadow: none;
+  }
+
+  .executive-panel {
+    border-radius: 1rem;
+    border: 1px solid var(--border);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.01)),
+      var(--surface);
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .executive-panel-strong {
+    border-radius: 1rem;
+    border: 1px solid var(--border-strong);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012)),
+      var(--surface-strong);
+    box-shadow: var(--shadow-panel);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  .executive-card {
+    border-radius: 1rem;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.03);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  .executive-card-interactive {
+    border-radius: 1rem;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.03);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      background-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .executive-card-interactive:hover {
+    transform: translateY(-1px);
+    border-color: var(--border-strong);
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      var(--shadow-soft);
+  }
+
+  .executive-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.04);
+    padding: 0.375rem 0.75rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--text);
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .executive-pill:hover {
+    border-color: var(--border-strong);
+    background: rgba(255, 255, 255, 0.07);
+  }
+
+  .executive-toolbar-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.875rem;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.04);
+    padding: 0.625rem 0.875rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text);
+    transition:
+      transform 160ms ease,
+      background-color 160ms ease,
+      border-color 160ms ease,
+      color 160ms ease;
+  }
+
+  .executive-toolbar-button:hover {
+    transform: translateY(-1px);
+    border-color: var(--border-strong);
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .executive-toolbar-button:disabled {
+    transform: none;
+    opacity: 0.55;
+  }
+
+  .executive-toolbar-button-accent {
+    background: var(--accent);
+    color: #111214;
+    border-color: transparent;
+  }
+
+  .executive-toolbar-button-accent:hover {
+    background: #d2d6df;
+    color: #111214;
+  }
+
+  .executive-kicker {
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .executive-empty {
+    border-radius: 1rem;
+    border: 1px dashed rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.025);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
   }
 
   /* Flat cards — border + fill only (AI Studio / Gemini surfaces) */

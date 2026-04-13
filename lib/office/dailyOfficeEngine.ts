@@ -36,10 +36,21 @@ function nearestEventDeadline(project: Project): number {
 /**
  * Central orchestrator — safe to call on app open, dashboard load, and after major venture edits.
  * `ventureId` matches Dexie `Project.id` (stringified for API symmetry).
+ * `projectHint` — when the active venture object is already in memory (e.g. just saved), use it if
+ * the ID matches so we never treat a valid venture as “missing” when `allProjects` is briefly stale.
  */
-export async function runDailyOfficeCycle(ventureId: string, allProjects: Project[]): Promise<DailyOfficeCycleResult> {
-    const project =
-        allProjects.find((p) => p.id !== undefined && String(p.id) === String(ventureId)) ?? null;
+export async function runDailyOfficeCycle(
+    ventureId: string,
+    allProjects: Project[],
+    projectHint?: Project | null
+): Promise<DailyOfficeCycleResult> {
+    const hintOk =
+        projectHint &&
+        projectHint.id !== undefined &&
+        String(projectHint.id) === String(ventureId);
+    const project = hintOk
+        ? projectHint
+        : allProjects.find((p) => p.id !== undefined && String(p.id) === String(ventureId)) ?? null;
 
     if (!project) {
         const emptyBrief = {

@@ -33,6 +33,7 @@ import {
 import { DeskShell, DeskEmpty } from '@/components/workspaces/DeskShell';
 import { deskHeadline, deskHelpText } from '@/lib/researchStaffLabels';
 import { DeskMsgUser, DeskMsgAssistant, DeskFocusToolbar } from '@/components/workspaces/DeskBlockFocusUI';
+import { EmptyStateGuide, GuideHint } from '@/components/ui/ContextualGuide';
 
 const COLUMNS: { id: KanbanTask['status']; label: string }[] = [
     { id: 'todo', label: 'Backlog' },
@@ -253,7 +254,15 @@ export function ProductKanban() {
     );
 
     if (!activeProject) {
-        return <DeskEmpty>Select a venture to open Research product and delivery.</DeskEmpty>;
+        return (
+            <DeskEmpty>
+                <EmptyStateGuide
+                    title="Open a venture to run the product desk"
+                    description="Execution board, roadmap, war room, and desk documents all use the active venture."
+                    icon={<LayoutGrid className="h-5 w-5" aria-hidden />}
+                />
+            </DeskEmpty>
+        );
     }
 
     const intent = pd.intent?.trim() || 'Pin product intent: what you ship next and for whom.';
@@ -547,6 +556,13 @@ export function ProductKanban() {
                         </>
                     ) : (
                         <div className="space-y-3">
+                            <GuideHint
+                                id="pm-hub-guide"
+                                when
+                                variant="info"
+                                message="Open a product block to work in a focused thread. The desk chat below will stay pinned to that context until you go back."
+                                dismissible={false}
+                            />
                             <div className="flex justify-start">
                                 <div className="max-w-[min(100%,26rem)] rounded-2xl rounded-bl-md border border-white/[0.08] bg-zinc-950/35 px-3.5 py-2.5 text-left ring-1 ring-white/[0.04]">
                                     <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500">Suite</p>
@@ -561,7 +577,7 @@ export function ProductKanban() {
                                     <button
                                         type="button"
                                         onClick={() => openPmSection(item.id)}
-                                        className="group max-w-[min(100%,30rem)] animate-in fade-in slide-in-from-bottom-1 rounded-2xl rounded-bl-md border border-white/[0.08] bg-zinc-950/40 px-3.5 py-3 text-left ring-1 ring-white/[0.04] transition duration-300 fill-mode-both hover:border-white/[0.14] hover:bg-zinc-900/45"
+                                        className="group max-w-[min(100%,30rem)] animate-in fade-in slide-in-from-bottom-1 executive-card-interactive rounded-2xl rounded-bl-md px-3.5 py-3 text-left fill-mode-both duration-300"
                                         style={{ animationDelay: `${i * 55}ms` }}
                                     >
                                         <div className="flex items-start gap-2.5">

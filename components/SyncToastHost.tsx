@@ -35,7 +35,7 @@ export function SyncToastHost() {
         onClick={() => setTraceOpen(false)}
       >
         <div
-          className="studio-notice max-h-[min(70vh,520px)] w-full max-w-md overflow-y-auto p-4"
+          className="executive-panel-strong max-h-[min(70vh,520px)] w-full max-w-md overflow-y-auto p-4"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-start justify-between gap-2">
@@ -80,7 +80,7 @@ export function SyncToastHost() {
         role="status"
         className="pointer-events-auto fixed bottom-6 left-1/2 z-[100] flex max-w-lg -translate-x-1/2 animate-in fade-in slide-in-from-bottom-4 duration-300"
       >
-        <div className="studio-notice flex flex-col gap-2 px-4 py-3">
+        <div className="executive-panel-strong flex flex-col gap-2 px-4 py-3">
           <div className="flex items-start gap-3">
             <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand-teal" aria-hidden />
             <div className="min-w-0 flex-1">

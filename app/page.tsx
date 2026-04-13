@@ -26,8 +26,9 @@ export default function Home() {
   const createVentureWithName = async (name: string) => {
     try {
       const shell = emptyVentureShell(name || undefined);
-      const id = await saveProject(shell as Project);
-      const saved = { ...shell, id, timestamp: Date.now() } as Project;
+      const ts = Date.now();
+      const id = await saveProject({ ...shell, timestamp: ts } as Project);
+      const saved = { ...shell, id, timestamp: ts } as Project;
       const list = await getAllProjects();
       setAllProjects(list);
       setActiveProject(saved);

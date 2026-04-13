@@ -18,6 +18,9 @@ export type DeskShellProps = {
     bodyFlush?: boolean;
     /** Extra classes on the scroll body (e.g. extra bottom padding above a dock) */
     bodyClassName?: string;
+    /** Left accent bar in the desk header (default neutral) */
+    headerSpineClassName?: string;
+    headerClassName?: string;
 };
 
 /**
@@ -35,14 +38,16 @@ export function DeskShell({
     className,
     bodyFlush,
     bodyClassName,
+    headerSpineClassName = 'bg-white/20',
+    headerClassName,
 }: DeskShellProps) {
     return (
-        <div className={`flex w-full min-w-0 flex-col bg-[var(--color-brand-bg)] ${className ?? ''}`}>
+        <div className={`executive-panel flex min-h-0 w-full min-w-0 flex-col overflow-hidden bg-[var(--color-brand-bg)] ${className ?? ''}`}>
             {/* ── Desk header ── */}
-            <header className="shrink-0 border-b border-white/[0.06] px-5 py-4 sm:px-6 sm:py-5">
+            <header className={`shrink-0 border-b border-white/[0.06] bg-white/[0.02] px-5 py-4 sm:px-6 sm:py-5 ${headerClassName ?? ''}`}>
                 <div className="flex items-start gap-3">
                     {/* Accent indicator — subtle presence of the AI role */}
-                    <div className="mt-1 h-5 w-0.5 shrink-0 rounded-full bg-white/20" aria-hidden />
+                    <div className={`mt-1 h-10 w-1 shrink-0 rounded-full ${headerSpineClassName}`} aria-hidden />
                     <div className="min-w-0 flex-1">
                         {eyebrow ? (
                             <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--muted)]">
@@ -62,7 +67,7 @@ export function DeskShell({
                     </div>
                 </div>
                 {tabs ? (
-                    <div className="ml-5 mt-4 flex flex-wrap gap-1 border-t border-white/[0.05] pt-3">{tabs}</div>
+                    <div className="ml-5 mt-4 flex flex-wrap gap-1.5 border-t border-white/[0.05] pt-3">{tabs}</div>
                 ) : null}
             </header>
 
@@ -73,7 +78,7 @@ export function DeskShell({
 
             {/* ── Desk footer ── */}
             {footer ? (
-                <div className="shrink-0 border-t border-white/[0.06] bg-white/[0.01] px-5 py-3 sm:px-6">
+                <div className="shrink-0 border-t border-white/[0.06] bg-white/[0.02] px-5 py-3 sm:px-6">
                     {footer}
                 </div>
             ) : null}
@@ -88,22 +93,24 @@ export function DeskTabButton({
     children,
     icon,
     type = 'button',
+    className,
 }: {
     active: boolean;
     onClick: () => void;
     children: React.ReactNode;
     icon?: React.ReactNode;
     type?: 'button' | 'submit';
+    className?: string;
 }) {
     return (
         <button
             type={type}
             onClick={onClick}
-            className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
+            className={`inline-flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs font-medium transition-all ${
                 active
-                    ? 'border-white/[0.1] bg-white/[0.06] text-[var(--text)]'
-                    : 'border-transparent bg-transparent text-[var(--muted)] hover:border-white/[0.07] hover:bg-white/[0.04] hover:text-[var(--text)]'
-            }`}
+                    ? 'border-white/[0.12] bg-white/[0.07] text-[var(--text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
+                    : 'border-transparent bg-transparent text-[var(--muted)] hover:-translate-y-px hover:border-white/[0.07] hover:bg-white/[0.04] hover:text-[var(--text)]'
+            } ${className ?? ''}`}
         >
             {icon}
             {children}
@@ -114,7 +121,7 @@ export function DeskTabButton({
 export function DeskEmpty({ children, className }: { children: React.ReactNode; className?: string }) {
     return (
         <div
-            className={`flex min-h-[min(50vh,24rem)] items-center justify-center p-8 text-sm text-[var(--muted)] ${className ?? ''}`}
+            className={`executive-empty flex min-h-[min(50vh,24rem)] items-center justify-center p-8 text-sm text-[var(--muted)] ${className ?? ''}`}
         >
             {children}
         </div>

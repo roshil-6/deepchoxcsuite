@@ -56,7 +56,7 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
 
     return (
         <div className="flex h-full min-h-0 w-full flex-col bg-[var(--bg)] pb-14 text-[var(--text)] lg:pb-0">
-            <header className="flex shrink-0 items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--bg)] px-4 py-3 sm:px-5 lg:hidden">
+            <header className="executive-panel-strong mx-3 mt-3 flex shrink-0 items-center justify-between gap-3 px-4 py-3 sm:mx-4 sm:px-5 lg:hidden">
                 <div className="flex min-w-0 items-center gap-2">
                     <button
                         type="button"
@@ -86,7 +86,7 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
                     </button>
                     <button
                         type="button"
-                        className="rounded-full bg-white/[0.05] px-3 py-2 text-[11px] font-medium text-[var(--text)] transition-colors hover:bg-white/[0.08] lg:hidden"
+                        className="executive-pill lg:hidden"
                         onClick={() => setMobileContext(true)}
                     >
                         <span className="inline-flex items-center gap-1.5">
@@ -130,7 +130,7 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
                                 initial={{ x: -320 }}
                                 animate={{ x: 0 }}
                                 exit={{ x: -320 }}
-                                transition={{ type: 'spring', stiffness: 400, damping: 40 }}
+                                transition={{ type: 'spring', stiffness: 360, damping: 34 }}
                                 className="fixed inset-y-3 left-3 z-[70] flex h-[calc(100%-1.5rem)] w-[min(20rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-2xl border border-white/[0.1] bg-[var(--bg)]/95 shadow-[0_12px_40px_-8px_rgba(0,0,0,0.5)] backdrop-blur-xl lg:hidden"
                             >
                                 <div className="flex shrink-0 items-center justify-end border-b border-white/[0.06] p-2">
@@ -156,13 +156,20 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
                     )}
                 </AnimatePresence>
 
-                <WorkspacePanel reserveBottom={Boolean(bottomBar)}>
+                <WorkspacePanel
+                    reserveBottom={Boolean(bottomBar)}
+                    fillViewport={activeRoom === 'personal_assistant'}
+                >
                     <motion.div
                         key={activeRoom}
                         initial={{ opacity: 0, y: 4 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.25 }}
-                        className="flex min-h-full flex-col"
+                        transition={{ duration: 0.3, ease: 'easeOut' }}
+                        className={
+                            activeRoom === 'personal_assistant'
+                                ? 'flex min-h-0 min-w-0 flex-1 flex-col'
+                                : 'flex min-h-full flex-col'
+                        }
                     >
                         {children}
                     </motion.div>
@@ -179,11 +186,11 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
 
             {bottomBar}
 
-            <nav className="fixed bottom-0 left-0 right-0 z-40 flex border-t border-[var(--border)] bg-[var(--bg)] px-2 py-1.5 lg:hidden">
+            <nav className="executive-panel-strong fixed bottom-2 left-2 right-2 z-40 flex px-2 py-1.5 lg:hidden">
                 <button
                     type="button"
                     onClick={() => setMobileNav(true)}
-                    className="flex flex-1 flex-col items-center gap-0.5 py-1.5 text-[10px] font-medium text-[var(--muted)]"
+                    className="flex flex-1 flex-col items-center gap-0.5 rounded-xl py-1.5 text-[10px] font-medium text-[var(--muted)] transition-colors hover:bg-white/[0.05] hover:text-[var(--text)]"
                 >
                     <Menu className="h-5 w-5" />
                     Desks
@@ -191,7 +198,7 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
                 <button
                     type="button"
                     onClick={() => setMobileContext(true)}
-                    className="flex flex-1 flex-col items-center gap-0.5 py-1.5 text-[10px] font-medium text-[var(--muted)]"
+                    className="flex flex-1 flex-col items-center gap-0.5 rounded-xl py-1.5 text-[10px] font-medium text-[var(--muted)] transition-colors hover:bg-white/[0.05] hover:text-[var(--text)]"
                 >
                     <PanelRight className="h-5 w-5" />
                     Intel

@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Trash2, Chec
 import { KanbanTask } from '@/lib/db';
 import { parseStrategy, serializeStrategy } from '@/lib/strategyDoc';
 import { TimelinePhaseSetter } from '@/components/workspaces/TimelinePhaseSetter';
+import { EmptyStateGuide, GuideHint } from '@/components/ui/ContextualGuide';
 
 type CalendarSection = 'schedule' | 'phases';
 
@@ -33,6 +34,7 @@ export function CalendarView() {
     const [selectedDateForEvent, setSelectedDateForEvent] = useState<Date | null>(null);
     const [newEventTitle, setNewEventTitle] = useState('');
     const [newEventType, setNewEventType] = useState<'milestone' | 'meeting' | 'deadline' | 'task'>('meeting');
+    const [inlineNotice, setInlineNotice] = useState<string | null>(null);
 
     const [kanbanTasks, setKanbanTasks] = useState<KanbanTask[]>([]);
 
@@ -79,7 +81,7 @@ export function CalendarView() {
 
     const handleOpenModal = (day: number) => {
         if (!activeProject) {
-            alert('Please select or create a project to add events/tasks.');
+            setInlineNotice('Select or create a venture first to add events and tasks.');
             return;
         }
         const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
@@ -107,6 +109,10 @@ export function CalendarView() {
         syncKanbanFromProject();
     }, [syncKanbanFromProject]);
 
+    useEffect(() => {
+        setInlineNotice(null);
+    }, [activeProject?.id, section]);
+
     const saveKanban = (tasks: KanbanTask[]) => {
         const normalized = tasks.map(normalizeKanbanTask);
         setKanbanTasks(normalized);
@@ -119,7 +125,7 @@ export function CalendarView() {
 
     const addTask = (status: KanbanTask['status']) => {
         if (!activeProject) {
-            alert('Please select or create a venture to add tasks.');
+            setInlineNotice('Select or create a venture first to add tasks.');
             return;
         }
         const title = prompt('New task title:');
@@ -219,6 +225,16 @@ export function CalendarView() {
                             Strategy phases
                         </button>
                     </div>
+                    {inlineNotice ? (
+                        <GuideHint
+                            id="calendar-inline-notice"
+                            when
+                            variant="warning"
+                            message={inlineNotice}
+                            dismissible={false}
+                            className="mt-3"
+                        />
+                    ) : null}
                 </div>
                 {section === 'schedule' ? (
                     <div className="flex shrink-0 items-center gap-1 rounded-lg border border-brand-border bg-brand-panel px-1 py-1">
@@ -247,9 +263,12 @@ export function CalendarView() {
 
             {section === 'phases' ? (
                 !activeProject ? (
-                    <div className="shrink-0 py-10 text-center text-sm text-brand-muted">
-                        Select or create a venture to edit strategy phases.
-                    </div>
+                    <EmptyStateGuide
+                        title="Select a venture to edit phases"
+                        description="Roadmap horizons and phase dates are stored on the active venture strategy."
+                        icon={<Layers className="h-5 w-5" aria-hidden />}
+                        className="shrink-0 py-10"
+                    />
                 ) : (
                     <TimelinePhaseSetter
                         variant="page"

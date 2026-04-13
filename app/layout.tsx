@@ -31,9 +31,9 @@ const syne = Syne({
 });
 
 export const metadata: Metadata = {
-  title: 'Deepchox — northROCS LABS',
+  title: 'Deepchox — northROSC LABS',
   description:
-    'northROCS LABS presents Deepchox — AI-powered team for founders. Strategy, product, finance, market, and GTM roles as teammates on one venture record.',
+    'northROSC LABS presents Deepchox — AI-powered team for founders. Strategy, product, finance, market, and GTM roles as teammates on one venture record.',
   icons: {
     icon: [{ url: '/deepchox-mark.svg', type: 'image/svg+xml' }],
     apple: '/deepchox-mark.svg',

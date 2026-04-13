@@ -85,7 +85,7 @@ export function StaffNotificationCenter({ className = '' }: { className?: string
       ref={panelRef}
       role="dialog"
       aria-modal="true"
-      className="fixed z-[200] max-h-[min(85vh,calc(100vh-16px))] flex flex-col overflow-hidden rounded-lg border border-brand-border bg-brand-panel shadow-[0_2px_8px_rgba(0,0,0,0.35)]"
+      className="executive-panel-strong fixed z-[200] max-h-[min(85vh,calc(100vh-16px))] flex flex-col overflow-hidden"
       style={{
         top: panelPos.top,
         left: panelPos.left,
@@ -107,7 +107,7 @@ export function StaffNotificationCenter({ className = '' }: { className?: string
         ) : (
           <ul className="divide-y divide-brand-border">
             {staffAttentionPending.map((item) => (
-              <li key={item.id} className="px-3 py-3">
+              <li key={item.id} className="px-3 py-3 transition-colors hover:bg-white/[0.03]">
                 <p className="text-[11px] font-medium text-brand-muted">{item.role.replace('_', ' ')}</p>
                 <p className="mt-1 text-[13px] font-medium text-brand-text">{item.title}</p>
                 <p className="mt-1 text-[12px] leading-snug text-brand-muted">{item.message}</p>
@@ -118,7 +118,7 @@ export function StaffNotificationCenter({ className = '' }: { className?: string
                       switchRoom(deskRouteForRole(item.role));
                       setOpen(false);
                     }}
-                    className="inline-flex items-center gap-1 rounded-md border border-brand-border bg-brand-input px-2 py-1 text-[11px] text-brand-text hover:bg-brand-card"
+                    className="executive-toolbar-button rounded-lg px-2 py-1 text-[11px]"
                   >
                     <ExternalLink className="h-3 w-3" aria-hidden />
                     Open desk
@@ -145,7 +145,7 @@ export function StaffNotificationCenter({ className = '' }: { className?: string
         ref={buttonRef}
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="relative rounded-lg p-2 text-brand-muted transition-colors hover:bg-white/[0.06] hover:text-brand-text"
+        className="relative rounded-xl p-2 text-brand-muted transition-colors hover:bg-white/[0.06] hover:text-brand-text"
         aria-label={`Staff notifications${count ? `, ${count} pending` : ''}`}
         aria-expanded={open}
         aria-haspopup="dialog"

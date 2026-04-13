@@ -38,13 +38,13 @@ function DeskSyncCorner({ room }: { room: string }) {
     return (
         <div className={`pointer-events-none absolute z-30 ${cornerRightClass}`}>
             <div className="pointer-events-auto flex flex-col items-end gap-1.5">
-                <div className="flex items-center gap-1 rounded-lg border border-white/[0.1] bg-brand-panel/95 px-1 py-1 shadow-lg shadow-black/20 backdrop-blur-md sm:gap-1.5 sm:rounded-xl sm:px-1.5">
+                <div className="executive-panel-strong flex items-center gap-1 px-1 py-1 sm:gap-1.5 sm:px-1.5">
                     <button
                         type="button"
                         disabled={staffBusy}
                         onClick={() => void runAgentStaffSync()}
                         title="Run full AI staff sync (all desks)"
-                        className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-[10px] font-medium text-brand-text transition hover:bg-white/[0.06] disabled:opacity-45 sm:text-[11px]"
+                        className="executive-toolbar-button rounded-lg px-2 py-1.5 text-[10px] sm:text-[11px]"
                     >
                         <RefreshCw className={`h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5 ${staffBusy ? 'animate-spin' : ''}`} aria-hidden />
                         <span className="max-w-[5.5rem] truncate sm:max-w-none">{staffBusy ? 'Syncing…' : 'Sync now'}</span>
@@ -58,14 +58,14 @@ function DeskSyncCorner({ room }: { room: string }) {
                             void syncRole(hfRole);
                         }}
                         title="Sync this desk via Hugging Face role model"
-                        className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-[10px] font-medium text-brand-text transition hover:bg-white/[0.06] disabled:opacity-45 sm:text-[11px]"
+                        className="executive-toolbar-button rounded-lg px-2 py-1.5 text-[10px] sm:text-[11px]"
                     >
                         <RefreshCw className={`h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5 ${deskBusy ? 'animate-spin' : ''}`} aria-hidden />
                         <span className="max-w-[5.5rem] truncate sm:max-w-none">{deskBusy ? 'Desk…' : 'Sync desk'}</span>
                     </button>
                 </div>
                 {syncResult ? (
-                    <div className="w-[min(calc(100vw-1.5rem),18rem)] rounded-lg border border-white/[0.1] bg-brand-panel/98 px-2.5 py-2 shadow-lg backdrop-blur-md sm:w-72">
+                    <div className="executive-panel-strong w-[min(calc(100vw-1.5rem),18rem)] px-2.5 py-2 sm:w-72">
                         <p className="max-h-32 overflow-y-auto text-[11px] leading-relaxed text-brand-muted">{syncResult}</p>
                         <ModelAttribution model={syncModel} />
                     </div>
@@ -104,7 +104,7 @@ export function OperationalDesk({ children }: { children: React.ReactNode }) {
             <DeskSyncCorner room={activeRoom} />
             {waiting.length > 0 && (
                 <div className="pointer-events-none absolute left-2 top-2 z-20 max-w-[min(calc(100vw-8rem),22rem)] sm:left-3 sm:top-3 sm:max-w-sm">
-                    <div className="pointer-events-auto rounded-lg border border-brand-border bg-brand-panel/95 p-2.5 shadow-lg shadow-black/15 backdrop-blur-md sm:p-3">
+                    <div className="executive-panel-strong pointer-events-auto p-2.5 sm:p-3">
                         <div className="flex items-start gap-2">
                             <Bell className="mt-0.5 h-4 w-4 shrink-0 text-brand-teal" aria-hidden />
                             <div className="min-w-0 flex-1 space-y-2">

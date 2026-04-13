@@ -702,12 +702,16 @@ export function DexoRoom() {
     // ── Empty state ──
     if (!activeProject?.id) {
         return (
-            <div className="flex h-full items-center justify-center bg-[var(--bg)]">
-                <div className="space-y-4 text-center">
+            <div className="flex h-full items-center justify-center bg-[var(--bg)] px-6">
+                <div className="executive-panel max-w-sm space-y-4 px-6 py-8 text-center">
                     <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-slate-700/40 bg-slate-900/30">
                         <DexoCanvas size={36} state="idle" />
                     </div>
-                    <p className="text-[13px] text-slate-600">Select a venture to activate Dexo.</p>
+                    <p className="text-[14px] font-medium text-zinc-300">Create a venture first</p>
+                    <p className="text-[13px] leading-relaxed text-slate-500">
+                        Name your venture from the left rail or overview, then come back—Dexo needs a saved workspace
+                        before it can analyze.
+                    </p>
                 </div>
             </div>
         );
@@ -717,7 +721,7 @@ export function DexoRoom() {
     if (!showMain) {
         return (
             <div className="flex h-full flex-col items-center justify-center bg-[var(--bg)]">
-                <div className="flex flex-col items-center gap-7 text-center">
+                <div className="executive-panel-strong flex flex-col items-center gap-7 px-8 py-10 text-center">
                     <VoiceOrb state="idle" onClick={() => {
                         speak("I am Dexo. Let's analyze your venture and build it together.");
                     }} />
@@ -727,7 +731,7 @@ export function DexoRoom() {
                     </div>
                     <button type="button"
                         onClick={() => { setShowIntro(false); run('analyze'); }}
-                        className="flex items-center gap-2.5 rounded-2xl border border-slate-700/40 bg-slate-900/40 px-7 py-3 text-[13px] font-medium text-slate-300/90 transition hover:border-slate-600/50 hover:bg-slate-800/50 hover:text-slate-100">
+                        className="executive-toolbar-button executive-toolbar-button-accent px-7 py-3 text-[13px]">
                         <Zap className="h-4 w-4 text-slate-400" />
                         Analyze venture
                     </button>
@@ -805,20 +809,20 @@ export function DexoRoom() {
                                 <div className="flex flex-wrap items-center justify-center gap-2">
                                     <button type="button"
                                         onClick={() => setIsMuted((m) => !m)}
-                                        className="flex items-center gap-1.5 rounded-full border border-white/[0.07] bg-white/[0.03] px-3 py-1.5 text-[11px] text-zinc-500 transition hover:border-white/[0.14] hover:text-zinc-300">
+                                        className="executive-pill px-3 py-1.5 text-[11px] text-zinc-400">
                                         {isMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
                                         {isMuted ? 'Unmute' : 'Mute'}
                                     </button>
                                     {!isMuted && !isSpeaking && (
                                         <button type="button"
                                             onClick={() => speak(`${report.headline}. ${report.summary}`)}
-                                            className="flex items-center gap-1.5 rounded-full border border-white/[0.07] bg-white/[0.03] px-3 py-1.5 text-[11px] text-zinc-500 transition hover:border-white/[0.14] hover:text-zinc-300">
+                                            className="executive-pill px-3 py-1.5 text-[11px] text-zinc-400">
                                             <Volume2 className="h-3.5 w-3.5" /> Read again
                                         </button>
                                     )}
                                     <button type="button"
                                         onClick={() => run('analyze')} disabled={loading}
-                                        className="flex items-center gap-1.5 rounded-full border border-white/[0.07] bg-white/[0.03] px-3 py-1.5 text-[11px] text-zinc-500 transition hover:border-white/[0.14] hover:text-zinc-300 disabled:opacity-40">
+                                        className="executive-pill px-3 py-1.5 text-[11px] text-zinc-400 disabled:opacity-40">
                                         <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
                                         {loading ? 'Analyzing…' : 'Re-analyze'}
                                     </button>
@@ -863,7 +867,7 @@ export function DexoRoom() {
                                     <div className="h-px bg-white/[0.04]" />
                                     {report.nextActions.map((a, i) => (
                                         <div key={`action-${i}`} className="flex items-baseline gap-3.5">
-                                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/[0.08] text-[9px] font-bold text-zinc-700">{a.priority}</span>
+                                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.04] text-[9px] font-bold text-zinc-300">{a.priority}</span>
                                             <p className="min-w-0 flex-1 text-[13px] leading-snug text-zinc-300">{a.action}</p>
                                             <span className={`shrink-0 text-[10px] font-medium ${TFC[a.timeframe] ?? 'text-zinc-600'}`}>{a.timeframe}</span>
                                         </div>
@@ -898,7 +902,7 @@ export function DexoRoom() {
                                     {report.followUp.map((q, i) => (
                                         <button key={`fu-${i}`} type="button"
                                             onClick={() => run('converse', q)} disabled={loading}
-                                            className="rounded-full border border-slate-700/40 px-4 py-2 text-[12px] text-slate-500 transition hover:border-slate-600/50 hover:bg-slate-900/40 hover:text-slate-300 disabled:opacity-40">
+                                            className="executive-pill px-4 py-2 text-[12px] text-slate-400 disabled:opacity-40">
                                             {q}
                                         </button>
                                     ))}
@@ -911,7 +915,7 @@ export function DexoRoom() {
                             <VoiceOrb state={orbState} onClick={() => run('analyze')} />
                             <p className="text-[13px] text-zinc-600">Click the orb or tap Analyze to begin.</p>
                             <button type="button" onClick={() => run('analyze')}
-                                className="flex items-center gap-2 rounded-2xl border border-slate-700/40 bg-slate-900/40 px-6 py-3 text-[12px] font-medium text-slate-300/80 transition hover:border-slate-600/40 hover:bg-slate-800/40 hover:text-slate-200">
+                                className="executive-toolbar-button executive-toolbar-button-accent px-6 py-3 text-[12px]">
                                 <Zap className="h-4 w-4" /> Analyze
                             </button>
                         </div>
@@ -923,11 +927,11 @@ export function DexoRoom() {
             {/* ── Input bar — always visible once intro dismissed ── */}
             <div className="shrink-0 border-t border-white/[0.05] bg-[var(--bg)] px-5 py-3">
                 <div className="mx-auto max-w-[660px]">
-                    <div className={`flex items-end gap-1 rounded-xl border transition-all duration-300 ${
+                    <div className={`executive-panel-strong flex items-end gap-1 px-1.5 py-1 transition-all duration-300 ${
                         isListening  ? 'border-sky-400/40 bg-sky-950/20 shadow-[0_0_0_1px_rgba(56,189,248,0.15)]' :
                         isSpeaking   ? 'border-slate-500/30 bg-slate-900/20' :
                         isProcessing ? 'border-amber-400/25 bg-amber-950/10' :
-                                       'border-white/[0.06] bg-white/[0.02] focus-within:border-white/[0.10]'
+                                       'focus-within:border-white/[0.10]'
                     }`}>
                         {/* Mic — tap to speak/interrupt */}
                         <button type="button" onMouseDown={handleMicPress}
@@ -935,7 +939,7 @@ export function DexoRoom() {
                             className={`mb-1 ml-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all ${
                                 isListening ? 'bg-sky-500/25 text-sky-300 ring-1 ring-sky-400/30' :
                                 isSpeaking  ? 'bg-red-500/15 text-red-400 ring-1 ring-red-400/20' :
-                                              'text-slate-600 hover:bg-white/[0.06] hover:text-slate-400'
+                                              'text-slate-500 hover:bg-white/[0.06] hover:text-slate-300'
                             }`}>
                             {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                         </button>
@@ -959,13 +963,13 @@ export function DexoRoom() {
 
                         {isSpeaking ? (
                             <button type="button" onClick={stopSpeaking} title="Stop speaking"
-                                className="mb-1 mr-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-600 transition hover:text-red-400">
+                                className="mb-1 mr-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 transition hover:bg-white/[0.05] hover:text-red-400">
                                 <Square className="h-3.5 w-3.5" />
                             </button>
                         ) : (
                             <button type="button" onClick={handleSend}
                                 disabled={!inputText.trim() || loading}
-                                className="mb-1 mr-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-600 transition hover:text-slate-300 disabled:opacity-25">
+                                className="mb-1 mr-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--accent)] text-[#131314] transition hover:opacity-90 disabled:opacity-25">
                                 <Send className="h-3.5 w-3.5" />
                             </button>
                         )}

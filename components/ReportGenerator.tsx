@@ -49,7 +49,7 @@ export function generatePDFReport({ project, fileName }: ReportGeneratorProps) {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(16);
     doc.setTextColor(44, 27, 24); // espresso
-    doc.text('northROCS LABS · Deepchox', margin, 15);
+    doc.text('northROSC LABS · Deepchox', margin, 15);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
@@ -146,7 +146,11 @@ export function generatePDFReport({ project, fileName }: ReportGeneratorProps) {
   doc.setFontSize(9);
   doc.setTextColor(44, 27, 24);
   doc.text(
-    `Generated: ${new Date(project.timestamp).toLocaleDateString()} | Status: Complete`,
+    `Generated: ${
+      typeof project.timestamp === 'number' && !Number.isNaN(project.timestamp)
+        ? new Date(project.timestamp).toLocaleDateString()
+        : '—'
+    } | Status: Complete`,
     margin + 3,
     yPosition + 7
   );
@@ -217,7 +221,7 @@ export function generatePDFReport({ project, fileName }: ReportGeneratorProps) {
     doc.setFontSize(8);
     doc.setTextColor(44, 27, 24, 100);
     doc.text(
-      'northROCS LABS · Deepchox © 2026 | Zero-Data, Privacy-First Business Intelligence',
+      'northROSC LABS · Deepchox © 2026 | Zero-Data, Privacy-First Business Intelligence',
       pageWidth / 2,
       pageHeight - 8,
       { align: 'center' }

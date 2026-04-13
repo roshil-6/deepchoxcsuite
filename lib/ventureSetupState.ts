@@ -22,4 +22,8 @@ export function isVentureUnsettled(p: Project): boolean {
     return true;
 }
 
-export const PA_WELCOME_MESSAGE = `Hi — I'm Relay, your "PA". Describe what you're building (idea, stage, audience). I'll help shape your record; ask me to update any desk from here or the floating chat.`;
+export const PA_WELCOME_MESSAGE = `I'm Relay — your Personal Assistant for this venture.
+
+Start by explaining your venture in your own words: what you're building, who it's for, what stage you're in (idea, MVP, revenue, scale), and what you need most right now — clarity, execution, fundraising, or something else.
+
+From that, I'll keep your strategy, board, and calendar aligned. You can also ask me to capture updates, draft messages, or summarize how the company looks across desks.`;
