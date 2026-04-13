@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { useOffice } from '@/lib/OfficeContext';
 import { StrategyNotebook } from './workspaces/StrategyNotebook';
 import { ProductKanban } from './workspaces/ProductKanban';
@@ -11,7 +10,7 @@ import { Dashboard } from './Dashboard';
 import { ReportsLibrary } from './ReportsLibrary';
 
 import { FoundersOffice } from './FoundersOffice';
-import { DexoCommandCenter } from './DexoCommandCenter';
+import { DexoRoom } from './Dexo/DexoRoom';
 import { PitchDeckForge } from './PitchDeckForge';
 import { WargameNexus } from './WargameNexus';
 import { VCGauntlet } from './VCGauntlet';
@@ -50,7 +49,7 @@ export function WorkspaceStage({
             case 'founders_office':
                 return <FoundersOffice />;
             case 'dexo':
-                return <DexoCommandCenter />;
+                return <DexoRoom />;
             case 'forge':
                 return (
                     <OperationalDesk>
@@ -114,7 +113,7 @@ export function WorkspaceStage({
                 }}
             />
 
-            <div className="relative z-10 flex flex-1 flex-col py-3 animate-in fade-in duration-300 sm:py-4">
+            <div className={`relative z-10 flex flex-1 flex-col animate-in fade-in duration-300 ${shell.immersive ? '' : 'py-3 sm:py-4'}`}>
                 {!shell.immersive && !hideWorkspaceHeader && (
                     <header className="mb-2 flex shrink-0 items-center justify-between gap-3 border-b border-white/[0.04] pb-2.5">
                         <h1 className="text-sm font-normal tracking-normal text-brand-text/95 sm:text-[15px]">

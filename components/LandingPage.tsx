@@ -169,7 +169,7 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                 <header className="sticky top-0 z-30 bg-transparent">
                     <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-x-4 gap-y-3 px-5 py-3.5 sm:px-8 lg:px-12">
                         <span className="font-sans text-[12px] font-semibold tracking-[0.12em] text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.85)]">
-                            The AI C-Suite for solo founders
+                            your ultimate ai powered cofounder
                         </span>
                         <nav
                             className="flex flex-1 flex-wrap items-center justify-end gap-x-1 gap-y-2 sm:flex-initial sm:gap-x-2 md:gap-x-3 [text-shadow:0_2px_24px_rgba(0,0,0,0.85)]"
@@ -182,7 +182,7 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                                 How it works
                             </Link>
                             <Link
-                                href="/guide#faq"
+                                href="/guide#guide-faq"
                                 className="hidden rounded-md px-3 py-2.5 font-sans text-[16px] font-semibold leading-none text-zinc-300 transition-colors hover:text-white sm:inline"
                             >
                                 FAQ
@@ -223,20 +223,35 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                         {/* Wordmark — no logo; neutral grey accent */}
                         <div className="flex w-full justify-center px-1">
                             <div className="flex w-full max-w-xl flex-col items-center text-center sm:max-w-2xl lg:max-w-3xl">
-                                <p className="font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-brand-teal sm:text-[11px]">
-                                    The AI C-Suite for solo founders
-                                </p>
+                                {/* Company branding */}
+                                <div className="flex flex-col items-center">
+                                    <div className="flex items-baseline gap-4 sm:gap-5">
+                                        <span className="font-sans text-[clamp(2.75rem,9vw,5rem)] font-black tracking-[0.05em] text-white">
+                                            north<span className="text-brand-teal">ROC</span>
+                                        </span>
+                                        <span className="font-sans text-[clamp(1.5rem,5vw,2.5rem)] font-bold tracking-[0.25em] text-zinc-400">
+                                            LABS
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="mt-4 flex items-center gap-3">
+                                    <span className="h-px w-12 bg-gradient-to-r from-transparent via-brand-teal/50 to-transparent" />
+                                    <p className="font-sans text-[11px] font-semibold uppercase tracking-[0.3em] text-zinc-500">
+                                        presents
+                                    </p>
+                                    <span className="h-px w-12 bg-gradient-to-r from-transparent via-brand-teal/50 to-transparent" />
+                                </div>
                                 <span
-                                    className="mt-2 font-[family-name:var(--font-brand-display)] text-[clamp(2.5rem,8vw,4.5rem)] font-semibold leading-[1.02] tracking-[-0.02em] text-white [text-shadow:0_2px_40px_rgba(0,0,0,0.5),0_0_48px_rgba(255,255,255,0.04)]"
+                                    className="mt-6 font-[family-name:var(--font-brand-display)] text-[clamp(1.75rem,5vw,3rem)] font-semibold leading-[1.05] tracking-[0.02em] text-white/90"
                                 >
-                                    DEEPCHOX
+                                    Deepchox
                                 </span>
                                 <span
-                                    className="mt-3 block h-px w-12 bg-gradient-to-r from-white/30 to-transparent"
+                                    className="mt-4 block h-px w-20 bg-gradient-to-r from-transparent via-brand-teal/60 to-transparent"
                                     aria-hidden
                                 />
-                                <p className="mt-4 max-w-[22rem] font-sans text-[14px] font-normal leading-[1.55] text-zinc-400 sm:max-w-[26rem] sm:text-[15px] sm:leading-relaxed">
-                                    Five AI executives — strategy, finance, product, GTM, and market intelligence — coordinated on one venture record. Run your company like a funded team, without the headcount.
+                                <p className="mt-5 max-w-[26rem] font-sans text-[16px] font-light leading-[1.7] text-zinc-300 sm:max-w-[30rem] sm:text-[18px]">
+                                    Your ultimate AI powered cofounder
                                 </p>
                             </div>
                         </div>
@@ -288,7 +303,7 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
 
                     <div className="mt-12 grid gap-10 text-left lg:mt-14 lg:grid-cols-2 lg:gap-x-16 lg:gap-y-0">
                             <p className="font-serif text-[clamp(1.35rem,2.8vw,1.85rem)] font-normal italic leading-[1.55] text-zinc-200 lg:leading-[1.5] [text-shadow:0_2px_20px_rgba(0,0,0,0.5)]">
-                                Every other AI answers questions. DEEPCHOX runs operations.
+                                Every other AI answers questions. Deepchox runs operations.
                             </p>
                             <p className="font-sans text-[clamp(1.05rem,2.1vw,1.25rem)] font-normal leading-[1.75] text-zinc-300 lg:text-[1.35rem] lg:leading-[1.8]">
                                 Five specialist desks — strategy, finance, product, GTM, market intel — all coordinated on one venture record. Each desk knows what the others are doing. The founder gets a full company view, not five disconnected chat windows.
@@ -387,7 +402,7 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                     <div className="mx-auto grid max-w-3xl gap-4 sm:grid-cols-2">
 
                         {/* Free card */}
-                        <div className="flex flex-col rounded-2xl border border-zinc-800/80 bg-zinc-900/30 p-6 backdrop-blur-sm">
+                        <div className="flex flex-col rounded-2xl border border-zinc-800 bg-zinc-950 p-6 shadow-[0_12px_32px_-24px_rgba(0,0,0,0.8)]">
                             <p className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">
                                 Founder
                             </p>
@@ -415,22 +430,18 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                             <button
                                 type="button"
                                 onClick={continueAsGuest}
-                                className="mt-6 w-full rounded-xl border border-zinc-700 bg-transparent py-3 font-sans text-[14px] font-semibold text-zinc-300 transition hover:border-zinc-500 hover:text-white"
+                                className="mt-6 w-full rounded-xl border border-zinc-700 bg-zinc-900 py-3 font-sans text-[14px] font-semibold text-zinc-200 transition hover:border-zinc-600 hover:bg-zinc-800 hover:text-white"
                             >
                                 Get started free
                             </button>
                         </div>
 
                         {/* Pro card */}
-                        <div className="relative flex flex-col overflow-hidden rounded-2xl border border-amber-400/30 bg-gradient-to-b from-zinc-900/80 to-black/60 p-6 backdrop-blur-sm">
-                            <div
-                                className="pointer-events-none absolute -right-14 -top-14 h-44 w-44 rounded-full bg-amber-400/10 blur-3xl"
-                                aria-hidden
-                            />
+                        <div className="relative flex flex-col overflow-hidden rounded-2xl border border-zinc-700 bg-zinc-950/80 p-6 shadow-[0_16px_40px_-24px_rgba(0,0,0,0.8)]">
                             <div className="relative flex flex-1 flex-col">
                                 <div className="flex items-center gap-2">
-                                    <Sparkles className="h-3.5 w-3.5 text-amber-400" aria-hidden />
-                                    <p className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400/90">
+                                    <Sparkles className="h-3.5 w-3.5 text-zinc-300" aria-hidden />
+                                    <p className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-300">
                                         Co-Founder Pro
                                     </p>
                                 </div>
@@ -440,10 +451,10 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                                     <>
                                         <div className="mt-3 flex items-end gap-2">
                                             <p className="font-sans text-[34px] font-bold leading-none text-zinc-100">
-                                                &#8377;300
+                                                $4
                                             </p>
                                             <span className="mb-1 font-sans text-[15px] text-zinc-500">/mo</span>
-                                            <span className="mb-1 font-sans text-[13px] text-zinc-600">(~$4)</span>
+                                            <span className="mb-1 font-sans text-[13px] text-zinc-600">(₹300)</span>
                                         </div>
                                         <p className="mt-1 font-sans text-[13px] text-zinc-600">
                                             billed monthly &middot; cancel anytime
@@ -453,31 +464,31 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                                     <>
                                         <div className="mt-3 flex items-end gap-2">
                                             <p className="font-sans text-[34px] font-bold leading-none text-zinc-100">
-                                                &#8377;250
+                                                $3.33
                                             </p>
                                             <span className="mb-1 font-sans text-[15px] text-zinc-500">/mo</span>
-                                            <span className="mb-1 font-sans text-[13px] text-zinc-600">(~$3.33)</span>
+                                            <span className="mb-1 font-sans text-[13px] text-zinc-600">(₹250)</span>
                                         </div>
                                         <p className="mt-1 font-sans text-[13px] text-zinc-600">
-                                            &#8377;2,999/yr (~$40) &middot; billed annually
+                                            $40/yr (₹2,999) &middot; billed annually
                                         </p>
                                     </>
                                 )}
 
-                                <div className="my-5 h-px bg-amber-400/10" />
+                                <div className="my-5 h-px bg-zinc-800" />
 
                                 {/* 3 Pro features */}
-                                <p className="mb-3 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-amber-400/60">
+                                <p className="mb-3 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">
                                     Pro-exclusive intelligence
                                 </p>
                                 <div className="flex-1 space-y-3">
                                     {LANDING_PRO_FEATURES.map(
-                                        ({ icon: Icon, name, desc, color, bg, border }) => (
+                                        ({ icon: Icon, name, desc }) => (
                                             <div
                                                 key={name}
-                                                className={`flex gap-3 rounded-xl border ${border} ${bg} p-3`}
+                                                className="flex gap-3 rounded-xl border border-zinc-800 bg-zinc-900/70 p-3"
                                             >
-                                                <span className={`mt-0.5 shrink-0 ${color}`}>
+                                                <span className="mt-0.5 shrink-0 text-zinc-400">
                                                     <Icon className="h-4 w-4" aria-hidden />
                                                 </span>
                                                 <div>
@@ -503,9 +514,7 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                                     className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white py-3 font-sans text-[14px] font-bold text-zinc-900 shadow-[0_2px_24px_rgba(255,255,255,0.12)] transition hover:bg-zinc-100 active:scale-[0.98]"
                                 >
                                     <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
-                                    {landingBilling === 'monthly'
-                                        ? 'Get Pro — ₹300/mo'
-                                        : 'Get Pro — ₹2,999/yr'}
+                                    {landingBilling === 'monthly' ? 'Get Pro - $4/mo' : 'Get Pro - $40/yr'}
                                 </button>
                                 <p className="mt-2 text-center font-sans text-[10px] text-zinc-600">
                                     Instant access &middot; cancel anytime &middot; no questions asked
@@ -517,9 +526,16 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
 
                 <footer className="mt-auto flex flex-col items-center gap-6 border-t border-zinc-800/80 px-5 py-12 text-center sm:flex-row sm:justify-between sm:px-12 sm:text-left">
                     <div className="[text-shadow:0_2px_20px_rgba(0,0,0,0.6)]">
-                        <span className="font-sans text-[17px] font-semibold tracking-tight text-zinc-100">DEEPCHOX</span>
+                        <div className="flex items-baseline gap-2">
+                            <span className="font-sans text-[20px] font-black tracking-tighter text-white">
+                                north<span className="text-brand-teal">ROC</span>
+                            </span>
+                            <span className="font-sans text-[13px] font-bold tracking-[0.15em] text-zinc-400">
+                                LABS
+                            </span>
+                        </div>
                         <span className="mt-2 block font-sans text-[14px] font-normal leading-relaxed text-zinc-500">
-                            The AI C-Suite for solo founders · Run your company, not just your tasks
+                            Your ultimate AI powered cofounder
                         </span>
                     </div>
                     <Link
@@ -553,7 +569,7 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                             <div className="min-w-0 text-left">
                                 <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-zinc-500">Create account</p>
                                 <h2 id="signup-dialog-title" className="font-serif mt-2 text-xl font-semibold text-white">
-                                    Join DeepChox
+                                    Join Deepchox
                                 </h2>
                                 <p className="mt-2 text-[13px] leading-relaxed text-zinc-500">
                                     Sign up is coming with Clerk. You can skip and continue as a guest anytime.
@@ -655,4 +671,5 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
         </div>
     );
 }
+
 

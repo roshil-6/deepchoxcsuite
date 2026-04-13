@@ -49,7 +49,7 @@ export function generatePDFReport({ project, fileName }: ReportGeneratorProps) {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(16);
     doc.setTextColor(44, 27, 24); // espresso
-    doc.text('DEEPCHOX', margin, 15);
+    doc.text('northROCS LABS · Deepchox', margin, 15);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
@@ -217,7 +217,7 @@ export function generatePDFReport({ project, fileName }: ReportGeneratorProps) {
     doc.setFontSize(8);
     doc.setTextColor(44, 27, 24, 100);
     doc.text(
-      'DEEPCHOX © 2026 | Zero-Data, Privacy-First Business Intelligence',
+      'northROCS LABS · Deepchox © 2026 | Zero-Data, Privacy-First Business Intelligence',
       pageWidth / 2,
       pageHeight - 8,
       { align: 'center' }
@@ -225,7 +225,7 @@ export function generatePDFReport({ project, fileName }: ReportGeneratorProps) {
   }
 
   // Save PDF
-  const pdfFileName = fileName || `DEEPCHOX_${project.name}_${Date.now()}.pdf`;
+  const pdfFileName = fileName || `Deepchox_${project.name}_${Date.now()}.pdf`;
   doc.save(pdfFileName);
 }
 

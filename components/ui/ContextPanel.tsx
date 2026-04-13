@@ -30,6 +30,7 @@ export function ContextPanel({
     onToggleDesktopCollapse,
 }: Props) {
     const { activeProject, activeRoom, staffAttentionPending, livingOffice } = useOffice();
+    const hasActiveVenture = Boolean(activeProject?.id);
 
     const execution = useMemo(
         () => computeExecutionScore(activeProject?.strategy),
@@ -50,7 +51,7 @@ export function ContextPanel({
             msgs.push(`${p.title}: ${p.message}`);
         }
         if (businessImpact.requiresEscalation) {
-            msgs.unshift('Decision layer suggests escalation — review finance or strategy.');
+            msgs.unshift('Decision layer suggests escalation - review finance or strategy.');
         }
         return msgs;
     }, [staffAttentionPending, businessImpact.requiresEscalation]);
@@ -59,52 +60,66 @@ export function ContextPanel({
 
     const inner = (
         <div className="flex h-full flex-col gap-4 overflow-y-auto p-4">
-            <HealthWidget
-                strategic={businessImpact.strategic}
-                financial={businessImpact.financial}
-                execution={businessImpact.execution}
-            />
-            <AlertWidget
-                severity={businessImpact.severity}
-                messages={alertMessages}
-                escalation={businessImpact.requiresEscalation}
-            />
-            {livingOffice ? (
-                <div className={`${executiveSurfaceClass} p-5`}>
-                    <h3 className="text-sm font-medium text-[var(--text)]">Goal advancement</h3>
-                    <p className="mt-2 text-2xl font-semibold tabular-nums text-[var(--text)]">
-                        {livingOffice.progress.percentage}%
-                    </p>
-                    <p className="mt-1 text-xs text-[var(--muted)]">
-                        Risk: <span className="text-[var(--text)]/90">{livingOffice.progress.risk}</span>
-                        {' · '}
-                        ~{livingOffice.progress.projectedDaysRemaining}d to next horizon
-                    </p>
-                    {livingOffice.suggestedActions[0] ? (
-                        <p className="mt-3 border-t border-[var(--border)] pt-3 text-[11px] leading-relaxed text-[var(--muted)]">
-                            <span className="font-medium text-[var(--text)]/90">Routed: </span>
-                            {livingOffice.suggestedActions[0].summary} → {livingOffice.suggestedActions[0].targetDesks.join(', ')}
-                        </p>
+            {hasActiveVenture ? (
+                <>
+                    <HealthWidget
+                        strategic={businessImpact.strategic}
+                        financial={businessImpact.financial}
+                        execution={businessImpact.execution}
+                    />
+                    <AlertWidget
+                        severity={businessImpact.severity}
+                        messages={alertMessages}
+                        escalation={businessImpact.requiresEscalation}
+                    />
+                    {livingOffice ? (
+                        <div className={`${executiveSurfaceClass} p-5`}>
+                            <h3 className="text-sm font-medium text-[var(--text)]">Goal advancement</h3>
+                            <p className="mt-2 text-2xl font-semibold tabular-nums text-[var(--text)]">
+                                {livingOffice.progress.percentage}%
+                            </p>
+                            <p className="mt-1 text-xs text-[var(--muted)]">
+                                Risk: <span className="text-[var(--text)]/90">{livingOffice.progress.risk}</span>
+                                {' · '}
+                                ~{livingOffice.progress.projectedDaysRemaining}d to next horizon
+                            </p>
+                            {livingOffice.suggestedActions[0] ? (
+                                <p className="mt-3 border-t border-[var(--border)] pt-3 text-[11px] leading-relaxed text-[var(--muted)]">
+                                    <span className="font-medium text-[var(--text)]/90">Routed: </span>
+                                    {livingOffice.suggestedActions[0].summary}
+                                    {' -> '}
+                                    {livingOffice.suggestedActions[0].targetDesks.join(', ')}
+                                </p>
+                            ) : null}
+                        </div>
                     ) : null}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className={`${executiveSurfaceClass} p-5`}
+                    >
+                        <h3 className="text-sm font-medium text-[var(--text)]">Today&apos;s priorities</h3>
+                        <p className="mt-1 text-xs text-[var(--muted)] opacity-80">Top open items</p>
+                        <ol className="mt-3 list-decimal space-y-2 pl-4 text-xs leading-relaxed text-[var(--text)]/85">
+                            {priorities.length === 0 ? (
+                                <li className="text-[var(--muted)]">No open priorities - add under Research strategy and direction.</li>
+                            ) : (
+                                priorities
+                                    .filter((p) => p.title?.trim())
+                                    .map((p) => (p.title ? <li key={p.id}>{p.title}</li> : null))
+                            )}
+                        </ol>
+                    </motion.div>
+                </>
+            ) : (
+                <div className={`${executiveSurfaceClass} p-5`}>
+                    <h3 className="text-sm font-medium text-[var(--text)]">Intelligence</h3>
+                    <p className="mt-2 text-sm text-[var(--text)]">No venture selected</p>
+                    <p className="mt-2 text-xs leading-relaxed text-[var(--muted)]">
+                        Select or create a venture to unlock company health, routed alerts, and execution tracking for this panel.
+                    </p>
                 </div>
-            ) : null}
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className={`${executiveSurfaceClass} p-5`}
-            >
-                <h3 className="text-sm font-medium text-[var(--text)]">Today&apos;s priorities</h3>
-                <p className="mt-1 text-xs text-[var(--muted)] opacity-80">Top open items</p>
-                <ol className="mt-3 list-decimal space-y-2 pl-4 text-xs leading-relaxed text-[var(--text)]/85">
-                    {priorities.length === 0 ? (
-                        <li className="text-[var(--muted)]">No open priorities — add under Research strategy and direction.</li>
-                    ) : (
-                        priorities
-                            .filter((p) => p.title?.trim())
-                            .map((p) => (p.title ? <li key={p.id}>{p.title}</li> : null))
-                    )}
-                </ol>
-            </motion.div>
+            )}
             <div className={`${executiveSurfaceClass} p-5`}>
                 <h3 className="text-sm font-medium text-[var(--text)]">Active context</h3>
                 <p className="mt-2 text-xs text-[var(--muted)]">

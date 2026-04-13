@@ -187,6 +187,17 @@ const SHELL_DEFAULT: WorkspaceShellTheme = {
 };
 
 export function getWorkspaceShellTheme(activeRoom: string): WorkspaceShellTheme {
+  /** Dexo: near-black, no shell grid — particle wave canvas owns the bg */
+  if (activeRoom === 'dexo') {
+    return {
+      wash: 'from-[#07070f] to-[#07070f]',
+      gridColor: 'transparent',
+      gridOpacity: '0',
+      chrome: '',
+      immersive: true,
+    };
+  }
+
   /** Long-form guide: calmer canvas, almost no grid so sections feel editorial */
   if (activeRoom === 'suite_intelligence') {
     return {

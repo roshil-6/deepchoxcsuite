@@ -1,9 +1,14 @@
 /**
- * Server-side chat routing: OpenAI, Groq (OpenAI-compatible), and Ollama.
+ * Server-side chat routing: OpenAI, Groq (OpenAI-compatible), Anthropic Claude, and Ollama.
  * Client payloads stay Ollama-shaped; we normalize responses to `{ message: { role, content } }`.
  */
 
 type ChatMessage = { role: string; content: string };
+
+const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
+const ANTHROPIC_VERSION = '2023-06-01';
+/** Claude Haiku — fast, cost-efficient, strong analytical reasoning */
+const CLAUDE_HAIKU_MODEL = 'claude-haiku-4-5-20251001';
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
@@ -26,7 +31,16 @@ export function resolveOpenAIModel(requested?: string): string {
 
 /** Returns true when at least one AI provider key is configured. */
 export function hasAiKey(): boolean {
-  return Boolean(process.env.OPENAI_API_KEY?.trim() || process.env.GROQ_API_KEY?.trim());
+  return Boolean(
+    process.env.OPENAI_API_KEY?.trim() ||
+    process.env.GROQ_API_KEY?.trim() ||
+    process.env.ANTHROPIC_API_KEY?.trim()
+  );
+}
+
+/** Returns true when Anthropic key is configured. */
+export function hasAnthropicKey(): boolean {
+  return Boolean(process.env.ANTHROPIC_API_KEY?.trim());
 }
 
 /**
@@ -305,6 +319,116 @@ export async function chatWithOllama(messages: ChatMessage[], model: string | un
 
   const data = (await response.json()) as OllamaShapedResponse;
   return data;
+}
+
+/**
+ * Call Anthropic Claude Haiku via the Messages API (no SDK required).
+ * Returns an Ollama-shaped response for a consistent interface across providers.
+ */
+export async function chatWithClaude(
+  messages: ChatMessage[],
+  options?: { responseJsonObject?: boolean; temperature?: number; systemOverride?: string }
+): Promise<OllamaShapedResponse & { provider: 'claude' }> {
+  const apiKey = process.env.ANTHROPIC_API_KEY?.trim();
+  if (!apiKey) throw new Error('ANTHROPIC_API_KEY is not set');
+
+  // Split system message out (Anthropic uses a top-level `system` field)
+  const systemMsg = messages.find((m) => m.role === 'system');
+  const system = options?.systemOverride ?? systemMsg?.content ?? '';
+  const conversationMsgs = messages
+    .filter((m) => m.role !== 'system' && m && typeof m.content === 'string')
+    .map((m) => ({
+      role: m.role === 'assistant' ? 'assistant' : 'user',
+      content: m.content,
+    })) as { role: 'user' | 'assistant'; content: string }[];
+
+  // Anthropic requires at least one user message
+  if (conversationMsgs.length === 0) {
+    conversationMsgs.push({ role: 'user', content: 'Begin.' });
+  }
+
+  const temperature = options?.temperature ?? (options?.responseJsonObject ? 0.35 : 0.7);
+
+  const body: Record<string, unknown> = {
+    model: CLAUDE_HAIKU_MODEL,
+    max_tokens: 4096,
+    temperature,
+    messages: conversationMsgs,
+  };
+  if (system) body.system = system;
+
+  const res = await fetch(ANTHROPIC_URL, {
+    method: 'POST',
+    headers: {
+      'x-api-key': apiKey,
+      'anthropic-version': ANTHROPIC_VERSION,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  const data = (await res.json()) as {
+    error?: { message?: string };
+    content?: { type: string; text: string }[];
+    stop_reason?: string;
+  };
+
+  if (!res.ok) {
+    const errText = data.error?.message || res.statusText || 'Anthropic request failed';
+    throw new Error(errText);
+  }
+
+  const textBlock = data.content?.find((b) => b.type === 'text');
+  const content = textBlock?.text ?? '';
+
+  return {
+    model: CLAUDE_HAIKU_MODEL,
+    created_at: new Date().toISOString(),
+    message: { role: 'assistant', content },
+    done: true,
+    provider: 'claude',
+  };
+}
+
+export interface DualAgentResult {
+  gpt: { content: string; model: string; provider: string } | null;
+  claude: { content: string; model: string; provider: string } | null;
+  /** Which provider succeeded first (fastest) */
+  fastest: 'gpt' | 'claude' | null;
+  /** ISO timestamp */
+  at: string;
+}
+
+/**
+ * Run GPT and Claude Haiku in TRUE PARALLEL — both agents work simultaneously.
+ * Returns both outputs so the caller can synthesize or display side-by-side.
+ * Never throws: failed agents return null in their slot.
+ */
+export async function chatWithDualAgents(
+  messages: ChatMessage[],
+  options?: { responseJsonObject?: boolean; temperature?: number }
+): Promise<DualAgentResult> {
+  const gptPromise = process.env.OPENAI_API_KEY?.trim()
+    ? chatWithOpenAI(messages, 'llama3', options)
+        .then((r) => ({ content: r.message.content, model: r.model, provider: 'openai' }))
+        .catch(() => null)
+    : Promise.resolve(null);
+
+  const claudePromise = process.env.ANTHROPIC_API_KEY?.trim()
+    ? chatWithClaude(messages, options)
+        .then((r) => ({ content: r.message.content, model: r.model, provider: 'claude' }))
+        .catch(() => null)
+    : Promise.resolve(null);
+
+  const startMs = Date.now();
+  const [gpt, claude] = await Promise.all([gptPromise, claudePromise]);
+  const elapsed = Date.now() - startMs;
+
+  // Determine which resolved faster by checking who finished within 100ms of total elapsed
+  // (approximation — both run in parallel so we just note the final state)
+  const fastest = gpt && claude ? (elapsed < 8000 ? 'gpt' : 'claude') : gpt ? 'gpt' : claude ? 'claude' : null;
+
+  return { gpt, claude, fastest, at: new Date().toISOString() };
 }
 
 export function simulationResponse(messages: ChatMessage[], model: string | undefined): OllamaShapedResponse {

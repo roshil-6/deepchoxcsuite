@@ -29,6 +29,7 @@ import {
     DeskHubRow,
     DeskFocusToolbar,
 } from '@/components/workspaces/DeskBlockFocusUI';
+import { GuideHint } from '@/components/ui/ContextualGuide';
 
 type ToolId = 'narrative' | 'flow' | 'phases' | 'team' | 'schedule' | 'priorities';
 
@@ -624,6 +625,15 @@ export function StrategyNotebook() {
                                     Tap a block — other sections hide while you work. The bar below chats in context of the open block until you
                                     press Back.
                                 </p>
+
+                                <GuideHint
+                                    id="ceo-no-intent"
+                                    when={!doc.strategicIntent?.trim() && !doc.vision?.trim()}
+                                    variant="tip"
+                                    message='Start with "Strategic intent" — one or two lines on what winning looks like. Your AI team reads this on every sync to align all five desks.'
+                                    action="Open Strategic intent"
+                                    onAction={() => openFocusKey('strategic_intent')}
+                                />
 
                                 <div className="space-y-1.5 sm:space-y-2">
                                     <DeskHubRow

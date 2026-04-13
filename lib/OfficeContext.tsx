@@ -144,6 +144,9 @@ export interface OfficeContextType {
   lastAiSyncTrace: AiSyncTraceStep[] | null;
   dismissSyncToast: () => void;
 
+  /** Dual-agent status from the last staff sync — which agents succeeded and how long it took. */
+  lastSyncDualAgent: { gpt: boolean; claude: boolean; durationMs: number; at: string } | null;
+
   /** Living Office Engine — last daily cycle output for dashboards / context panel */
   livingOffice: DailyOfficeCycleResult | null;
   /** Recompute brief, tasks intel, notifications; persists office memory; may append one PA brief per local day */
@@ -245,6 +248,7 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
   const [agentSyncRunning, setAgentSyncRunning] = useState(false);
   const [syncToastMessage, setSyncToastMessage] = useState<string | null>(null);
   const [lastAiSyncTrace, setLastAiSyncTrace] = useState<AiSyncTraceStep[] | null>(null);
+  const [lastSyncDualAgent, setLastSyncDualAgent] = useState<{ gpt: boolean; claude: boolean; durationMs: number; at: string } | null>(null);
   const [activeProject, setActiveProjectState] = useState<Project | null>(null);
   const [allProjects, setAllProjects] = useState<Project[]>([]);
   const [pendingChat, setPendingChat] = useState<{ role: AgentRole; message: string } | null>(null);
@@ -461,6 +465,15 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
       setAllProjects(projects);
       setSystemState((prev) => ({ ...prev, lastSync: syncAt }));
       setSyncToastMessage(result.summary.slice(0, 260));
+      if (data.dual_agent && typeof data.dual_agent === 'object') {
+        setLastSyncDualAgent({
+          gpt: Boolean(data.dual_agent.gpt),
+          claude: Boolean(data.dual_agent.claude),
+          durationMs: Number(data.dual_agent.durationMs ?? 0),
+          at: new Date().toISOString(),
+        });
+      }
+
       const rawTrace = data.trace;
       if (Array.isArray(rawTrace)) {
         setLastAiSyncTrace(
@@ -844,6 +857,7 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
     dismissStaffAttention,
     syncToastMessage,
     lastAiSyncTrace,
+    lastSyncDualAgent,
     dismissSyncToast,
     livingOffice,
     refreshLivingOffice,
@@ -871,7 +885,7 @@ export function getHuddlePrompt(role: AgentRole, project?: Project | null): stri
 
   // "The Spine" - Shared Context
   const baseContext = `
-    You are an AI teammate inside DEEPCHOX — you act as one specialist role on the founder's team (not a generic chatbot).
+    You are an AI teammate inside Deepchox (by northROCS LABS) — you act as one specialist role on the founder's team (not a generic chatbot).
     Current Project: "${project.name}"
     
     TEAM CONTEXT (What others are doing — plain language, not raw JSON):
@@ -1001,7 +1015,7 @@ export function getAgentSystemPrompt(role: AgentRole, project?: Project | null):
     
     Example: "I understand. This requires a strategic pivot. I am assigning this to the CEO desk to draft a new plan."`,
 
-    dexo: `You are Dexo, the Central Intelligence Brain of the DeepChox Suite.
+    dexo: `You are Dexo, the Central Intelligence Brain of the Deepchox Suite (by northROCS LABS).
     ROLE: You are the OMNISCIENT ORCHESTRATOR. You are not just an assistant; you are the strategic core.
     
     CORE DIRECTIVES:
@@ -1050,7 +1064,7 @@ export function getPersonalAssistantSystemPrompt(project?: Project | null): stri
   const staffHint = project?.agentStaffSnapshot?.summary
     ? `\nLAST STAFF SYNC (from the multi-desk agent run):\n${project.agentStaffSnapshot.summary}\n`
     : '';
-  return `You are the user's dedicated Personal Assistant in DEEPCHOX — you represent their AI-powered team for founders in one place: steer the venture and see what matters across roles.
+  return `You are the user's dedicated Personal Assistant in Deepchox (by northROCS LABS) — you represent their AI-powered team for founders in one place: steer the venture and see what matters across roles.
 
 You are not a single desk teammate; you coordinate like a chief of staff. The product can run **Staff sync** so all AI teammates refresh briefs from the same venture snapshot and merge updates (intel, finance notes, directives, kanban, calendar). Reference that latest sync summary when present.
 

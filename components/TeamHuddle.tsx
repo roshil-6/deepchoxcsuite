@@ -9,7 +9,7 @@ const huddleMessages = [
     "Product Manager is drafting user stories...",
     "The Scout found a new gap in the market.",
     "CEO is refining the 3-month vision.",
-    'DEEPCHOX is syncing AI teammates…',
+    'Deepchox is syncing AI teammates…',
     "Legal is checking compliance on the new feature..."
 ];
 

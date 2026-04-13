@@ -154,7 +154,7 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                         <div className="grid gap-3 sm:grid-cols-2">
 
                             {/* Free card */}
-                            <div className="flex flex-col rounded-xl border border-zinc-800 bg-zinc-900/30 p-4 sm:p-5">
+                            <div className="flex flex-col rounded-xl border border-zinc-800 bg-zinc-950 p-4 shadow-[0_12px_28px_-24px_rgba(0,0,0,0.8)] sm:p-5">
                                 <p className="text-xs font-medium text-zinc-500">Founder</p>
                                 <p className="mt-3 text-3xl font-semibold leading-none tracking-tight text-white">
                                     Free
@@ -179,12 +179,12 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                                     <button
                                         type="button"
                                         onClick={() => { deactivatePro(); onClose(); }}
-                                        className="mt-5 w-full rounded-lg border border-zinc-800 py-2.5 text-xs text-zinc-600 transition hover:border-zinc-700 hover:text-zinc-400"
+                                        className="mt-5 w-full rounded-lg border border-zinc-700 bg-zinc-900 py-2.5 text-xs text-zinc-300 transition hover:border-zinc-600 hover:bg-zinc-800 hover:text-white"
                                     >
                                         Downgrade to Free
                                     </button>
                                 ) : (
-                                    <div className="mt-5 rounded-lg border border-zinc-800/60 py-2.5 text-center text-xs text-zinc-700">
+                                    <div className="mt-5 rounded-lg border border-zinc-800 bg-zinc-900 py-2.5 text-center text-xs text-zinc-400">
                                         {isInTrial ? 'Trial active' : 'Current plan'}
                                     </div>
                                 )}

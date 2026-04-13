@@ -39,7 +39,7 @@ export function ReportCeremony({ onClose }: { onClose: () => void }) {
         // Brand Header
         doc.setTextColor(black[0], black[1], black[2]);
         doc.setFontSize(10);
-        doc.text("DEEPCHOX STRATEGIC REPORT", 20, 15);
+        doc.text("northROCS LABS · Deepchox — STRATEGIC REPORT", 20, 15);
         doc.text(`CONFIDENTIAL // ${new Date().toLocaleDateString()}`, 150, 15);
 
         // Title
@@ -85,7 +85,7 @@ export function ReportCeremony({ onClose }: { onClose: () => void }) {
         });
 
         // Save
-        doc.save(`${activeProject.name}_DeepChox_Report.pdf`);
+        doc.save(`${activeProject.name}_Deepchox_Report.pdf`);
         setStep('done');
     };
 

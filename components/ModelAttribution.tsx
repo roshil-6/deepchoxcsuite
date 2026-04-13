@@ -6,7 +6,7 @@ function normaliseModel(raw: string): string | null {
     if (!s || s.includes('simulation') || s.includes('offline') || s.includes('ollama')) return null;
     if (s.includes('openai') || s.includes('gpt')) return 'OpenAI · GPT';
     // Groq / HuggingFace / any other internal provider — just brand it
-    return 'DEEPCHOX AI';
+    return 'Deepchox AI';
 }
 
 /** Small label under assistant responses. */

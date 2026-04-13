@@ -47,6 +47,7 @@ import { WeeklyReviewCard } from '@/components/office/WeeklyReviewCard';
 import { GoalAdvanceCard } from '@/components/office/GoalAdvanceCard';
 import { StaffFocusChecklist } from '@/components/office/StaffFocusChecklist';
 import { OfficeBriefPanel } from '@/components/office/OfficeBriefPanel';
+import { GuideHint, ActionHint } from '@/components/ui/ContextualGuide';
 
 /**
  * Recharts Tooltip defaults omit cursor.fill, so the hover rectangle uses a light gray/white band
@@ -657,6 +658,36 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             </div>
                         </header>
 
+                        {/* ── Contextual guide hints ── */}
+                        <div className="flex flex-col gap-2">
+                            <GuideHint
+                                id="dash-no-strategy"
+                                when={!hasIntent && !narrativeRich}
+                                variant="tip"
+                                message="Your venture has no strategy yet. Open the CEO desk and describe your vision — the AI team can't give useful advice without it."
+                                action="Open CEO desk"
+                                onAction={() => switchRoom('ceo')}
+                            />
+                            <GuideHint
+                                id="dash-no-sync"
+                                when={!activeProject?.agentStaffSnapshot && hasIntent}
+                                variant="info"
+                                message="Run Staff Sync to activate your AI team. GPT-4o and Claude Haiku will analyse your venture simultaneously and populate all five desks."
+                                action="Sync now"
+                                onAction={() => runAgentStaffSync()}
+                            />
+                            <ActionHint
+                                id="dash-post-sync"
+                                when={!!activeProject?.agentStaffSnapshot && !agentSyncRunning}
+                                heading="Your AI team has synced"
+                                steps={[
+                                    { label: 'Review AI Team Network to see what GPT and Claude contributed', onClick: () => switchRoom('suite_intelligence') },
+                                    { label: 'Check the Focus Today checklist and complete the top item' },
+                                    { label: 'Open any desk with a new notification (bell icon) to act on it' },
+                                ]}
+                            />
+                        </div>
+
                         <section id="exec-goal-advancement" className="scroll-mt-6 space-y-3" aria-label="Office brief">
                             <header className="pb-0.5">
                                 <p className="dash-section-label mb-1">Office brief</p>
@@ -814,70 +845,85 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             <p className="mb-3 text-[12px] leading-snug text-brand-muted">
                                 Quick navigation across desks and views.
                             </p>
-                            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setDashboardExpanded((open) => !open);
-                                        setPendingScrollId(null);
-                                    }}
-                                    className={`flex items-center gap-2 rounded-xl border border-white/[0.06] px-3 py-2.5 text-left text-xs font-semibold transition ${
-                                        dashboardExpanded ? 'bg-zinc-800/55 text-brand-text' : 'bg-white/[0.04] text-brand-text hover:bg-white/[0.07]'
-                                    }`}
-                                    aria-expanded={dashboardExpanded}
-                                    title="Snapshot, score, charts, staff output, activity, desks — outlined insight blocks"
-                                >
-                                    <LayoutDashboard className="h-4 w-4 shrink-0 text-brand-muted" aria-hidden />
-                                    <span className="min-w-0 truncate">Dashboard</span>
-                                    {dashboardExpanded ? <ChevronUp className="ml-auto h-3.5 w-3.5 shrink-0 text-brand-muted" aria-hidden /> : null}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        document.getElementById('exec-goal-advancement')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                    }}
-                                    className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.04] px-3 py-2.5 text-left text-xs font-semibold text-brand-text transition hover:bg-white/[0.07]"
-                                    title="Scroll to goal advancement brief"
-                                >
-                                    <Target className="h-4 w-4 shrink-0 text-brand-muted" aria-hidden />
-                                    <span className="min-w-0 truncate">Goals</span>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => openDashboard('dash-signal')}
-                                    className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.04] px-3 py-2.5 text-left text-xs font-semibold text-brand-text transition hover:bg-white/[0.07]"
-                                    title="Opens Dashboard panel to activity charts and log"
-                                >
-                                    <Activity className="h-4 w-4 shrink-0 text-brand-muted" aria-hidden />
-                                    <span className="min-w-0 truncate">Signal</span>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => openDashboard('dash-desks')}
-                                    className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.04] px-3 py-2.5 text-left text-xs font-semibold text-brand-text transition hover:bg-white/[0.07]"
-                                    title="Opens Dashboard panel to desk shortcuts"
-                                >
-                                    <LayoutGrid className="h-4 w-4 shrink-0 text-brand-muted" aria-hidden />
-                                    <span className="min-w-0 truncate">Desks</span>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => switchRoom('reports')}
-                                    className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.04] px-3 py-2.5 text-left text-xs font-semibold text-brand-text transition hover:bg-white/[0.07]"
-                                    title="Reports and saved artifacts"
-                                >
-                                    <FileText className="h-4 w-4 shrink-0 text-brand-muted" aria-hidden />
-                                    <span className="min-w-0 truncate">Knowledge</span>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => switchRoom('calendar')}
-                                    className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.04] px-3 py-2.5 text-left text-xs font-semibold text-brand-text transition hover:bg-white/[0.07]"
-                                    title="Milestones and events"
-                                >
-                                    <Calendar className="h-4 w-4 shrink-0 text-brand-muted" aria-hidden />
-                                    <span className="min-w-0 truncate">Calendar</span>
-                                </button>
+                            {/* Unified panel with hairline dividers instead of scattered cards */}
+                            <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-zinc-900/40">
+                                <div className="grid grid-cols-2 divide-x divide-white/[0.06] divide-y divide-white/[0.06] sm:grid-cols-3 lg:grid-cols-6">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setDashboardExpanded((open) => !open);
+                                            setPendingScrollId(null);
+                                        }}
+                                        className={`group flex flex-col items-start gap-2 px-4 py-4 text-left transition sm:px-5 ${
+                                            dashboardExpanded ? 'bg-zinc-800/60' : 'hover:bg-white/[0.03]'
+                                        }`}
+                                        aria-expanded={dashboardExpanded}
+                                        title="Snapshot, score, charts, staff output, activity, desks — outlined insight blocks"
+                                    >
+                                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-400">
+                                            <LayoutDashboard className="h-4 w-4" aria-hidden />
+                                        </span>
+                                        <span className="text-xs font-semibold text-brand-text">Dashboard</span>
+                                        {dashboardExpanded && <span className="text-[10px] text-cyan-400">Open</span>}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            document.getElementById('exec-goal-advancement')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                        }}
+                                        className="group flex flex-col items-start gap-2 px-4 py-4 text-left transition hover:bg-white/[0.03] sm:px-5"
+                                        title="Scroll to goal advancement brief"
+                                    >
+                                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/10 text-teal-400">
+                                            <Target className="h-4 w-4" aria-hidden />
+                                        </span>
+                                        <span className="text-xs font-semibold text-brand-text">Goals</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => openDashboard('dash-signal')}
+                                        className="group flex flex-col items-start gap-2 px-4 py-4 text-left transition hover:bg-white/[0.03] sm:px-5"
+                                        title="Opens Dashboard panel to activity charts and log"
+                                    >
+                                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-400">
+                                            <Activity className="h-4 w-4" aria-hidden />
+                                        </span>
+                                        <span className="text-xs font-semibold text-brand-text">Signal</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => openDashboard('dash-desks')}
+                                        className="group flex flex-col items-start gap-2 px-4 py-4 text-left transition hover:bg-white/[0.03] sm:px-5"
+                                        title="Opens Dashboard panel to desk shortcuts"
+                                    >
+                                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-fuchsia-500/10 text-fuchsia-400">
+                                            <LayoutGrid className="h-4 w-4" aria-hidden />
+                                        </span>
+                                        <span className="text-xs font-semibold text-brand-text">Desks</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => switchRoom('reports')}
+                                        className="group flex flex-col items-start gap-2 px-4 py-4 text-left transition hover:bg-white/[0.03] sm:px-5"
+                                        title="Reports and saved artifacts"
+                                    >
+                                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/10 text-violet-400">
+                                            <FileText className="h-4 w-4" aria-hidden />
+                                        </span>
+                                        <span className="text-xs font-semibold text-brand-text">Knowledge</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => switchRoom('calendar')}
+                                        className="group flex flex-col items-start gap-2 px-4 py-4 text-left transition hover:bg-white/[0.03] sm:px-5"
+                                        title="Milestones and events"
+                                    >
+                                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-500/10 text-rose-400">
+                                            <Calendar className="h-4 w-4" aria-hidden />
+                                        </span>
+                                        <span className="text-xs font-semibold text-brand-text">Calendar</span>
+                                    </button>
+                                </div>
                             </div>
                         </section>
 
@@ -1284,31 +1330,38 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                     subtitle="Jump to strategy, product, finance, market"
                     className="mb-2"
                 >
-                    <div className="grid gap-3 sm:grid-cols-2">
-                        <AgentCard
-                            agent={agents.ceo}
-                            activeRoom={activeRoom}
-                            onClick={() => switchRoom('ceo')}
-                            status={!!activeProject.strategy ? 'active' : 'pending'}
-                        />
-                        <AgentCard
-                            agent={agents.scout}
-                            activeRoom={activeRoom}
-                            onClick={() => switchRoom('scout')}
-                            status={!!activeProject.marketInsights ? 'active' : 'idle'}
-                        />
-                        <AgentCard
-                            agent={agents.accountant}
-                            activeRoom={activeRoom}
-                            onClick={() => switchRoom('accountant')}
-                            status={!!activeProject.budget ? 'active' : 'pending'}
-                        />
-                        <AgentCard
-                            agent={agents.pm}
-                            activeRoom={activeRoom}
-                            onClick={() => switchRoom('pm')}
-                            status={!!activeProject.productPlan ? 'active' : 'idle'}
-                        />
+                    {/* Unified desk panel with accent borders instead of separate cards */}
+                    <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-zinc-900/40">
+                        <div className="divide-y divide-white/[0.06]">
+                            <DeskRow
+                                agent={agents.ceo}
+                                activeRoom={activeRoom}
+                                onClick={() => switchRoom('ceo')}
+                                status={!!activeProject.strategy ? 'active' : 'pending'}
+                                accent="violet"
+                            />
+                            <DeskRow
+                                agent={agents.scout}
+                                activeRoom={activeRoom}
+                                onClick={() => switchRoom('scout')}
+                                status={!!activeProject.marketInsights ? 'active' : 'idle'}
+                                accent="sky"
+                            />
+                            <DeskRow
+                                agent={agents.accountant}
+                                activeRoom={activeRoom}
+                                onClick={() => switchRoom('accountant')}
+                                status={!!activeProject.budget ? 'active' : 'pending'}
+                                accent="emerald"
+                            />
+                            <DeskRow
+                                agent={agents.pm}
+                                activeRoom={activeRoom}
+                                onClick={() => switchRoom('pm')}
+                                status={!!activeProject.productPlan ? 'active' : 'idle'}
+                                accent="amber"
+                            />
+                        </div>
                     </div>
                 </DashMessageSection>
 
@@ -1385,6 +1438,63 @@ function AgentCard({ agent, activeRoom, onClick, status }: any) {
             {activeRoom === agent.role && (
                 <div className="pointer-events-none absolute inset-0 rounded-2xl ring-2 ring-white/20" />
             )}
+        </button>
+    );
+}
+
+const ACCENT_STYLES: Record<string, { border: string; icon: string; glow: string }> = {
+    violet: { border: 'border-l-violet-500/50', icon: 'text-violet-400', glow: 'bg-violet-500/10' },
+    sky: { border: 'border-l-sky-500/50', icon: 'text-sky-400', glow: 'bg-sky-500/10' },
+    emerald: { border: 'border-l-emerald-500/50', icon: 'text-emerald-400', glow: 'bg-emerald-500/10' },
+    amber: { border: 'border-l-amber-500/50', icon: 'text-amber-400', glow: 'bg-amber-500/10' },
+};
+
+function DeskRow({
+    agent,
+    activeRoom,
+    onClick,
+    status,
+    accent,
+}: {
+    agent: any;
+    activeRoom: string;
+    onClick: () => void;
+    status: string;
+    accent: keyof typeof ACCENT_STYLES;
+}) {
+    const styles = ACCENT_STYLES[accent] || ACCENT_STYLES.violet;
+    const isActive = activeRoom === agent.role;
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            className={`group flex w-full items-center gap-4 border-l-2 ${styles.border} px-4 py-4 text-left transition hover:bg-white/[0.03] sm:px-5 ${
+                isActive ? 'bg-white/[0.05]' : ''
+            }`}
+        >
+            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${styles.glow} ${styles.icon}`}>
+                {agent.icon}
+            </div>
+            <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                    <span className="truncate text-sm font-semibold text-brand-text">{agent.title}</span>
+                    {isActive && (
+                        <span className="rounded-full bg-white/10 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider text-white/70">
+                            Active
+                        </span>
+                    )}
+                </div>
+                <div className="mt-0.5 flex items-center gap-2">
+                    <span
+                        className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+                            status === 'active' ? styles.icon.replace('text-', 'bg-') : 'bg-brand-muted/50'
+                        }`}
+                        aria-hidden
+                    />
+                    <span className="text-[11px] capitalize text-brand-muted">{status}</span>
+                </div>
+            </div>
+            <ChevronRight className="h-5 w-5 shrink-0 text-brand-muted/50 transition group-hover:translate-x-0.5 group-hover:text-brand-muted" aria-hidden />
         </button>
     );
 }

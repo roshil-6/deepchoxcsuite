@@ -47,23 +47,26 @@ export function LeftRail({
     }, [setAllProjects]);
 
     const go = (room: AppNavRoom) => {
+        if (room === 'dashboard') {
+            setActiveProject(null);
+        }
         switchRoom(room as Parameters<typeof switchRoom>[0]);
     };
 
     const surface = isFlush
         ? 'relative z-30 flex h-full min-h-0 w-full min-w-0 shrink-0 flex-col overflow-hidden border-r border-[var(--border)] bg-[var(--bg)] lg:w-[260px]'
-        : 'relative z-30 flex h-full min-h-0 w-full min-w-0 shrink-0 flex-col overflow-hidden rounded-2xl border border-white/[0.1] bg-[var(--bg)]/95 shadow-[0_12px_40px_-8px_rgba(0,0,0,0.5)] backdrop-blur-xl lg:w-52';
+        : 'relative z-30 flex h-full min-h-0 w-full min-w-0 shrink-0 flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-[var(--bg)]/95 backdrop-blur-xl lg:w-52';
 
     return (
-        <div role="navigation" aria-label="DEEPCHOX workspace navigation" className={surface}>
+        <div role="navigation" aria-label="Deepchox workspace navigation" className={surface}>
             <div
                 className={`flex min-h-12 shrink-0 items-center justify-between gap-1 border-b border-[var(--border)] ${isFlush ? 'px-4 py-3' : 'px-2.5 py-2'}`}
             >
                 <div className="min-w-0 overflow-hidden">
-                    <p className="truncate text-[15px] font-medium tracking-tight text-[var(--text)]">DEEPCHOX</p>
-                    <p className={`truncate leading-tight text-[var(--muted)] ${isFlush ? 'mt-0.5 text-[11px]' : 'text-[10px]'}`}>
-                        {isFlush ? 'AI-powered team for founders' : 'AI team for founders'}
+                    <p className="truncate text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
+                        north<span className="text-[var(--text)]">ROC</span> LABS
                     </p>
+                    <p className="truncate text-[15px] font-semibold tracking-tight text-[var(--text)]">Deepchox</p>
                 </div>
                 <StaffNotificationCenter />
             </div>
@@ -114,10 +117,10 @@ export function LeftRail({
                             whileTap={{ scale: 0.98 }}
                             className={
                                 isFlush
-                                    ? `group relative flex min-h-9 w-full items-center gap-3 rounded-md py-2 pl-3 pr-3 text-left text-sm transition-colors ${
+                                    ? `group relative flex min-h-9 w-full items-center gap-3 rounded-lg py-2 pl-3 pr-3 text-left text-sm transition-colors ${
                                           active
-                                              ? 'bg-white/[0.06] text-[var(--text)]'
-                                              : 'text-[var(--muted)] hover:bg-white/[0.04] hover:text-[var(--text)]'
+                                              ? 'border border-white/[0.06] bg-white/[0.06] text-[var(--text)]'
+                                              : 'border border-transparent text-[var(--muted)] hover:border-white/[0.05] hover:bg-white/[0.03] hover:text-[var(--text)]'
                                       }`
                                     : `relative flex w-full items-center gap-2.5 rounded-xl py-1.5 pl-1.5 pr-2 text-left transition-colors ${
                                           active

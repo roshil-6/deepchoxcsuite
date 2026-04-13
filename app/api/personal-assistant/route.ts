@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { chatWithAI, hasAiKey } from '@/lib/ai/chatProviders';
 import { parsePersonalAssistantUpdatesFromModel } from '@/lib/paApplyUpdates';
+import { recommendWorkflowForPrompt } from '@/lib/intelligence/workflowRouter';
 
 type ChatTurn = { role: 'user' | 'assistant'; content: string };
 
@@ -75,8 +76,25 @@ export async function POST(req: Request) {
     }
 
     const ventureJson = JSON.stringify(project, null, 2).slice(0, 32000);
+    const lastUserTurn = [...conversation].reverse().find((turn) => turn.role === 'user' && turn.content.trim());
+    const workflow = recommendWorkflowForPrompt(lastUserTurn?.content || '');
     const msgs: { role: 'system' | 'user' | 'assistant'; content: string }[] = [
-      { role: 'system', content: `${PA_JSON_SYSTEM}\n\n--- CURRENT VENTURE (JSON) ---\n${ventureJson}` },
+      {
+        role: 'system',
+        content: `${PA_JSON_SYSTEM}
+
+--- CURRENT VENTURE (JSON) ---
+${ventureJson}
+
+--- WORKFLOW HINT ---
+Recommended workflow: ${workflow.workflowId}
+Reason: ${workflow.reason}
+
+If the request is best handled as a research_report or pinpoint_probe workflow, answer like a chief of staff:
+- Give the founder the direct answer they need now
+- Name which room or workflow should carry the deeper work next
+- Keep updates safe and minimal unless they explicitly asked to change the venture`,
+      },
     ];
     for (const m of conversation) {
       if (m.role !== 'user' && m.role !== 'assistant') continue;
@@ -114,6 +132,7 @@ export async function POST(req: Request) {
       reply,
       updates,
       followUpOptions,
+      workflow,
       model: 'Llama 3.3 70B (Groq)',
     });
   } catch (e) {

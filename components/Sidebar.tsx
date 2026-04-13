@@ -7,7 +7,6 @@ import { TeamHuddle } from '@/components/TeamHuddle';
 import { motion } from 'framer-motion';
 import {
   LayoutGrid,
-  Bot,
   FileText,
   Notebook,
   Plus,
@@ -16,7 +15,7 @@ import {
   GitBranch,
 } from 'lucide-react';
 import { StaffNotificationCenter } from '@/components/StaffNotificationCenter';
-import { RESEARCH_STAFF, sidebarPrimaryLabel } from '@/lib/researchStaffLabels';
+import { sidebarPrimaryLabel } from '@/lib/researchStaffLabels';
 import { useSubscription } from '@/hooks/useSubscription';
 import { UpgradeModal } from '@/components/UpgradeModal';
 import { Sparkles } from 'lucide-react';
@@ -62,8 +61,8 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
     >
       <div className="relative flex min-h-[3.5rem] shrink-0 items-center justify-between gap-2 border-b border-brand-border px-4 py-3">
         <div className="min-w-0">
-          <h1 className="text-[15px] font-medium tracking-tight text-brand-text">DEEPCHOX</h1>
-          <p className="mt-0.5 text-[11px] text-brand-muted">AI-powered team for founders</p>
+          <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-brand-muted">northROCS LABS presents</p>
+          <h1 className="text-[15px] font-semibold tracking-tight text-brand-text">Deepchox <span className="text-[9px] font-bold uppercase tracking-widest text-brand-muted align-middle">SUB</span></h1>
         </div>
         <StaffNotificationCenter />
       </div>
@@ -96,7 +95,7 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
             isActive={activeRoom === 'suite_intelligence'}
             onClick={() => switchRoom('suite_intelligence')}
           />
-          <NavItem icon={<Bot className="w-4 h-4" />} label={RESEARCH_STAFF.dexo.navTitle} isActive={activeRoom === 'dexo'} onClick={() => switchRoom('dexo')} />
+          <NavItem icon={<Sparkles className="w-4 h-4" />} label="Dexo" isActive={activeRoom === 'dexo'} onClick={() => switchRoom('dexo')} title="AI command center — analysis, voice, venture updates" />
           <NavItem icon={<Notebook className="w-4 h-4" />} label="Neural Diary" isActive={activeRoom === 'intelligence_diary'} onClick={() => switchRoom('intelligence_diary')} />
           <NavItem icon={<FileText className="w-4 h-4" />} label="Knowledge Base" isActive={activeRoom === 'reports'} onClick={() => switchRoom('reports')} />
         </NavSection>

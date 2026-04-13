@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { chatWithOpenAI, chatWithGroq, chatWithHuggingFace, chatWithOllama, simulationResponse } from '@/lib/ai/chatProviders';
+import { chatWithOpenAI, chatWithGroq, chatWithHuggingFace, chatWithOllama, chatWithClaude, simulationResponse } from '@/lib/ai/chatProviders';
 
 type Body = {
   messages: { role: string; content: string }[];
@@ -33,6 +33,7 @@ export async function POST(req: Request) {
 
     const openaiKey = process.env.OPENAI_API_KEY?.trim();
     const groqKey = process.env.GROQ_API_KEY?.trim();
+    const anthropicKey = process.env.ANTHROPIC_API_KEY?.trim();
     const hasHf = hfTokenPresent();
 
     // Optional: use local Ollama for desk chat even when other providers are configured
@@ -54,7 +55,18 @@ export async function POST(req: Request) {
         const out = await chatWithOpenAI(messages, model);
         return NextResponse.json({ ...out, model: `OpenAI · ${out.model}` });
       } catch (e) {
-        console.error('OpenAI error, falling back:', e);
+        console.error('OpenAI error, falling back to Claude:', e);
+        // Fall through to Claude below
+      }
+    }
+
+    // Claude Haiku — second priority when ANTHROPIC_API_KEY is set (also fallback from OpenAI failure)
+    if (anthropicKey && !openaiKey) {
+      try {
+        const out = await chatWithClaude(messages);
+        return NextResponse.json({ ...out, model: `Claude · ${out.model}` });
+      } catch (e) {
+        console.error('Claude error, falling back:', e);
       }
     }
 

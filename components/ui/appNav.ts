@@ -10,7 +10,7 @@ import {
     CalendarDays,
     Settings2,
     FileText,
-    Bot,
+    Sparkles,
     Notebook,
     Users,
 } from 'lucide-react';
@@ -55,7 +55,7 @@ export const APP_NAV_ITEMS: NavItemDef[] = [
     { room: 'chief_of_staff', label: rail(RESEARCH_STAFF.chief_of_staff.navTitle), short: rail(RESEARCH_STAFF.chief_of_staff.navTitle), icon: Users },
     { room: 'calendar', label: rail('Calendar'), short: rail('Calendar'), icon: CalendarDays },
     { room: 'reports', label: rail('Knowledge base'), short: rail('Knowledge base'), icon: FileText },
-    { room: 'dexo', label: rail(RESEARCH_STAFF.dexo.navTitle), short: rail(RESEARCH_STAFF.dexo.navTitle), icon: Bot },
+    { room: 'dexo', label: 'Dexo', short: 'Dexo', icon: Sparkles },
     { room: 'intelligence_diary', label: rail('Neural diary'), short: rail('Neural diary'), icon: Notebook },
     { room: 'suite_intelligence', label: rail('AI team network'), short: rail('AI team network'), icon: Settings2 },
 ];
@@ -71,7 +71,7 @@ export const WORKSPACE_TITLES: Record<string, string> = {
     dashboard: 'Executive overview',
     calendar: 'Calendar',
     suite_intelligence: 'AI team network',
-    dexo: RESEARCH_STAFF.dexo.navTitle,
+    dexo: 'Dexo',
     reports: 'Knowledge base',
     intelligence_diary: 'Neural diary',
     forge: 'Pitch and narrative forge',

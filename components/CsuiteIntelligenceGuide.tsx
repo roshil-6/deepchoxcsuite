@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { createPortal } from 'react-dom';
 import {
     Bot,
     Users,
@@ -16,8 +15,6 @@ import {
     Plus,
     Radio,
     ListOrdered,
-    Maximize2,
-    X,
     Sliders,
     LayoutDashboard,
 } from 'lucide-react';
@@ -26,11 +23,11 @@ import type { AgentStaffSnapshot } from '@/lib/db';
 import { useHfRoleSync, type HfDeskRole, HF_DEFAULT_COMPANY_CONTEXT } from '@/lib/useHfRoleSync';
 import { ModelAttribution } from '@/components/ModelAttribution';
 import { StaffFocusChecklist } from '@/components/office/StaffFocusChecklist';
-import { SuiteIntelligenceNeuralFlow } from '@/components/SuiteIntelligenceNeuralFlow';
-import type { IntelligenceNavRoom } from '@/lib/suiteIntelligenceFlowGraph';
 import { RESEARCH_STAFF } from '@/lib/researchStaffLabels';
 import { SuiteNavChips } from '@/components/SuiteNavChips';
 import { DeskChatThreadMount } from '@/components/DeskChatThreadSlotContext';
+import { DualAgentWorkPanel, useDualAgentPanelState } from '@/components/DualAgentWorkPanel';
+import { GuideHint, ProgressTrail } from '@/components/ui/ContextualGuide';
 
 const DESK_ORDER: { key: keyof AgentStaffSnapshot['desks']; title: string; subtitle: string }[] = [
     { key: 'ceo', title: RESEARCH_STAFF.ceo.navTitle, subtitle: RESEARCH_STAFF.ceo.navHint },
@@ -49,15 +46,16 @@ const DESK_HF_ROLE: Record<(typeof DESK_ORDER)[number]['key'], HfDeskRole> = {
 };
 
 /** Tinted shells — same vocabulary as executive dashboard “message” blocks */
+/** Neutral panels — readable hierarchy without tinted gradients or glow */
 const INTEL_OUTLINE = {
-    flow: 'border-cyan-500/35 bg-gradient-to-br from-cyan-500/[0.08] to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
-    roles: 'border-violet-500/35 bg-gradient-to-br from-violet-500/[0.09] to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
-    focus: 'border-amber-500/38 bg-gradient-to-br from-amber-950/30 to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
-    trace: 'border-sky-500/35 bg-gradient-to-br from-sky-500/[0.07] to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
-    activity: 'border-zinc-500/35 bg-zinc-900/35 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
-    dataflow: 'border-teal-500/32 bg-gradient-to-br from-teal-500/[0.06] to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
-    decisions: 'border-emerald-500/32 bg-gradient-to-br from-emerald-500/[0.06] to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
-    reports: 'border-fuchsia-500/28 bg-gradient-to-br from-fuchsia-500/[0.06] to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
+    flow: 'border border-zinc-800/90 bg-zinc-950/35',
+    roles: 'border border-zinc-800/90 bg-zinc-950/35',
+    focus: 'border border-zinc-800/90 bg-zinc-950/35',
+    trace: 'border border-zinc-800/90 bg-zinc-950/35',
+    activity: 'border border-zinc-800/90 bg-zinc-950/35',
+    dataflow: 'border border-zinc-800/90 bg-zinc-950/35',
+    decisions: 'border border-zinc-800/90 bg-zinc-950/35',
+    reports: 'border border-zinc-800/90 bg-zinc-950/35',
 } as const;
 
 type IntelOutlineKey = keyof typeof INTEL_OUTLINE;
@@ -89,10 +87,10 @@ function IntelMessageSection({
     return (
         <section
             id={id}
-            className={`scroll-mt-28 rounded-2xl border px-4 py-4 sm:px-5 sm:py-5 ${INTEL_OUTLINE[outline]} ${className}`}
+            className={`scroll-mt-28 rounded-2xl px-4 py-4 sm:px-5 sm:py-5 ${INTEL_OUTLINE[outline]} ${className}`}
         >
             <header className="mb-4 shrink-0 flex gap-3">
-                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-black/25 ring-1 ring-white/[0.08]">
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900/80 text-zinc-400">
                     {icon}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -112,11 +110,11 @@ function IntelMessageSection({
 }
 
 const DESK_MESSAGE_ACCENT: Record<(typeof DESK_ORDER)[number]['key'], string> = {
-    ceo: 'border-l-4 border-l-violet-400/50',
-    pm: 'border-l-4 border-l-amber-400/50',
-    accountant: 'border-l-4 border-l-emerald-400/45',
-    scout: 'border-l-4 border-l-sky-400/50',
-    cmo: 'border-l-4 border-l-fuchsia-400/45',
+    ceo: 'border-l-2 border-l-zinc-600',
+    pm: 'border-l-2 border-l-zinc-600',
+    accountant: 'border-l-2 border-l-zinc-600',
+    scout: 'border-l-2 border-l-zinc-600',
+    cmo: 'border-l-2 border-l-zinc-600',
 };
 
 const COORD_PRESETS: { label: string; text: string }[] = [
@@ -147,8 +145,8 @@ function InsetPanel({
 }) {
     const base =
         variant === 'muted'
-            ? 'rounded-xl border border-white/[0.08] bg-black/30 px-4 py-3 ring-1 ring-white/[0.04] sm:px-5 sm:py-4'
-            : 'rounded-xl border border-white/[0.1] bg-white/[0.04] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] ring-1 ring-white/[0.05] sm:px-5 sm:py-5';
+            ? 'rounded-xl border border-zinc-800/80 bg-zinc-950/50 px-4 py-3 sm:px-5 sm:py-4'
+            : 'rounded-xl border border-zinc-800/80 bg-zinc-900/30 px-4 py-4 sm:px-5 sm:py-5';
     return <div className={`${base} ${className}`}>{children}</div>;
 }
 
@@ -178,6 +176,7 @@ export function CsuiteIntelligenceGuide() {
         agentSyncRunning,
         runAgentStaffSync,
         lastAiSyncTrace,
+        lastSyncDualAgent,
         systemLogs,
         markStaffFocusLineDone,
         setSuiteIntelOpenDesk,
@@ -185,18 +184,20 @@ export function CsuiteIntelligenceGuide() {
         updateProjectField,
     } = useOffice();
 
+    const dualAgentPanelState = useDualAgentPanelState(
+        agentSyncRunning,
+        lastSyncDualAgent ? { dual_agent: lastSyncDualAgent } : null,
+        lastSyncDualAgent?.at ?? null
+    );
+
     const snapshot = activeProject?.agentStaffSnapshot;
     const focus = activeProject?.staffFocusToday ?? [];
     const syncLogs = systemLogs.filter((l) => l.source === 'agent-sync').slice(0, 12);
 
     const [openDesk, setOpenDesk] = useState<string | null>('ceo');
     const [traceOpen, setTraceOpen] = useState(true);
-    const [flowStructureFullView, setFlowStructureFullView] = useState(false);
-    const [flowPortalReady, setFlowPortalReady] = useState(false);
     const [howAiOpen, setHowAiOpen] = useState(false);
     const [coordDraft, setCoordDraft] = useState('');
-
-    useEffect(() => setFlowPortalReady(true), []);
 
     useEffect(() => {
         setCoordDraft(activeProject?.agentCoordinationBrief ?? '');
@@ -210,19 +211,6 @@ export function CsuiteIntelligenceGuide() {
         if (!snapshot?.desks) setOpenDesk(null);
     }, [snapshot?.desks]);
 
-    useEffect(() => {
-        if (!flowStructureFullView) return;
-        const prev = document.body.style.overflow;
-        document.body.style.overflow = 'hidden';
-        const onKey = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') setFlowStructureFullView(false);
-        };
-        window.addEventListener('keydown', onKey);
-        return () => {
-            document.body.style.overflow = prev;
-            window.removeEventListener('keydown', onKey);
-        };
-    }, [flowStructureFullView]);
 
     const hfCompanyContext = useMemo(() => {
         if (!activeProject?.name) return HF_DEFAULT_COMPANY_CONTEXT;
@@ -283,121 +271,85 @@ export function CsuiteIntelligenceGuide() {
         );
     }
 
-    const flowProps = {
-        ventureName: activeProject.name,
-        lastSyncAtLabel: snapshot?.at ? formatSyncTime(snapshot.at) : null,
-        trace: lastAiSyncTrace,
-        agentSyncRunning,
-        switchRoom: (room: IntelligenceNavRoom) => switchRoom(room),
-    } as const;
 
     /* ── Fullscreen flow overlay ── */
-    const flowFullScreenLayer =
-        flowStructureFullView && flowPortalReady ? (
-            <div
-                className="fixed inset-0 z-[10000] flex flex-col bg-[#111113]"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="flow-full-title"
-            >
-                <header className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-white/[0.06] bg-[#131314] px-4 py-3 sm:px-6">
-                    <div className="min-w-0">
-                        <SectionLabel>DEEPCHOX · AI team network</SectionLabel>
-                        <p id="flow-full-title" className="mt-0.5 truncate text-[13px] font-medium text-zinc-100">
-                            {activeProject.name}
-                        </p>
-                        <p className="mt-0.5 text-[10px] text-zinc-500">
-                            One staff-sync run refreshes all five desk briefs from your venture snapshot. Press{' '}
-                            <kbd className="rounded border border-white/[0.1] bg-white/[0.05] px-1 font-mono text-[9px] text-zinc-400">
-                                Esc
-                            </kbd>{' '}
-                            to exit.
-                        </p>
-                    </div>
-                    <div className="flex shrink-0 flex-wrap items-center gap-2">
-                        <button
-                            type="button"
-                            onClick={() => runAgentStaffSync()}
-                            disabled={agentSyncRunning}
-                            className="inline-flex items-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[11px] font-medium text-zinc-200 transition hover:bg-white/[0.07] disabled:opacity-50"
-                        >
-                            <RefreshCw
-                                className={`h-3.5 w-3.5 ${agentSyncRunning ? 'animate-spin' : ''}`}
-                                strokeWidth={2}
-                                aria-hidden
-                            />
-                            {agentSyncRunning ? 'Syncing…' : 'Run staff sync'}
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setFlowStructureFullView(false)}
-                            className="inline-flex items-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[11px] font-medium text-zinc-200 transition hover:bg-white/[0.07]"
-                        >
-                            <X className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
-                            Close
-                        </button>
-                    </div>
-                </header>
-                <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overflow-x-auto px-5 py-6 sm:px-7">
-                    <div className="mx-auto w-full min-w-0 max-w-[1600px]">
-                        <SuiteIntelligenceNeuralFlow {...flowProps} variant="fullscreen" />
-                    </div>
-                </div>
-            </div>
-        ) : null;
-
-    /* ── Main page ── */
     return (
-        <>
-            {flowPortalReady && flowFullScreenLayer ? createPortal(flowFullScreenLayer, document.body) : null}
-
-            <div className="w-full min-w-0 bg-[#131314]">
-                <div className="mx-auto max-w-3xl space-y-6 px-4 pt-5 pb-16 sm:px-5 lg:max-w-4xl">
-                    <header className="rounded-2xl border border-zinc-500/30 bg-zinc-900/40 px-4 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:px-5">
-                        <SectionLabel>DEEPCHOX</SectionLabel>
-                        <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-teal-500/80">
+        <div className="w-full min-w-0 bg-[#131314]">
+                <div className="mx-auto max-w-3xl space-y-6 px-4 pt-5 pb-16 sm:px-5 lg:max-w-5xl">
+                    <header className="rounded-2xl border border-zinc-800/90 bg-zinc-950/40 px-4 py-5 sm:px-5">
+                        <SectionLabel>northROC LABS · Deepchox</SectionLabel>
+                        <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
                             AI-powered team for founders
                         </p>
                         <h1 className="mt-2 text-xl font-semibold tracking-tight text-zinc-100 sm:text-[22px]">
-                            AI team coordination
+                            Intelligence suite
                         </h1>
-                        <p className="mt-2.5 max-w-2xl text-[13px] leading-relaxed text-zinc-500">
-                            Set <span className="text-zinc-300">how you want your AI teammates to coordinate</span>, then run staff
-                            sync so every desk brief is generated from the same venture snapshot. Desk chats and your notes still edit
-                            the record between runs.
+                        <p className="mt-2.5 max-w-2xl text-[13px] leading-relaxed text-zinc-400">
+                            Configure <span className="text-zinc-300">how your AI teammates stay aligned</span>, then run staff sync
+                            so every desk brief is generated from the same venture snapshot. Desk chats and your notes still edit the
+                            record between runs.
                         </p>
                         <p className="mt-3 text-[11px] leading-snug text-zinc-600">
                             Outlined blocks group controls (your setup) from readouts (model output). Nothing here replaces your judgment
                             — verify anything that affects real decisions.
                         </p>
                         <SuiteNavChips className="mt-5" />
+
+                        {/* Workflow progress trail */}
+                        <div className="mt-4">
+                            <ProgressTrail
+                                steps={[
+                                    { label: 'Venture created', done: true },
+                                    { label: 'Strategy added', done: !!(activeProject?.strategy && activeProject.strategy.length > 30) },
+                                    { label: 'Coordination brief', done: !!(activeProject?.agentCoordinationBrief?.trim()), active: !(activeProject?.agentCoordinationBrief?.trim()) },
+                                    { label: 'Staff sync run', done: !!activeProject?.agentStaffSnapshot, active: !activeProject?.agentStaffSnapshot && !!(activeProject?.strategy && activeProject.strategy.length > 30) },
+                                ]}
+                            />
+                        </div>
                     </header>
+
+                    {/* First-time guide hints */}
+                    <div className="flex flex-col gap-2">
+                        <GuideHint
+                            id="intel-no-brief"
+                            when={!activeProject?.agentCoordinationBrief?.trim() && !activeProject?.agentStaffSnapshot}
+                            variant="tip"
+                            message='Write a short coordination brief below — e.g. "Ship-first: CFO flags runway risk, CMO stays lean until we have pilot names." This tells your AI team how to weight priorities.'
+                            dismissible
+                        />
+                        <GuideHint
+                            id="intel-first-sync"
+                            when={!activeProject?.agentStaffSnapshot && !agentSyncRunning}
+                            variant="info"
+                            message="No sync has run yet. Hit Run staff sync — Claude and GPT routes run together (dual-model stack) across all five desks and populate the outputs below."
+                            action="Run sync"
+                            onAction={() => runAgentStaffSync()}
+                            dismissible={false}
+                        />
+                        <GuideHint
+                            id="intel-sync-running"
+                            when={agentSyncRunning}
+                            variant="info"
+                            message="Both model routes are running in parallel right now. GPT and Claude each contribute to the merged staff output; results combine automatically."
+                            dismissible={false}
+                        />
+                    </div>
 
                     <IntelMessageSection
                         id="live-net"
                         outline="flow"
-                        icon={<GitBranch className="h-4 w-4 text-cyan-300/90" strokeWidth={1.9} aria-hidden />}
+                        icon={<GitBranch className="h-4 w-4 text-zinc-400" strokeWidth={1.9} aria-hidden />}
                         eyebrow="Network"
-                        title="Coordination map &amp; controls"
-                        subtitle="Visualize the fan-out from one staff sync, then run sync or try optional per-role probes below."
-                        headerRight={
-                            <button
-                                type="button"
-                                onClick={() => setFlowStructureFullView(true)}
-                                className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/25 bg-cyan-500/[0.08] px-3 py-1.5 text-[11px] font-medium text-zinc-100 transition hover:bg-cyan-500/[0.12]"
-                            >
-                                <Maximize2 className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
-                                Fullscreen
-                            </button>
-                        }
+                        title="Controls"
+                        subtitle="Run staff sync, steer coordination, and compare optional per-role probes below."
                     >
                         <div className="space-y-4">
                             <div
                                 id="coord-brief"
-                                className="scroll-mt-28 rounded-xl border border-emerald-500/30 bg-emerald-500/[0.06] p-4 ring-1 ring-white/[0.05] sm:p-5"
+                                className="scroll-mt-28 rounded-xl border border-zinc-800/90 bg-zinc-950/40 p-4 sm:p-5"
                             >
                                 <div className="flex items-start gap-3">
-                                    <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-black/30 text-emerald-200/90 ring-1 ring-white/[0.08]">
+                                    <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900/80 text-zinc-400">
                                         <Sliders className="h-4 w-4" strokeWidth={1.9} aria-hidden />
                                     </div>
                                     <div className="min-w-0 flex-1">
@@ -415,7 +367,7 @@ export function CsuiteIntelligenceGuide() {
                                             }}
                                             rows={5}
                                             placeholder='Example: "Ship the calibration MVP first; CFO calls out runway below 9 months; keep GTM copy short until we have pilot names."'
-                                            className="mt-3 w-full resize-y rounded-xl border border-emerald-500/25 bg-black/40 px-3 py-2.5 text-[13px] leading-relaxed text-zinc-200 placeholder:text-zinc-600 focus:border-emerald-400/45 focus:outline-none focus:ring-1 focus:ring-emerald-400/30"
+                                            className="mt-3 w-full resize-y rounded-xl border border-zinc-800 bg-zinc-950/60 px-3 py-2.5 text-[13px] leading-relaxed text-zinc-200 placeholder:text-zinc-600 focus:border-zinc-600 focus:outline-none"
                                             spellCheck
                                         />
                                         <p className="mt-2 text-[10px] text-zinc-500">
@@ -434,7 +386,7 @@ export function CsuiteIntelligenceGuide() {
                                                         setCoordDraft(next);
                                                         void persistCoordinationBrief(next);
                                                     }}
-                                                    className="rounded-lg border border-emerald-500/25 bg-black/30 px-2.5 py-1 text-[10px] font-medium text-emerald-100/90 transition hover:bg-emerald-500/15"
+                                                    className="rounded-lg border border-zinc-700 bg-zinc-900/60 px-2.5 py-1 text-[10px] font-medium text-zinc-300 transition hover:bg-zinc-800/80"
                                                 >
                                                     + {preset.label}
                                                 </button>
@@ -444,26 +396,26 @@ export function CsuiteIntelligenceGuide() {
                                 </div>
                             </div>
 
-                            <div className="overflow-hidden rounded-xl border border-sky-500/28 bg-sky-500/[0.05] ring-1 ring-white/[0.04]">
+                            <div className="overflow-hidden rounded-xl border border-zinc-800/90 bg-zinc-950/30">
                                 <button
                                     type="button"
                                     onClick={() => setHowAiOpen((v) => !v)}
-                                    className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-[12px] font-medium text-zinc-200 transition hover:bg-white/[0.04]"
+                                    className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-[12px] font-medium text-zinc-200 transition hover:bg-zinc-900/50"
                                     aria-expanded={howAiOpen}
                                     aria-controls="how-ai-updates"
                                     id="how-ai-toggle"
                                 >
                                     <span>What staff sync actually uses</span>
                                     {howAiOpen ? (
-                                        <Minus className="h-4 w-4 shrink-0 text-sky-300/80" strokeWidth={2} aria-hidden />
+                                        <Minus className="h-4 w-4 shrink-0 text-zinc-500" strokeWidth={2} aria-hidden />
                                     ) : (
-                                        <Plus className="h-4 w-4 shrink-0 text-sky-400/70" strokeWidth={2} aria-hidden />
+                                        <Plus className="h-4 w-4 shrink-0 text-zinc-500" strokeWidth={2} aria-hidden />
                                     )}
                                 </button>
                                 {howAiOpen ? (
                                     <div
                                         id="how-ai-updates"
-                                        className="border-t border-sky-500/20 bg-black/20 px-4 py-4"
+                                        className="border-t border-zinc-800/80 bg-zinc-950/50 px-4 py-4"
                                         aria-labelledby="how-ai-toggle"
                                     >
                                         <ol className="list-decimal space-y-2.5 pl-4 text-[12px] leading-relaxed text-zinc-400 marker:text-zinc-600">
@@ -490,13 +442,9 @@ export function CsuiteIntelligenceGuide() {
                                 ) : null}
                             </div>
 
-                            <div className="rounded-xl border border-white/[0.1] bg-black/30 px-2 py-4 ring-1 ring-white/[0.05] sm:px-3">
-                                <SuiteIntelligenceNeuralFlow {...flowProps} variant="inline" />
-                            </div>
-
-                            <div className="flex flex-col gap-3 rounded-xl border border-violet-500/25 bg-violet-500/[0.06] px-4 py-3 ring-1 ring-white/[0.04] sm:flex-row sm:items-start sm:justify-between">
+                            <div className="flex flex-col gap-3 rounded-xl border border-zinc-800/90 bg-zinc-950/35 px-4 py-3 sm:flex-row sm:items-start sm:justify-between">
                                 <div className="min-w-0 sm:max-w-[55%]">
-                                    <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-violet-200/70">
+                                    <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
                                         Alternate model probe (optional)
                                     </span>
                                     <p className="mt-1 text-[11px] leading-snug text-zinc-500">
@@ -529,12 +477,12 @@ export function CsuiteIntelligenceGuide() {
                                 </InsetPanel>
                             ) : null}
 
-                            <div className="flex flex-col gap-3 rounded-xl border border-teal-500/25 bg-teal-500/[0.06] px-4 py-3.5 ring-1 ring-white/[0.04] sm:flex-row sm:items-center sm:justify-between">
+                            <div className="flex flex-col gap-3 rounded-xl border border-zinc-800/90 bg-zinc-950/35 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between">
                                 <button
                                     type="button"
                                     onClick={() => runAgentStaffSync()}
                                     disabled={agentSyncRunning}
-                                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-teal-400/30 bg-teal-950/40 px-5 py-2.5 text-[12px] font-semibold text-teal-50 transition hover:bg-teal-950/55 disabled:opacity-50"
+                                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-600 bg-zinc-100 px-5 py-2.5 text-[12px] font-semibold text-zinc-900 transition hover:bg-white disabled:opacity-50"
                                 >
                                     <RefreshCw
                                         className={`h-4 w-4 ${agentSyncRunning ? 'animate-spin' : ''}`}
@@ -551,18 +499,21 @@ export function CsuiteIntelligenceGuide() {
                         </div>
                     </IntelMessageSection>
 
+                    {/* ─── Dual-Agent Network Panel ─── */}
+                    <DualAgentWorkPanel state={dualAgentPanelState} />
+
                     {/* ─── Section 2: Role outputs ─── */}
                     {snapshot?.desks && (
                         <IntelMessageSection
                             id="desk-out"
                             outline="roles"
-                            icon={<Users className="h-4 w-4 text-violet-300/90" strokeWidth={1.9} aria-hidden />}
+                            icon={<Users className="h-4 w-4 text-zinc-400" strokeWidth={1.9} aria-hidden />}
                             eyebrow="Model output"
                             title="Latest desk briefs from staff sync"
                             subtitle={`Generated ${formatSyncTime(snapshot.at)} — stored on this venture; open a lane to read or continue in desk chat.`}
                         >
                             {snapshot.summary?.trim() ? (
-                                <InsetPanel className="mb-5 border-l-4 border-l-violet-400/45 pl-4">
+                                <InsetPanel className="mb-5 border-l-2 border-l-zinc-600 pl-4">
                                     <SectionLabel>Staff synthesis</SectionLabel>
                                     <p className="mt-2 whitespace-pre-wrap text-[13px] leading-relaxed text-zinc-300">
                                         {snapshot.summary}
@@ -577,8 +528,8 @@ export function CsuiteIntelligenceGuide() {
                                     return (
                                         <div
                                             key={row.key}
-                                            className={`overflow-hidden rounded-xl border border-white/[0.08] bg-black/20 transition-colors ring-1 ring-white/[0.04] ${
-                                                open ? 'bg-white/[0.05] ring-violet-500/20' : 'hover:border-white/[0.12]'
+                                            className={`overflow-hidden rounded-xl border border-zinc-800/90 bg-zinc-950/30 transition-colors ${
+                                                open ? 'bg-zinc-900/40' : 'hover:border-zinc-700'
                                             } ${accent}`}
                                         >
                                             <button
@@ -618,7 +569,7 @@ export function CsuiteIntelligenceGuide() {
                         <IntelMessageSection
                             id="focus-trace"
                             outline="focus"
-                            icon={<Sparkles className="h-4 w-4 text-amber-200/90" strokeWidth={1.9} aria-hidden />}
+                            icon={<Sparkles className="h-4 w-4 text-zinc-400" strokeWidth={1.9} aria-hidden />}
                             eyebrow="Today"
                             title="Focus today"
                             subtitle="Check items as you go. Notes are saved to your journal."
@@ -631,10 +582,10 @@ export function CsuiteIntelligenceGuide() {
                                         lines={focus}
                                         completedLines={activeProject?.staffFocusCompletedLines || []}
                                         onMarkDone={(line, note) => markStaffFocusLineDone(line, note)}
-                                        className="border-amber-500/15 bg-black/25"
+                                        className="border-zinc-800/80 bg-zinc-950/40"
                                     />
                                 ) : (
-                                    <div className="rounded-xl border border-dashed border-amber-500/25 bg-amber-950/15 px-4 py-8 text-center text-[12px] text-zinc-500">
+                                    <div className="rounded-xl border border-dashed border-zinc-800 px-4 py-8 text-center text-[12px] text-zinc-500">
                                         Run a staff sync to populate today&apos;s priorities.
                                     </div>
                                 )}
@@ -643,7 +594,7 @@ export function CsuiteIntelligenceGuide() {
 
                         <IntelMessageSection
                             outline="trace"
-                            icon={<ListOrdered className="h-4 w-4 text-sky-300/90" strokeWidth={1.9} aria-hidden />}
+                            icon={<ListOrdered className="h-4 w-4 text-zinc-400" strokeWidth={1.9} aria-hidden />}
                             eyebrow="Session"
                             title="Process trace"
                             subtitle="Steps from the last staff sync in this session."
@@ -651,7 +602,7 @@ export function CsuiteIntelligenceGuide() {
                                 <button
                                     type="button"
                                     onClick={() => setTraceOpen(!traceOpen)}
-                                    className="rounded-lg border border-sky-500/25 bg-sky-500/[0.1] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-sky-200/90 transition hover:bg-sky-500/[0.15]"
+                                    className="rounded-lg border border-zinc-700 bg-zinc-900/70 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-300 transition hover:bg-zinc-800"
                                 >
                                     {traceOpen ? 'Hide' : 'Show'}
                                 </button>
@@ -665,9 +616,9 @@ export function CsuiteIntelligenceGuide() {
                                         {lastAiSyncTrace!.map((step, i) => (
                                             <li
                                                 key={step.id + i}
-                                                className="flex gap-3 rounded-lg border border-sky-500/15 bg-black/25 px-3 py-2.5 ring-1 ring-white/[0.04]"
+                                                className="flex gap-3 rounded-lg border border-zinc-800/90 bg-zinc-950/50 px-3 py-2.5"
                                             >
-                                                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-sky-500/15 text-[11px] font-bold text-sky-200/90">
+                                                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900 text-[11px] font-bold text-zinc-400">
                                                     {i + 1}
                                                 </span>
                                                 <div className="min-w-0">
@@ -680,8 +631,8 @@ export function CsuiteIntelligenceGuide() {
                                         ))}
                                     </ol>
                                 ) : traceOpen ? (
-                                    <div className="rounded-xl border border-dashed border-sky-500/25 bg-sky-950/20 px-4 py-6 text-[12px] leading-relaxed text-zinc-500">
-                                        Run <span className="text-sky-300/80">staff sync</span> in this session to see the trace. It
+                                    <div className="rounded-xl border border-dashed border-zinc-800 px-4 py-6 text-[12px] leading-relaxed text-zinc-500">
+                                        Run <span className="font-medium text-zinc-400">staff sync</span> in this session to see the trace. It
                                         does not persist after refresh.
                                     </div>
                                 ) : (
@@ -730,41 +681,41 @@ export function CsuiteIntelligenceGuide() {
                     <IntelMessageSection
                         id="net-title"
                         outline="dataflow"
-                        icon={<Layers className="h-4 w-4 text-teal-300/85" strokeWidth={1.9} aria-hidden />}
+                        icon={<Layers className="h-4 w-4 text-zinc-400" strokeWidth={1.9} aria-hidden />}
                         eyebrow="Reality check"
                         title="What you steer vs what runs for you"
                         subtitle="No hidden autonomy: these are the actual splits in this app today."
                     >
-                        <div className="divide-y divide-teal-500/15 rounded-xl border border-teal-500/20 bg-black/20 ring-1 ring-white/[0.04]">
+                        <div className="divide-y divide-zinc-800/80 rounded-xl border border-zinc-800/90 bg-zinc-950/30">
                             {[
                                 {
                                     icon: Sliders,
                                     label: 'You steer',
                                     text: 'Coordination brief, strategy & product fields, team directives, kanban, calendar, notes, and which desk you open. All of that is included in the snapshot sent to staff sync.',
-                                    tone: 'border-l-4 border-l-teal-400/45',
+                                    tone: 'border-l-2 border-l-zinc-600',
                                 },
                                 {
                                     icon: Bot,
                                     label: 'Automated on demand',
                                     text: 'Staff sync (button) calls the server model once and writes back desk briefs, optional merges, focus list, and notifications. It does not run on a timer unless you add that elsewhere.',
-                                    tone: 'border-l-4 border-l-cyan-400/45',
+                                    tone: 'border-l-2 border-l-zinc-600',
                                 },
                                 {
                                     icon: Users,
                                     label: 'Per-desk AI',
                                     text: 'Each room’s chat uses that surface’s context; replies do not automatically rerun the whole staff sync. Use sync when you want all five briefs refreshed together.',
-                                    tone: 'border-l-4 border-l-violet-400/45',
+                                    tone: 'border-l-2 border-l-zinc-600',
                                 },
                             ].map((item) => (
                                 <div
                                     key={item.label}
                                     className={`flex gap-4 px-4 py-4 first:pt-4 last:pb-4 sm:px-5 ${item.tone}`}
                                 >
-                                    <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-500/10 text-teal-100 ring-1 ring-teal-500/15">
+                                    <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900/80 text-zinc-400">
                                         <item.icon className="h-[18px] w-[18px]" strokeWidth={1.9} aria-hidden />
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-teal-200/55">
+                                        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
                                             {item.label}
                                         </p>
                                         <p className="mt-1.5 text-[13px] leading-relaxed text-zinc-400">{item.text}</p>
@@ -774,15 +725,16 @@ export function CsuiteIntelligenceGuide() {
                         </div>
                     </IntelMessageSection>
 
+
                     <IntelMessageSection
                         id="decisions-shape"
                         outline="decisions"
-                        icon={<Shield className="h-4 w-4 text-emerald-300/85" strokeWidth={1.9} aria-hidden />}
+                        icon={<Shield className="h-4 w-4 text-zinc-400" strokeWidth={1.9} aria-hidden />}
                         eyebrow="Safety"
                         title="Ground rules for trusting output"
                         subtitle="Models can be wrong; thin venture data makes that more likely."
                     >
-                        <InsetPanel className="border-emerald-500/15 bg-emerald-950/15">
+                        <InsetPanel className="border-zinc-800/80 bg-zinc-950/40">
                             <ul className="space-y-4">
                                 {[
                                     {
@@ -800,7 +752,7 @@ export function CsuiteIntelligenceGuide() {
                                 ].map((item) => (
                                     <li key={item.label} className="flex gap-3 text-[13px] leading-relaxed text-zinc-400">
                                         <span
-                                            className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400/50"
+                                            className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-500"
                                             aria-hidden
                                         />
                                         <span>
@@ -816,7 +768,7 @@ export function CsuiteIntelligenceGuide() {
                     <IntelMessageSection
                         id="reports-artifacts"
                         outline="reports"
-                        icon={<FileText className="h-4 w-4 text-fuchsia-300/80" strokeWidth={1.9} aria-hidden />}
+                        icon={<FileText className="h-4 w-4 text-zinc-400" strokeWidth={1.9} aria-hidden />}
                         eyebrow="Next steps"
                         title="Continue in the office"
                         subtitle="Jump to where you edit the venture or review saved work."
@@ -826,35 +778,35 @@ export function CsuiteIntelligenceGuide() {
                                 {
                                     icon: LayoutDashboard,
                                     text: 'Executive overview — KPIs, office brief, and dashboard tiles.',
-                                    ring: 'border-fuchsia-500/20 bg-fuchsia-950/15',
+                                    ring: 'border-zinc-800/90 bg-zinc-950/40',
                                     room: 'dashboard' as const,
                                     label: 'Overview',
-                                    ctaClass: 'text-fuchsia-200/75',
+                                    ctaClass: 'text-zinc-400',
                                 },
                                 {
                                     icon: FileText,
                                     text: 'Knowledge — exports and artifacts tied to desks.',
-                                    ring: 'border-violet-500/20 bg-violet-950/15',
+                                    ring: 'border-zinc-800/90 bg-zinc-950/40',
                                     room: 'reports' as const,
                                     label: 'Knowledge',
-                                    ctaClass: 'text-violet-200/75',
+                                    ctaClass: 'text-zinc-400',
                                 },
                                 {
                                     icon: MessageSquare,
                                     text: 'Personal Assistant — change strategy, phases, or board through chat.',
-                                    ring: 'border-sky-500/20 bg-sky-950/15',
+                                    ring: 'border-zinc-800/90 bg-zinc-950/40',
                                     room: 'personal_assistant' as const,
                                     label: 'Assistant',
-                                    ctaClass: 'text-sky-200/80',
+                                    ctaClass: 'text-zinc-400',
                                 },
                             ].map((item) => (
                                 <button
                                     key={item.label}
                                     type="button"
                                     onClick={() => switchRoom(item.room)}
-                                    className={`flex flex-col gap-3 rounded-xl border px-4 py-4 text-left ring-1 ring-white/[0.04] transition hover:bg-white/[0.04] ${item.ring}`}
+                                    className={`flex flex-col gap-3 rounded-xl border px-4 py-4 text-left transition hover:bg-zinc-900/50 ${item.ring}`}
                                 >
-                                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-black/25 text-zinc-100 ring-1 ring-white/[0.06]">
+                                    <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900/80 text-zinc-300">
                                         <item.icon className="h-[17px] w-[17px]" strokeWidth={1.9} aria-hidden />
                                     </div>
                                     <p className="text-[12px] leading-relaxed text-zinc-400">{item.text}</p>
@@ -872,6 +824,5 @@ export function CsuiteIntelligenceGuide() {
                     </footer>
                 </div>
             </div>
-        </>
     );
 }

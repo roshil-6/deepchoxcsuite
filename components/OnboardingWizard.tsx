@@ -100,7 +100,7 @@ export function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) 
                             <div className="w-8 h-8 bg-zinc-100 rounded-lg flex items-center justify-center text-[#09090b] shadow-lg">
                                 <Briefcase className="w-4 h-4" />
                             </div>
-                            <span className="font-bold text-zinc-100 tracking-tight">DEEPCHOX</span>
+                            <span className="font-bold text-zinc-100 tracking-tight">Deepchox</span>
                         </div>
 
                         <div className="space-y-10">

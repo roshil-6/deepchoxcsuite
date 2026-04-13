@@ -119,7 +119,7 @@ export function LiveReportPreview({ onGeneratePDF }: LiveReportPreviewProps) {
 
           {/* Footer Watermark */}
           <div className="absolute bottom-12 left-0 right-0 text-center pointer-events-none">
-            <p className="text-[10px] text-slate-200 uppercase tracking-widest font-bold">Confidential • DEEPCHOX venture workspace</p>
+            <p className="text-[10px] text-slate-200 uppercase tracking-widest font-bold">Confidential • northROCS LABS · Deepchox</p>
           </div>
         </div>
 
