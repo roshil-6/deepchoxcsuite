@@ -348,7 +348,7 @@ export function ScoutTerminal() {
                                         }}
                                         className={`flex w-full touch-manipulation flex-col items-start gap-1 rounded-md border px-3 py-2.5 text-left text-[11px] transition ${
                                             active
-                                                ? 'border-brand-teal/45 bg-brand-input ring-1 ring-inset ring-brand-teal/30'
+                                                ? 'border-brand-teal/45 bg-brand-input'
                                                 : 'border-brand-border/70 bg-brand-panel/40 hover:bg-brand-input/60'
                                         }`}
                                     >

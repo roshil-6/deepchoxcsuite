@@ -5,9 +5,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, PanelRight, Sparkles } from 'lucide-react';
 import { useOffice } from '@/lib/OfficeContext';
 import { parseStrategy } from '@/lib/strategyDoc';
-import { computeExecutionScore } from '@/lib/ventureMetrics';
+import {
+    computeStrategicCoverageScore,
+    computeExecutionDeliveryScore,
+    computeFinancialHealthScore,
+} from '@/lib/ventureMetrics';
 import { aggregateImpact } from '@/lib/impact/impactEngine';
-import { fromExecutionScore } from '@/lib/impact/adapters/dashboardAdapter';
+import { fromVenturePillarScores } from '@/lib/impact/adapters/dashboardAdapter';
 import { HealthWidget } from '@/components/ui/HealthWidget';
 import { AlertWidget } from '@/components/ui/AlertWidget';
 import { executiveSurfaceClass, executiveToolbarButtonClass } from '@/components/ui/cardStyles';
@@ -33,12 +37,12 @@ export function ContextPanel({
     const { activeProject, activeRoom, staffAttentionPending, livingOffice } = useOffice();
     const hasActiveVenture = Boolean(activeProject?.id);
 
-    const execution = useMemo(
-        () => computeExecutionScore(activeProject?.strategy),
-        [activeProject?.strategy]
-    );
-
-    const businessImpact = useMemo(() => aggregateImpact([fromExecutionScore(execution)]), [execution]);
+    const businessImpact = useMemo(() => {
+        const strategic = computeStrategicCoverageScore(activeProject?.strategy);
+        const execution = computeExecutionDeliveryScore(activeProject?.strategy);
+        const financial = computeFinancialHealthScore(activeProject?.budget);
+        return aggregateImpact([fromVenturePillarScores({ strategic, financial, execution })]);
+    }, [activeProject?.strategy, activeProject?.budget]);
 
     const priorities = useMemo(() => {
         const doc = parseStrategy(activeProject?.strategy || '');

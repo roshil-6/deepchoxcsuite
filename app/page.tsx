@@ -13,6 +13,7 @@ import { Project, saveProject, getAllProjects } from '@/lib/db';
 import { emptyVentureShell } from '@/lib/minimalVenture';
 import { OfficeShell } from '@/components/OfficeShell';
 import { SyncToastHost } from '@/components/SyncToastHost';
+import { AgentStaffAutoSync } from '@/components/AgentStaffAutoSync';
 import { PersonalAssistantChatProvider } from '@/components/pa/PersonalAssistantChatContext';
 import { FloatingDexoOrb } from '@/components/Dexo/FloatingDexoOrb';
 import { DeskChatThreadSlotProvider } from '@/components/DeskChatThreadSlotContext';
@@ -84,6 +85,7 @@ export default function Home() {
           <FloatingDexoOrb />
         </PersonalAssistantChatProvider>
         <SyncToastHost />
+        <AgentStaffAutoSync />
       </OfficeShell>
     </div>
   );

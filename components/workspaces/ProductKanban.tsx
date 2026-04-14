@@ -564,7 +564,7 @@ export function ProductKanban() {
                                 dismissible={false}
                             />
                             <div className="flex justify-start">
-                                <div className="max-w-[min(100%,26rem)] rounded-2xl rounded-bl-md border border-white/[0.08] bg-zinc-950/35 px-3.5 py-2.5 text-left ring-1 ring-white/[0.04]">
+                                <div className="max-w-[min(100%,26rem)] rounded-2xl rounded-bl-md border border-white/[0.08] bg-zinc-950/35 px-3.5 py-2.5 text-left">
                                     <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500">Suite</p>
                                     <p className="mt-1 text-[12px] leading-relaxed text-zinc-300">
                                         Pick a topic below — each opens like a focused thread. Chat at the bottom uses that block’s context until you go

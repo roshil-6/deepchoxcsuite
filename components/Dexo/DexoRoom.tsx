@@ -10,13 +10,16 @@ import {
     Activity,
     AlertTriangle,
     ArrowRight,
+    AudioLines,
     ChevronDown,
     ChevronUp,
+    Coins,
     Loader2,
     Mic,
     MicOff,
     RefreshCw,
     Send,
+    Settings2,
     Sparkles,
     Square,
     Volume2,
@@ -25,6 +28,13 @@ import {
 } from 'lucide-react';
 import { useOffice } from '@/lib/OfficeContext';
 import type { JarvisReport, JarvisSection } from '@/app/api/jarvis/route';
+import { VoiceSettingsPanel, useVoicePreset, type VoicePreset } from '@/components/Dexo/VoiceSettings';
+import { speak as voiceEngineSpeak, stopSpeaking as stopSpeakingNative, createSpeechQueue, initVoiceCache, type VoiceSettings } from '@/lib/voiceEngine';
+import { useTokens, useAnalysisCost, useChatCost } from '@/lib/tokens/useTokens';
+import { TokenDisplay, TokenConfirmButton, TokenInlineCost } from '@/components/tokens/TokenDisplay';
+import { TokenWarningBanner, TokenInlineWarning, TokenCostPill } from '@/components/tokens/TokenWarning';
+import { useUpgradeModal } from '@/components/tokens/UpgradeModal';
+import { TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 
 // ─── Global CSS ──────────────────────────────────────────────────────────────
 
@@ -313,106 +323,147 @@ function WaveBars({ active, color = 'bg-slate-400' }: { active: boolean; color?:
     );
 }
 
-// ─── Voice hook (Jarvis-style: interrupt + auto-listen after speak) ────────────
+// ─── Voice hook (Jarvis-style: interrupt, live transcript, chain listen) ─────
 
-function useDexoVoice(onTranscript: (t: string) => void, onInterrupt?: () => void) {
+function useDexoVoice(
+    onTranscript: (t: string) => void,
+    onInterrupt?: () => void,
+    onInterimRef?: React.MutableRefObject<((t: string) => void) | undefined>,
+    voicePreset: VoicePreset = 'jarvis'
+) {
     const [voiceState, setVoiceState] = useState<VoiceState>('idle');
+    const [voiceError, setVoiceError] = useState<string | null>(null);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const recRef       = useRef<any>(null);
-    const speakingRef  = useRef(false);
-    const mutedRef     = useRef(false);
+    const recRef = useRef<any>(null);
+    const speakingRef = useRef(false);
+    const mutedRef = useRef(false);
+    const speechQueueRef = useRef(createSpeechQueue());
+
+    // Re-init voice cache when needed
+    useEffect(() => {
+        initVoiceCache();
+    }, []);
 
     const stopListening = useCallback(() => {
         recRef.current?.stop();
+        onInterimRef?.current?.('');
         setVoiceState('idle');
-    }, []);
+    }, [onInterimRef]);
 
-    const stopSpeaking = useCallback(() => {
-        window.speechSynthesis?.cancel();
+    const stopSpeakingHook = useCallback(() => {
+        speechQueueRef.current.cancel();
+        stopSpeakingNative();
         speakingRef.current = false;
         setVoiceState('idle');
     }, []);
 
     const startListening = useCallback(() => {
         if (typeof window === 'undefined') return;
-        // Interrupt Dexo if speaking
         if (speakingRef.current) {
-            window.speechSynthesis?.cancel();
+            speechQueueRef.current.cancel();
+            stopSpeakingNative();
             speakingRef.current = false;
             onInterrupt?.();
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const win = window as any;
         const SR = win.SpeechRecognition ?? win.webkitSpeechRecognition;
-        if (!SR) return;
+        if (!SR) {
+            setVoiceError('Speech recognition not supported in this browser');
+            return;
+        }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const rec: any = new SR();
-        rec.continuous      = false;
-        rec.interimResults  = false;
-        rec.lang            = 'en-US';
-        rec.onstart  = () => setVoiceState('listening');
+        rec.continuous = false;
+        rec.interimResults = true;
+        rec.lang = 'en-US';
+        rec.onstart = () => setVoiceState('listening');
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         rec.onresult = (e: any) => {
-            const txt: string = Array.from(e.results as ArrayLike<SpeechRecognitionResult>)
-                .map((r) => r[0]?.transcript ?? '')
-                .join(' ')
-                .trim();
-            if (txt) { onTranscript(txt); setVoiceState('processing'); }
+            let interim = '';
+            let finalText = '';
+            for (let i = e.resultIndex; i < e.results.length; i++) {
+                const r = e.results[i] as SpeechRecognitionResult;
+                const piece = r[0]?.transcript ?? '';
+                if (r.isFinal) finalText += piece;
+                else interim += piece;
+            }
+            onInterimRef?.current?.(interim.trim());
+            const ft = finalText.trim();
+            if (ft) {
+                onInterimRef?.current?.('');
+                onTranscript(ft);
+                setVoiceState('processing');
+            }
         };
-        rec.onerror = () => setVoiceState('idle');
+        rec.onerror = (e: ErrorEvent) => {
+            onInterimRef?.current?.('');
+            // Don't show error for no-speech (user didn't speak)
+            if (e.message?.includes('no-speech')) {
+                setVoiceState('idle');
+                return;
+            }
+            setVoiceState('idle');
+        };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        rec.onend   = () => setVoiceState((s: any) => s === 'listening' ? 'idle' : s);
+        rec.onend = () => setVoiceState((s: any) => (s === 'listening' ? 'idle' : s));
         recRef.current = rec;
         rec.start();
-    }, [onTranscript, onInterrupt]);
+    }, [onTranscript, onInterrupt, onInterimRef]);
 
-    const speak = useCallback((text: string, onEnd?: () => void) => {
-        if (typeof window === 'undefined' || !window.speechSynthesis || mutedRef.current) {
+    // Enhanced speak using voice engine
+    const speak = useCallback(async (text: string, onEnd?: () => void) => {
+        if (typeof window === 'undefined' || mutedRef.current) {
             onEnd?.();
             return;
         }
-        window.speechSynthesis.cancel();
-        const utt = new SpeechSynthesisUtterance(text);
-        // Natural, slightly slower Jarvis-like voice
-        utt.rate   = 0.88;
-        utt.pitch  = 0.82;
-        utt.volume = 1;
+        
+        // Cancel any ongoing speech first
+        speechQueueRef.current.cancel();
+        
+        try {
+            await voiceEngineSpeak(text, {
+                preset: voicePreset,
+                onStart: () => {
+                    speakingRef.current = true;
+                    setVoiceState('speaking');
+                },
+                onEnd: () => {
+                    speakingRef.current = false;
+                    setVoiceState('idle');
+                    onEnd?.();
+                },
+                onError: () => {
+                    speakingRef.current = false;
+                    setVoiceState('idle');
+                    onEnd?.();
+                },
+            });
+        } catch {
+            speakingRef.current = false;
+            setVoiceState('idle');
+            onEnd?.();
+        }
+    }, [voicePreset]);
 
-        const doSpeak = () => {
-            const voices = window.speechSynthesis.getVoices();
-            const voice =
-                voices.find((v) => /google uk english male/i.test(v.name))       ??
-                voices.find((v) => /daniel|oliver|aaron/i.test(v.name))           ??
-                voices.find((v) => v.lang === 'en-GB' && v.name.toLowerCase().includes('male')) ??
-                voices.find((v) => v.lang.startsWith('en-') && !/(female|zira|hazel|cortana)/i.test(v.name)) ??
-                voices[0];
-            if (voice) utt.voice = voice;
-            utt.onstart = () => { speakingRef.current = true;  setVoiceState('speaking'); };
-            utt.onend   = () => {
-                speakingRef.current = false;
-                setVoiceState('idle');
-                onEnd?.();
-            };
-            utt.onerror = () => { speakingRef.current = false; setVoiceState('idle'); };
-            window.speechSynthesis.speak(utt);
-        };
-
-        if (window.speechSynthesis.getVoices().length > 0) doSpeak();
-        else window.speechSynthesis.addEventListener('voiceschanged', doSpeak, { once: true });
-    }, []);
-
-    // Expose mute control without re-creating the hook
     const setMuted = useCallback((m: boolean) => {
         mutedRef.current = m;
-        if (m) { window.speechSynthesis?.cancel(); speakingRef.current = false; setVoiceState('idle'); }
+        if (m) {
+            speechQueueRef.current.cancel();
+            speakingRef.current = false;
+            setVoiceState('idle');
+        }
     }, []);
 
-    useEffect(() => () => {
-        recRef.current?.stop();
-        window.speechSynthesis?.cancel();
-    }, []);
+    useEffect(
+        () => () => {
+            recRef.current?.stop();
+            speechQueueRef.current.cancel();
+        },
+        []
+    );
 
-    return { voiceState, startListening, stopListening, speak, stopSpeaking, setMuted };
+    return { voiceState, voiceError, startListening, stopListening, speak, stopSpeaking: stopSpeakingHook, setMuted };
 }
 
 // ─── Status palettes ──────────────────────────────────────────────────────────
@@ -506,25 +557,26 @@ function AnalyzingBanner({ name }: { name: string }) {
     }, [desks.length]);
 
     return (
-        <div className="mb-6 flex flex-col items-center gap-4 rounded-2xl border border-slate-700/30 bg-slate-900/30 px-6 py-5 text-center">
-            <div className="flex items-center gap-3">
-                <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
-                <span className="text-[13px] font-medium text-slate-300">Analyzing {name}</span>
-            </div>
+        <div className="mb-6 flex flex-col items-center gap-3 px-2 text-center">
             <div className="flex items-center gap-2">
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-sky-400/80" />
+                <span className="text-[12px] font-medium tracking-wide text-slate-400">Analyzing {name}</span>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-1.5">
                 {desks.map((d, i) => (
-                    <span key={d}
-                        className="rounded-full border px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider transition-all duration-500"
+                    <span
+                        key={d}
+                        className="text-[9px] font-semibold uppercase tracking-[0.14em] transition-all duration-500"
                         style={{
-                            color:        tick === i ? 'rgba(148,163,184,0.95)' : 'rgba(100,116,139,0.4)',
-                            borderColor:  tick === i ? 'rgba(148,163,184,0.35)' : 'rgba(255,255,255,0.04)',
-                            background:   tick === i ? 'rgba(148,163,184,0.08)' : 'transparent',
-                        }}>
+                            color: tick === i ? 'rgba(56,189,248,0.95)' : 'rgba(100,116,139,0.35)',
+                            textShadow: tick === i ? '0 0 12px rgba(56,189,248,0.35)' : 'none',
+                        }}
+                    >
                         {d}
                     </span>
                 ))}
             </div>
-            <p className="text-[11px] text-zinc-700">You can speak or type while Dexo is analyzing</p>
+            <p className="text-[10px] text-zinc-600">Voice and keyboard stay live — Dexo is non-blocking</p>
         </div>
     );
 }
@@ -569,17 +621,43 @@ function AnalyzingCenter({ name, orbState }: { name: string; orbState: VoiceStat
 export function DexoRoom() {
     const { activeProject } = useOffice();
 
-    const [report, setReport]     = useState<JarvisReport | null>(null);
+    /** Analysis history - all previous analyses are kept, new ones are added */
+    const [analysisHistory, setAnalysisHistory] = useState<JarvisReport[]>([]);
+    /** Current/latest report - the most recent analysis */
+    const [currentReport, setCurrentReport] = useState<JarvisReport | null>(null);
     const [loading, setLoading]   = useState(false);
     const [error, setError]       = useState<string | null>(null);
     const [isMuted, setIsMuted]   = useState(false);
     const [inputText, setInputText] = useState('');
     const [convo, setConvo]       = useState<{ role: 'user' | 'dexo'; text: string; id: number }[]>([]);
     const [showIntro, setShowIntro] = useState(true);
+    const [voiceInterim, setVoiceInterim] = useState('');
+    /** After Dexo speaks, reopen the mic automatically (Jarvis back-and-forth). */
+    const [handsFree, setHandsFree] = useState(false);
+    const [showVoiceSettings, setShowVoiceSettings] = useState(false);
+    const voicePreset = useVoicePreset();
+    /** Track which analysis is being viewed in detail */
+    const [activeAnalysisIndex, setActiveAnalysisIndex] = useState<number | null>(null);
     const convoId = useRef(0);
+    
+    // Token system integration
+    const tokens = useTokens();
+    const analysisCost = useAnalysisCost();
+    const chatCost = useChatCost();
+    const upgradeModal = useUpgradeModal();
 
-    const inputRef   = useRef<HTMLTextAreaElement>(null);
+    const inputRef = useRef<HTMLTextAreaElement>(null);
     const chatEndRef = useRef<HTMLDivElement>(null);
+    const micPointerActiveRef = useRef(false);
+    /** True if this press started (or took over) recognition — release should stop. */
+    const micDroveSessionRef = useRef(false);
+    const voiceInterimCbRef = useRef<((t: string) => void) | undefined>(undefined);
+    voiceInterimCbRef.current = (t: string) => setVoiceInterim(t);
+    const handsFreeRef = useRef(handsFree);
+    const isMutedRef = useRef(isMuted);
+    handsFreeRef.current = handsFree;
+    isMutedRef.current = isMuted;
+    const startListenRef = useRef<() => void>(() => {});
 
     // ── Transcript handler: fill input and auto-submit ──
     const onTranscript = useCallback((t: string) => {
@@ -594,16 +672,36 @@ export function DexoRoom() {
 
     const pendingTranscriptRef = useRef<string | null>(null);
     const runRef = useRef<((mode: 'analyze' | 'converse', userMsg?: string) => Promise<void>) | null>(null);
+    
+    // Expose run to window for testing
+    useEffect(() => {
+        // @ts-expect-error - debug access
+        if (typeof window !== 'undefined') window.dexoRun = runRef.current;
+    }, []);
 
     const onInterrupt = useCallback(() => {
         // Dexo was interrupted — acknowledge it
         setConvo((prev) => [...prev, { role: 'dexo', text: '— interrupted —', id: ++convoId.current }]);
     }, []);
 
-    const { voiceState, startListening, stopListening, speak, stopSpeaking, setMuted } = useDexoVoice(onTranscript, onInterrupt);
-    const isListening  = voiceState === 'listening';
-    const isSpeaking   = voiceState === 'speaking';
+    const { voiceState, voiceError, startListening, stopListening, speak, stopSpeaking, setMuted } = useDexoVoice(
+        onTranscript,
+        onInterrupt,
+        voiceInterimCbRef,
+        voicePreset
+    );
+    startListenRef.current = startListening;
+    const isListening = voiceState === 'listening';
+    const isSpeaking = voiceState === 'speaking';
     const isProcessing = voiceState === 'processing';
+
+    const afterDexoSpeak = useCallback(() => {
+        if (handsFreeRef.current && !isMutedRef.current) {
+            window.setTimeout(() => startListenRef.current(), 480);
+        }
+    }, []);
+
+    const speakJarvis = useCallback((text: string) => speak(text, afterDexoSpeak), [speak, afterDexoSpeak]);
 
     const buildCtx = useCallback((): string => {
         if (!activeProject) return '';
@@ -621,23 +719,59 @@ export function DexoRoom() {
 
     const run = useCallback(async (mode: 'analyze' | 'converse', userMsg?: string) => {
         if (!activeProject?.id) return;
+        
+        // Check and spend tokens
+        const cost = mode === 'analyze' 
+            ? (currentReport ? TOKEN_COSTS.REANALYZE : TOKEN_COSTS.ANALYSIS)
+            : TOKEN_COSTS.CHAT_MESSAGE;
+        
+        const tokenResult = tokens.spend(cost, mode === 'analyze' ? 'New Analysis' : 'Chat Message');
+        
+        if (!tokenResult.success) {
+            setError(tokenResult.message || 'Insufficient tokens');
+            upgradeModal.open(tokenResult.message);
+            return;
+        }
+        
         setLoading(true); setError(null);
         // Stop speaking before making a new request
         if (isSpeaking) stopSpeaking();
         try {
+            // Build context including previous analyses for continuity
+            let context = buildCtx();
+            if (analysisHistory.length > 0) {
+                const previousAnalyses = analysisHistory
+                    .slice(-3) // Last 3 analyses
+                    .map((r, i) => `\n[Previous Analysis ${i + 1}]: ${r.headline}\n${r.summary}`)
+                    .join('\n');
+                context += previousAnalyses;
+            }
+            if (currentReport) {
+                context += `\n[Current Analysis]: ${currentReport.headline}\n${currentReport.summary}`;
+            }
+            
             const res = await fetch('/api/jarvis', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    mode, context: buildCtx(),
+                    mode, context,
                     userMessage: userMsg,
-                    previousHeadline: report?.headline,
+                    previousHeadline: currentReport?.headline,
+                    conversationHistory: convo.slice(-10).map(c => ({ role: c.role, text: c.text })),
                 }),
             });
             const data = await res.json() as { ok: boolean; report?: JarvisReport; error?: string };
             if (!data.ok || !data.report) { setError(data.error ?? 'Analysis failed'); return; }
-            setReport(data.report);
-            if (mode === 'converse' && userMsg) {
+            
+            // If analyze mode, add to history
+            if (mode === 'analyze') {
+                setAnalysisHistory(prev => [...prev, data.report!]);
+                setCurrentReport(data.report!);
+                setActiveAnalysisIndex(null); // Show current/latest
+            }
+            // If converse mode, also update current report context
+            else if (mode === 'converse' && userMsg) {
+                setCurrentReport(data.report!);
                 setConvo((prev) => [
                     ...prev,
                     { role: 'user', text: userMsg, id: ++convoId.current },
@@ -645,15 +779,16 @@ export function DexoRoom() {
                 ]);
                 setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 150);
             }
+            
             if (!isMuted && data.report.voiceResponse) {
-                setTimeout(() => speak(data.report!.voiceResponse), 600);
+                window.setTimeout(() => speak(data.report!.voiceResponse, afterDexoSpeak), 600);
             }
         } catch (e) {
             setError(e instanceof Error ? e.message : 'Request failed');
         } finally {
             setLoading(false);
         }
-    }, [activeProject, buildCtx, report?.headline, isMuted, speak, isSpeaking, stopSpeaking]);
+    }, [activeProject, buildCtx, currentReport, analysisHistory, convo, isMuted, speak, isSpeaking, stopSpeaking, afterDexoSpeak, tokens, upgradeModal]);
 
     // Keep runRef current for the pending-transcript effect
     runRef.current = run;
@@ -681,33 +816,78 @@ export function DexoRoom() {
     };
 
     const onKey = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void handleSend(); }
-    };
-
-    // Mic button: interrupt if speaking, otherwise toggle listening
-    const handleMicPress = () => {
-        if (isSpeaking) {
-            stopSpeaking();
-            startListening();
-        } else if (isListening) {
-            stopListening();
-        } else {
-            startListening();
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            void handleSend();
         }
     };
 
-    const orbState: VoiceState | 'loading' = loading && !report ? 'loading' : voiceState;
+    /** Press-and-hold mic: capture utterance on release (Iron Man HUD style). */
+    const onMicPointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
+        if (e.button !== 0) return;
+        e.preventDefault();
+        try {
+            e.currentTarget.setPointerCapture(e.pointerId);
+        } catch {
+            /* ignore */
+        }
+        micPointerActiveRef.current = true;
+        micDroveSessionRef.current = false;
+        if (isSpeaking) {
+            stopSpeaking();
+            startListening();
+            micDroveSessionRef.current = true;
+            return;
+        }
+        if (!isListening) {
+            startListening();
+            micDroveSessionRef.current = true;
+        }
+    };
+
+    const onMicPointerUp = (e: React.PointerEvent<HTMLButtonElement>) => {
+        if (!micPointerActiveRef.current) return;
+        micPointerActiveRef.current = false;
+        const drove = micDroveSessionRef.current;
+        micDroveSessionRef.current = false;
+        try {
+            e.currentTarget.releasePointerCapture(e.pointerId);
+        } catch {
+            /* ignore */
+        }
+        if (drove && isListening) stopListening();
+    };
+
+    /** Ctrl+Shift+D while focus is inside Dexo: open mic (or interrupt and listen). */
+    useEffect(() => {
+        if (showIntro || !activeProject?.id) return;
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (e.code !== 'KeyD' || !e.ctrlKey || !e.shiftKey) return;
+            const shell = document.querySelector('[data-dexo-room]');
+            const t = e.target as Node | null;
+            if (!shell || !t || !shell.contains(t)) return;
+            e.preventDefault();
+            if (isSpeaking) {
+                stopSpeaking();
+                startListening();
+            } else if (!isListening) startListening();
+        };
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, [showIntro, activeProject?.id, isSpeaking, isListening, stopSpeaking, startListening]);
+
+    const orbState: VoiceState | 'loading' = loading && !currentReport ? 'loading' : voiceState;
     const showMain = !showIntro; // once intro dismissed, always show main layout
 
     // ── Empty state ──
     if (!activeProject?.id) {
         return (
-            <div className="flex h-full items-center justify-center bg-[var(--bg)] px-6">
-                <div className="executive-panel max-w-sm space-y-4 px-6 py-8 text-center">
-                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-slate-700/40 bg-slate-900/30">
-                        <DexoCanvas size={36} state="idle" />
+            <div className="flex min-h-0 flex-1 items-center justify-center bg-[var(--bg)] px-4 py-8 sm:px-6">
+                <div className="max-w-sm shrink-0 space-y-5 text-center">
+                    <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full ring-1 ring-sky-500/20 shadow-[0_0_40px_rgba(56,189,248,0.12)]">
+                        <DexoCanvas size={40} state="idle" />
                     </div>
-                    <p className="text-[14px] font-medium text-zinc-300">Create a venture first</p>
+                    <p className="text-[15px] font-medium tracking-tight text-zinc-200">Create a venture first</p>
                     <p className="text-[13px] leading-relaxed text-slate-500">
                         Name your venture from the left rail or overview, then come back—Dexo needs a saved workspace
                         before it can analyze.
@@ -720,31 +900,63 @@ export function DexoRoom() {
     // ── Intro ──
     if (!showMain) {
         return (
-            <div className="flex h-full flex-col items-center justify-center bg-[var(--bg)]">
-                <div className="executive-panel-strong flex flex-col items-center gap-7 px-8 py-10 text-center">
-                    <VoiceOrb state="idle" onClick={() => {
-                        speak("I am Dexo. Let's analyze your venture and build it together.");
-                    }} />
-                    <div className="space-y-2">
-                        <p className="text-[18px] font-semibold tracking-tight text-zinc-200">I am Dexo</p>
-                        <p className="text-[13px] text-zinc-600">Your AI command center. Click the orb or analyze.</p>
+            <div className="flex min-h-0 flex-1 flex-col items-center justify-center bg-[var(--bg)] px-4 py-8 sm:px-6 sm:py-10">
+                <div className="flex w-full max-w-md shrink-0 flex-col items-center gap-8 text-center">
+                    {/* Token display for free users */}
+                    <div className="absolute top-4 right-4">
+                        <TokenDisplay compact={true} />
                     </div>
-                    <button type="button"
-                        onClick={() => { setShowIntro(false); run('analyze'); }}
-                        className="executive-toolbar-button executive-toolbar-button-accent px-7 py-3 text-[13px]">
-                        <Zap className="h-4 w-4 text-slate-400" />
-                        Analyze venture
-                    </button>
+                    
+                    <VoiceOrb
+                        state="idle"
+                        onClick={() => {
+                            speak("I am Dexo. Let's analyze your venture and build it together.");
+                        }}
+                    />
+                    <div className="space-y-2">
+                        <p className="text-[20px] font-semibold tracking-tight text-zinc-100">I am Dexo</p>
+                        <p className="text-[13px] text-zinc-500">Command-center interface — tap the core or run analysis.</p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setShowIntro(false);
+                                run('analyze');
+                            }}
+                            className="executive-toolbar-button executive-toolbar-button-accent px-8 py-3 text-[13px] shadow-[0_0_24px_rgba(56,189,248,0.15)]"
+                        >
+                            <Zap className="h-4 w-4 text-slate-400" />
+                            Analyze venture
+                        </button>
+                        
+                        {/* Token cost hint for free users */}
+                        {!tokens.isPro && (
+                            <div className="flex items-center justify-center gap-2 text-[10px] text-slate-500">
+                                <Coins className="h-3 w-3" />
+                                <span>First analysis: {TOKEN_COSTS.ANALYSIS} tokens</span>
+                            </div>
+                        )}
+                    </div>
                 </div>
+                
+                {/* Upgrade Modal */}
+                <upgradeModal.UpgradeModal />
             </div>
         );
     }
 
     // True when the very first analysis is running (no report yet)
-    const initialLoading = loading && !report;
+    const initialLoading = loading && !currentReport;
+    
+    // Determine which report to display
+    const displayedReport = activeAnalysisIndex !== null 
+        ? analysisHistory[activeAnalysisIndex] 
+        : currentReport;
 
     return (
-        <div className="flex h-full min-h-0 flex-col bg-[var(--bg)]">
+        <div data-dexo-room className="flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--bg)]">
 
             {/* ── Scrollable body ── */}
             <div className={`custom-scrollbar flex-1 overflow-y-auto ${initialLoading ? 'flex items-center justify-center' : ''}`}>
@@ -758,7 +970,7 @@ export function DexoRoom() {
                 <div className="mx-auto max-w-[660px] px-5 pb-4 pt-8">
 
                     {/* Re-analyzing banner (report already exists) */}
-                    {loading && report && <AnalyzingBanner name={activeProject.name} />}
+                    {loading && currentReport && <AnalyzingBanner name={activeProject.name} />}
 
                     {/* Error */}
                     {error && !loading && (
@@ -768,9 +980,75 @@ export function DexoRoom() {
                             <button type="button" onClick={() => run('analyze')} className="text-[11px] text-red-400 underline hover:text-red-200">Retry</button>
                         </div>
                     )}
+                    
+                    {/* ── Token Warning Banner ── */}
+                    <TokenWarningBanner onUpgrade={upgradeModal.open} />
+                    
+                    {/* ── Token Display Header ── */}
+                    <div className="flex items-center justify-between mb-4">
+                        <div />
+                        <TokenDisplay compact={false} showCosts={true} />
+                    </div>
 
-                    {report ? (
+                    {/* ── Analysis History Timeline ── */}
+                    {analysisHistory.length > 0 && (
+                        <div className="mb-6">
+                            <div className="flex items-center justify-between mb-2">
+                                <p className="text-[11px] uppercase tracking-wider text-slate-500">Analysis History</p>
+                                <span className="text-[10px] text-slate-600">{analysisHistory.length} saved</span>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                {/* Current/Active button */}
+                                <button
+                                    onClick={() => setActiveAnalysisIndex(null)}
+                                    className={`px-3 py-1.5 rounded-lg text-[11px] transition-all ${
+                                        activeAnalysisIndex === null
+                                            ? 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
+                                            : 'bg-slate-800/50 text-slate-400 border border-slate-700/50 hover:border-slate-600'
+                                    }`}
+                                >
+                                    {currentReport ? 'Current' : 'Latest'}
+                                </button>
+                                {/* History items - most recent first */}
+                                {[...analysisHistory].reverse().map((r, idx) => {
+                                    const actualIndex = analysisHistory.length - 1 - idx;
+                                    const isActive = activeAnalysisIndex === actualIndex;
+                                    return (
+                                        <button
+                                            key={actualIndex}
+                                            onClick={() => setActiveAnalysisIndex(actualIndex)}
+                                            className={`px-3 py-1.5 rounded-lg text-[11px] transition-all max-w-[150px] truncate ${
+                                                isActive
+                                                    ? 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
+                                                    : 'bg-slate-800/50 text-slate-400 border border-slate-700/50 hover:border-slate-600'
+                                            }`}
+                                            title={r.headline}
+                                        >
+                                            #{actualIndex + 1} {r.headline.slice(0, 20)}{r.headline.length > 20 ? '...' : ''}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    {displayedReport ? (
                         <div className="space-y-8">
+
+                            {/* ── Archive indicator ── */}
+                            {activeAnalysisIndex !== null && (
+                                <div className="flex items-center justify-center gap-2">
+                                    <span className="px-3 py-1 rounded-full border border-amber-500/30 bg-amber-950/20 text-[10px] text-amber-400">
+                                        Viewing Archived Analysis #{activeAnalysisIndex + 1}
+                                    </span>
+                                    <button 
+                                        onClick={() => setActiveAnalysisIndex(null)}
+                                        className="text-[10px] text-sky-400 hover:text-sky-300 underline"
+                                    >
+                                        Back to Current
+                                    </button>
+                                </div>
+                            )}
 
                             {/* ── Orb + headline + controls ── */}
                             <div className="flex flex-col items-center gap-5">
@@ -779,15 +1057,15 @@ export function DexoRoom() {
                                     state={orbState}
                                     onClick={() => {
                                         if (isSpeaking) stopSpeaking();
-                                        else if (!isMuted) speak(`${report.headline}. ${report.summary}`);
+                                        else if (!isMuted) speakJarvis(`${displayedReport.headline}. ${displayedReport.summary}`);
                                     }}
                                 />
                                 <div className="space-y-2 text-center">
                                     <h1 className="text-[22px] font-semibold leading-tight tracking-[-0.02em] text-slate-100">
-                                        {report.headline}
+                                        {displayedReport.headline}
                                     </h1>
                                     <p className="mx-auto max-w-lg text-[13.5px] leading-[1.75] text-slate-400">
-                                        {report.summary}
+                                        {displayedReport.summary}
                                     </p>
                                 </div>
 
@@ -805,45 +1083,80 @@ export function DexoRoom() {
                                     </div>
                                 )}
 
+                                {/* Voice error display */}
+                                {voiceError && (
+                                    <div className="flex items-center gap-2 rounded-lg border border-amber-500/20 bg-amber-950/20 px-3 py-1.5 text-[10px] text-amber-400">
+                                        <AlertTriangle className="h-3 w-3" />
+                                        {voiceError}
+                                    </div>
+                                )}
+
                                 {/* Action bar */}
                                 <div className="flex flex-wrap items-center justify-center gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setHandsFree((h) => !h)}
+                                        title="After Dexo speaks, mic opens automatically"
+                                        className={`executive-pill px-3 py-1.5 text-[11px] ${
+                                            handsFree
+                                                ? 'border-sky-500/35 bg-sky-950/20 text-sky-300'
+                                                : 'text-zinc-400'
+                                        }`}
+                                    >
+                                        <AudioLines className="h-3.5 w-3.5" />
+                                        {handsFree ? 'Conversation on' : 'Conversation'}
+                                    </button>
                                     <button type="button"
                                         onClick={() => setIsMuted((m) => !m)}
                                         className="executive-pill px-3 py-1.5 text-[11px] text-zinc-400">
                                         {isMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
                                         {isMuted ? 'Unmute' : 'Mute'}
                                     </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowVoiceSettings(true)}
+                                        className="executive-pill px-3 py-1.5 text-[11px] border border-sky-500/20 bg-sky-950/10 text-sky-400 hover:bg-sky-950/30 hover:border-sky-500/40"
+                                        title={`Voice: ${voicePreset} (click to change)`}
+                                    >
+                                        <Settings2 className="h-3.5 w-3.5" />
+                                        Voice
+                                    </button>
                                     {!isMuted && !isSpeaking && (
                                         <button type="button"
-                                            onClick={() => speak(`${report.headline}. ${report.summary}`)}
+                                            onClick={() => speakJarvis(`${displayedReport.headline}. ${displayedReport.summary}`)}
                                             className="executive-pill px-3 py-1.5 text-[11px] text-zinc-400">
                                             <Volume2 className="h-3.5 w-3.5" /> Read again
                                         </button>
                                     )}
-                                    <button type="button"
-                                        onClick={() => run('analyze')} disabled={loading}
-                                        className="executive-pill px-3 py-1.5 text-[11px] text-zinc-400 disabled:opacity-40">
-                                        <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
-                                        {loading ? 'Analyzing…' : 'Re-analyze'}
-                                    </button>
+                                    <div className="flex flex-col items-center gap-1">
+                                        <button type="button"
+                                            onClick={() => run('analyze')} disabled={loading}
+                                            className="executive-pill px-3 py-1.5 text-[11px] text-zinc-400 disabled:opacity-40">
+                                            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+                                            {loading ? 'Analyzing…' : 'New Analysis'}
+                                        </button>
+                                        {activeAnalysisIndex === null && (
+                                            <TokenCostPill cost={currentReport ? TOKEN_COSTS.REANALYZE : TOKEN_COSTS.ANALYSIS} />
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
                             {/* ── Health strip ── */}
-                            <HealthStrip health={report.health} />
+                            <HealthStrip health={displayedReport.health} />
 
                             {/* ── Desk rows ── */}
                             <div className="-mx-1">
-                                {report.sections.map((s) => (
-                                    <DeskRow key={s.desk} section={s} onRead={(t) => !isMuted && speak(t)} />
+                                {displayedReport.sections.map((s) => (
+                                    <DeskRow key={s.desk} section={s} onRead={(t) => !isMuted && speakJarvis(t)} />
                                 ))}
                             </div>
 
                             {/* ── Risks ── */}
-                            {report.risks.length > 0 && (
+                            {displayedReport.risks.length > 0 && (
                                 <div className="space-y-4">
                                     <div className="h-px bg-white/[0.04]" />
-                                    {report.risks.map((r, i) => {
+                                    {displayedReport.risks.map((r, i) => {
                                         const rc = RC[r.level];
                                         return (
                                             <div key={`risk-${i}`} className="flex items-start gap-3.5">
@@ -862,10 +1175,10 @@ export function DexoRoom() {
                             )}
 
                             {/* ── Priority actions ── */}
-                            {report.nextActions.length > 0 && (
+                            {displayedReport.nextActions.length > 0 && (
                                 <div className="space-y-3">
                                     <div className="h-px bg-white/[0.04]" />
-                                    {report.nextActions.map((a, i) => (
+                                    {displayedReport.nextActions.map((a, i) => (
                                         <div key={`action-${i}`} className="flex items-baseline gap-3.5">
                                             <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.04] text-[9px] font-bold text-zinc-300">{a.priority}</span>
                                             <p className="min-w-0 flex-1 text-[13px] leading-snug text-zinc-300">{a.action}</p>
@@ -897,9 +1210,9 @@ export function DexoRoom() {
                             )}
 
                             {/* ── Follow-up chips ── */}
-                            {report.followUp.length > 0 && (
+                            {displayedReport.followUp.length > 0 && activeAnalysisIndex === null && (
                                 <div className="flex flex-wrap gap-2 pb-2">
-                                    {report.followUp.map((q, i) => (
+                                    {displayedReport.followUp.map((q, i) => (
                                         <button key={`fu-${i}`} type="button"
                                             onClick={() => run('converse', q)} disabled={loading}
                                             className="executive-pill px-4 py-2 text-[12px] text-slate-400 disabled:opacity-40">
@@ -913,7 +1226,7 @@ export function DexoRoom() {
                         /* No report yet, show prompt to analyze */
                         <div className="flex flex-col items-center gap-6 py-20 text-center">
                             <VoiceOrb state={orbState} onClick={() => run('analyze')} />
-                            <p className="text-[13px] text-zinc-600">Click the orb or tap Analyze to begin.</p>
+                            <p className="text-[13px] text-zinc-600">Click the orb or tap New Analysis to begin.</p>
                             <button type="button" onClick={() => run('analyze')}
                                 className="executive-toolbar-button executive-toolbar-button-accent px-6 py-3 text-[12px]">
                                 <Zap className="h-4 w-4" /> Analyze
@@ -924,23 +1237,43 @@ export function DexoRoom() {
                 )}
             </div>
 
-            {/* ── Input bar — always visible once intro dismissed ── */}
-            <div className="shrink-0 border-t border-white/[0.05] bg-[var(--bg)] px-5 py-3">
-                <div className="mx-auto max-w-[660px]">
-                    <div className={`executive-panel-strong flex items-end gap-1 px-1.5 py-1 transition-all duration-300 ${
-                        isListening  ? 'border-sky-400/40 bg-sky-950/20 shadow-[0_0_0_1px_rgba(56,189,248,0.15)]' :
-                        isSpeaking   ? 'border-slate-500/30 bg-slate-900/20' :
-                        isProcessing ? 'border-amber-400/25 bg-amber-950/10' :
-                                       'focus-within:border-white/[0.10]'
-                    }`}>
-                        {/* Mic — tap to speak/interrupt */}
-                        <button type="button" onMouseDown={handleMicPress}
-                            title={isListening ? 'Stop' : isSpeaking ? 'Interrupt Dexo' : 'Speak to Dexo'}
-                            className={`mb-1 ml-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all ${
-                                isListening ? 'bg-sky-500/25 text-sky-300 ring-1 ring-sky-400/30' :
-                                isSpeaking  ? 'bg-red-500/15 text-red-400 ring-1 ring-red-400/20' :
-                                              'text-slate-500 hover:bg-white/[0.06] hover:text-slate-300'
-                            }`}>
+            {/* ── Input strip — HUD style (no card chrome) ── */}
+            <div className="shrink-0 border-t border-white/[0.04] bg-gradient-to-t from-black/35 via-[var(--bg)] to-[var(--bg)] px-4 py-3">
+                <div className="mx-auto max-w-[660px] space-y-1">
+                    {voiceInterim ? (
+                        <p className="truncate px-1 text-[11px] tracking-wide text-sky-400/85">{voiceInterim}</p>
+                    ) : null}
+                    <div
+                        className={`flex items-end gap-1.5 rounded-[28px] border px-2 py-1.5 transition-all duration-300 ${
+                            isListening
+                                ? 'border-sky-400/35 bg-sky-950/15 shadow-[0_0_24px_rgba(56,189,248,0.14)]'
+                                : isSpeaking
+                                  ? 'border-slate-500/25 bg-slate-950/25'
+                                  : isProcessing
+                                    ? 'border-amber-400/20 bg-amber-950/10'
+                                    : 'border-white/[0.08] bg-black/20 hover:border-white/[0.11]'
+                        }`}
+                    >
+                        <button
+                            type="button"
+                            onPointerDown={onMicPointerDown}
+                            onPointerUp={onMicPointerUp}
+                            onPointerCancel={onMicPointerUp}
+                            title={
+                                isListening
+                                    ? 'Release to send'
+                                    : isSpeaking
+                                      ? 'Hold to interrupt and speak'
+                                      : 'Hold to speak — release to send'
+                            }
+                            className={`mb-1 ml-1.5 flex h-9 w-9 shrink-0 touch-none items-center justify-center rounded-full transition-all select-none ${
+                                isListening
+                                    ? 'bg-sky-500/20 text-sky-200 shadow-[0_0_16px_rgba(56,189,248,0.25)]'
+                                    : isSpeaking
+                                      ? 'bg-red-500/15 text-red-400 ring-1 ring-red-400/25'
+                                      : 'text-slate-500 hover:bg-white/[0.06] hover:text-slate-300'
+                            }`}
+                        >
                             {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                         </button>
 
@@ -951,36 +1284,58 @@ export function DexoRoom() {
                             onKeyDown={onKey}
                             rows={1}
                             placeholder={
-                                isListening  ? 'Listening — speak now…'      :
-                                isProcessing ? 'Processing your voice…'      :
-                                isSpeaking   ? 'Tap mic to interrupt Dexo…'  :
-                                loading      ? 'Analyzing — you can type here…' :
-                                               'Ask Dexo anything…'
+                                isListening
+                                    ? 'Hold mic — live transcript above…'
+                                    : isProcessing
+                                      ? 'Processing your voice…'
+                                      : isSpeaking
+                                        ? 'Hold mic to interrupt and reply…'
+                                        : loading
+                                          ? 'Analyzing — type or hold mic…'
+                                          : 'Ask Dexo anything…'
                             }
-                            className="custom-scrollbar min-h-[40px] min-w-0 flex-1 resize-none border-none bg-transparent px-3 py-2.5 text-[13px] leading-[1.6] text-brand-text placeholder:text-slate-700 focus:outline-none focus:ring-0"
+                            className="custom-scrollbar min-h-[40px] min-w-0 flex-1 resize-none border-none bg-transparent px-2 py-2.5 text-[13px] leading-[1.6] text-brand-text placeholder:text-slate-600 focus:outline-none focus:ring-0"
                             style={{ maxHeight: '100px', overflowY: 'auto' }}
                         />
 
                         {isSpeaking ? (
-                            <button type="button" onClick={stopSpeaking} title="Stop speaking"
-                                className="mb-1 mr-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 transition hover:bg-white/[0.05] hover:text-red-400">
+                            <button
+                                type="button"
+                                onClick={stopSpeaking}
+                                title="Stop speaking"
+                                className="mb-1 mr-1.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-500 transition hover:bg-white/[0.05] hover:text-red-400"
+                            >
                                 <Square className="h-3.5 w-3.5" />
                             </button>
                         ) : (
-                            <button type="button" onClick={handleSend}
+                            <button
+                                type="button"
+                                onClick={handleSend}
                                 disabled={!inputText.trim() || loading}
-                                className="mb-1 mr-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--accent)] text-[#131314] transition hover:opacity-90 disabled:opacity-25">
+                                className="mb-1 mr-1.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-[#131314] transition hover:opacity-90 disabled:opacity-25"
+                            >
                                 <Send className="h-3.5 w-3.5" />
                             </button>
                         )}
                     </div>
-                    <p className="mt-1 text-center text-[9px] text-zinc-800">
-                        {isListening ? 'Tap mic to stop · auto-submits on silence' :
-                         isSpeaking  ? 'Tap mic to interrupt Dexo' :
-                                       'Enter to send · mic to speak · Shift+Enter for new line'}
+                    <p className="text-center text-[9px] text-zinc-600">
+                        {isListening
+                            ? 'Release mic to finalize · Conversation mode keeps the channel open after Dexo replies'
+                            : isSpeaking
+                              ? 'Hold mic to cut in · Ctrl+Shift+D opens mic from anywhere in Dexo'
+                              : 'Enter send · Shift+Enter newline · Hold mic to dictate · Ctrl+Shift+D'}
                     </p>
                 </div>
             </div>
+
+            {/* Voice Settings Panel */}
+            <VoiceSettingsPanel 
+                isOpen={showVoiceSettings} 
+                onClose={() => setShowVoiceSettings(false)} 
+            />
+            
+            {/* Upgrade Modal */}
+            <upgradeModal.UpgradeModal />
         </div>
     );
 }

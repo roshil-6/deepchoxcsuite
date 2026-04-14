@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
     Bot,
     Users,
@@ -28,6 +28,7 @@ import { SuiteNavChips } from '@/components/SuiteNavChips';
 import { DeskChatThreadMount } from '@/components/DeskChatThreadSlotContext';
 import { DualAgentWorkPanel, useDualAgentPanelState } from '@/components/DualAgentWorkPanel';
 import { GuideHint, ProgressTrail } from '@/components/ui/ContextualGuide';
+import { WorkflowNeuralMap } from '@/components/WorkflowNeuralMap';
 
 const DESK_ORDER: { key: keyof AgentStaffSnapshot['desks']; title: string; subtitle: string }[] = [
     { key: 'ceo', title: RESEARCH_STAFF.ceo.navTitle, subtitle: RESEARCH_STAFF.ceo.navHint },
@@ -184,9 +185,14 @@ export function CsuiteIntelligenceGuide() {
         updateProjectField,
     } = useOffice();
 
+    // Memoize the result object to prevent infinite re-renders
+    const dualAgentResult = useMemo(() => {
+        return lastSyncDualAgent ? { dual_agent: lastSyncDualAgent } : null;
+    }, [lastSyncDualAgent]);
+    
     const dualAgentPanelState = useDualAgentPanelState(
         agentSyncRunning,
-        lastSyncDualAgent ? { dual_agent: lastSyncDualAgent } : null,
+        dualAgentResult,
         lastSyncDualAgent?.at ?? null
     );
 
@@ -307,6 +313,8 @@ export function CsuiteIntelligenceGuide() {
                             />
                         </div>
                     </header>
+
+                    <WorkflowNeuralMap />
 
                     {/* First-time guide hints */}
                     <div className="flex flex-col gap-2">
@@ -697,7 +705,7 @@ export function CsuiteIntelligenceGuide() {
                                 {
                                     icon: Bot,
                                     label: 'Automated on demand',
-                                    text: 'Staff sync (button) calls the server model once and writes back desk briefs, optional merges, focus list, and notifications. It does not run on a timer unless you add that elsewhere.',
+                                    text: 'Staff sync (button) calls the server once and merges results into the venture. With Auto-sync on (Executive overview), the app also refreshes desk briefs automatically when the last sync is older than three hours while this tab is visible.',
                                     tone: 'border-l-2 border-l-zinc-600',
                                 },
                                 {

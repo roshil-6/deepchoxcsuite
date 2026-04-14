@@ -637,8 +637,8 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
                                     type="button"
                                     aria-label="Drag to bend line"
                                     title="Bend line"
-                                    className={`pointer-events-auto absolute h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-zinc-500 bg-[#141416] shadow-sm transition hover:scale-110 hover:border-zinc-400 focus:outline-none focus:ring-2 focus:ring-white/15 ${
-                                        isActive ? 'scale-125 cursor-grabbing ring-2 ring-white/20' : 'cursor-grab'
+                                    className={`pointer-events-auto absolute h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-zinc-500 bg-[#141416] transition hover:scale-110 hover:border-zinc-400 focus:outline-none ${
+                                        isActive ? 'scale-125 cursor-grabbing border-zinc-300' : 'cursor-grab'
                                     }`}
                                     style={{ left: hx, top: hy }}
                                     onMouseDown={(ev) => {

@@ -13,7 +13,6 @@ import React, {
 import { getPersonalAssistantSystemPrompt, useOffice } from '@/lib/OfficeContext';
 import { isVentureUnsettled, PA_WELCOME_MESSAGE } from '@/lib/ventureSetupState';
 import { ArrowUp, Bot, ChevronRight, FileUp, Mic, PenLine } from 'lucide-react';
-import { ModelAttribution } from '@/components/ModelAttribution';
 import { EXEC_CHAT_MODEL_OPTIONS, EXEC_CHAT_MODEL_STORAGE_KEY, isExecChatModelId } from '@/lib/deskConstants';
 import type { ExecutiveThreadMessage } from '@/lib/executiveThread';
 import {
@@ -401,8 +400,22 @@ export function PersonalAssistantChatProvider({ children }: { children: ReactNod
     );
 }
 
+/** Optional first “Relay” block on the full-page assistant — same bubble styling as real messages. */
+export type PAChatPageIntro = {
+    ventureName: string;
+    buddyLabel: string;
+    tagline: string;
+};
+
 /** Shared thread + composer — aligned with CEO desk surfaces (cards, rings, executive grey). */
-export function PAChatSurface({ variant }: { variant: 'page' | 'float' }) {
+export function PAChatSurface({
+    variant,
+    pageIntro,
+}: {
+    variant: 'page' | 'float';
+    /** Settled ventures only; merged desk headline + hint into one assistant-style opener. */
+    pageIntro?: PAChatPageIntro | null;
+}) {
     const {
         activeProject,
         messages,
@@ -444,56 +457,58 @@ export function PAChatSurface({ variant }: { variant: 'page' | 'float' }) {
 
     const assistantAvatar = (
         <div
-            className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/[0.08] bg-[var(--color-brand-card)] text-[var(--text)] shadow-[0_4px_20px_-8px_rgba(0,0,0,0.5)] ring-1 ring-white/[0.05]"
+            className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--accent-soft)] text-[var(--text)]"
             aria-hidden
         >
-            <Bot className="h-4 w-4 opacity-90" strokeWidth={1.75} />
+            <Bot className="h-3.5 w-3.5 opacity-90" strokeWidth={1.75} />
         </div>
     );
 
-    const messageThread = (
-        <>
-            {messages.length === 0 && activeProject && !isVentureUnsettled(activeProject) && (
-                <div className="rounded-2xl border border-white/[0.07] bg-[var(--color-brand-card)]/60 px-4 py-3.5 text-center ring-1 ring-white/[0.04] sm:px-5">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">Relay</p>
-                    <p className="mt-1.5 text-[13px] leading-relaxed text-[var(--text)]/90">
+    /** Assistant copy block — accent rail + soft gradient fill. */
+    const assistantBodyClass =
+        'min-w-0 max-w-[min(100%,36rem)] flex-1 rounded-xl rounded-tl-sm border border-white/[0.07] border-l-[3px] border-l-[color-mix(in_srgb,var(--accent)_42%,transparent)] bg-gradient-to-b from-white/[0.06] to-white/[0.02] px-4 py-3 text-[13px] leading-relaxed text-[var(--text)] sm:px-4 sm:py-3.5';
+    const userBubbleClass =
+        'min-w-0 max-w-[min(100%,26rem)] rounded-xl rounded-br-sm border border-white/[0.09] bg-[var(--color-brand-input)]/90 px-4 py-2.5 text-[13px] leading-relaxed text-[var(--text)] sm:px-4 sm:py-3';
+
+    const showPageIntro =
+        !isFloat && pageIntro && activeProject && !isVentureUnsettled(activeProject);
+
+    const pageIntroBlock =
+        showPageIntro && pageIntro ? (
+            <div className="flex min-w-0 w-full justify-start gap-2.5 sm:gap-3">
+                {assistantAvatar}
+                <div className={assistantBodyClass}>
+                    <p className="font-semibold text-[var(--text)]">{pageIntro.ventureName}</p>
+                    <p className="mt-2 text-[13px] leading-relaxed text-[var(--text)]/92">
+                        <span className="font-medium text-[var(--text)]">{pageIntro.buddyLabel}</span>
+                        <span className="text-[var(--muted)]"> — {pageIntro.tagline}</span>
+                    </p>
+                    <p className="mt-2 text-[12px] leading-relaxed text-[var(--muted)]">
                         Say what changed on any desk — strategy, execution board, or calendar — and Relay will keep the
                         venture record in sync.
                     </p>
                 </div>
-            )}
+            </div>
+        ) : null;
+
+    const messageThread = (
+        <>
+            {pageIntroBlock}
             {messages.map((m) => (
                 <div
                     key={m.id}
-                    className={`flex gap-2.5 sm:gap-3 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    className={`flex min-w-0 w-full gap-2.5 sm:gap-3 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                     {m.role === 'assistant' ? assistantAvatar : null}
-                    <div
-                        className={
-                            m.role === 'user'
-                                ? 'max-w-[min(100%,26rem)] rounded-2xl rounded-br-md border border-white/[0.08] bg-[var(--color-brand-input)]/85 px-4 py-3 text-[13px] leading-relaxed text-[var(--text)] shadow-sm ring-1 ring-white/[0.04] sm:px-4 sm:py-3.5'
-                                : 'max-w-[min(100%,36rem)] rounded-2xl rounded-bl-md border border-white/[0.07] bg-[var(--color-brand-card)]/90 px-4 py-3 text-[13px] leading-relaxed text-[var(--text)] shadow-[0_12px_40px_-28px_rgba(0,0,0,0.55)] ring-1 ring-white/[0.05] sm:px-4 sm:py-3.5'
-                        }
-                    >
-                        {m.channel === 'cos' ? (
-                            <p className="mb-2 text-[9px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">
-                                Research strategy and direction
-                            </p>
-                        ) : m.role === 'assistant' && m.channel === 'pa' ? (
-                            <p className="mb-2 text-[9px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">
-                                Relay · Personal Assistant
-                            </p>
-                        ) : null}
-                        <p className="whitespace-pre-wrap text-[var(--text)]/95">{m.content}</p>
-                        {m.role === 'assistant' ? <ModelAttribution model={m.model} /> : null}
+                    <div className={m.role === 'user' ? userBubbleClass : assistantBodyClass}>
+                        <p className="break-words whitespace-pre-wrap text-[var(--text)]/95">{m.content}</p>
                         {m.role === 'assistant' &&
                             m.channel === 'pa' &&
                             m.followUpOptions &&
                             m.followUpOptions.length > 0 &&
                             m.id === lastFollowUpMsg?.id &&
                             m.id !== dismissedFollowUpForId && (
-                                <div className="mt-4 border-t border-white/[0.08] pt-4" role="group">
-                                    <p className="mb-3 text-[11px] font-medium text-[var(--muted)]">Quick reply — tap to send</p>
+                                <div className="mt-3 space-y-2" role="group" aria-label="Quick replies">
                                     <div className="grid gap-2 sm:grid-cols-2">
                                         {m.followUpOptions.map((opt, i) => {
                                             const isOther = isOtherFollowUpLabel(opt);
@@ -510,7 +525,7 @@ export function PAChatSurface({ variant }: { variant: 'page' | 'float' }) {
                                                         setDismissedFollowUpForId(m.id);
                                                         void sendMessage(opt, { displayText: opt });
                                                     }}
-                                                    className={`flex w-full items-start gap-2 rounded-xl px-3 py-2.5 text-left text-[12px] font-medium leading-snug transition disabled:opacity-40 ${
+                                                    className={`flex w-full items-start gap-2 rounded-lg px-3 py-2.5 text-left text-[12px] font-medium leading-snug transition disabled:opacity-40 ${
                                                         isOther
                                                             ? 'border border-dashed border-white/[0.14] bg-transparent text-[var(--muted)] hover:border-white/[0.22] hover:bg-white/[0.04] hover:text-[var(--text)]'
                                                             : 'border border-white/[0.09] bg-white/[0.04] text-[var(--text)] hover:border-white/[0.16] hover:bg-white/[0.08]'
@@ -532,9 +547,9 @@ export function PAChatSurface({ variant }: { variant: 'page' | 'float' }) {
                 </div>
             ))}
             {loading && (
-                <div className="flex justify-start gap-2.5 sm:gap-3">
+                <div className="flex min-w-0 w-full justify-start gap-2.5 sm:gap-3">
                     {assistantAvatar}
-                    <div className="flex items-center gap-2 rounded-2xl rounded-bl-md border border-white/[0.07] bg-[var(--color-brand-card)]/80 px-4 py-3 ring-1 ring-white/[0.05]">
+                    <div className={`flex min-w-0 max-w-[min(100%,36rem)] flex-1 items-center gap-2 ${assistantBodyClass}`}>
                         <span className="inline-flex gap-1">
                             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--muted)]" />
                             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--muted)] [animation-delay:150ms]" />
@@ -549,7 +564,7 @@ export function PAChatSurface({ variant }: { variant: 'page' | 'float' }) {
     );
 
     const composerCore = (
-        <div className="group relative flex min-w-0 items-end gap-1 rounded-2xl border border-white/[0.09] bg-[var(--color-brand-card)]/95 px-1.5 py-1.5 shadow-[0_16px_48px_-24px_rgba(0,0,0,0.65)] ring-1 ring-white/[0.05] backdrop-blur-md transition-[box-shadow,ring-color] focus-within:border-white/[0.14] focus-within:ring-white/[0.08]">
+        <div className="executive-panel-strong group relative flex min-w-0 items-end gap-1.5 rounded-2xl px-2 py-2 transition-[box-shadow,border-color] focus-within:border-[var(--border-strong)] focus-within:shadow-[var(--shadow-panel)]">
             <input
                 ref={fileInputRef}
                 type="file"
@@ -561,7 +576,7 @@ export function PAChatSurface({ variant }: { variant: 'page' | 'float' }) {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={loading}
-                className="mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[var(--muted)] transition-colors hover:bg-white/[0.06] hover:text-[var(--text)] disabled:opacity-40"
+                className="mb-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-[var(--muted)] transition-colors hover:bg-white/[0.06] hover:text-[var(--text)] disabled:opacity-40"
                 title="Attach file"
                 aria-label="Attach file"
             >
@@ -580,15 +595,15 @@ export function PAChatSurface({ variant }: { variant: 'page' | 'float' }) {
                 placeholder={`Message ${PA_BUDDY_NAME}…`}
                 rows={1}
                 disabled={loading}
-                className="mb-0.5 min-h-[44px] min-w-0 flex-1 resize-none border-none bg-transparent py-2.5 text-[15px] leading-[1.55] text-[var(--text)] placeholder:text-[var(--muted)]/70 focus:outline-none focus:ring-0"
+                className="mb-0.5 min-h-[48px] min-w-0 flex-1 resize-none border-none bg-transparent py-3 text-[15px] leading-[1.55] text-[var(--text)] placeholder:text-[var(--muted)]/70 focus:outline-none focus:ring-0"
             />
-            <div className="mb-1 flex shrink-0 items-center gap-1 pr-0.5">
+            <div className="mb-0.5 flex shrink-0 items-center gap-1 pr-0.5">
                 {voiceSupported ? (
                     <button
                         type="button"
                         onClick={() => (listening ? stopListening() : startListening())}
                         disabled={loading}
-                        className={`flex h-10 w-10 items-center justify-center rounded-xl transition-colors hover:bg-white/[0.06] disabled:opacity-40 ${listening ? 'bg-white/[0.1] text-[var(--text)]' : 'text-[var(--muted)]'}`}
+                        className={`flex h-11 w-11 items-center justify-center rounded-xl transition-colors hover:bg-white/[0.06] disabled:opacity-40 ${listening ? 'bg-white/[0.1] text-[var(--text)]' : 'text-[var(--muted)]'}`}
                         aria-pressed={listening}
                         aria-label={listening ? 'Stop voice input' : 'Voice input'}
                     >
@@ -599,14 +614,14 @@ export function PAChatSurface({ variant }: { variant: 'page' | 'float' }) {
                     type="button"
                     onClick={() => void sendMessage(input)}
                     disabled={loading || !input.trim()}
-                    className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)] text-[#0a0a0a] transition hover:opacity-90 disabled:opacity-25"
+                    className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/[0.12] bg-[var(--accent)] text-[#0a0a0a] transition hover:opacity-90 disabled:opacity-25"
                     aria-label="Send"
                 >
                     <ArrowUp className="h-4 w-4" strokeWidth={2.5} aria-hidden />
                 </button>
             </div>
             {fileError ? (
-                <p className="absolute bottom-full left-0 right-0 mb-1.5 rounded-lg bg-rose-950/90 px-3 py-2 text-[11px] text-rose-100 ring-1 ring-rose-500/30">
+                <p className="absolute bottom-full left-0 right-0 mb-1.5 rounded-lg border border-rose-500/30 bg-rose-950/90 px-3 py-2 text-[11px] text-rose-100">
                     {fileError}
                 </p>
             ) : null}
@@ -622,7 +637,11 @@ export function PAChatSurface({ variant }: { variant: 'page' | 'float' }) {
         return (
             <>
                 <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-3 pt-2">
-                    <div className={`mx-auto w-full ${maxW} space-y-4 pb-40 sm:space-y-4`}>{messageThread}</div>
+                    <div className={`mx-auto w-full ${maxW} pb-40`}>
+                        <div className="rounded-xl border border-white/[0.08] bg-zinc-800/45 p-3">
+                            <div className="space-y-5">{messageThread}</div>
+                        </div>
+                    </div>
                 </div>
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-[var(--color-brand-bg)] via-[var(--color-brand-bg)]/94 to-transparent px-3 pb-3 pt-10">
                     <div className="pointer-events-auto mx-auto w-full max-w-3xl">
@@ -635,14 +654,18 @@ export function PAChatSurface({ variant }: { variant: 'page' | 'float' }) {
     }
 
     return (
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <div className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden">
             <div
-                className={`custom-scrollbar mx-auto flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto px-4 pb-4 pt-4 sm:px-6 ${maxW}`}
+                className={`custom-scrollbar mx-auto flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden px-4 pb-5 pt-3 scroll-pb-4 sm:px-6 sm:pb-6 sm:pt-4 ${maxW}`}
             >
-                <div className="min-h-0 flex-1" aria-hidden />
-                <div className="space-y-4 sm:space-y-4">{messageThread}</div>
+                {/* min-h-full + justify-end: short threads sit bottom-aligned; long threads scroll fully (flex-1 here breaks scroll height) */}
+                <div className="flex w-full min-h-full flex-col justify-end">
+                    <div className="w-full rounded-2xl border border-white/[0.08] bg-zinc-800/45 p-3 sm:p-4">
+                        <div className="w-full space-y-5 sm:space-y-5">{messageThread}</div>
+                    </div>
+                </div>
             </div>
-            <div className="shrink-0 border-t border-white/[0.06] bg-[var(--color-brand-bg)]/96 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-4 backdrop-blur-md sm:px-6">
+            <div className="relative z-10 shrink-0 border-t border-white/[0.08] bg-[var(--color-brand-bg)]/98 px-4 pb-[max(0.85rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-md sm:px-6 sm:pt-4">
                 <div className={`relative mx-auto w-full ${maxW}`}>
                     {composerCore}
                     {fileHint}
