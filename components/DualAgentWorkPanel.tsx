@@ -319,8 +319,27 @@ export function useDualAgentPanelState(
     claude: { status: 'idle' },
     synthesis: { status: 'idle' },
   });
+  
+  // Use refs to track previous values and prevent infinite loops
+  const prevRunningRef = useRef(running);
+  const prevResultRef = useRef(result);
+  const prevLastRunAtRef = useRef(lastRunAt);
 
   useEffect(() => {
+    // Only update if values actually changed
+    if (
+      prevRunningRef.current === running &&
+      prevResultRef.current === result &&
+      prevLastRunAtRef.current === lastRunAt
+    ) {
+      return;
+    }
+    
+    // Update refs
+    prevRunningRef.current = running;
+    prevResultRef.current = result;
+    prevLastRunAtRef.current = lastRunAt;
+    
     if (running) {
       setState({
         gpt: { status: 'thinking', label: 'Execution Staff' },

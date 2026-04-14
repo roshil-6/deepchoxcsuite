@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
     Bot,
     Users,
@@ -185,9 +185,14 @@ export function CsuiteIntelligenceGuide() {
         updateProjectField,
     } = useOffice();
 
+    // Memoize the result object to prevent infinite re-renders
+    const dualAgentResult = useMemo(() => {
+        return lastSyncDualAgent ? { dual_agent: lastSyncDualAgent } : null;
+    }, [lastSyncDualAgent]);
+    
     const dualAgentPanelState = useDualAgentPanelState(
         agentSyncRunning,
-        lastSyncDualAgent ? { dual_agent: lastSyncDualAgent } : null,
+        dualAgentResult,
         lastSyncDualAgent?.at ?? null
     );
 
