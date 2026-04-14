@@ -158,7 +158,7 @@ export function FloatingPABuddy() {
             }}
         >
             <header
-                className="relative shrink-0 cursor-grab select-none border-b border-zinc-600 bg-gradient-to-b from-zinc-800 to-zinc-900 px-3 pb-3 pt-3 active:cursor-grabbing"
+                className="relative shrink-0 cursor-grab select-none border-b border-zinc-700/60 bg-gradient-to-b from-zinc-800 to-zinc-900 px-3 pb-3 pt-3 active:cursor-grabbing"
                 onPointerDown={onPointerDownHeader}
                 onPointerMove={onPointerMoveHeader}
                 onPointerUp={onPointerUpHeader}
@@ -174,11 +174,7 @@ export function FloatingPABuddy() {
                 </button>
                 <div className="pr-11">
                     <div className="flex items-center gap-3">
-                        <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-zinc-500/60 bg-zinc-900 shadow-inner shadow-black/40">
-                            <span
-                                className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-inset ring-white/5"
-                                aria-hidden
-                            />
+                        <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-zinc-500/60 bg-zinc-900">
                             <Bot className="relative h-5 w-5 text-zinc-200" strokeWidth={1.85} aria-hidden />
                         </div>
                         <div className="min-w-0 flex-1">
@@ -204,17 +200,9 @@ export function FloatingPABuddy() {
                 onPointerMove={onPointerMoveFab}
                 onPointerUp={onPointerUpFab}
                 onPointerCancel={onPointerCancelFab}
-                className="group relative flex h-[3.5rem] w-[3.5rem] touch-none select-none items-center justify-center rounded-full border border-zinc-500/50 bg-zinc-950 text-zinc-100 shadow-[0_10px_40px_rgba(0,0,0,0.45)] ring-[3px] ring-zinc-800/90 transition hover:-translate-y-px hover:border-zinc-400/70 hover:ring-zinc-600/80 active:scale-[0.97] active:cursor-grabbing"
+                className="group relative flex h-[3.5rem] w-[3.5rem] touch-none select-none items-center justify-center rounded-full border border-zinc-500/50 bg-zinc-950 text-zinc-100 transition hover:-translate-y-px hover:border-zinc-400/70 active:scale-[0.97] active:cursor-grabbing"
                 aria-label={`Open ${PA_BUDDY_NAME}`}
             >
-                <span
-                    className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-b from-zinc-700/35 to-transparent opacity-90"
-                    aria-hidden
-                />
-                <span
-                    className="pointer-events-none absolute inset-[5px] rounded-full ring-1 ring-inset ring-white/10"
-                    aria-hidden
-                />
                 <Bot className="relative h-[1.35rem] w-[1.35rem]" strokeWidth={2} aria-hidden />
                 <span
                     className="pointer-events-none absolute bottom-1.5 left-1/2 flex -translate-x-1/2 gap-0.5 opacity-40 group-hover:opacity-70"

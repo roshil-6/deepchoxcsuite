@@ -16,12 +16,20 @@ import {
     MessageSquare,
     Plus,
     AudioLines,
+    Volume2,
+    Square,
+    Sparkles,
 } from 'lucide-react';
 import { ModelAttribution } from '@/components/ModelAttribution';
 import { EXEC_CHAT_MODEL_STORAGE_KEY, isExecChatModelId } from '@/lib/deskConstants';
 import { PA_BUDDY_NAME } from '@/lib/paBuddy';
 import { useSpeechRecognition } from '@/lib/useSpeechRecognition';
 import { formatProductPlanForContext, formatStrategyForContext } from '@/lib/ventureReadableContext';
+import { useReadAloud } from '@/lib/useReadAloud';
+
+const VENTURE_THREAD_WELCOME_TITLE = 'Welcome to your venture thread';
+const VENTURE_THREAD_WELCOME_BODY =
+    "I'll help you build your venture — strategy, execution, and aligned decisions in one place. Use the bar below to ask anything; use read aloud on any reply when you want to listen.";
 
 function readStoredExecModel(): string {
     if (typeof window === 'undefined') return 'llama3';
@@ -100,6 +108,8 @@ export function ChatAssistant({
     const dragStartRef = useRef({ mouseX: 0, mouseY: 0, offsetX: 0, offsetY: 0 });
     const [mounted, setMounted] = useState(false);
     useEffect(() => setMounted(true), []);
+
+    const { speak, stop, speakingKey } = useReadAloud();
 
     const isCeoSplit = variant === 'ceoSplit';
     // Thread always floats above the message bar — never portals into desk sections
@@ -360,13 +370,44 @@ export function ChatAssistant({
 
     const threadBody = (
         <>
-            {messages.length === 0 && (
+            {useExecutiveThread ? (
+                <div className="rounded-xl border border-violet-500/25 bg-gradient-to-br from-violet-500/[0.07] via-zinc-800/80 to-cyan-500/[0.04] px-3.5 py-3 sm:px-4">
+                    <div className="flex items-start gap-3">
+                        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-violet-500/15 text-violet-200">
+                            <Sparkles className="h-4 w-4" aria-hidden />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <p className="text-[12px] font-semibold text-zinc-100">{VENTURE_THREAD_WELCOME_TITLE}</p>
+                            <p className="mt-1 text-[11px] leading-relaxed text-zinc-400">{VENTURE_THREAD_WELCOME_BODY}</p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() =>
+                                speakingKey === 'venture-welcome'
+                                    ? stop()
+                                    : speak(`${VENTURE_THREAD_WELCOME_TITLE}. ${VENTURE_THREAD_WELCOME_BODY}`, 'venture-welcome')
+                            }
+                            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-white/[0.1] bg-white/[0.05] px-2.5 py-1.5 text-[10px] font-medium text-zinc-300 transition hover:bg-white/[0.09] hover:text-zinc-100"
+                            title={speakingKey === 'venture-welcome' ? 'Stop' : 'Read aloud'}
+                        >
+                            {speakingKey === 'venture-welcome' ? (
+                                <Square className="h-3.5 w-3.5" aria-hidden />
+                            ) : (
+                                <Volume2 className="h-3.5 w-3.5" aria-hidden />
+                            )}
+                            <span className="hidden sm:inline">{speakingKey === 'venture-welcome' ? 'Stop' : 'Listen'}</span>
+                        </button>
+                    </div>
+                </div>
+            ) : null}
+
+            {messages.length === 0 && !(useExecutiveThread && isCeoSplit) && (
                 <div
                     className={`flex select-none flex-col ${
                         isCeoSplit && wantsBlockInlineThread
                             ? 'items-start py-2 text-left'
                             : isCeoSplit
-                              ? 'items-center justify-center rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.06] to-white/[0.02] px-5 py-10 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
+                              ? 'items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.03] px-5 py-10 text-center'
                               : 'items-start rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-left sm:px-5 sm:py-4'
                     }`}
                 >
@@ -382,7 +423,7 @@ export function ChatAssistant({
                             </div>
                         ) : (
                             <>
-                                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-white/[0.06] ring-1 ring-white/[0.1]">
+                                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.05]">
                                     <MessageSquare className="h-5 w-5 text-zinc-400" aria-hidden />
                                 </div>
                                 <p className="max-w-sm text-[13px] leading-relaxed text-zinc-400">{chatTheme.emptyPrompt}</p>
@@ -413,40 +454,68 @@ export function ChatAssistant({
                     className={`flex gap-2.5 sm:gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
                 >
                     {msg.role === 'assistant' && (
-                        <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/[0.04] text-brand-muted">
-                            <Bot className="h-3.5 w-3.5 text-brand-muted" />
+                        <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--accent-soft)] text-brand-text">
+                            <Bot className="h-3.5 w-3.5 opacity-90" strokeWidth={1.75} aria-hidden />
                         </div>
                     )}
 
                     <div
                         className={`max-w-[88%] text-sm leading-relaxed ${
                             msg.role === 'user'
-                                ? 'rounded-2xl rounded-br-md bg-white/[0.06] px-3 py-2.5 text-brand-text ring-1 ring-white/[0.06]'
-                                : 'rounded-2xl rounded-bl-md bg-white/[0.04] px-3 py-2.5 text-brand-text/95'
+                                ? 'rounded-xl rounded-br-sm border border-white/[0.1] bg-white/[0.07] px-3.5 py-2.5 text-brand-text'
+                                : 'rounded-xl rounded-tl-sm border border-white/[0.08] border-l-[3px] border-l-[color-mix(in_srgb,var(--accent)_40%,transparent)] bg-gradient-to-b from-white/[0.05] to-white/[0.02] px-3.5 py-2.5 text-brand-text/95'
                         }`}
                     >
                         {useExecutiveThread && !focusAnchorsThread ? (
-                            <p className="mb-1 text-[9px] font-semibold uppercase tracking-[0.1em] text-brand-muted/80">
+                            <p className="mb-1.5 text-[10px] font-medium tracking-wide text-zinc-500">
                                 {msg.channel === 'cos'
                                     ? 'Strategy desk'
                                     : msg.role === 'user'
-                                      ? 'Assistant thread'
+                                      ? 'You'
                                       : PA_BUDDY_NAME}
                             </p>
                         ) : null}
-                        <p className="whitespace-pre-wrap">{msg.content}</p>
-                        {msg.role === 'assistant' ? <ModelAttribution model={msg.model} /> : null}
+                        <p className="whitespace-pre-wrap text-[13px] leading-relaxed">{msg.content}</p>
+                        {msg.role === 'assistant' ? (
+                            <div className="mt-2 flex flex-wrap items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        speakingKey === `msg-${msg.id}`
+                                            ? stop()
+                                            : speak(msg.content, `msg-${msg.id}`)
+                                    }
+                                    className="inline-flex items-center gap-1 rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-1 text-[10px] font-medium text-zinc-400 transition hover:border-white/[0.14] hover:bg-white/[0.07] hover:text-zinc-200"
+                                    title={speakingKey === `msg-${msg.id}` ? 'Stop' : 'Read aloud'}
+                                >
+                                    {speakingKey === `msg-${msg.id}` ? (
+                                        <Square className="h-3 w-3" aria-hidden />
+                                    ) : (
+                                        <Volume2 className="h-3 w-3" aria-hidden />
+                                    )}
+                                    {speakingKey === `msg-${msg.id}` ? 'Stop' : 'Read aloud'}
+                                </button>
+                                <div className="opacity-80">
+                                    <ModelAttribution model={msg.model} />
+                                </div>
+                            </div>
+                        ) : null}
                     </div>
                 </div>
             ))}
 
             {isLoading && (
-                <div className="flex gap-2.5">
-                    <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/[0.04]">
-                        <Bot className="h-3.5 w-3.5 text-brand-muted" />
+                <div className="flex gap-2.5 sm:gap-3">
+                    <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--accent-soft)] text-brand-text">
+                        <Bot className="h-3.5 w-3.5 opacity-90" strokeWidth={1.75} aria-hidden />
                     </div>
-                    <div className="flex items-center rounded-2xl rounded-bl-md bg-white/[0.04] px-3 py-2.5">
-                        <span className="text-sm text-brand-muted">…</span>
+                    <div className="flex items-center rounded-xl rounded-tl-sm border border-white/[0.08] border-l-[3px] border-l-[color-mix(in_srgb,var(--accent)_40%,transparent)] bg-gradient-to-b from-white/[0.05] to-white/[0.02] px-3.5 py-2.5">
+                        <span className="inline-flex gap-1">
+                            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-zinc-500" />
+                            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-zinc-500 [animation-delay:150ms]" />
+                            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-zinc-500 [animation-delay:300ms]" />
+                        </span>
+                        <span className="ml-2 text-[12px] text-zinc-500">Thinking…</span>
                     </div>
                 </div>
             )}
@@ -487,7 +556,7 @@ export function ChatAssistant({
                         type="button"
                         onClick={() => setFloatOpen(true)}
                         style={{ transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)` }}
-                        className="fixed bottom-[108px] left-1/2 z-[60] flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/[0.1] bg-[#111113] px-3.5 py-2 text-[12px] text-zinc-400 shadow-[0_4px_24px_rgba(0,0,0,0.6)] transition hover:bg-[#1a1a1c] hover:text-zinc-200 lg:left-auto lg:translate-x-0 lg:right-[360px]"
+                        className="fixed bottom-[108px] left-1/2 z-[60] flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/[0.1] bg-zinc-800 px-3.5 py-2 text-[12px] text-zinc-400 shadow-[0_4px_24px_rgba(0,0,0,0.45)] transition hover:bg-zinc-700 hover:text-zinc-200 lg:left-auto lg:translate-x-0 lg:right-[360px]"
                     >
                         <MessageSquare className="h-3.5 w-3.5" aria-hidden />
                         <span>Thread</span>
@@ -498,14 +567,14 @@ export function ChatAssistant({
                 {floatOpen && (
                     <div
                         style={{ transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)` }}
-                        className={`fixed bottom-[108px] left-2 right-2 z-[60] flex flex-col overflow-hidden rounded-2xl border border-white/[0.09] bg-[#0d0d0f] shadow-[0_12px_56px_rgba(0,0,0,0.75),0_0_0_1px_rgba(255,255,255,0.03)] transition-[height] duration-300 ease-in-out lg:left-auto lg:right-[360px] ${
+                        className={`fixed bottom-[108px] left-2 right-2 z-[60] flex flex-col overflow-hidden rounded-2xl border border-white/[0.1] bg-zinc-800 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.55)] transition-[height] duration-300 ease-in-out lg:left-auto lg:right-[360px] ${
                             floatExpanded ? 'h-[520px] lg:w-[500px]' : 'h-[300px] lg:w-[380px]'
                         }`}
                     >
                         {/* Drag-handle header */}
                         <div
                             onMouseDown={onDragHeaderMouseDown}
-                            className="flex shrink-0 cursor-grab select-none items-center justify-between gap-2 border-b border-white/[0.07] bg-[#111113] px-4 py-2.5 active:cursor-grabbing"
+                            className="flex shrink-0 cursor-grab select-none items-center justify-between gap-2 border-b border-white/[0.08] bg-zinc-800 px-4 py-2.5 active:cursor-grabbing"
                         >
                             <div className="flex items-center gap-2 min-w-0">
                                 <MessageSquare className="h-3.5 w-3.5 shrink-0 text-zinc-600" aria-hidden />
@@ -548,8 +617,8 @@ export function ChatAssistant({
                             </div>
                         </div>
                         {/* Messages */}
-                        <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-4 py-3">
-                            <div className="flex flex-col gap-3">{threadBody}</div>
+                        <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-3 py-3 sm:px-4">
+                            <div className="flex flex-col gap-4">{threadBody}</div>
                         </div>
                     </div>
                 )}
@@ -572,12 +641,12 @@ export function ChatAssistant({
                                   : 'w-full rounded-none border-0 bg-transparent shadow-none'
                               : isInlineDesk
                                 ? dockThreadEmpty
-                                    ? 'h-auto w-full rounded-3xl border border-white/[0.08] bg-[#131314]/90'
-                                    : 'w-full rounded-3xl border border-white/[0.08] bg-[#131314]/90'
+                                    ? 'h-auto w-full rounded-3xl border border-white/[0.08] bg-zinc-800/90'
+                                    : 'w-full rounded-3xl border border-white/[0.08] bg-zinc-800/90'
                                 : isBottomDock && dockThreadEmpty
-                                  ? `h-auto w-full ${isAiOs ? 'rounded-3xl border border-white/[0.08] bg-[#131314]/95 shadow-[0_-16px_48px_rgba(0,0,0,0.55)] backdrop-blur-md' : 'rounded-none border-0 bg-transparent'}`
+                                  ? `h-auto w-full ${isAiOs ? 'rounded-3xl border border-white/[0.08] bg-zinc-800/95 shadow-[0_-16px_48px_rgba(0,0,0,0.4)] backdrop-blur-md' : 'rounded-none border-0 bg-transparent'}`
                                   : isBottomDock
-                                    ? `min-h-0 w-full max-h-full flex-1 ${isAiOs ? 'rounded-3xl border border-white/[0.08] bg-[#131314]/95 shadow-[0_-16px_48px_rgba(0,0,0,0.55)] backdrop-blur-md' : 'rounded-none border-0 bg-transparent'}`
+                                    ? `min-h-0 w-full max-h-full flex-1 ${isAiOs ? 'rounded-3xl border border-white/[0.08] bg-zinc-800/95 shadow-[0_-16px_48px_rgba(0,0,0,0.4)] backdrop-blur-md' : 'rounded-none border-0 bg-transparent'}`
                                     : chatTheme.railClass
                       }`
             }

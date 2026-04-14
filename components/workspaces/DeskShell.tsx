@@ -67,7 +67,7 @@ export function DeskShell({
                     </div>
                 </div>
                 {tabs ? (
-                    <div className="ml-5 mt-4 flex flex-wrap gap-1.5 border-t border-white/[0.05] pt-3">{tabs}</div>
+                    <div className="ml-5 mt-4 flex flex-wrap gap-1.5 pt-1">{tabs}</div>
                 ) : null}
             </header>
 
@@ -108,7 +108,7 @@ export function DeskTabButton({
             onClick={onClick}
             className={`inline-flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs font-medium transition-all ${
                 active
-                    ? 'border-white/[0.12] bg-white/[0.07] text-[var(--text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
+                    ? 'border-white/[0.12] bg-white/[0.07] text-[var(--text)]'
                     : 'border-transparent bg-transparent text-[var(--muted)] hover:-translate-y-px hover:border-white/[0.07] hover:bg-white/[0.04] hover:text-[var(--text)]'
             } ${className ?? ''}`}
         >

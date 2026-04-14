@@ -158,7 +158,7 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
 
                 <WorkspacePanel
                     reserveBottom={Boolean(bottomBar)}
-                    fillViewport={activeRoom === 'personal_assistant'}
+                    fillViewport={activeRoom === 'personal_assistant' || activeRoom === 'dexo'}
                 >
                     <motion.div
                         key={activeRoom}
@@ -166,7 +166,7 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, ease: 'easeOut' }}
                         className={
-                            activeRoom === 'personal_assistant'
+                            activeRoom === 'personal_assistant' || activeRoom === 'dexo'
                                 ? 'flex min-h-0 min-w-0 flex-1 flex-col'
                                 : 'flex min-h-full flex-col'
                         }

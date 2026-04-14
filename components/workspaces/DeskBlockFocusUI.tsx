@@ -7,7 +7,7 @@ import { DeskChatThreadMount } from '@/components/DeskChatThreadSlotContext';
 export function DeskMsgUser({ children }: { children: React.ReactNode }) {
     return (
         <div className="flex justify-end">
-            <div className="max-w-[min(100%,34rem)] rounded-2xl rounded-br-md bg-zinc-700/35 px-3.5 py-2.5 text-left ring-1 ring-white/[0.08] sm:px-4 sm:py-3">
+            <div className="max-w-[min(100%,34rem)] rounded-2xl rounded-br-md border border-white/[0.08] bg-zinc-700/35 px-3.5 py-2.5 text-left sm:px-4 sm:py-3">
                 {children}
             </div>
         </div>

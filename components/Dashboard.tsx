@@ -40,7 +40,12 @@ import {
     Legend,
 } from 'recharts';
 import { aggregateImpact, getAffectedDesks } from '@/lib/impact/impactEngine';
-import { fromExecutionScore } from '@/lib/impact/adapters/dashboardAdapter';
+import { fromVenturePillarScores } from '@/lib/impact/adapters/dashboardAdapter';
+import {
+    computeStrategicCoverageScore,
+    computeExecutionDeliveryScore,
+    computeFinancialHealthScore,
+} from '@/lib/ventureMetrics';
 import { MorningBriefCard } from '@/components/office/MorningBriefCard';
 import { AmbientNotificationTray } from '@/components/office/AmbientNotificationTray';
 import { WeeklyReviewCard } from '@/components/office/WeeklyReviewCard';
@@ -48,6 +53,7 @@ import { GoalAdvanceCard } from '@/components/office/GoalAdvanceCard';
 import { StaffFocusChecklist } from '@/components/office/StaffFocusChecklist';
 import { OfficeBriefPanel } from '@/components/office/OfficeBriefPanel';
 import { GuideHint, ActionHint } from '@/components/ui/ContextualGuide';
+import { getAutoStaffSyncEnabled, setAutoStaffSyncEnabled } from '@/lib/autoStaffSyncPreferences';
 
 /**
  * Recharts Tooltip defaults omit cursor.fill, so the hover rectangle uses a light gray/white band
@@ -184,10 +190,15 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     /** Portfolio (no venture selected): collapse dense KPI/charts into a Dashboard tile */
     const [portfolioDashExpanded, setPortfolioDashExpanded] = useState(false);
     const [pendingScrollId, setPendingScrollId] = useState<string | null>(null);
+    const [autoStaffSync, setAutoStaffSyncState] = useState(true);
 
     useEffect(() => {
         setDashboardExpanded(false);
         setPortfolioDashExpanded(false);
+    }, [activeProject?.id]);
+
+    useEffect(() => {
+        setAutoStaffSyncState(getAutoStaffSyncEnabled());
     }, [activeProject?.id]);
 
     useEffect(() => {
@@ -230,10 +241,12 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
         return Math.round(raw * 1000) / 10;
     }, [hasIntent, narrativeRich, phaseDone, phaseTotal, priDone, priTotal]);
 
-    const businessImpact = useMemo(
-        () => aggregateImpact([fromExecutionScore(executionScore)]),
-        [executionScore]
-    );
+    const businessImpact = useMemo(() => {
+        const strategic = computeStrategicCoverageScore(activeProject?.strategy);
+        const executionPillar = computeExecutionDeliveryScore(activeProject?.strategy);
+        const financial = computeFinancialHealthScore(activeProject?.budget);
+        return aggregateImpact([fromVenturePillarScores({ strategic, financial, execution: executionPillar })]);
+    }, [activeProject?.strategy, activeProject?.budget]);
     const impactDeskRoute = useMemo(() => getAffectedDesks(businessImpact), [businessImpact]);
 
     /** Same inputs as execution score — shown as bars (snapshot, not a time series). */
@@ -646,6 +659,20 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     {agentSyncRunning ? 'Staff syncing…' : 'Sync AI staff'}
                                 </button>
                                 <WorkspaceAiButton label="Research across desks (assistant)" />
+                                <label className="inline-flex cursor-pointer select-none items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-[11px] text-brand-muted transition hover:bg-white/[0.07]">
+                                    <input
+                                        type="checkbox"
+                                        checked={autoStaffSync}
+                                        onChange={(e) => {
+                                            const on = e.target.checked;
+                                            setAutoStaffSyncEnabled(on);
+                                            setAutoStaffSyncState(on);
+                                        }}
+                                        className="h-3.5 w-3.5 rounded border-white/25 bg-black/30 text-brand-text focus:ring-1 focus:ring-white/20"
+                                    />
+                                    <span className="text-brand-text/90">Auto-sync staff</span>
+                                    <span className="hidden text-[10px] text-brand-muted/90 sm:inline">· 3h stale, tab visible</span>
+                                </label>
                                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-brand-muted">
                                     <span className="inline-flex items-center gap-1.5">
                                         <Shield className="h-3.5 w-3.5 opacity-70" aria-hidden />

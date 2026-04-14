@@ -280,7 +280,8 @@ export function FloatingDexoOrb() {
         if (d?.dragged) setOffset((cur) => { saveOffset(cur); return cur; });
     }, []);
 
-    if (!mounted || !activeProject?.id || activeRoom === 'dexo') return null;
+    // Hide on Dexo (in-room orb) and on Relay / PA — same rationale as FloatingPABuddy: full-page desk, no FAB overlap.
+    if (!mounted || !activeProject?.id || activeRoom === 'dexo' || activeRoom === 'personal_assistant') return null;
 
     const anchorStyle: React.CSSProperties = {
         right:  `max(0.75rem, calc(0.75rem - ${offset.x}px))`,
