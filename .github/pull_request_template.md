@@ -14,6 +14,8 @@
 
 - [ ] `npm run build` passes locally
 - [ ] Prisma: migrations run where needed (`npm run db:migrate` against the right `DATABASE_URL`)
+- [ ] Vercel: **`DATABASE_URL`** is set for **Production** and **Preview** when this PR should pass checks (use Postgres **external** URL, not Render-internal hostnames)
+- [ ] Vercel: **`NEXT_PUBLIC_SITE_URL`** matches production domain (canonical + Open Graph; optional but recommended)
 - [ ] No secrets committed (`.env.local` stays local; only `.env.example` placeholders updated if needed)
 - [ ] UI checked on a narrow viewport if the change touches layout
 
