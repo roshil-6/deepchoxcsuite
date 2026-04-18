@@ -3,11 +3,19 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { formatStrategyForContext } from '@/lib/ventureReadableContext';
 import { useOffice } from '@/lib/OfficeContext';
-import { Bot, Youtube, Sparkles, Send, Copy, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Bot, Sparkles, Send } from 'lucide-react';
 import { safeJsonParse } from '@/lib/utils';
 import { ModelAttribution } from '@/components/ModelAttribution';
 import { useTokens } from '@/lib/tokens/useTokens';
 import { TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
+
+const THINKING_STEPS = [
+  'Analysing your venture context…',
+  'Checking market signals…',
+  'Cross-referencing strategy…',
+  'Synthesising insights…',
+  'Drafting response…',
+];
 
 interface Message {
     id: string;
@@ -28,7 +36,9 @@ export function DexoChat() {
     }]);
     const [inputValue, setInputValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [thinkingStep, setThinkingStep] = useState(0);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const thinkingTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
     // Scroll to bottom
     useEffect(() => {
@@ -64,6 +74,10 @@ export function DexoChat() {
         setMessages(prev => [...prev, userMessage]);
         setInputValue('');
         setIsLoading(true);
+        setThinkingStep(0);
+        thinkingTimer.current = setInterval(() => {
+          setThinkingStep(s => (s + 1) % THINKING_STEPS.length);
+        }, 1800);
 
         try {
             // Simplified Project Context for Dexo
@@ -113,6 +127,10 @@ export function DexoChat() {
                 timestamp: Date.now()
             }]);
         } finally {
+            if (thinkingTimer.current) {
+                clearInterval(thinkingTimer.current);
+                thinkingTimer.current = null;
+            }
             setIsLoading(false);
         }
     };
@@ -161,9 +179,21 @@ export function DexoChat() {
                     </div>
                 ))}
                 {isLoading && (
-                    <div className="flex items-center gap-2 text-zinc-500 ml-12">
-                        <Sparkles className="w-4 h-4 animate-spin text-indigo-500" />
-                        <span className="text-xs">Thinking...</span>
+                    <div className="flex gap-4 justify-start">
+                        <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center flex-shrink-0 mt-1">
+                            <Bot className="w-4 h-4 text-indigo-500" />
+                        </div>
+                        <div className="max-w-[75%] p-4 rounded-2xl rounded-tl-sm bg-zinc-900 border border-zinc-800 shadow-xl flex flex-col gap-2">
+                            <div className="flex items-center gap-2">
+                                <Sparkles className="w-3.5 h-3.5 text-indigo-400 animate-spin flex-shrink-0" />
+                                <span className="text-xs text-zinc-400 transition-all duration-500">{THINKING_STEPS[thinkingStep]}</span>
+                            </div>
+                            <div className="flex gap-1 mt-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500/60 animate-bounce" style={{ animationDelay: '0ms' }} />
+                                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500/60 animate-bounce" style={{ animationDelay: '150ms' }} />
+                                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500/60 animate-bounce" style={{ animationDelay: '300ms' }} />
+                            </div>
+                        </div>
                     </div>
                 )}
                 <div ref={messagesEndRef} />
