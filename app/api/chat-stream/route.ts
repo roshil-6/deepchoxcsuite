@@ -247,23 +247,34 @@ ${m.content}`,
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
-        // Send instant acknowledgment
-        const ack = ACKNOWLEDGMENTS[Math.floor(Math.random() * ACKNOWLEDGMENTS.length)];
-        controller.enqueue(encoder.encode(encodeSSE({ type: 'ack', data: ack })));
+        try {
+          // Send instant acknowledgment
+          const ack = ACKNOWLEDGMENTS[Math.floor(Math.random() * ACKNOWLEDGMENTS.length)];
+          controller.enqueue(encoder.encode(encodeSSE({ type: 'ack', data: ack })));
 
-        // Small delay for natural feel
-        await new Promise(r => setTimeout(r, 400));
+          // Small delay for natural feel
+          await new Promise(r => setTimeout(r, 400));
 
-        // Stream main content
-        const generator = provider === 'openai' 
-          ? streamOpenAI(contextualMessages, model)
-          : streamGroq(contextualMessages, model);
+          // Stream main content
+          const generator = provider === 'openai'
+            ? streamOpenAI(contextualMessages, model)
+            : streamGroq(contextualMessages, model);
 
-        for await (const chunk of generator) {
-          controller.enqueue(encoder.encode(encodeSSE(chunk)));
+          for await (const chunk of generator) {
+            controller.enqueue(encoder.encode(encodeSSE(chunk)));
+          }
+
+          controller.close();
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : 'stream_error';
+          console.error('[chat-stream] stream error:', err);
+          try {
+            controller.enqueue(encoder.encode(encodeSSE({ type: 'error', data: msg })));
+            controller.close();
+          } catch {
+            controller.error(err);
+          }
         }
-
-        controller.close();
       },
     });
 
