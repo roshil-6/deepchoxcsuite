@@ -95,78 +95,84 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: 'action is required' }, { status: 400 });
   }
 
-  switch (action) {
-    case 'jarvis':
-      return jarvisPost(toJsonRequest(req, payload));
-    case 'personalAssistant':
-      return personalAssistantPost(toJsonRequest(req, payload));
-    case 'dailyPulse':
-      return dailyPulsePost(toJsonRequest(req, payload));
-    case 'dailyReportsList': {
-      const p = (payload ?? {}) as { ventureId?: number; limit?: number };
-      return dailyReportsGet(toQueryRequest(req, '/api/dexo/daily-reports', { ventureId: p.ventureId, limit: p.limit }));
+  try {
+    switch (action) {
+      case 'jarvis':
+        return await jarvisPost(toJsonRequest(req, payload));
+      case 'personalAssistant':
+        return await personalAssistantPost(toJsonRequest(req, payload));
+      case 'dailyPulse':
+        return await dailyPulsePost(toJsonRequest(req, payload));
+      case 'dailyReportsList': {
+        const p = (payload ?? {}) as { ventureId?: number; limit?: number };
+        return await dailyReportsGet(toQueryRequest(req, '/api/dexo/daily-reports', { ventureId: p.ventureId, limit: p.limit }));
+      }
+      case 'dailyReportApply':
+        return await dailyReportsApplyPost(toJsonRequest(req, payload));
+      case 'dexoConvoGet': {
+        const p = (payload ?? {}) as { ventureId?: number };
+        return await dexoConvoGet(toQueryRequest(req, '/api/dexo-convo', { ventureId: p.ventureId }));
+      }
+      case 'dexoConvoPost':
+        return await dexoConvoPost(toJsonRequest(req, payload));
+      case 'dexoConvoDelete': {
+        const p = (payload ?? {}) as { ventureId?: number };
+        return await dexoConvoDelete(toDeleteQueryRequest(req, '/api/dexo-convo', { ventureId: p.ventureId }));
+      }
+      case 'agentSync':
+        return await agentSyncPost(toJsonRequest(req, payload));
+      case 'focusBriefing':
+        return await focusBriefingPost(toJsonRequest(req, payload));
+      case 'cfoFundingSuggest':
+        return await cfoFundingSuggestPost(toJsonRequest(req, payload));
+      case 'onboardingExtract':
+        return await onboardingExtractPost(toJsonRequest(req, payload));
+      case 'relayMeetingRoom':
+        return await relayMeetingRoomPost(toJsonRequest(req, payload));
+      case 'boardroom':
+        return await boardroomPost(toJsonRequest(req, payload));
+      case 'chat':
+        return await chatPost(toJsonRequest(req, payload));
+      case 'ventureRegistryUpsert':
+        return await ventureRegistryPost(toJsonRequest(req, payload));
+      case 'proposalCreate':
+        return await proposalsPost(toJsonRequest(req, payload));
+      case 'proposalList': {
+        const p = (payload ?? {}) as { ventureId?: number; status?: string; take?: number };
+        return await proposalsGet(
+          toQueryRequest(req, '/api/dexo/proposals', {
+            ventureId: p.ventureId,
+            status: p.status,
+            take: p.take,
+          })
+        );
+      }
+      case 'proposalApply':
+        return await proposalsApplyPost(toJsonRequest(req, payload));
+      case 'proposalReject':
+        return await proposalsRejectPost(toJsonRequest(req, payload));
+      case 'actionQueueList': {
+        const p = (payload ?? {}) as { ventureId?: number; status?: string; take?: number };
+        return await actionQueueGet(
+          toQueryRequest(req, '/api/dexo/actions/queue', {
+            ventureId: p.ventureId,
+            status: p.status,
+            take: p.take,
+          })
+        );
+      }
+      case 'actionQueueCreate':
+        return await actionQueuePost(toJsonRequest(req, payload));
+      case 'actionQueueApprove':
+        return await actionApprovePost(toJsonRequest(req, payload));
+      case 'actionQueueExecute':
+        return await actionExecutePost(toJsonRequest(req, payload));
+      default:
+        return NextResponse.json({ ok: false, error: `Unknown action: ${String(action)}` }, { status: 400 });
     }
-    case 'dailyReportApply':
-      return dailyReportsApplyPost(toJsonRequest(req, payload));
-    case 'dexoConvoGet': {
-      const p = (payload ?? {}) as { ventureId?: number };
-      return dexoConvoGet(toQueryRequest(req, '/api/dexo-convo', { ventureId: p.ventureId }));
-    }
-    case 'dexoConvoPost':
-      return dexoConvoPost(toJsonRequest(req, payload));
-    case 'dexoConvoDelete': {
-      const p = (payload ?? {}) as { ventureId?: number };
-      return dexoConvoDelete(toDeleteQueryRequest(req, '/api/dexo-convo', { ventureId: p.ventureId }));
-    }
-    case 'agentSync':
-      return agentSyncPost(toJsonRequest(req, payload));
-    case 'focusBriefing':
-      return focusBriefingPost(toJsonRequest(req, payload));
-    case 'cfoFundingSuggest':
-      return cfoFundingSuggestPost(toJsonRequest(req, payload));
-    case 'onboardingExtract':
-      return onboardingExtractPost(toJsonRequest(req, payload));
-    case 'relayMeetingRoom':
-      return relayMeetingRoomPost(toJsonRequest(req, payload));
-    case 'boardroom':
-      return boardroomPost(toJsonRequest(req, payload));
-    case 'chat':
-      return chatPost(toJsonRequest(req, payload));
-    case 'ventureRegistryUpsert':
-      return ventureRegistryPost(toJsonRequest(req, payload));
-    case 'proposalCreate':
-      return proposalsPost(toJsonRequest(req, payload));
-    case 'proposalList': {
-      const p = (payload ?? {}) as { ventureId?: number; status?: string; take?: number };
-      return proposalsGet(
-        toQueryRequest(req, '/api/dexo/proposals', {
-          ventureId: p.ventureId,
-          status: p.status,
-          take: p.take,
-        })
-      );
-    }
-    case 'proposalApply':
-      return proposalsApplyPost(toJsonRequest(req, payload));
-    case 'proposalReject':
-      return proposalsRejectPost(toJsonRequest(req, payload));
-    case 'actionQueueList': {
-      const p = (payload ?? {}) as { ventureId?: number; status?: string; take?: number };
-      return actionQueueGet(
-        toQueryRequest(req, '/api/dexo/actions/queue', {
-          ventureId: p.ventureId,
-          status: p.status,
-          take: p.take,
-        })
-      );
-    }
-    case 'actionQueueCreate':
-      return actionQueuePost(toJsonRequest(req, payload));
-    case 'actionQueueApprove':
-      return actionApprovePost(toJsonRequest(req, payload));
-    case 'actionQueueExecute':
-      return actionExecutePost(toJsonRequest(req, payload));
-    default:
-      return NextResponse.json({ ok: false, error: `Unknown action: ${String(action)}` }, { status: 400 });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'internal_error';
+    console.error('[dexo] unhandled action error:', action, err);
+    return NextResponse.json({ ok: false, error: 'internal_error', detail: msg }, { status: 500 });
   }
 }

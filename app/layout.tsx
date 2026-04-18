@@ -4,6 +4,7 @@ import { Inter, Playfair_Display, JetBrains_Mono, Syne } from 'next/font/google'
 import './globals.css';
 import { OfficeProvider } from '@/lib/OfficeContext';
 import { GuideProvider } from '@/components/ui/ContextualGuide';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import {
   SITE_BRAND,
   SITE_KEYWORDS,
@@ -95,11 +96,13 @@ export default function RootLayout({
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }}
         />
-        <OfficeProvider>
-          <GuideProvider>
-            {children}
-          </GuideProvider>
-        </OfficeProvider>
+        <ErrorBoundary>
+          <OfficeProvider>
+            <GuideProvider>
+              {children}
+            </GuideProvider>
+          </OfficeProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );
