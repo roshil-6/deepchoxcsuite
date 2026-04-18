@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev -p 5555",
     "build": "next build",
+    "build:vercel": "prisma migrate deploy && next build",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
@@ -15,6 +16,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "dependencies": {
     "@prisma/client": "^6.19.0",
     "autoprefixer": "^10.4.24",

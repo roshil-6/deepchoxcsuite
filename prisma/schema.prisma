@@ -2,7 +2,9 @@
 // Run: npx prisma migrate dev  (local)  |  npx prisma migrate deploy  (Render build/start)
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  /// Vercel / Linux serverless uses rhel-openssl; `native` keeps local Windows/macOS dev fast.
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
