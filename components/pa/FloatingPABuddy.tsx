@@ -34,7 +34,7 @@ function persistOffset(cur: { x: number; y: number }) {
 }
 
 /**
- * Global floating Relay chat — same executiveThread as the Assistant room. Hidden while on the PA room to avoid duplicate composers.
+ * Global floating cofounder chat — same executiveThread as the Assistant room. Hidden while on the PA room to avoid duplicate composers.
  */
 export function FloatingPABuddy() {
     const { activeProject, activeRoom } = useOffice();
@@ -151,14 +151,14 @@ export function FloatingPABuddy() {
 
     const panel = open ? (
         <div
-            className="executive-panel-strong fixed z-[10050] flex w-[min(100vw-1.5rem,400px)] flex-col overflow-hidden"
+            className="executive-panel-glass fixed z-[10050] flex w-[min(100vw-1.5rem,400px)] flex-col overflow-hidden"
             style={{
                 ...anchorStyle,
                 maxHeight: 'min(72vh, 580px)',
             }}
         >
             <header
-                className="relative shrink-0 cursor-grab select-none border-b border-zinc-700/60 bg-gradient-to-b from-zinc-800 to-zinc-900 px-3 pb-3 pt-3 active:cursor-grabbing"
+                className="relative shrink-0 cursor-grab select-none bg-gradient-to-b from-zinc-800 to-zinc-900 px-3 pb-3 pt-3 active:cursor-grabbing"
                 onPointerDown={onPointerDownHeader}
                 onPointerMove={onPointerMoveHeader}
                 onPointerUp={onPointerUpHeader}
@@ -174,7 +174,7 @@ export function FloatingPABuddy() {
                 </button>
                 <div className="pr-11">
                     <div className="flex items-center gap-3">
-                        <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-zinc-500/60 bg-zinc-900">
+                        <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-zinc-900">
                             <Bot className="relative h-5 w-5 text-zinc-200" strokeWidth={1.85} aria-hidden />
                         </div>
                         <div className="min-w-0 flex-1">
@@ -200,7 +200,7 @@ export function FloatingPABuddy() {
                 onPointerMove={onPointerMoveFab}
                 onPointerUp={onPointerUpFab}
                 onPointerCancel={onPointerCancelFab}
-                className="group relative flex h-[3.5rem] w-[3.5rem] touch-none select-none items-center justify-center rounded-full border border-zinc-500/50 bg-zinc-950 text-zinc-100 transition hover:-translate-y-px hover:border-zinc-400/70 active:scale-[0.97] active:cursor-grabbing"
+                className="group relative flex h-[3.5rem] w-[3.5rem] touch-none select-none items-center justify-center rounded-full bg-zinc-950 text-zinc-100 shadow-lg shadow-black/40 transition hover:-translate-y-px hover:bg-zinc-900 active:scale-[0.97] active:cursor-grabbing"
                 aria-label={`Open ${PA_BUDDY_NAME}`}
             >
                 <Bot className="relative h-[1.35rem] w-[1.35rem]" strokeWidth={2} aria-hidden />

@@ -3,6 +3,8 @@
  * Features: voice presets, chunked speech, emphasis parsing, voice caching
  */
 
+import { speechFriendlyText } from './speechFriendly';
+
 export type VoicePreset = 'jarvis' | 'natural' | 'fast' | 'slow' | 'warm' | 'dramatic';
 
 export interface VoiceSettings {
@@ -13,17 +15,18 @@ export interface VoiceSettings {
 }
 
 export const PRESETS: Record<VoicePreset, VoiceSettings> = {
+    /** Slightly faster, neutral pitch — low pitch + slow rate sounds muddy in browser TTS */
     jarvis: {
-        rate: 0.92,
-        pitch: 0.85,
+        rate: 0.98,
+        pitch: 0.98,
         volume: 1,
-        voicePreference: ['google uk english male', 'daniel', 'oliver', 'samantha', 'alex'],
+        voicePreference: ['microsoft aria', 'microsoft jenny', 'google us english', 'samantha', 'alex', 'daniel'],
     },
     natural: {
         rate: 1,
         pitch: 1,
         volume: 1,
-        voicePreference: ['samantha', 'alex', 'daniel', 'karen', 'moira'],
+        voicePreference: ['microsoft aria', 'samantha', 'alex', 'daniel', 'karen', 'moira'],
     },
     fast: {
         rate: 1.15,
@@ -112,6 +115,94 @@ export function selectBestVoice(preferences: string[]): SpeechSynthesisVoice | n
     return bestVoice;
 }
 
+/** Ordered hints for clear en-* system voices (Windows Neural, Google, macOS). */
+const PLAYBACK_VOICE_PREFS = [
+    'microsoft aria',
+    'microsoft jenny',
+    'microsoft guy',
+    'microsoft davis',
+    'microsoft natasha',
+    'microsoft sonia',
+    'google us english',
+    'google uk english',
+    'samantha',
+    'alex',
+    'karen',
+    'daniel',
+    'victoria',
+    'moira',
+    'tessa',
+    'aaron',
+];
+
+/**
+ * Best-effort pick for listenable browser speech: English, skip Translate/compact voices.
+ */
+export function pickEnglishPlaybackVoice(): SpeechSynthesisVoice | null {
+    initVoiceCache();
+    const voices = getVoices();
+    if (!voices.length) return null;
+    const pool = voices.filter(
+        (v) =>
+            v.lang.toLowerCase().startsWith('en') &&
+            !/translate|compact|debug/i.test(v.name),
+    );
+    if (!pool.length) {
+        return voices.find((v) => v.lang.toLowerCase().startsWith('en')) ?? voices[0];
+    }
+    let best: SpeechSynthesisVoice | null = null;
+    let bestScore = -1;
+    for (const voice of pool) {
+        for (const pref of PLAYBACK_VOICE_PREFS) {
+            const score = scoreVoiceMatch(voice, pref);
+            if (score > bestScore) {
+                bestScore = score;
+                best = voice;
+            }
+        }
+    }
+    return bestScore > 0 ? best : pool[0];
+}
+
+export type TtsChunk = { text: string; pauseAfter: number };
+
+/**
+ * Fewer, longer utterances = less Chrome lag between queue items; capped pauses avoid dead air.
+ */
+export function mergeTtsChunksForPlayback(chunks: TtsChunk[], maxChars = 420): TtsChunk[] {
+    const cleaned = chunks
+        .map((c) => ({ text: c.text.trim(), pauseAfter: c.pauseAfter }))
+        .filter((c) => c.text.length > 0);
+    if (cleaned.length <= 1) return cleaned;
+    const out: TtsChunk[] = [];
+    let buf = '';
+    let pause = 0;
+    for (const c of cleaned) {
+        const sep = buf ? ' ' : '';
+        const next = `${buf}${sep}${c.text}`;
+        if (next.length > maxChars && buf) {
+            out.push({ text: buf, pauseAfter: Math.min(pause, 140) });
+            buf = c.text;
+            pause = c.pauseAfter;
+        } else {
+            buf = next;
+            pause = Math.max(pause, c.pauseAfter);
+        }
+    }
+    if (buf) out.push({ text: buf, pauseAfter: Math.min(pause, 140) });
+    return out;
+}
+
+/** Chrome sometimes suspends synthesis until resumed (tab focus / autoplay policy). */
+export function resumeSpeechSynthIfNeeded(): void {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return;
+    try {
+        window.speechSynthesis.resume();
+    } catch {
+        /* ignore */
+    }
+}
+
 /**
  * Parse emphasis markers from text:
  * **bold** -> slight emphasis
@@ -134,7 +225,7 @@ function applyProsody(text: string, utt: SpeechSynthesisUtterance): string {
 /**
  * Chunk long text to avoid TTS limits and allow interruption at sentence boundaries
  */
-function chunkText(text: string, maxChunkLength: number = 180): string[] {
+function chunkText(text: string, maxChunkLength: number = 260): string[] {
     const chunks: string[] = [];
     const sentences = text.match(/[^.!?]+[.!?]+["']?|[^.!?]+$/g) || [text];
     
@@ -181,13 +272,19 @@ class SpeechQueue {
             }
             
             const settings = PRESETS[options.preset ?? 'jarvis'];
-            const chunks = chunkText(text);
+            const prepared = speechFriendlyText(text);
+            if (!prepared) {
+                resolve();
+                return;
+            }
+            const chunks = chunkText(prepared);
             let currentIndex = 0;
             
             const abortCtrl = new AbortController();
             this.abortController = abortCtrl;
             
             const speakNext = () => {
+                resumeSpeechSynthIfNeeded();
                 if (abortCtrl.signal.aborted) {
                     this.isSpeaking = false;
                     resolve();
@@ -208,7 +305,7 @@ class SpeechQueue {
                 utt.pitch = options.pitch ?? settings.pitch;
                 utt.volume = options.volume ?? settings.volume;
                 
-                const voice = selectBestVoice(settings.voicePreference);
+                const voice = selectBestVoice(settings.voicePreference) ?? pickEnglishPlaybackVoice();
                 if (voice) utt.voice = voice;
                 
                 if (currentIndex === 0) {

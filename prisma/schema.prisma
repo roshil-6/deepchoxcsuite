@@ -10,6 +10,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/// Full venture workspace (replaces IndexedDB / Dexie for project rows). `sessionId` is device id until auth lands.
+model Venture {
+  id        Int      @id @default(autoincrement())
+  /// Device / anonymous id until auth; use TEXT so long tokens never truncate.
+  sessionId String
+  name      String
+  /// All `Project` fields except `id` (name duplicated top-level for listing).
+  dataJson  Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sessionId, updatedAt])
+  @@map("ventures")
+}
+
 /// Unified enquiries inbox (WhatsApp, email, social, etc.) — populate via future webhooks / sync jobs.
 model Enquiry {
   id         String   @id @default(cuid())
@@ -39,4 +54,114 @@ model AgentSyncState {
   summary   String?   @db.Text
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+}
+
+/// Dexo cofounder chat thread per venture (`ventureId` matches Dexie `Project.id`).
+model DexoConversationMessage {
+  id        String   @id @default(cuid())
+  ventureId Int
+  /// `user` | `dexo`
+  role      String
+  content   String   @db.Text
+  clientId  Int
+  seq       Int
+  createdAt DateTime @default(now())
+
+  @@index([ventureId, seq])
+  @@map("dexo_conversation_messages")
+}
+
+/// Dexo auto-research daily brief per venture (calendar day in YYYY-MM-DD). Suggested venture patches stay in pendingProposedUpdates until the founder applies them in the app.
+model VentureDailyReport {
+  id         String   @id @default(cuid())
+  ventureId  Int
+  reportDay  String
+  headline   String?
+  summary    String   @db.Text
+  bodyMd     String   @db.Text
+  sourcesJson Json?
+  followUpJson Json?
+  pendingProposedUpdates Json?
+  userApprovedAt DateTime?
+  researchQuery String? @db.Text
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([ventureId, reportDay])
+  @@index([ventureId, reportDay])
+  @@map("venture_daily_reports")
+}
+
+/// Server-side registry of ventures known to Dexo for autonomous cron pulses.
+model VentureRegistry {
+  id             String   @id @default(cuid())
+  ventureId      Int      @unique
+  ventureName    String?
+  contextSnapshot String  @db.Text
+  sparseContext  Boolean  @default(true)
+  isActive       Boolean  @default(true)
+  lastSeenAt     DateTime @default(now())
+  lastPulseAt    DateTime?
+  pulseStatus    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([isActive, lastSeenAt])
+  @@map("venture_registry")
+}
+
+/// Pending venture diffs proposed by Dexo chat, waiting for explicit founder approval.
+model DexoPendingProposal {
+  id               String   @id @default(cuid())
+  ventureId        Int
+  source           String
+  model            String?
+  summary          String?
+  patchJson        Json
+  conversationRef  String?
+  status           String   @default("pending")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  appliedAt        DateTime?
+  rejectedAt       DateTime?
+  rejectionReason  String?
+
+  @@index([ventureId, status, createdAt])
+  @@map("dexo_pending_proposals")
+}
+
+/// Audit trail for approved/rejected/executed Dexo changes.
+model DexoPatchAuditLog {
+  id          String   @id @default(cuid())
+  ventureId   Int
+  proposalId  String?
+  action      String
+  actor       String
+  model       String?
+  patchJson   Json?
+  note        String?
+  createdAt   DateTime @default(now())
+
+  @@index([ventureId, createdAt])
+  @@index([proposalId])
+  @@map("dexo_patch_audit_log")
+}
+
+/// Permissioned real-world actions queue for external integrations.
+model DexoActionQueue {
+  id          String   @id @default(cuid())
+  ventureId   Int
+  kind        String
+  payloadJson Json?
+  previewText String?
+  status      String   @default("pending")
+  approvedAt  DateTime?
+  executedAt  DateTime?
+  failedAt    DateTime?
+  errorText   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([ventureId, status, createdAt])
+  @@map("dexo_action_queue")
 }

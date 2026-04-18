@@ -6,7 +6,10 @@ import { Send } from 'lucide-react';
 import { ModelAttribution } from '@/components/ModelAttribution';
 import { DeskShell } from '@/components/workspaces/DeskShell';
 import { deskHeadline, deskHelpText } from '@/lib/researchStaffLabels';
+import { useTokens } from '@/lib/tokens/useTokens';
+import { TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 import { formatProductPlanForContext, formatStrategyForContext } from '@/lib/ventureReadableContext';
+import { submitDexoVenturePatch } from '@/lib/dexoProposalClient';
 
 interface Message {
     id: string;
@@ -17,7 +20,8 @@ interface Message {
 }
 
 export function DexoCommandCenter() {
-    const { activeProject, updateStrategy, updateProductPlan, updateBudget, updateMarketInsights } = useOffice();
+    const { activeProject, updateProjectField } = useOffice();
+    const tokens = useTokens();
 
     const [messages, setMessages] = useState<Message[]>([
         {
@@ -38,25 +42,37 @@ export function DexoCommandCenter() {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, isLoading]);
 
-    const handleCommandExecution = (content: string) => {
+    const handleCommandExecution = async (content: string) => {
         try {
+            if (!activeProject?.id) return;
             const jsonMatch = content.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
                 const commandData = JSON.parse(jsonMatch[0]);
                 if (commandData.command && commandData.payload) {
+                    const patch: Record<string, unknown> = {};
                     switch (commandData.command) {
                         case 'updateStrategy':
-                            updateStrategy(commandData.payload);
+                            patch.strategy = String(commandData.payload);
                             break;
                         case 'updateProduct':
-                            updateProductPlan(commandData.payload);
+                            patch.productPlan = String(commandData.payload);
                             break;
                         case 'updateBudget':
-                            updateBudget(commandData.payload);
+                            patch.budget = String(commandData.payload);
                             break;
                         case 'updateMarket':
-                            updateMarketInsights(commandData.payload);
+                            patch.marketInsights = String(commandData.payload);
                             break;
+                    }
+                    if (Object.keys(patch).length > 0) {
+                        await submitDexoVenturePatch({
+                            ventureId: activeProject.id,
+                            source: 'legacy_dexo_command_center',
+                            model: 'Dexo',
+                            summary: 'Legacy command center suggested an update',
+                            patch,
+                            updateProjectField,
+                        });
                     }
                 }
             }
@@ -67,6 +83,22 @@ export function DexoCommandCenter() {
 
     const handleSendMessage = async () => {
         if (!inputValue.trim() || isLoading) return;
+
+        const paid = tokens.spend(TOKEN_COSTS.CHAT_MESSAGE, 'Dexo command center');
+        if (!paid.success) {
+            setMessages((prev) => [
+                ...prev,
+                {
+                    id: Date.now().toString(),
+                    role: 'assistant',
+                    content:
+                        paid.message ??
+                        'Daily AI credits are used up. Upgrade to Pro for unlimited usage, or try again after the daily reset.',
+                    timestamp: Date.now(),
+                },
+            ]);
+            return;
+        }
 
         const userMessage: Message = {
             id: Date.now().toString(),
@@ -95,23 +127,26 @@ export function DexoCommandCenter() {
             `
                 : 'No venture selected — answer generally.';
 
-            const response = await fetch('/api/chat', {
+            const response = await fetch('/api/dexo', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    messages: [
-                        { role: 'system', content: getAgentSystemPrompt('dexo', activeProject) + '\n\n' + context },
-                        ...messages.map((m) => ({ role: m.role, content: m.content })),
-                        { role: 'user', content: userMessage.content },
-                    ],
-                    model: 'llama3',
+                    action: 'chat',
+                    payload: {
+                        messages: [
+                            { role: 'system', content: getAgentSystemPrompt('dexo', activeProject) + '\n\n' + context },
+                            ...messages.map((m) => ({ role: m.role, content: m.content })),
+                            { role: 'user', content: userMessage.content },
+                        ],
+                        model: 'llama3',
+                    },
                 }),
             });
 
             if (!response.ok) throw new Error('Failed');
             const data = await response.json();
             const raw = data.message?.content || 'Done.';
-            handleCommandExecution(raw);
+            await handleCommandExecution(raw);
             const content = raw.replace(/```json[\s\S]*```/, '').trim();
 
             setMessages((prev) => [

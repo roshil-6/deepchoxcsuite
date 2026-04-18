@@ -4,6 +4,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useOffice, AgentRole } from '@/lib/OfficeContext';
 import { Gavel, Mic, ThumbsDown, ThumbsUp, AlertTriangle, XCircle } from 'lucide-react';
 import { ModelAttribution } from '@/components/ModelAttribution';
+import { useTokens } from '@/lib/tokens/useTokens';
+import { TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 
 interface Message {
     id: string;
@@ -15,6 +17,7 @@ interface Message {
 
 export function VCGauntlet() {
     const { activeProject } = useOffice();
+    const tokens = useTokens();
     const [messages, setMessages] = useState<Message[]>([{
         id: 'start',
         role: 'assistant',
@@ -33,6 +36,22 @@ export function VCGauntlet() {
     const handleSendMessage = async () => {
         if (!inputValue.trim() || isLoading) return;
 
+        const paid = tokens.spend(TOKEN_COSTS.CHAT_MESSAGE, 'VC Gauntlet');
+        if (!paid.success) {
+            setMessages((prev) => [
+                ...prev,
+                {
+                    id: Date.now().toString(),
+                    role: 'assistant',
+                    content:
+                        paid.message ??
+                        'Daily AI credits are used up. Upgrade to Pro for unlimited usage, or try again after the daily reset.',
+                    rating: 'neutral' as const,
+                },
+            ]);
+            return;
+        }
+
         const userMsg: Message = { id: Date.now().toString(), role: 'user', content: inputValue };
         setMessages(prev => [...prev, userMsg]);
         setInputValue('');
@@ -41,19 +60,22 @@ export function VCGauntlet() {
         try {
             // Mocking the "Shark" response logic for this demo
             // In production, this hits the LLM with the 'shark' persona
-            const response = await fetch('/api/chat', {
+            const response = await fetch('/api/dexo', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    messages: [
-                        {
-                            role: 'system', content: `You are The Shark (VC). AGGRESSIVE, SKEPTICAL, SHORT. 
+                    action: 'chat',
+                    payload: {
+                        messages: [
+                            {
+                                role: 'system', content: `You are The Shark (VC). AGGRESSIVE, SKEPTICAL, SHORT. 
                         Critique the user's answer. 
                         Output a JSON with: { "response": "string", "rating": "pass" | "fail" | "neutral" }` },
-                        { role: 'assistant', content: messages[messages.length - 1].content },
-                        { role: 'user', content: userMsg.content }
-                    ],
-                    model: 'llama3',
+                            { role: 'assistant', content: messages[messages.length - 1].content },
+                            { role: 'user', content: userMsg.content }
+                        ],
+                        model: 'llama3',
+                    },
                 }),
             });
 

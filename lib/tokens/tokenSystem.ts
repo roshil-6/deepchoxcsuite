@@ -1,14 +1,10 @@
+import { readSubscriptionIsPro, PLAN_STORAGE_KEY, emitSubscriptionChanged } from '@/lib/subscriptionLocal';
+
 /**
- * Dexo Token/Credit System - Freemium Model
- * 
- * Free Tier: Complete feature access with daily token limit
- * Pro Tier: Unlimited tokens
- * 
- * Token consumption:
- * - Analysis: 10 tokens
- * - Chat message: 2 tokens  
- * - Voice read: 1 token (optional, can be free)
- * - Viewing history: Free
+ * Suite token / credit meter (client-side, demo).
+ *
+ * Free: shared daily pool used by Dexo, desks, PA, Jarvis, Scout intel, etc.
+ * Pro or active trial (see `subscriptionLocal`): unlimited — no deductions.
  */
 
 export type UserTier = 'free' | 'pro';
@@ -53,33 +49,51 @@ export function getTokenState(): TokenState {
         return createDefaultState('free');
     }
 
+    const effectiveTier: UserTier = readSubscriptionIsPro() ? 'pro' : 'free';
+
     try {
         const saved = localStorage.getItem(STORAGE_KEY);
-        const tier = (localStorage.getItem(TIER_STORAGE_KEY) as UserTier) || 'free';
-        
+
         if (saved) {
             const parsed = JSON.parse(saved) as TokenState;
             const today = getTodayString();
-            
-            // Check if we need to reset daily tokens
+
             if (parsed.lastResetDate !== today) {
                 return {
                     ...parsed,
-                    tier,
-                    tokensRemaining: tier === 'pro' ? PRO_DAILY_TOKENS : FREE_DAILY_TOKENS,
+                    tier: effectiveTier,
+                    tokensRemaining: effectiveTier === 'pro' ? PRO_DAILY_TOKENS : FREE_DAILY_TOKENS,
                     tokensUsedToday: 0,
                     lastResetDate: today,
+                    dailyLimit: effectiveTier === 'pro' ? PRO_DAILY_TOKENS : FREE_DAILY_TOKENS,
                 };
             }
-            
-            // Ensure tier is up to date
-            return { ...parsed, tier };
+
+            const merged: TokenState = {
+                ...parsed,
+                tier: effectiveTier,
+                dailyLimit: effectiveTier === 'pro' ? PRO_DAILY_TOKENS : FREE_DAILY_TOKENS,
+            };
+            if (effectiveTier === 'pro') {
+                merged.tokensRemaining = PRO_DAILY_TOKENS;
+            } else {
+                if (typeof merged.tokensRemaining !== 'number' || isNaN(merged.tokensRemaining)) {
+                    merged.tokensRemaining = FREE_DAILY_TOKENS;
+                }
+                if (typeof merged.tokensUsedToday !== 'number' || isNaN(merged.tokensUsedToday)) {
+                    merged.tokensUsedToday = 0;
+                }
+                merged.tokensRemaining = Math.min(
+                    Math.max(0, merged.tokensRemaining),
+                    FREE_DAILY_TOKENS,
+                );
+            }
+            return merged;
         }
-        
-        // First time user - create default state
-        return createDefaultState(tier);
+
+        return createDefaultState(effectiveTier);
     } catch {
-        return createDefaultState('free');
+        return createDefaultState(effectiveTier);
     }
 }
 
@@ -116,9 +130,10 @@ export function setUserTier(tier: UserTier): void {
     if (typeof window === 'undefined') return;
     try {
         localStorage.setItem(TIER_STORAGE_KEY, tier);
-        // Reset tokens when switching tiers
+        localStorage.setItem(PLAN_STORAGE_KEY, tier === 'pro' ? 'pro' : 'free');
         const newState = createDefaultState(tier);
         saveTokenState(newState);
+        emitSubscriptionChanged();
     } catch {
         // Ignore storage errors
     }
@@ -129,7 +144,7 @@ export function setUserTier(tier: UserTier): void {
  */
 export function getUserTier(): UserTier {
     if (typeof window === 'undefined') return 'free';
-    return (localStorage.getItem(TIER_STORAGE_KEY) as UserTier) || 'free';
+    return readSubscriptionIsPro() ? 'pro' : 'free';
 }
 
 /**

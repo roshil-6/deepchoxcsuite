@@ -1,78 +1,212 @@
 'use client';
 
-import React, { useLayoutEffect, useMemo, useRef } from 'react';
-import { Bell, RefreshCw } from 'lucide-react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { GripVertical, Sparkles, X } from 'lucide-react';
+import { DexoParticleCanvas } from '@/components/Dexo/DexoParticleSphere';
 import { useOffice, type AgentRole } from '@/lib/OfficeContext';
-import { useHfRoleSync, type HfDeskRole } from '@/lib/useHfRoleSync';
-import { ModelAttribution } from '@/components/ModelAttribution';
 import { useDeskChatThreadSlotState } from '@/components/DeskChatThreadSlotContext';
+import type { StaffAttentionItem } from '@/lib/db';
+import { buildDexoStaffAttentionBootstrap } from '@/lib/dexoStaffAttentionPrompt';
 
-function hfRoleForRoom(room: string): HfDeskRole | null {
-    const m: Record<string, HfDeskRole> = {
-        ceo: 'ceo',
-        pm: 'cto',
-        accountant: 'cfo',
-        scout: 'cso',
-        cmo: 'cmo',
-    };
-    return m[room] ?? null;
+const STAFF_BANNER_OFFSET_KEY = 'deepchox-staff-attention-offset';
+
+function readStaffBannerOffset(room: string): { x: number; y: number } {
+    if (typeof window === 'undefined') return { x: 0, y: 0 };
+    try {
+        const raw = localStorage.getItem(`${STAFF_BANNER_OFFSET_KEY}-${room}`);
+        if (!raw) return { x: 0, y: 0 };
+        const p = JSON.parse(raw) as { x?: unknown; y?: unknown };
+        if (typeof p.x === 'number' && typeof p.y === 'number') return { x: p.x, y: p.y };
+    } catch {
+        /* noop */
+    }
+    return { x: 0, y: 0 };
 }
 
-/** Top-right overlay: does not shrink the desk body (no full-width sync strip). */
-function DeskSyncCorner({ room }: { room: string }) {
-    const hfRole = useMemo(() => hfRoleForRoom(room), [room]);
-    const { runAgentStaffSync, agentSyncRunning } = useOffice();
-    const { syncing, syncResult, syncModel, setSyncResult, syncRole } = useHfRoleSync();
+function saveStaffBannerOffset(room: string, o: { x: number; y: number }) {
+    try {
+        localStorage.setItem(`${STAFF_BANNER_OFFSET_KEY}-${room}`, JSON.stringify(o));
+    } catch {
+        /* noop */
+    }
+}
 
-    if (!hfRole) return null;
+function StaffAttentionBanner({
+    room,
+    waiting,
+    dismissStaffAttention,
+}: {
+    room: string;
+    waiting: StaffAttentionItem[];
+    dismissStaffAttention: (id: string) => void | Promise<void>;
+}) {
+    const { switchRoom, setDexoBootstrap } = useOffice();
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => setMounted(true), []);
+    const [offset, setOffset] = useState({ x: 0, y: 0 });
+    const offsetRef = useRef(offset);
+    offsetRef.current = offset;
 
-    const staffBusy = agentSyncRunning;
-    const deskBusy = syncing;
+    const setOffsetSynced = useCallback((next: { x: number; y: number }) => {
+        offsetRef.current = next;
+        setOffset(next);
+    }, []);
+    const dragRef = useRef<{ px: number; py: number; ox: number; oy: number } | null>(null);
+    const [closingAll, setClosingAll] = useState(false);
 
-    /** CTO desk: ProductKanban aside is `w-[min(100%,280px)]` — pin sync left of that rail so it does not sit on the intent field. */
-    const cornerRightClass =
-        room === 'pm'
-            ? 'right-2 top-2 sm:right-[calc(14rem+0.75rem)] sm:top-3'
-            : 'right-2 top-2 sm:right-3 sm:top-3';
+    useEffect(() => {
+        const o = readStaffBannerOffset(room);
+        const maxY =
+            typeof window !== 'undefined' ? Math.min(220, Math.round(window.innerHeight * 0.22)) : 200;
+        const maxX = Math.min(typeof window !== 'undefined' ? window.innerWidth : 800, 800) * 0.42;
+        const clamped = {
+            x: Math.max(-maxX, Math.min(maxX, o.x)),
+            y: Math.max(-maxY, Math.min(maxY, o.y)),
+        };
+        offsetRef.current = clamped;
+        setOffset(clamped);
+        if (clamped.x !== o.x || clamped.y !== o.y) saveStaffBannerOffset(room, clamped);
+    }, [room]);
 
-    return (
-        <div className={`pointer-events-none absolute z-30 ${cornerRightClass}`}>
-            <div className="pointer-events-auto flex flex-col items-end gap-1.5">
-                <div className="executive-panel-strong flex items-center gap-1 px-1 py-1 sm:gap-1.5 sm:px-1.5">
+    const onPointerDown = useCallback((e: React.PointerEvent) => {
+        const t = e.target as HTMLElement;
+        if (t.closest('button') || t.closest('a')) return;
+        const o = offsetRef.current;
+        dragRef.current = { px: e.clientX, py: e.clientY, ox: o.x, oy: o.y };
+        e.currentTarget.setPointerCapture(e.pointerId);
+    }, []);
+
+    const onPointerMove = useCallback((e: React.PointerEvent) => {
+        const d = dragRef.current;
+        if (!d) return;
+        const dx = e.clientX - d.px;
+        const dy = e.clientY - d.py;
+        const maxX = Math.min(typeof window !== 'undefined' ? window.innerWidth : 800, 800) * 0.42;
+        const nx = Math.max(-maxX, Math.min(maxX, d.ox + dx));
+        const maxY =
+            typeof window !== 'undefined' ? Math.min(220, Math.round(window.innerHeight * 0.22)) : 200;
+        const ny = Math.max(-maxY, Math.min(maxY, d.oy + dy));
+        setOffsetSynced({ x: nx, y: ny });
+    }, [setOffsetSynced]);
+
+    const endDrag = useCallback(
+        (e: React.PointerEvent) => {
+            if (!dragRef.current) return;
+            dragRef.current = null;
+            try {
+                e.currentTarget.releasePointerCapture(e.pointerId);
+            } catch {
+                /* noop */
+            }
+            saveStaffBannerOffset(room, offsetRef.current);
+        },
+        [room]
+    );
+
+    const closeBanner = useCallback(() => {
+        if (closingAll) return;
+        setClosingAll(true);
+        void Promise.allSettled(waiting.map((w) => Promise.resolve(dismissStaffAttention(w.id)))).finally(() => {
+            setClosingAll(false);
+        });
+    }, [closingAll, dismissStaffAttention, waiting]);
+
+    const banner = (
+        <div
+            className="pointer-events-none fixed right-2 bottom-28 z-[280] w-[min(calc(100vw-1rem),34rem)] max-w-[min(100vw-1rem,36rem)] sm:right-5 sm:bottom-32"
+            style={{
+                transform: `translate(${offset.x}px, ${offset.y}px)`,
+            }}
+        >
+            <div
+                className="pointer-events-auto max-h-[min(72dvh,28rem)] touch-none overflow-y-auto overflow-x-hidden rounded-2xl border border-white/[0.1] shadow-[0_16px_48px_rgba(0,0,0,0.55)] sm:p-4"
+                style={{ background: 'linear-gradient(135deg, rgba(32,32,36,0.98), rgba(22,22,26,0.99))' }}
+            >
+                <div
+                    role="toolbar"
+                    aria-label="Move notification"
+                    onPointerDown={onPointerDown}
+                    onPointerMove={onPointerMove}
+                    onPointerUp={endDrag}
+                    onPointerCancel={endDrag}
+                    className="flex cursor-grab items-center justify-between gap-2 border-b border-white/[0.06] px-3 py-2 active:cursor-grabbing sm:px-4 sm:py-2.5"
+                >
+                    <div className="flex items-center gap-2">
+                        <GripVertical className="h-4 w-4 shrink-0 text-zinc-500" aria-hidden />
+                        <span className="select-none text-[10px] font-medium uppercase tracking-[0.12em] text-zinc-500">
+                            Drag to move
+                        </span>
+                    </div>
                     <button
                         type="button"
-                        disabled={staffBusy}
-                        onClick={() => void runAgentStaffSync()}
-                        title="Run full AI staff sync (all desks)"
-                        className="executive-toolbar-button rounded-lg px-2 py-1.5 text-[10px] sm:text-[11px]"
+                        onClick={closeBanner}
+                        disabled={closingAll}
+                        className="rounded-md p-1.5 text-zinc-500 transition hover:bg-white/[0.06] hover:text-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+                        aria-label="Close notifications"
+                        title="Close"
                     >
-                        <RefreshCw className={`h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5 ${staffBusy ? 'animate-spin' : ''}`} aria-hidden />
-                        <span className="max-w-[5.5rem] truncate sm:max-w-none">{staffBusy ? 'Syncing…' : 'Sync now'}</span>
-                    </button>
-                    <span className="h-4 w-px shrink-0 bg-white/[0.08]" aria-hidden />
-                    <button
-                        type="button"
-                        disabled={deskBusy}
-                        onClick={() => {
-                            setSyncResult(null);
-                            void syncRole(hfRole);
-                        }}
-                        title="Sync this desk via Hugging Face role model"
-                        className="executive-toolbar-button rounded-lg px-2 py-1.5 text-[10px] sm:text-[11px]"
-                    >
-                        <RefreshCw className={`h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5 ${deskBusy ? 'animate-spin' : ''}`} aria-hidden />
-                        <span className="max-w-[5.5rem] truncate sm:max-w-none">{deskBusy ? 'Desk…' : 'Sync desk'}</span>
+                        <X className="h-3.5 w-3.5" aria-hidden />
                     </button>
                 </div>
-                {syncResult ? (
-                    <div className="executive-panel-strong w-[min(calc(100vw-1.5rem),18rem)] px-2.5 py-2 sm:w-72">
-                        <p className="max-h-32 overflow-y-auto text-[11px] leading-relaxed text-brand-muted">{syncResult}</p>
-                        <ModelAttribution model={syncModel} />
+                <div className="space-y-2.5 p-3.5 pt-3 sm:p-4 sm:pt-3">
+                    <div className="flex flex-row items-start gap-3 sm:gap-4">
+                        <div
+                            className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full ring-1 ring-white/[0.12]"
+                            style={{ background: 'radial-gradient(circle at 35% 25%, rgba(55,55,62,0.95), rgba(18,18,22,1))' }}
+                            aria-hidden
+                        >
+                            <DexoParticleCanvas mode="floating" size={44} active />
+                        </div>
+                        <div className="min-w-0 flex-1 space-y-2.5">
+                            {waiting.slice(0, 2).map((w) => (
+                                <div
+                                    key={w.id}
+                                    className="space-y-2 rounded-xl border border-white/[0.1] bg-white/[0.03] p-2.5 sm:p-3"
+                                >
+                                    <div className="text-[11px] leading-relaxed sm:text-[12px]" style={{ color: '#D4D4D8' }}>
+                                        <p className="font-semibold text-[#FAFAFA]">{w.title}</p>
+                                        <p className="mt-1.5" style={{ color: '#C4C4CC' }}>
+                                            {w.message}
+                                        </p>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setDexoBootstrap(buildDexoStaffAttentionBootstrap(w));
+                                                switchRoom('dexo');
+                                            }}
+                                            className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-violet-400/35 bg-violet-500/15 px-3 py-1.5 text-[11px] font-semibold tracking-wide text-violet-100 shadow-[0_1px_0_rgba(255,255,255,0.06)] transition hover:border-violet-400/55 hover:bg-violet-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/45"
+                                        >
+                                            <Sparkles className="h-3.5 w-3.5 opacity-90" strokeWidth={2.25} aria-hidden />
+                                            Set up now
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => dismissStaffAttention(w.id)}
+                                            className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-white/[0.18] bg-white/[0.1] px-3 py-1.5 text-[11px] font-semibold tracking-wide text-zinc-100 shadow-[0_1px_0_rgba(255,255,255,0.06)] transition hover:border-emerald-400/35 hover:bg-emerald-500/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/45"
+                                        >
+                                            <X className="h-3.5 w-3.5 opacity-90" strokeWidth={2.25} aria-hidden />
+                                            Dismiss
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                            {waiting.length > 2 && (
+                                <div className="text-[10px]" style={{ color: '#8B8B96' }}>
+                                    +{waiting.length - 2} more
+                                </div>
+                            )}
+                        </div>
                     </div>
-                ) : null}
+                </div>
             </div>
         </div>
     );
+
+    if (!mounted || typeof document === 'undefined') return null;
+    return createPortal(banner, document.body);
 }
 
 /** Hub view: registers bottom slot for floating thread. Block focus: inner `DeskChatThreadMount` under Details wins. */
@@ -101,33 +235,13 @@ export function OperationalDesk({ children }: { children: React.ReactNode }) {
 
     return (
         <div className="relative flex min-h-0 w-full flex-1 flex-col bg-[var(--color-brand-bg)]">
-            <DeskSyncCorner room={activeRoom} />
             {waiting.length > 0 && (
-                <div className="pointer-events-none absolute left-2 top-2 z-20 max-w-[min(calc(100vw-8rem),22rem)] sm:left-3 sm:top-3 sm:max-w-sm">
-                    <div className="executive-panel-strong pointer-events-auto p-2.5 sm:p-3">
-                        <div className="flex items-start gap-2">
-                            <Bell className="mt-0.5 h-4 w-4 shrink-0 text-brand-teal" aria-hidden />
-                            <div className="min-w-0 flex-1 space-y-2">
-                                {waiting.map((w) => (
-                                    <div key={w.id} className="text-[11px] leading-snug text-zinc-200 sm:text-[12px]">
-                                        <span className="font-medium text-brand-text">{w.title}</span>
-                                        <span className="text-zinc-400"> — {w.message}</span>
-                                        <button
-                                            type="button"
-                                            onClick={() => dismissStaffAttention(w.id)}
-                                            className="ml-2 text-[10px] text-zinc-500 underline-offset-2 hover:text-zinc-300 hover:underline"
-                                        >
-                                            Dismiss
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <StaffAttentionBanner room={activeRoom} waiting={waiting} dismissStaffAttention={dismissStaffAttention} />
             )}
-            <div className="min-h-0 w-full flex-1">{children}</div>
+            <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col">{children}</div>
             <div ref={hubRef} className="mx-auto w-full max-w-3xl shrink-0 px-0" aria-hidden />
+
         </div>
     );
 }
+

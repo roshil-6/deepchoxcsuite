@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useId, useEffect } from 'react';
+import React, { useState, useMemo, useId, useEffect, useCallback } from 'react';
 import {
     Activity,
     BarChart3,
@@ -18,13 +18,36 @@ import {
     LayoutDashboard,
     ChevronUp,
     Compass,
-    SunMedium,
     Bell,
     CalendarRange,
+    TrendingUp,
+    AlertCircle,
+    CheckCircle2,
+    ArrowUpRight,
+    ArrowRight,
+    AlertTriangle,
+    ListTodo,
+    Mic,
+    MessageSquare,
+    PieChart,
+    BarChart2,
+    Layers,
+    Cpu,
+    Globe,
+    Wallet,
+    Lightbulb,
+    ChevronDown,
+    Megaphone,
 } from 'lucide-react';
+import type { AgentRole } from '@/lib/OfficeContext';
 import { useOffice } from '@/lib/OfficeContext';
 import { parseStrategy } from '@/lib/strategyDoc';
-import { RESEARCH_STAFF, type ResearchStaffRole } from '@/lib/researchStaffLabels';
+import { RESEARCH_STAFF } from '@/lib/researchStaffLabels';
+import {
+    aggregatePortfolioDeskStats,
+    firstProjectNeedingRole,
+    MIN_VENTURE_FIELD_CHARS,
+} from '@/lib/ventureKnowledgeGaps';
 import { WorkspaceAiButton } from '@/components/workspace/WorkspaceAiButton';
 import {
     ResponsiveContainer,
@@ -34,7 +57,7 @@ import {
     YAxis,
     Tooltip,
     CartesianGrid,
-    PieChart,
+    PieChart as RePieChart,
     Pie,
     Cell,
     Legend,
@@ -46,85 +69,2227 @@ import {
     computeExecutionDeliveryScore,
     computeFinancialHealthScore,
 } from '@/lib/ventureMetrics';
-import { MorningBriefCard } from '@/components/office/MorningBriefCard';
-import { AmbientNotificationTray } from '@/components/office/AmbientNotificationTray';
-import { WeeklyReviewCard } from '@/components/office/WeeklyReviewCard';
-import { GoalAdvanceCard } from '@/components/office/GoalAdvanceCard';
-import { StaffFocusChecklist } from '@/components/office/StaffFocusChecklist';
-import { OfficeBriefPanel } from '@/components/office/OfficeBriefPanel';
+import { isVentureFoundationSparse } from '@/lib/ventureFoundation';
 import { GuideHint, ActionHint } from '@/components/ui/ContextualGuide';
-import { getAutoStaffSyncEnabled, setAutoStaffSyncEnabled } from '@/lib/autoStaffSyncPreferences';
+import { InteractiveCard, QuickActionGrid } from '@/components/ui';
+import { buildDexoStaffAttentionBootstrap } from '@/lib/dexoStaffAttentionPrompt';
+import { buildDexoJarvisVentureContext } from '@/lib/dexoJarvisContext';
+import { FocusBriefingPanel } from '@/components/FocusBriefingPanel';
+import { DexoDailyBriefPanel } from '@/components/Dexo/DexoDailyBriefPanel';
+import { DexoOpsPanel } from '@/components/Dexo/DexoOpsPanel';
+import { PortfolioDailyIntelSection } from '@/components/Dexo/PortfolioDailyIntelSection';
 
-/**
- * Recharts Tooltip defaults omit cursor.fill, so the hover rectangle uses a light gray/white band
- * that floods the plot on dark UI — set an explicit dark fill on every chart Tooltip.
- */
-const CHART_CURSOR_DARK = {
-    fill: 'rgba(24, 24, 27, 0.5)',
-    stroke: '#52525b',
-    strokeWidth: 1,
-    strokeDasharray: '4 4',
+// ============================================================================
+// MODERN DASHBOARD THEME - No Glow, Clean Depth
+// ============================================================================
+
+const THEME = {
+    bg: {
+        primary: 'var(--bg-primary)',
+        secondary: 'var(--bg-secondary)',
+        tertiary: 'var(--bg-tertiary)',
+        elevated: 'var(--bg-elevated)',
+    },
+    text: {
+        primary: 'var(--text-primary)',
+        secondary: 'var(--text-secondary)',
+        tertiary: 'var(--text-tertiary)',
+        muted: 'var(--text-muted)',
+    },
+    accent: {
+        primary: 'var(--accent-violet)',
+        secondary: 'var(--accent-violet)',
+        tertiary: '#8b74ff',
+        info: '#7456ff',
+        warning: '#5f43df',
+    },
+    border: {
+        subtle: 'rgba(255,255,255,0.08)',
+        default: 'rgba(255,255,255,0.10)',
+        strong: 'rgba(255,255,255,0.14)',
+    },
+    chart: {
+        emerald: '#7456ff',
+        violet: '#7456ff',
+        amber: '#9d88ff',
+        blue: '#8b74ff',
+        rose: '#5f43df',
+        cyan: '#a696ff',
+        slate: '#94a3b8',
+    },
 } as const;
 
-const CHART_TOOLTIP = {
-    contentStyle: {
-        background: '#2d2d2d',
-        border: '1px solid rgba(255,255,255,0.08)',
-        borderRadius: '8px',
-        fontSize: '11px',
-    },
-    labelStyle: { color: '#a1a1aa' },
-    itemStyle: { color: '#e4e4e7' },
-    cursor: CHART_CURSOR_DARK,
-    wrapperStyle: { outline: 'none' as const },
+/** Map snapshot desk labels → research room for quick navigation from the overview card */
+const SNAPSHOT_DESK_ROOMS: Record<string, AgentRole> = {
+    Strategy: 'ceo',
+    Market: 'scout',
+    Finance: 'accountant',
+    Product: 'pm',
+    Growth: 'cmo',
 };
 
-/**
- * Semantic chart colors — each hue maps to a meaning so the dashboard reads consistently.
- * Score drivers: intent (direction), narrative (story), phases (timeline), priorities (execution).
- * Phases: done → in-progress → planned. Priority: complete vs open. Desks: role-colored.
- */
-const DASH = {
-    score: {
-        intent: '#a78bfa',
-        narrative: '#22d3ee',
-        phases: '#fbbf24',
-        priorities: '#34d399',
+// Chart tooltip configuration
+const CHART_TOOLTIP = {
+    contentStyle: {
+        background: 'rgba(38,38,38,0.98)',
+        border: '1px solid rgba(255,255,255,0.12)',
+        borderRadius: '12px',
+        fontSize: '12px',
+        padding: '12px',
+        boxShadow: '0 12px 30px rgba(0,0,0,0.45)',
     },
-    phase: {
-        done: '#34d399',
-        inProgress: '#fbbf24',
-        planned: '#64748b',
-    },
-    priority: {
-        complete: '#34d399',
-        open: '#fb7185',
-    },
-    desk: {
-        ceo: '#a78bfa',
-        scout: '#38bdf8',
-        finance: '#34d399',
-        pm: '#f59e0b',
-    },
-    portfolio: {
-        strategy: '#2dd4bf',
-        draft: '#94a3b8',
-    },
-    /** Distinct series in activity / monthly bars (cycles if many categories) */
-    activity: ['#22d3ee', '#a78bfa', '#34d399', '#fbbf24', '#fb7185', '#818cf8', '#2dd4bf', '#f472b6', '#c084fc'],
-} as const;
+    labelStyle: { color: 'var(--text-tertiary)', fontSize: '11px', marginBottom: '4px' },
+    itemStyle: { color: 'var(--text-primary)', fontSize: '12px' },
+    cursor: { fill: 'rgba(255,255,255,0.06)' },
+};
 
-/** Tinted outlines for dashboard “message” blocks — each section reads as a generated insight, not a collapsible drawer. */
+// ============================================================================
+// INTERACTIVE HOOKS & UTILITIES
+// ============================================================================
+
+function useAnimatedNumber(target: number, duration = 800) {
+    const [value, setValue] = useState(0);
+    useEffect(() => {
+        const start = performance.now();
+        const from = value;
+        const animate = (now: number) => {
+            const elapsed = now - start;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            setValue(Math.round(from + (target - from) * eased));
+            if (progress < 1) requestAnimationFrame(animate);
+        };
+        requestAnimationFrame(animate);
+    }, [target, duration]);
+    return value;
+}
+
+function useHover() {
+    const [isHovered, setIsHovered] = useState(false);
+    return {
+        isHovered,
+        bind: {
+            onMouseEnter: () => setIsHovered(true),
+            onMouseLeave: () => setIsHovered(false),
+        },
+    };
+}
+
+// ============================================================================
+// UI COMPONENTS
+// ============================================================================
+
+interface CardProps {
+    children: React.ReactNode;
+    className?: string;
+    interactive?: boolean;
+    onClick?: () => void;
+    id?: string;
+}
+
+function Card({ children, className = '', interactive = false, onClick, id }: CardProps) {
+    const { isHovered, bind } = useHover();
+    return (
+        <div
+            {...(interactive ? bind : {})}
+            onClick={onClick}
+            id={id}
+            className={`
+                relative overflow-hidden rounded-2xl border
+                ${interactive ? 'cursor-pointer' : ''}
+                transition-all duration-300 ease-out
+                ${isHovered && interactive ? 'translate-y-[-2px]' : ''}
+                ${className}
+            `}
+            style={{
+                background: `linear-gradient(180deg, ${THEME.bg.elevated} 0%, ${THEME.bg.tertiary} 100%)`,
+                borderColor: isHovered && interactive ? THEME.border.strong : THEME.border.default,
+                boxShadow: isHovered && interactive
+                    ? '0 12px 32px rgba(0,0,0,0.4), 0 4px 8px rgba(0,0,0,0.2)'
+                    : '0 4px 16px rgba(0,0,0,0.2)',
+            }}
+        >
+            {children}
+        </div>
+    );
+}
+
+function MetricCard({
+    label,
+    value,
+    trend,
+    trendUp,
+    icon: Icon,
+    color = 'emerald',
+    delay = 0,
+}: {
+    label: string;
+    value: string | number;
+    trend?: string;
+    trendUp?: boolean;
+    icon: React.ElementType;
+    color?: 'emerald' | 'violet' | 'amber' | 'blue' | 'rose';
+    delay?: number;
+}) {
+    const colorMap = {
+        emerald: { bg: 'rgba(16,185,129,0.1)', text: '#10B981', glow: 'rgba(16,185,129,0.06)' },
+        violet: { bg: 'rgba(139,92,246,0.1)', text: '#8B5CF6', glow: 'rgba(139,92,246,0.06)' },
+        amber: { bg: 'rgba(245,158,11,0.1)', text: '#F59E0B', glow: 'rgba(245,158,11,0.06)' },
+        blue: { bg: 'rgba(59,130,246,0.1)', text: '#3B82F6', glow: 'rgba(59,130,246,0.06)' },
+        rose: { bg: 'rgba(244,63,94,0.1)', text: '#F43F5E', glow: 'rgba(244,63,94,0.06)' },
+    };
+    const c = colorMap[color];
+    const [entered, setEntered] = useState(false);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setEntered(true), 100 + delay);
+        return () => clearTimeout(timer);
+    }, [delay]);
+
+    return (
+        <div
+            className="transition-all duration-500 ease-out"
+            style={{
+                opacity: entered ? 1 : 0,
+                transform: entered ? 'translateY(0)' : 'translateY(12px)',
+            }}
+        >
+            <Card interactive className="p-5 group/metric">
+                <div className="flex items-start justify-between">
+                    <div
+                        className="flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-300 group-hover/metric:scale-110"
+                        style={{ background: c.bg }}
+                    >
+                        <Icon className="h-5 w-5" style={{ color: c.text }} />
+                    </div>
+                    {trend && (
+                        <div
+                            className="flex items-center gap-1 text-xs font-medium"
+                            style={{ color: trendUp ? THEME.accent.primary : THEME.accent.warning }}
+                        >
+                            {trendUp ? <TrendingUp className="h-3 w-3" /> : <TrendingUp className="h-3 w-3 rotate-180" />}
+                            {trend}
+                        </div>
+                    )}
+                </div>
+                <div className="mt-4">
+                    <div className="text-2xl font-semibold tracking-tight transition-colors duration-200" style={{ color: THEME.text.primary }}>
+                        {value}
+                    </div>
+                    <div className="mt-1 text-sm" style={{ color: THEME.text.secondary }}>
+                        {label}
+                    </div>
+                </div>
+            </Card>
+        </div>
+    );
+}
+
+function SectionHeader({
+    title,
+    subtitle,
+    action,
+}: {
+    title: string;
+    subtitle?: string;
+    action?: React.ReactNode;
+}) {
+    return (
+        <div className="mb-5 flex items-end justify-between">
+            <div>
+                <h2 className="text-lg font-semibold tracking-tight" style={{ color: THEME.text.primary }}>
+                    {title}
+                </h2>
+                {subtitle && (
+                    <p className="mt-1 text-sm" style={{ color: THEME.text.secondary }}>
+                        {subtitle}
+                    </p>
+                )}
+            </div>
+            {action}
+        </div>
+    );
+}
+
+function ProgressBar({
+    value,
+    max = 100,
+    color = THEME.accent.primary,
+    size = 'md',
+    showLabel = true,
+}: {
+    value: number;
+    max?: number;
+    color?: string;
+    size?: 'sm' | 'md' | 'lg';
+    showLabel?: boolean;
+}) {
+    const percentage = Math.min((value / max) * 100, 100);
+    const height = size === 'sm' ? 6 : size === 'md' ? 8 : 12;
+
+    return (
+        <div className="w-full">
+            <div
+                className="w-full overflow-hidden rounded-full"
+                style={{ background: 'rgba(255,255,255,0.06)', height }}
+            >
+                <div
+                    className="h-full rounded-full transition-all duration-700 ease-out"
+                    style={{
+                        width: `${percentage}%`,
+                        background: `linear-gradient(90deg, ${color}80 0%, ${color} 100%)`,
+                    }}
+                />
+            </div>
+            {showLabel && (
+                <div className="mt-2 flex justify-between text-xs" style={{ color: THEME.text.secondary }}>
+                    <span>{Math.round(percentage)}% complete</span>
+                    <span>
+                        {value}/{max}
+                    </span>
+                </div>
+            )}
+        </div>
+    );
+}
+
+function StatusBadge({
+    status,
+    label,
+}: {
+    status: 'active' | 'pending' | 'idle' | 'warning';
+    label?: string;
+}) {
+    const config = {
+        active: { bg: 'rgba(16,185,129,0.15)', color: '#10B981', dot: '#10B981' },
+        pending: { bg: 'rgba(245,158,11,0.15)', color: '#F59E0B', dot: '#F59E0B' },
+        idle: { bg: 'rgba(100,116,139,0.15)', color: '#94A3B8', dot: '#64748B' },
+        warning: { bg: 'rgba(239,68,68,0.15)', color: '#EF4444', dot: '#EF4444' },
+    };
+    const c = config[status];
+
+    return (
+        <div
+            className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
+            style={{ background: c.bg, color: c.color }}
+        >
+            <span className="h-1.5 w-1.5 rounded-full" style={{ background: c.dot }} />
+            {label || status.charAt(0).toUpperCase() + status.slice(1)}
+        </div>
+    );
+}
+
+// ============================================================================
+// CHART COMPONENTS
+// ============================================================================
+
+function MiniBarChart({ data, color }: { data: { name: string; value: number }[]; color: string }) {
+    return (
+        <div className="h-24 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                    <Bar dataKey="value" fill={color} radius={[4, 4, 0, 0]} maxBarSize={32}>
+                        {data.map((_, i) => (
+                            <Cell key={i} fill={color} fillOpacity={0.3 + (i / data.length) * 0.7} />
+                        ))}
+                    </Bar>
+                </BarChart>
+            </ResponsiveContainer>
+        </div>
+    );
+}
+
+function CircularProgress({
+    value,
+    max = 100,
+    size = 120,
+    strokeWidth = 8,
+    color = THEME.accent.primary,
+    label,
+}: {
+    value: number;
+    max?: number;
+    size?: number;
+    strokeWidth?: number;
+    color?: string;
+    label?: string;
+}) {
+    const percentage = Math.min((value / max) * 100, 100);
+    const radius = (size - strokeWidth) / 2;
+    const circumference = radius * 2 * Math.PI;
+    const offset = circumference - (percentage / 100) * circumference;
+
+    return (
+        <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
+            <svg width={size} height={size} className="-rotate-90">
+                <circle
+                    cx={size / 2}
+                    cy={size / 2}
+                    r={radius}
+                    fill="none"
+                    stroke="rgba(255,255,255,0.06)"
+                    strokeWidth={strokeWidth}
+                />
+                <circle
+                    cx={size / 2}
+                    cy={size / 2}
+                    r={radius}
+                    fill="none"
+                    stroke={color}
+                    strokeWidth={strokeWidth}
+                    strokeLinecap="round"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={offset}
+                    style={{ transition: 'stroke-dashoffset 0.8s ease-out' }}
+                />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-2xl font-semibold" style={{ color: THEME.text.primary }}>
+                    {Math.round(percentage)}%
+                </span>
+                {label && <span className="text-xs" style={{ color: THEME.text.secondary }}>{label}</span>}
+            </div>
+        </div>
+    );
+}
+
+// ============================================================================
+// MAIN DASHBOARD COMPONENT
+// ============================================================================
+
+export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
+    const {
+        activeRoom,
+        switchRoom,
+        agents,
+        activeProject,
+        systemLogs,
+        systemState,
+        allProjects,
+        setActiveProject,
+        runAgentStaffSync,
+        agentSyncRunning,
+        livingOffice,
+        refreshLivingOffice,
+        staffAttentionPending,
+        setDexoBootstrap,
+    } = useOffice();
+
+    const [dashboardExpanded, setDashboardExpanded] = useState(false);
+    const [portfolioDashExpanded, setPortfolioDashExpanded] = useState(false);
+    const [activeTab, setActiveTab] = useState<'overview' | 'analytics' | 'activity' | 'dexo_daily'>('overview');
+
+    const dashboardTabs = [
+        { id: 'overview' as const, label: 'Overview' },
+        { id: 'dexo_daily' as const, label: 'Daily brief' },
+        { id: 'analytics' as const, label: 'Analytics' },
+        { id: 'activity' as const, label: 'Activity' },
+    ];
+    const [pendingScrollId, setPendingScrollId] = useState<string | null>(null);
+
+    useEffect(() => {
+        setDashboardExpanded(false);
+        setPortfolioDashExpanded(false);
+    }, [activeProject?.id]);
+
+    useEffect(() => {
+        if (activeRoom === 'dashboard' && activeProject?.id) {
+            void refreshLivingOffice();
+        }
+    }, [activeRoom, activeProject?.id, refreshLivingOffice]);
+
+    useEffect(() => {
+        if (activeRoom !== 'dashboard' || !activeProject?.id) return;
+        const key = `deepchox-dexo-pulse:${activeProject.id}:${new Date().toISOString().slice(0, 10)}`;
+        try {
+            if (typeof window !== 'undefined' && localStorage.getItem(key)) return;
+        } catch {
+            // ignore storage errors; pulse call below still works
+        }
+        const context = buildDexoJarvisVentureContext(activeProject);
+        void fetch('/api/dexo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'dailyPulse',
+                payload: {
+                    ventureId: activeProject.id,
+                    context,
+                    sparseContext: isVentureFoundationSparse(activeProject),
+                    force: false,
+                },
+            }),
+        })
+            .then((r) => r.json())
+            .then((data: { ok?: boolean }) => {
+                if (!data.ok) return;
+                try {
+                    if (typeof window !== 'undefined') localStorage.setItem(key, '1');
+                } catch {
+                    // ignore storage errors
+                }
+            })
+            .catch(() => {
+                // non-blocking dashboard warmup
+            });
+    }, [activeRoom, activeProject]);
+
+    // Parse strategy data
+    const strategyDoc = useMemo(() => parseStrategy(activeProject?.strategy || ''), [activeProject?.strategy]);
+    const phases = strategyDoc.phases || [];
+    const priorities = strategyDoc.priorities || [];
+    
+    const phaseDone = phases.filter((p) => p.status === 'done').length;
+    const phaseTotal = phases.length;
+    const phaseActive = phases.filter((p) => p.status === 'in_progress').length;
+    const priDone = priorities.filter((p) => p.done).length;
+    const priTotal = priorities.length;
+    const hasIntent = !!(strategyDoc.strategicIntent?.trim() || strategyDoc.vision?.trim());
+    const narrativeRich = (strategyDoc.content || '').trim().length > 80;
+
+    // Animated execution score
+    const executionScore = useMemo(() => {
+        const intentW = hasIntent ? 1 : 0;
+        const narW = narrativeRich ? 1 : 0;
+        const phaseW = phaseTotal ? phaseDone / phaseTotal : 0;
+        const priW = priTotal ? priDone / priTotal : 0;
+        const raw = (intentW + narW + phaseW + priW) / 4;
+        return Math.round(raw * 100);
+    }, [hasIntent, narrativeRich, phaseDone, phaseTotal, priDone, priTotal]);
+    const animatedScore = useAnimatedNumber(executionScore);
+
+    // Business impact
+    const businessImpact = useMemo(() => {
+        const strategic = computeStrategicCoverageScore(activeProject?.strategy, activeProject ?? undefined);
+        const executionPillar = computeExecutionDeliveryScore(activeProject?.strategy);
+        const financial = computeFinancialHealthScore(activeProject?.budget);
+        return aggregateImpact([fromVenturePillarScores({ strategic, financial, execution: executionPillar })]);
+    }, [activeProject?.strategy, activeProject?.budget]);
+
+    const foundationSparse = useMemo(
+        () => isVentureFoundationSparse(activeProject ?? undefined),
+        [activeProject]
+    );
+
+    const chartUid = useId().replace(/:/g, '');
+
+    // Data preparations
+    const phasePieData = useMemo(() => {
+        const planned = phases.filter((p) => p.status === 'planned').length;
+        const progress = phases.filter((p) => p.status === 'in_progress').length;
+        const done = phases.filter((p) => p.status === 'done').length;
+        return [
+            { name: 'Done', value: done, fill: THEME.chart.emerald },
+            { name: 'In Progress', value: progress, fill: THEME.chart.amber },
+            { name: 'Planned', value: planned, fill: THEME.chart.slate },
+        ].filter((d) => d.value > 0);
+    }, [phases]);
+
+    const priorityPieData = useMemo(() => {
+        if (!priTotal) return [];
+        const open = Math.max(0, priTotal - priDone);
+        return [
+            { name: 'Complete', value: priDone, fill: THEME.chart.emerald },
+            { name: 'Open', value: open, fill: THEME.chart.rose },
+        ].filter((d) => d.value > 0);
+    }, [priTotal, priDone]);
+
+    const deskCoverage = useMemo(() => {
+        const p = activeProject;
+        const snap = p?.agentStaffSnapshot?.desks;
+        const pct = (s?: string) => ((s?.trim().length || 0) >= MIN_VENTURE_FIELD_CHARS ? 100 : 0);
+        const clip = (t?: string) => {
+            const x = t?.trim();
+            if (!x) return null;
+            return x.length > 96 ? `${x.slice(0, 93)}…` : x;
+        };
+        const growthPct =
+            (snap?.cmo?.trim().length || 0) >= MIN_VENTURE_FIELD_CHARS ||
+            (p?.teamDirectives?.trim().length || 0) >= MIN_VENTURE_FIELD_CHARS ||
+            (p?.userNotes?.trim().length || 0) >= MIN_VENTURE_FIELD_CHARS * 2
+                ? 100
+                : 0;
+        const strategyCoverage = Math.round(computeStrategicCoverageScore(p?.strategy, p ?? undefined));
+        return [
+            {
+                label: 'Strategy',
+                pct: strategyCoverage,
+                fill: THEME.chart.violet,
+                icon: Lightbulb,
+                hint: clip(snap?.ceo) || 'Mission, phases, priorities',
+            },
+            {
+                label: 'Market',
+                pct: pct(p?.marketInsights),
+                fill: THEME.chart.blue,
+                icon: Globe,
+                hint: clip(snap?.scout) || 'Competitors, signals, landscape',
+            },
+            {
+                label: 'Finance',
+                pct: pct(p?.budget),
+                fill: THEME.chart.emerald,
+                icon: Wallet,
+                hint: clip(snap?.accountant) || 'Runway, burn, capital',
+            },
+            {
+                label: 'Product',
+                pct: pct(p?.productPlan),
+                fill: THEME.chart.amber,
+                icon: Layers,
+                hint: clip(snap?.pm) || 'Roadmap, shipping cadence',
+            },
+            {
+                label: 'Growth',
+                pct: growthPct,
+                fill: THEME.chart.rose,
+                icon: Megaphone,
+                hint: clip(snap?.cmo) || 'GTM, positioning, pitch',
+            },
+        ];
+    }, [activeProject]);
+
+    const staffFocusLines = activeProject?.staffFocusToday?.filter((s) => s?.trim()) ?? [];
+
+    const kanbanTasks = useMemo(() => {
+        const raw = activeProject?.kanban;
+        if (!Array.isArray(raw)) return [] as { id: string; title: string; status: string }[];
+        return raw.filter((t: { id?: unknown; title?: unknown }) => t && typeof t.id === 'string' && typeof t.title === 'string') as {
+            id: string;
+            title: string;
+            status: string;
+        }[];
+    }, [activeProject?.kanban]);
+
+    const kanbanCounts = useMemo(() => {
+        const c = { todo: 0, in_progress: 0, next: 0, completed: 0 };
+        for (const t of kanbanTasks) {
+            const s = t.status as keyof typeof c;
+            if (s in c) c[s] += 1;
+        }
+        return c;
+    }, [kanbanTasks]);
+
+    const upcomingEvents = useMemo(() => {
+        const now = Date.now();
+        return [...(activeProject?.events || [])]
+            .filter((e) => e.date >= now - 24 * 60 * 60 * 1000)
+            .sort((a, b) => a.date - b.date)
+            .slice(0, 8);
+    }, [activeProject?.events]);
+
+    const strategicExcerpt = useMemo(() => {
+        const intent = strategyDoc.strategicIntent?.trim();
+        const vision = strategyDoc.vision?.trim();
+        const content = (strategyDoc.content || '').trim();
+        const pick = intent || vision || content.slice(0, 400);
+        if (!pick) return null;
+        return pick.length > 400 ? `${pick.slice(0, 397)}…` : pick;
+    }, [strategyDoc]);
+
+    const currentPhaseInfo = useMemo(() => {
+        if (foundationSparse) return null;
+        const ph = strategyDoc.phases || [];
+        const inProg = ph.find((p) => p.status === 'in_progress');
+        const planned = ph.find((p) => p.status === 'planned');
+        if (inProg) return { title: inProg.title, sub: 'In progress', end: inProg.end };
+        if (planned) return { title: planned.title, sub: 'Planned', end: planned.end };
+        if (ph[0]) return { title: ph[0].title, sub: (ph[0].status ?? 'planned').replace(/_/g, ' '), end: ph[0].end };
+        return null;
+    }, [foundationSparse, strategyDoc.phases]);
+
+    const staffSyncAt = activeProject?.agentStaffSnapshot?.at;
+    const lastStaffSyncLabel = staffSyncAt
+        ? new Date(staffSyncAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+        : null;
+    const syncAgeMinutes = staffSyncAt
+        ? Math.max(0, Math.floor((Date.now() - staffSyncAt) / 60000))
+        : Math.max(0, Math.floor((Date.now() - systemState.lastSync) / 60000));
+
+    const aiSummaryExcerpt = useMemo(() => {
+        const s = activeProject?.agentStaffSnapshot?.summary?.trim();
+        if (!s) return null;
+        return s.length > 520 ? `${s.slice(0, 517)}…` : s;
+    }, [activeProject?.agentStaffSnapshot?.summary]);
+
+    // Portfolio view (no active project)
+    if (!activeProject) {
+        return <PortfolioView
+            allProjects={allProjects}
+            systemState={systemState}
+            onNewVenture={onNewVenture}
+            setActiveProject={setActiveProject}
+            portfolioDashExpanded={portfolioDashExpanded}
+            setPortfolioDashExpanded={setPortfolioDashExpanded}
+            chartUid={chartUid}
+            switchRoom={switchRoom}
+        />;
+    }
+
+    return (
+        <div
+            className="min-h-screen w-full pb-24"
+            style={{ background: THEME.bg.primary }}
+        >
+            {/* HEADER */}
+            <header className="sticky top-0 z-40 border-b backdrop-blur-xl" style={{ background: 'rgba(30,30,30,0.88)', borderColor: THEME.border.subtle }}>
+                <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+                    <div className="flex items-center gap-4">
+                        <div
+                            className="flex h-10 w-10 items-center justify-center rounded-xl"
+                            style={{ background: 'rgba(116,86,255,0.10)' }}
+                        >
+                            <LayoutDashboard className="h-5 w-5" style={{ color: THEME.accent.secondary }} />
+                        </div>
+                        <div>
+                            <h1 className="text-xl font-semibold tracking-tight" style={{ color: THEME.text.primary }}>
+                                {activeProject.name}
+                            </h1>
+                            <div className="flex items-center gap-3 text-xs" style={{ color: THEME.text.tertiary }}>
+                                <span className="flex items-center gap-1.5">
+                                    <span className="relative flex h-1.5 w-1.5">
+                                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-50" style={{ background: THEME.accent.primary }} />
+                                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full" style={{ background: THEME.accent.primary }} />
+                                    </span>
+                                    Executive overview
+                                </span>
+                                <span>·</span>
+                                <span>{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => runAgentStaffSync()}
+                            disabled={agentSyncRunning}
+                            className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all"
+                            style={{
+                                background: agentSyncRunning ? 'rgba(46,41,34,0.06)' : 'rgba(116,86,255,0.10)',
+                                color: THEME.text.primary,
+                                opacity: agentSyncRunning ? 0.6 : 1,
+                            }}
+                        >
+                            <RefreshCw className={`h-4 w-4 ${agentSyncRunning ? 'animate-spin' : ''}`} />
+                            {agentSyncRunning ? 'Syncing...' : 'Sync Staff'}
+                        </button>
+                        <WorkspaceAiButton />
+                    </div>
+                </div>
+
+                {/* TAB NAVIGATION */}
+                <div className="mx-auto max-w-7xl px-6">
+                    <div className="flex gap-1">
+                        {dashboardTabs.map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className="relative px-4 py-3 text-sm font-medium transition-colors"
+                                style={{ color: activeTab === tab.id ? THEME.text.primary : THEME.text.muted }}
+                            >
+                                {tab.label}
+                                {activeTab === tab.id && (
+                                    <div
+                                        className="absolute bottom-0 left-0 right-0 h-0.5"
+                                        style={{ background: THEME.accent.primary }}
+                                    />
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </header>
+
+            {/* MAIN CONTENT */}
+            <main className="mx-auto max-w-7xl px-6 py-8">
+                {/* CONTEXTUAL HINTS */}
+                <div className="mb-8 space-y-3">
+                    <GuideHint
+                        id="dash-no-strategy"
+                        when={!hasIntent && !narrativeRich}
+                        variant="tip"
+                        message="Your venture needs a strategic foundation. Open the CEO desk to define your vision and goals."
+                        action="Open CEO Desk"
+                        onAction={() => switchRoom('ceo')}
+                    />
+                    <GuideHint
+                        id="dash-no-sync"
+                        when={!activeProject?.agentStaffSnapshot && hasIntent}
+                        variant="info"
+                        message="Run Staff Sync to activate your AI team and populate all desks with insights."
+                        action="Sync Now"
+                        onAction={() => runAgentStaffSync()}
+                    />
+                </div>
+
+                {/* OVERVIEW TAB */}
+                {activeTab === 'overview' && (
+                    <div className="space-y-8">
+                        {/* KEY METRICS */}
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                            <MetricCard
+                                label={foundationSparse ? 'Venture setup' : 'Execution score (strategy + delivery)'}
+                                value={foundationSparse ? 'Needed' : `${animatedScore}%`}
+                                icon={Target}
+                                color="emerald"
+                                delay={0}
+                            />
+                            <MetricCard
+                                label={foundationSparse ? 'Phase progress' : 'Phases complete'}
+                                value={foundationSparse ? 'Pending' : `${phaseDone}/${phaseTotal || 0}`}
+                                icon={Layers}
+                                color="violet"
+                                delay={80}
+                            />
+                            <MetricCard
+                                label={foundationSparse ? 'Founder priorities' : 'Executive priorities done'}
+                                value={foundationSparse ? 'Pending' : `${priDone}/${priTotal || 0}`}
+                                icon={CheckCircle2}
+                                color="amber"
+                                delay={160}
+                            />
+                            <MetricCard
+                                label={staffSyncAt ? 'Time since AI staff research sync' : 'Time since last office refresh'}
+                                value={syncAgeMinutes < 180 ? `${syncAgeMinutes}m` : `${Math.floor(syncAgeMinutes / 60)}h ${syncAgeMinutes % 60}m`}
+                                icon={Clock}
+                                color="blue"
+                                delay={240}
+                            />
+                        </div>
+
+                        {/* Venture intelligence — derived from your records + living office engine */}
+                        <div className="grid gap-6 lg:grid-cols-2">
+                            <Card className="p-6 lg:col-span-2">
+                                <SectionHeader
+                                    title="Strategy depth & venture snapshot"
+                                    subtitle={
+                                        foundationSparse
+                                            ? 'Waiting for your actual venture thesis and setup details — default templates are not treated as real company context.'
+                                            : 'Grounded in your saved strategy, calendar, and last staff sync — not generic filler.'
+                                    }
+                                />
+                                {/*
+                                  Two-column layout: wide “snapshot” (Direction + Staff) + fixed-proportion sidebar (Focus / attention).
+                                  A single lg:grid-cols-3 row lets long “Needs attention” copy set a huge min-content width and squeeze
+                                  the first columns to nothing — looks like an empty void on the left.
+                                */}
+                                <div className="grid gap-8 lg:grid-cols-[minmax(0,1.65fr)_minmax(260px,1fr)] lg:items-start">
+                                    <div className="min-w-0 space-y-6">
+                                        <div className="grid min-w-0 gap-6 sm:grid-cols-2 sm:items-start">
+                                            <div className="min-w-0 space-y-3">
+                                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>
+                                                    Direction
+                                                </p>
+                                                {strategicExcerpt ? (
+                                                    <p className="break-words text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
+                                                        {strategicExcerpt}
+                                                    </p>
+                                                ) : (
+                                                    <p className="text-sm" style={{ color: THEME.text.muted }}>
+                                                        No strategic intent or narrative yet. Add one in the CEO desk so every downstream desk aligns.
+                                                    </p>
+                                                )}
+                                                {currentPhaseInfo ? (
+                                                    <div
+                                                        className="rounded-xl border px-3 py-2.5"
+                                                        style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.03)' }}
+                                                    >
+                                                        <p className="text-[10px] uppercase tracking-wider" style={{ color: THEME.text.muted }}>
+                                                            Phase focus
+                                                        </p>
+                                                        <p className="mt-1 text-sm font-medium" style={{ color: THEME.text.primary }}>
+                                                            {currentPhaseInfo.title}
+                                                        </p>
+                                                        <p className="mt-0.5 text-xs capitalize" style={{ color: THEME.text.tertiary }}>
+                                                            {currentPhaseInfo.sub}
+                                                            {currentPhaseInfo.end ? ` · ${currentPhaseInfo.end}` : ''}
+                                                        </p>
+                                                    </div>
+                                                ) : null}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => switchRoom('ceo')}
+                                                    className="text-left text-xs font-medium underline-offset-2 transition hover:underline"
+                                                    style={{ color: THEME.accent.secondary }}
+                                                >
+                                                    Open strategy desk →
+                                                </button>
+                                            </div>
+                                            <div className="min-w-0 space-y-3 sm:border-l sm:pl-6" style={{ borderColor: THEME.border.subtle }}>
+                                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>
+                                                    AI staff research
+                                                </p>
+                                                {lastStaffSyncLabel ? (
+                                                    <p className="break-words text-sm" style={{ color: THEME.text.secondary }}>
+                                                        Last sync:{' '}
+                                                        <span style={{ color: THEME.text.primary }}>{lastStaffSyncLabel}</span>
+                                                    </p>
+                                                ) : (
+                                                    <p className="text-sm" style={{ color: THEME.text.muted }}>
+                                                        No staff sync yet — run Sync Staff to merge Groq research into each desk snapshot.
+                                                    </p>
+                                                )}
+                                                {aiSummaryExcerpt ? (
+                                                    <p className="break-words text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
+                                                        {aiSummaryExcerpt}
+                                                    </p>
+                                                ) : (
+                                                    <p className="text-xs" style={{ color: THEME.text.muted }}>
+                                                        Summary appears after the first successful multi-desk sync.
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div
+                                            className="rounded-xl border px-4 py-4 sm:px-5 sm:py-5"
+                                            style={{
+                                                borderColor: THEME.border.default,
+                                                background: 'linear-gradient(165deg, rgba(116,86,255,0.14) 0%, rgba(42,42,42,0.95) 45%, rgba(157,136,255,0.12) 100%)',
+                                            }}
+                                        >
+                                            <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
+                                                <div>
+                                                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>
+                                                        Coverage & rhythm
+                                                    </p>
+                                                    <p className="mt-1 text-sm font-medium" style={{ color: THEME.text.primary }}>
+                                                        What’s on the venture record
+                                                    </p>
+                                                    <p className="mt-0.5 text-xs" style={{ color: THEME.text.tertiary }}>
+                                                        {foundationSparse
+                                                            ? 'Bars estimate real founder content — default templates alone don’t count as “complete.” Start in Dexo with your story, then each desk.'
+                                                            : 'Tap a desk to add detail, or open Dexo for cross-desk chat and analysis. Bars reflect saved fields and staff snapshots.'}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6 sm:gap-3">
+                                                {deskCoverage.map((desk) => {
+                                                    const room = SNAPSHOT_DESK_ROOMS[desk.label];
+                                                    return (
+                                                        <button
+                                                            key={desk.label}
+                                                            type="button"
+                                                            onClick={() => room && switchRoom(room)}
+                                                            className="group rounded-xl border border-[var(--border)] bg-[rgba(255,255,255,0.05)] px-2.5 py-2.5 text-left transition hover:bg-[rgba(255,255,255,0.09)]"
+                                                            style={{ borderColor: THEME.border.subtle }}
+                                                        >
+                                                            <div className="flex items-center gap-1.5">
+                                                                <div
+                                                                    className="flex h-7 w-7 items-center justify-center rounded-lg transition-transform group-hover:scale-105"
+                                                                    style={{ background: `${desk.fill}18` }}
+                                                                >
+                                                                    <desk.icon className="h-3.5 w-3.5" style={{ color: desk.fill }} aria-hidden />
+                                                                </div>
+                                                                <span className="text-[11px] font-semibold" style={{ color: THEME.text.primary }}>
+                                                                    {desk.label}
+                                                                </span>
+                                                            </div>
+                                                            <div
+                                                                className="mt-2 h-1 overflow-hidden rounded-full"
+                                                                style={{ background: 'rgba(46,41,34,0.08)' }}
+                                                            >
+                                                                <div
+                                                                    className="h-full rounded-full transition-all duration-500"
+                                                                    style={{
+                                                                        width: `${desk.pct}%`,
+                                                                        background: `linear-gradient(90deg, ${desk.fill}, ${desk.fill}CC)`,
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                            <p className="mt-1.5 line-clamp-2 text-[10px] leading-snug" style={{ color: THEME.text.muted }}>
+                                                                {desk.pct === 100 ? 'Documented' : 'Needs detail'} · {desk.hint}
+                                                            </p>
+                                                        </button>
+                                                    );
+                                                })}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => switchRoom('dexo')}
+                                                    className="group rounded-xl border bg-[rgba(116,86,255,0.12)] px-2.5 py-2.5 text-left ring-1 ring-violet-500/25 transition hover:bg-[rgba(116,86,255,0.18)]"
+                                                    style={{ borderColor: THEME.border.subtle }}
+                                                    aria-label="Open Dexo command center"
+                                                >
+                                                    <div className="flex items-center gap-1.5">
+                                                        <div
+                                                            className="flex h-7 w-7 items-center justify-center rounded-lg transition-transform group-hover:scale-105"
+                                                            style={{ background: `${THEME.accent.info}28` }}
+                                                        >
+                                                            <Sparkles className="h-3.5 w-3.5" style={{ color: THEME.accent.info }} aria-hidden />
+                                                        </div>
+                                                        <span className="text-[11px] font-semibold" style={{ color: THEME.text.primary }}>
+                                                            Dexo
+                                                        </span>
+                                                    </div>
+                                                    <div
+                                                        className="mt-2 h-1 overflow-hidden rounded-full"
+                                                        style={{ background: 'rgba(46,41,34,0.08)' }}
+                                                    >
+                                                        <div
+                                                            className="h-full w-full rounded-full transition-all duration-500"
+                                                            style={{
+                                                                background: `linear-gradient(90deg, ${THEME.accent.info}, ${THEME.accent.tertiary})`,
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <p className="mt-1.5 line-clamp-2 text-[10px] leading-snug" style={{ color: THEME.text.muted }}>
+                                                        Command center · full venture context, voice and chat
+                                                    </p>
+                                                </button>
+                                            </div>
+
+                                            <div className="mt-5 grid gap-5 border-t pt-5" style={{ borderColor: THEME.border.subtle }}>
+                                                <div className="min-w-0">
+                                                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>
+                                                        Coming up
+                                                    </p>
+                                                    {upcomingEvents.length > 0 ? (
+                                                        <ul className="mt-2 space-y-2.5">
+                                                            {upcomingEvents.slice(0, 4).map((ev, idx) => (
+                                                                <li key={`${ev.date}-${idx}-${ev.title}`} className="flex gap-2.5">
+                                                                    <Calendar className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-400/85" aria-hidden />
+                                                                    <div className="min-w-0">
+                                                                        <p className="text-xs font-medium leading-snug" style={{ color: THEME.text.primary }}>
+                                                                            {ev.title}
+                                                                        </p>
+                                                                        <p className="text-[11px]" style={{ color: THEME.text.muted }}>
+                                                                            {new Date(ev.date).toLocaleString(undefined, {
+                                                                                weekday: 'short',
+                                                                                month: 'short',
+                                                                                day: 'numeric',
+                                                                                hour: 'numeric',
+                                                                                minute: '2-digit',
+                                                                            })}
+                                                                        </p>
+                                                                    </div>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    ) : (
+                                                        <p className="mt-2 text-xs leading-relaxed" style={{ color: THEME.text.muted }}>
+                                                            No upcoming events on the calendar. Add milestones or meetings from the office calendar so they surface here.
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>
+                                                        Executive priorities
+                                                    </p>
+                                                    {priorities.length > 0 ? (
+                                                        <ul className="mt-2 space-y-2">
+                                                            {priorities.slice(0, 5).map((pr) => (
+                                                                <li key={pr.id} className="flex gap-2 text-xs leading-snug">
+                                                                    {pr.done ? (
+                                                                        <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-400/90" aria-hidden />
+                                                                    ) : (
+                                                                        <span
+                                                                            className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full border"
+                                                                            style={{ borderColor: THEME.border.strong }}
+                                                                            aria-hidden
+                                                                        />
+                                                                    )}
+                                                                    <span
+                                                                        className={`min-w-0 break-words ${pr.done ? 'line-through' : ''}`}
+                                                                        style={{ color: pr.done ? undefined : THEME.text.secondary }}
+                                                                    >
+                                                                        {pr.title}
+                                                                    </span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    ) : (
+                                                        <p className="mt-2 text-xs leading-relaxed" style={{ color: THEME.text.muted }}>
+                                                            No priorities in your strategy doc yet. Open the CEO desk and add a short list so execution stays visible here.
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div className="mt-4 flex flex-wrap gap-2 border-t pt-4" style={{ borderColor: THEME.border.subtle }}>
+                                                <span
+                                                    className="rounded-full px-2.5 py-1 text-[10px] font-medium"
+                                                    style={{
+                                                        background: 'rgba(255,255,255,0.07)',
+                                                        color: THEME.text.secondary,
+                                                    }}
+                                                >
+                                                    {phaseTotal ? (
+                                                        <>
+                                                            Phases: {phaseDone}/{phaseTotal} done
+                                                            {phaseActive ? ` · ${phaseActive} active` : ''}
+                                                        </>
+                                                    ) : (
+                                                        'Phases: add a timeline in strategy'
+                                                    )}
+                                                </span>
+                                                <span
+                                                    className="rounded-full px-2.5 py-1 text-[10px] font-medium"
+                                                    style={{
+                                                        background: 'rgba(255,255,255,0.07)',
+                                                        color: THEME.text.secondary,
+                                                    }}
+                                                >
+                                                    {priTotal ? (
+                                                        <>
+                                                            Priorities: {priDone}/{priTotal} checked off
+                                                        </>
+                                                    ) : (
+                                                        'Priorities: none saved'
+                                                    )}
+                                                </span>
+                                                <span
+                                                    className="rounded-full px-2.5 py-1 text-[10px] font-medium"
+                                                    style={{
+                                                        background: 'rgba(255,255,255,0.07)',
+                                                        color: THEME.text.secondary,
+                                                    }}
+                                                >
+                                                    Board: {kanbanCounts.todo + kanbanCounts.in_progress + kanbanCounts.next + kanbanCounts.completed}{' '}
+                                                    cards · {kanbanCounts.in_progress} in progress
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="min-w-0 space-y-3 lg:border-l lg:pl-8" style={{ borderColor: THEME.border.subtle }}>
+                                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>
+                                            Focus today
+                                        </p>
+                                        {staffFocusLines.length > 0 ? (
+                                            <ul className="space-y-2">
+                                                {staffFocusLines.slice(0, 6).map((line, i) => (
+                                                    <li
+                                                        key={`${i}-${line.slice(0, 24)}`}
+                                                        className="flex gap-2 text-sm leading-snug"
+                                                        style={{ color: THEME.text.secondary }}
+                                                    >
+                                                        <span className="shrink-0" style={{ color: THEME.accent.primary }}>
+                                                            •
+                                                        </span>
+                                                        <span className="min-w-0 break-words">{line}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <p className="text-sm" style={{ color: THEME.text.muted }}>
+                                                No staff “focus today” list yet. It appears after a Staff Sync when the model proposes priorities.
+                                            </p>
+                                        )}
+                                        {staffAttentionPending.length > 0 ? (
+                                            <div className="rounded-xl border px-3 py-2.5" style={{ borderColor: 'rgba(116,86,255,0.18)', background: 'rgba(116,86,255,0.08)' }}>
+                                                <p className="flex items-center gap-1.5 text-[11px] font-semibold" style={{ color: THEME.accent.primary }}>
+                                                    <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                                                    Needs attention ({staffAttentionPending.length})
+                                                </p>
+                                                <ul className="mt-2 space-y-2">
+                                                    {staffAttentionPending.slice(0, 4).map((a) => (
+                                                        <li
+                                                            key={a.id}
+                                                            className="flex flex-col gap-2 rounded-lg border border-[var(--border)] bg-[rgba(255,255,255,0.05)] px-2.5 py-2 sm:flex-row sm:items-start sm:justify-between"
+                                                            style={{ borderColor: 'rgba(116,86,255,0.12)' }}
+                                                        >
+                                                            <p className="min-w-0 max-w-full flex-1 break-words text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
+                                                                <span className="font-medium" style={{ color: THEME.text.primary }}>{a.title}</span>
+                                                                <span style={{ color: THEME.text.tertiary }}> — {a.message}</span>
+                                                            </p>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setDexoBootstrap(buildDexoStaffAttentionBootstrap(a));
+                                                                    switchRoom('dexo');
+                                                                }}
+                                                                className="inline-flex shrink-0 items-center justify-center gap-1 rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition"
+                                                                style={{ borderColor: 'rgba(116,86,255,0.22)', background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}
+                                                            >
+                                                                <Sparkles className="h-3 w-3" aria-hidden />
+                                                                Set up in Dexo
+                                                            </button>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        ) : null}
+                                    </div>
+                                </div>
+                                <FocusBriefingPanel
+                                    ventureName={activeProject.name}
+                                    livingOffice={livingOffice}
+                                    staffFocusLines={staffFocusLines}
+                                    staffAttentionPending={staffAttentionPending}
+                                    aiSummaryExcerpt={aiSummaryExcerpt}
+                                    strategicExcerpt={strategicExcerpt}
+                                    theme={{
+                                        text: THEME.text,
+                                        border: THEME.border,
+                                        accent: THEME.accent,
+                                    }}
+                                />
+                            </Card>
+                        </div>
+
+                        {livingOffice && livingOffice.brief.greeting !== 'No venture selected.' && (
+                            <Card className="p-6">
+                                <SectionHeader
+                                    title="Operational intelligence"
+                                    subtitle="Living office engine: morning brief, goal model, tasks, and ambient signals from your venture data."
+                                />
+                                <div className="grid gap-6 lg:grid-cols-3">
+                                    <div className="space-y-3 lg:border-r lg:pr-6" style={{ borderColor: THEME.border.subtle }}>
+                                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>
+                                            Daily brief
+                                        </p>
+                                        <p className="text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
+                                            {livingOffice.brief.greeting}
+                                        </p>
+                                        <div
+                                            className="rounded-xl border px-3 py-2.5"
+                                            style={{ borderColor: THEME.border.default, background: 'rgba(116,86,255,0.08)' }}
+                                        >
+                                            <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: THEME.accent.primary }}>Suggested focus</p>
+                                            <p className="mt-1 text-sm font-medium" style={{ color: THEME.text.primary }}>
+                                                {livingOffice.brief.suggestedFocus}
+                                            </p>
+                                        </div>
+                                        {livingOffice.brief.priorities.length > 0 ? (
+                                            <div>
+                                                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ color: THEME.text.muted }}>
+                                                    Priorities in play
+                                                </p>
+                                                <ul className="space-y-1.5">
+                                                    {livingOffice.brief.priorities.map((p, i) => (
+                                                        <li key={i} className="flex gap-2 text-sm" style={{ color: THEME.text.secondary }}>
+                                                            <ListTodo className="mt-0.5 h-3.5 w-3.5 shrink-0" style={{ color: THEME.text.muted }} aria-hidden />
+                                                            <span>{p}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        ) : null}
+                                        {livingOffice.brief.criticalAlerts.length > 0 ? (
+                                            <div className="rounded-xl border px-3 py-2.5" style={{ borderColor: 'rgba(95,67,223,0.22)', background: 'rgba(95,67,223,0.08)' }}>
+                                                <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: '#5f43df' }}>
+                                                    Critical alerts
+                                                </p>
+                                                <ul className="mt-2 space-y-1.5">
+                                                    {livingOffice.brief.criticalAlerts.map((a, i) => (
+                                                        <li key={i} className="text-[12px] leading-snug" style={{ color: THEME.text.primary }}>
+                                                            {a}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        ) : null}
+                                    </div>
+                                    <div className="space-y-4 lg:border-r lg:pr-6" style={{ borderColor: THEME.border.subtle }}>
+                                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>
+                                            Goal & pace model
+                                        </p>
+                                        <div className="flex flex-wrap gap-2">
+                                            <span
+                                                className="rounded-full px-2.5 py-1 text-[11px] font-medium tabular-nums"
+                                                style={{ background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}
+                                            >
+                                                {livingOffice.progress.percentage}% blended progress
+                                            </span>
+                                            <span
+                                                className="rounded-full px-2.5 py-1 text-[11px] font-medium"
+                                                style={{ background: 'rgba(255,255,255,0.07)', color: THEME.text.secondary }}
+                                            >
+                                                Risk: {livingOffice.progress.risk}
+                                            </span>
+                                        </div>
+                                        <p className="text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
+                                            ~{livingOffice.progress.projectedDaysRemaining} days to horizon at current phase pacing. Velocity index:{' '}
+                                            {Math.round(livingOffice.progress.paceScore * 100)}% — based on tasks completed in the last 14 days vs open
+                                            work.
+                                        </p>
+                                        <div className="rounded-xl border p-3" style={{ background: 'rgba(255,255,255,0.06)', borderColor: THEME.border.subtle }}>
+                                            <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: THEME.text.muted }}>
+                                                Weekly review
+                                            </p>
+                                            <p className="mt-2 text-sm" style={{ color: THEME.text.secondary }}>
+                                                Tasks completed:{' '}
+                                                <span className="font-medium" style={{ color: THEME.text.primary }}>{livingOffice.weeklyReview.completedTasks}</span> · Churn
+                                                risk: {livingOffice.weeklyReview.churnRisk} · Next week: {livingOffice.weeklyReview.nextWeekFocus}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>
+                                            Tasks & routing
+                                        </p>
+                                        {livingOffice.taskFindings.length > 0 ? (
+                                            <ul className="space-y-2">
+                                                {livingOffice.taskFindings.slice(0, 6).map((f, i) => (
+                                                    <li
+                                                        key={`${f.taskId}-${i}`}
+                                                        className="rounded-lg border px-2.5 py-2 text-[12px] leading-snug"
+                                                        style={{
+                                                            borderColor:
+                                                                f.severity === 'critical'
+                                                                    ? 'rgba(239,68,68,0.35)'
+                                                                    : f.severity === 'warning'
+                                                                      ? 'rgba(245,158,11,0.3)'
+                                                                      : THEME.border.subtle,
+                                                            color: THEME.text.secondary,
+                                                        }}
+                                                    >
+                                                        <span className="font-medium" style={{ color: THEME.text.primary }}>{f.title}</span>
+                                                        <span style={{ color: THEME.text.muted }}> · {f.detail}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <p className="text-sm" style={{ color: THEME.text.muted }}>
+                                                No task intelligence flags — board is clear or tasks are not yet modeled.
+                                            </p>
+                                        )}
+                                        {livingOffice.notifications.length > 0 ? (
+                                            <div>
+                                                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ color: THEME.text.muted }}>
+                                                    Ambient signals
+                                                </p>
+                                                <ul className="space-y-1.5">
+                                                    {livingOffice.notifications.slice(0, 5).map((n, i) => (
+                                                        <li key={i} className="text-[12px] leading-snug" style={{ color: THEME.text.tertiary }}>
+                                                            <span style={{ color: THEME.text.muted }}>[{n.desk}]</span> {n.message}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        ) : null}
+                                        {livingOffice.suggestedActions.length > 0 ? (
+                                            <div>
+                                                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ color: THEME.text.muted }}>
+                                                    Routed actions
+                                                </p>
+                                                <ul className="space-y-2">
+                                                    {livingOffice.suggestedActions.slice(0, 4).map((a, i) => (
+                                                        <li key={i} className="text-[12px]" style={{ color: THEME.text.secondary }}>
+                                                            <span className="font-medium" style={{ color: THEME.text.primary }}>{a.intent}</span> →{' '}
+                                                            {a.targetDesks.join(', ')}: {a.summary}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        ) : null}
+                                    </div>
+                                </div>
+                            </Card>
+                        )}
+
+                        {(upcomingEvents.length > 0 || kanbanTasks.length > 0) && (
+                            <div className="grid gap-6 lg:grid-cols-2">
+                                {upcomingEvents.length > 0 ? (
+                                    <Card className="p-6">
+                                        <SectionHeader
+                                            title="Upcoming & recent milestones"
+                                            subtitle="From your venture calendar (deadlines, launches, meetings)."
+                                        />
+                                        <ul className="space-y-2">
+                                            {upcomingEvents.map((ev) => (
+                                                <li
+                                                    key={ev.id}
+                                                    className="flex items-start justify-between gap-3 rounded-lg border border-[var(--border)] bg-[rgba(255,255,255,0.05)] px-3 py-2.5"
+                                                    style={{ borderColor: THEME.border.subtle }}
+                                                >
+                                                    <div className="min-w-0">
+                                                        <p className="text-sm font-medium" style={{ color: THEME.text.primary }}>
+                                                            {ev.title}
+                                                        </p>
+                                                        <p className="mt-0.5 text-[11px]" style={{ color: THEME.text.tertiary }}>
+                                                            {new Date(ev.date).toLocaleString(undefined, {
+                                                                dateStyle: 'medium',
+                                                                timeStyle: 'short',
+                                                            })}{' '}
+                                                            · {ev.type}
+                                                        </p>
+                                                    </div>
+                                                    <Calendar className="h-4 w-4 shrink-0" style={{ color: THEME.text.muted }} aria-hidden />
+                                                </li>
+                                            ))}
+                                        </ul>
+                                        <button
+                                            type="button"
+                                            onClick={() => switchRoom('calendar')}
+                                            className="mt-4 text-xs font-medium underline-offset-2 transition hover:underline"
+                                            style={{ color: THEME.accent.info }}
+                                        >
+                                            Open calendar →
+                                        </button>
+                                    </Card>
+                                ) : null}
+                                {kanbanTasks.length > 0 ? (
+                                    <Card className="p-6">
+                                        <SectionHeader
+                                            title="Delivery board"
+                                            subtitle="Kanban snapshot for this venture."
+                                        />
+                                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                                            {(
+                                                [
+                                                    ['To do', kanbanCounts.todo],
+                                                    ['In progress', kanbanCounts.in_progress],
+                                                    ['Next', kanbanCounts.next],
+                                                    ['Done', kanbanCounts.completed],
+                                                ] as const
+                                            ).map(([label, n]) => (
+                                                <div
+                                                    key={label}
+                                                    className="rounded-xl border border-[var(--border)] bg-[rgba(255,255,255,0.06)] px-3 py-3 text-center"
+                                                    style={{ borderColor: THEME.border.subtle }}
+                                                >
+                                                    <p className="text-2xl font-semibold tabular-nums" style={{ color: THEME.text.primary }}>
+                                                        {n}
+                                                    </p>
+                                                    <p className="mt-1 text-[10px]" style={{ color: THEME.text.muted }}>{label}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => switchRoom('pm')}
+                                            className="mt-4 text-xs font-medium underline-offset-2 transition hover:underline"
+                                            style={{ color: THEME.accent.tertiary }}
+                                        >
+                                            Open product desk →
+                                        </button>
+                                    </Card>
+                                ) : null}
+                            </div>
+                        )}
+
+                        {/* MAIN DASHBOARD GRID */}
+                        <div className="grid gap-6 lg:grid-cols-3">
+                            {/* LEFT COLUMN - PROGRESS & STATUS */}
+                            <div className="space-y-6 lg:col-span-2">
+                                {/* EXECUTION PROGRESS */}
+                                <Card className="p-6">
+                                    <SectionHeader
+                                        title="Execution Progress"
+                                        subtitle="Track your venture's strategic milestones"
+                                    />
+                                    <div className="space-y-6">
+                                        <div>
+                                            <div className="mb-2 flex items-center justify-between text-sm">
+                                                <span style={{ color: THEME.text.secondary }}>Phase Completion</span>
+                                                <span style={{ color: THEME.text.primary }}>
+                                                    {phaseDone}/{phaseTotal}
+                                                </span>
+                                            </div>
+                                            <ProgressBar value={phaseDone} max={phaseTotal || 1} color={THEME.chart.violet} />
+                                        </div>
+                                        <div>
+                                            <div className="mb-2 flex items-center justify-between text-sm">
+                                                <span style={{ color: THEME.text.secondary }}>Priority Completion</span>
+                                                <span style={{ color: THEME.text.primary }}>
+                                                    {priDone}/{priTotal}
+                                                </span>
+                                            </div>
+                                            <ProgressBar value={priDone} max={priTotal || 1} color={THEME.chart.emerald} />
+                                        </div>
+                                    </div>
+                                </Card>
+
+                                {/* QUICK ACTIONS - Interactive Grid */}
+                                <InteractiveCard className="p-6" glowColor="rgba(139,92,246,0.3)">
+                                    <SectionHeader
+                                        title="Quick Actions"
+                                        subtitle="Navigate to key workspaces"
+                                    />
+                                    <QuickActionGrid
+                                        columns={3}
+                                        actions={[
+                                            {
+                                                id: 'ceo',
+                                                label: 'CEO Desk',
+                                                description: 'Strategy & vision',
+                                                icon: <Lightbulb className="h-4 w-4" />,
+                                                color: THEME.chart.violet,
+                                                onClick: () => switchRoom('ceo'),
+                                            },
+                                            {
+                                                id: 'scout',
+                                                label: 'Scout Desk',
+                                                description: 'Market intelligence',
+                                                icon: <Globe className="h-4 w-4" />,
+                                                color: THEME.chart.blue,
+                                                onClick: () => switchRoom('scout'),
+                                            },
+                                            {
+                                                id: 'finance',
+                                                label: 'Finance Desk',
+                                                description: 'Budget & metrics',
+                                                icon: <Wallet className="h-4 w-4" />,
+                                                color: THEME.chart.emerald,
+                                                onClick: () => switchRoom('accountant'),
+                                            },
+                                            {
+                                                id: 'product',
+                                                label: 'Product Desk',
+                                                description: 'Roadmap & features',
+                                                icon: <Layers className="h-4 w-4" />,
+                                                color: THEME.chart.amber,
+                                                onClick: () => switchRoom('pm'),
+                                            },
+                                            {
+                                                id: 'pa',
+                                                label: 'Assistant',
+                                                description: 'Executive support',
+                                                icon: <MessageSquare className="h-4 w-4" />,
+                                                color: THEME.chart.cyan,
+                                                onClick: () => switchRoom('personal_assistant'),
+                                            },
+                                            {
+                                                id: 'dexo',
+                                                label: 'Dexo AI',
+                                                description: 'AI command center',
+                                                icon: <Cpu className="h-4 w-4" />,
+                                                color: THEME.accent.secondary,
+                                                onClick: () => switchRoom('dexo'),
+                                            },
+                                        ]}
+                                    />
+                                </InteractiveCard>
+                            </div>
+
+                            {/* RIGHT COLUMN - STATUS & INSIGHTS */}
+                            <div className="space-y-6">
+                                {/* CIRCULAR SCORE */}
+                                <Card className="p-6 text-center">
+                                    <h3 className="mb-4 text-sm font-medium" style={{ color: THEME.text.secondary }}>
+                                        Overall Health
+                                    </h3>
+                                    <div className="flex justify-center">
+                                        <CircularProgress
+                                            value={executionScore}
+                                            color={executionScore > 70 ? THEME.accent.primary : executionScore > 40 ? THEME.accent.tertiary : THEME.accent.warning}
+                                            label="Score"
+                                        />
+                                    </div>
+                                    <p className="mt-4 text-xs" style={{ color: THEME.text.tertiary }}>
+                                        Based on strategy completeness, phases, and priorities
+                                    </p>
+                                </Card>
+
+                                {/* DESK COVERAGE */}
+                                <Card className="p-6">
+                                    <h3 className="mb-4 text-sm font-medium" style={{ color: THEME.text.secondary }}>
+                                        Desk & Dexo
+                                    </h3>
+                                    <div className="space-y-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => switchRoom('dexo')}
+                                            className="group/dexo -mx-1.5 flex w-full cursor-pointer items-center gap-3 rounded-lg border border-violet-500/20 bg-violet-500/[0.07] p-1.5 text-left ring-1 ring-violet-500/15 transition-all duration-200 hover:bg-violet-500/12"
+                                        >
+                                            <div
+                                                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-transform duration-200 group-hover/dexo:scale-110"
+                                                style={{ background: `${THEME.accent.info}22` }}
+                                            >
+                                                <Sparkles className="h-4 w-4" style={{ color: THEME.accent.info }} aria-hidden />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center justify-between gap-2 text-sm">
+                                                    <span style={{ color: THEME.text.primary }}>Dexo</span>
+                                                    <span className="flex shrink-0 items-center gap-1 text-xs font-medium" style={{ color: THEME.accent.primary }}>
+                                                        Open
+                                                        <ChevronRight className="h-3.5 w-3.5 opacity-80" aria-hidden />
+                                                    </span>
+                                                </div>
+                                                <p className="mt-1 line-clamp-2 text-[11px] leading-snug" style={{ color: THEME.text.secondary }}>
+                                                    AI co-founder — strategy, product, and delivery in one conversation
+                                                </p>
+                                            </div>
+                                        </button>
+                                        {deskCoverage.map((desk) => (
+                                            <div
+                                                key={desk.label}
+                                                className="group/desk -mx-1.5 flex cursor-default items-center gap-3 rounded-lg p-1.5 transition-all duration-200 hover:bg-[rgba(255,255,255,0.07)]"
+                                            >
+                                                <div
+                                                    className="flex h-8 w-8 items-center justify-center rounded-lg transition-transform duration-200 group-hover/desk:scale-110"
+                                                    style={{ background: `${desk.fill}15` }}
+                                                >
+                                                    <desk.icon className="h-4 w-4" style={{ color: desk.fill }} />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center justify-between gap-2 text-sm">
+                                                        <span style={{ color: THEME.text.primary }}>{desk.label}</span>
+                                                        <span
+                                                            className="flex shrink-0 items-center gap-1.5 text-xs font-medium"
+                                                        style={{ color: desk.pct === 100 ? THEME.accent.primary : THEME.text.secondary }}
+                                                        >
+                                                            {desk.pct === 100 && (
+                                                                <span className="relative flex h-1.5 w-1.5">
+                                                                    <span className="absolute inline-flex h-full w-full rounded-full opacity-50" style={{ background: THEME.accent.primary, animation: 'ping 2s cubic-bezier(0,0,0.2,1) infinite' }} />
+                                                                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full" style={{ background: THEME.accent.primary }} />
+                                                                </span>
+                                                            )}
+                                                            {desk.pct === 100 ? 'Documented' : 'Needs detail'}
+                                                        </span>
+                                                    </div>
+                                                    <p className="mt-1 line-clamp-2 text-[11px] leading-snug" style={{ color: THEME.text.secondary }}>
+                                                        {desk.hint}
+                                                    </p>
+                                                    <div
+                                                        className="mt-1.5 h-1 overflow-hidden rounded-full"
+                                                        style={{ background: 'rgba(46,41,34,0.08)' }}
+                                                    >
+                                                        <div
+                                                            className="h-full rounded-full transition-all duration-700 ease-out"
+                                                            style={{
+                                                                width: `${desk.pct}%`,
+                                                                background: `linear-gradient(90deg, ${desk.fill}, ${desk.fill}CC)`,
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </Card>
+
+                                {/* RECENT ACTIVITY */}
+                                <Card className="p-6">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-sm font-medium" style={{ color: THEME.text.secondary }}>
+                                            Recent Activity
+                                        </h3>
+                                        <span className="relative flex h-2 w-2">
+                                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-40" style={{ background: THEME.accent.primary }} />
+                                            <span className="relative inline-flex h-2 w-2 rounded-full" style={{ background: THEME.accent.primary }} />
+                                        </span>
+                                    </div>
+                                    <div className="space-y-1">
+                                        {systemLogs.slice(0, 5).map((log, i) => (
+                                            <div
+                                                key={log.id}
+                                                className="group/activity flex cursor-default items-start gap-3 rounded-lg p-2 transition-all duration-200 hover:bg-[rgba(255,255,255,0.07)]"
+                                                style={{
+                                                    animationDelay: `${i * 60}ms`,
+                                                }}
+                                            >
+                                                <div
+                                                    className="mt-0.5 h-2 w-2 rounded-full shrink-0 transition-transform duration-200 group-hover/activity:scale-125"
+                                                    style={{
+                                                        background:
+                                                            i === 0
+                                                                ? THEME.accent.primary
+                                                                : i === 1
+                                                                    ? THEME.accent.secondary
+                                                                    : THEME.text.muted,
+                                                    }}
+                                                />
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="truncate text-xs transition-colors duration-200 group-hover/activity:text-[var(--text-primary)]" style={{ color: THEME.text.secondary }}>
+                                                        {log.message}
+                                                    </p>
+                                                    <p className="mt-0.5 text-[10px]" style={{ color: THEME.text.tertiary }}>
+                                                        {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    </p>
+                                                </div>
+                                                <ArrowRight className="h-3 w-3 shrink-0 mt-0.5 opacity-0 transition-all duration-200 group-hover/activity:opacity-50 group-hover/activity:translate-x-0.5" style={{ color: THEME.text.tertiary }} />
+                                            </div>
+                                        ))}
+                                        {systemLogs.length === 0 && (
+                                            <div className="py-6 text-center">
+                                                <p className="text-xs" style={{ color: THEME.text.tertiary }}>
+                                                    No recent activity
+                                                </p>
+                                                <p className="mt-1 text-[10px]" style={{ color: THEME.text.muted }}>
+                                                    Run Staff Sync to generate insights
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </Card>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* ANALYTICS TAB */}
+                {activeTab === 'analytics' && (
+                    <AnalyticsTab
+                        phasePieData={phasePieData}
+                        priorityPieData={priorityPieData}
+                        executionScore={executionScore}
+                        businessImpact={businessImpact}
+                        chartUid={chartUid}
+                        activeProject={activeProject}
+                        agents={agents}
+                        activeRoom={activeRoom}
+                        switchRoom={switchRoom}
+                    />
+                )}
+
+                {/* ACTIVITY TAB */}
+                {activeTab === 'activity' && (
+                    <ActivityTab
+                        systemLogs={systemLogs}
+                        chartUid={chartUid}
+                    />
+                )}
+
+                {activeTab === 'dexo_daily' && (
+                    <div className="space-y-6">
+                        <DexoOpsPanel activeProject={activeProject} />
+                        <DexoDailyBriefPanel activeProject={activeProject} autoRunPulse />
+                    </div>
+                )}
+            </main>
+
+        </div>
+    );
+}
+
+// ============================================================================
+// SUB-COMPONENTS
+// ============================================================================
+
+const PORTFOLIO_DESK_ACCENTS: Record<'ceo' | 'accountant' | 'pm' | 'cmo' | 'scout', string> = {
+    ceo: THEME.chart.violet,
+    accountant: THEME.chart.emerald,
+    pm: THEME.chart.amber,
+    cmo: THEME.chart.rose,
+    scout: THEME.chart.blue,
+};
+
+function PortfolioView({
+    allProjects,
+    systemState,
+    onNewVenture,
+    setActiveProject,
+    portfolioDashExpanded,
+    setPortfolioDashExpanded,
+    chartUid,
+    switchRoom,
+}: any) {
+    const ventureCount = allProjects.length;
+    const withStrategy = allProjects.filter((p: any) => p.strategy?.trim()).length;
+    const draft = Math.max(0, allProjects.length - withStrategy);
+
+    const deskStats = useMemo(() => aggregatePortfolioDeskStats(allProjects), [allProjects]);
+
+    const portfolioComposition = [
+        { name: 'Active', value: withStrategy, fill: THEME.chart.emerald },
+        { name: 'Draft', value: draft, fill: THEME.chart.slate },
+    ].filter((d) => d.value > 0);
+
+    return (
+        <div className="min-h-screen w-full pb-24" style={{ background: THEME.bg.primary }}>
+            <header className="border-b px-6 py-8" style={{ borderColor: THEME.border.subtle }}>
+                <div className="mx-auto max-w-7xl">
+                    <div className="flex items-center gap-3">
+                        <div
+                            className="flex h-12 w-12 items-center justify-center rounded-xl"
+                            style={{ background: 'rgba(139,92,246,0.1)' }}
+                        >
+                            <LayoutDashboard className="h-6 w-6" style={{ color: THEME.accent.secondary }} />
+                        </div>
+                        <div>
+                            <h1 className="text-2xl font-semibold tracking-tight" style={{ color: THEME.text.primary }}>
+                                Executive Overview
+                            </h1>
+                            <p className="mt-1 text-sm" style={{ color: THEME.text.secondary }}>
+                                Portfolio dashboard · {ventureCount} ventures
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main className="mx-auto max-w-7xl px-6 py-8">
+                {/* WELCOME CARD */}
+                <Card className="mb-8 p-8">
+                    <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+                        <div>
+                            <h2 className="text-xl font-semibold" style={{ color: THEME.text.primary }}>
+                                Welcome to your portfolio
+                            </h2>
+                            <p className="mt-2 max-w-xl" style={{ color: THEME.text.secondary }}>
+                                Manage all your ventures from one place. Select a venture to view detailed analytics,
+                                or create a new one to get started.
+                            </p>
+                        </div>
+                        {onNewVenture && (
+                            <button
+                                onClick={onNewVenture}
+                                className="flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-medium transition-all hover:opacity-90"
+                                style={{ background: THEME.accent.primary, color: '#000' }}
+                            >
+                                <Sparkles className="h-4 w-4" />
+                                New Venture
+                            </button>
+                        )}
+                    </div>
+                </Card>
+
+                {/* PORTFOLIO METRICS */}
+                <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <MetricCard label="Total Ventures" value={ventureCount} icon={Briefcase} color="violet" />
+                    <MetricCard label="Active Records" value={withStrategy} icon={CheckCircle2} color="emerald" />
+                    <MetricCard label="Drafts" value={draft} icon={FileText} color="amber" />
+                    <MetricCard
+                        label="Last Sync"
+                        value={`${Math.max(0, Math.floor((Date.now() - systemState.lastSync) / 60000))}m`}
+                        icon={Clock}
+                        color="blue"
+                    />
+                </div>
+
+                {/* PORTFOLIO COMPOSITION */}
+                <div className="grid gap-6 lg:grid-cols-2">
+                    <Card className="p-6">
+                        <SectionHeader title="Portfolio Composition" />
+                        {portfolioComposition.length > 0 ? (
+                            <div className="h-64">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <RePieChart>
+                                        <Pie
+                                            data={portfolioComposition}
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={60}
+                                            outerRadius={90}
+                                            paddingAngle={4}
+                                            dataKey="value"
+                                        >
+                                            {portfolioComposition.map((entry: any, i: number) => (
+                                                <Cell key={`cell-${i}`} fill={entry.fill} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip {...CHART_TOOLTIP} />
+                                        <Legend />
+                                    </RePieChart>
+                                </ResponsiveContainer>
+                            </div>
+                        ) : (
+                            <p className="py-12 text-center text-sm" style={{ color: THEME.text.tertiary }}>
+                                No ventures yet
+                            </p>
+                        )}
+                    </Card>
+
+                    <Card className="p-6">
+                        <SectionHeader
+                            title="Research Desks"
+                            subtitle="Coverage across ventures updates as you add detail or run Staff Sync."
+                        />
+                        <div className="space-y-3">
+                            {(['ceo', 'accountant', 'pm', 'cmo', 'scout'] as const).map((role) => {
+                                const row = RESEARCH_STAFF[role];
+                                const stat = deskStats[role];
+                                const accent = PORTFOLIO_DESK_ACCENTS[role];
+                                const pct = stat.total === 0 ? 0 : Math.round(stat.coverage * 100);
+                                const subtitle =
+                                    stat.total === 0
+                                        ? row.navHint
+                                        : `${stat.documented}/${stat.total} ventures documented${
+                                              stat.snapshotSnippet
+                                                  ? ` · ${stat.snapshotSnippet}`
+                                                  : ` · ${row.navHint}`
+                                          }`;
+                                return (
+                                    <button
+                                        type="button"
+                                        key={role}
+                                        onClick={() => {
+                                            const target = firstProjectNeedingRole(allProjects, role);
+                                            if (target) {
+                                                setActiveProject(target);
+                                                switchRoom(role);
+                                            }
+                                        }}
+                                        className="flex w-full items-center gap-3 rounded-xl border border-[var(--border)] bg-[rgba(255,255,255,0.06)] p-3 text-left transition-colors hover:bg-[rgba(255,255,255,0.09)]"
+                                        style={{ borderColor: THEME.border.subtle }}
+                                    >
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-sm font-medium" style={{ color: THEME.text.primary }}>
+                                                    {row.navTitle}
+                                                </p>
+                                                <span
+                                                    className="rounded-full px-2 py-0.5 text-[10px] font-medium tabular-nums"
+                                                    style={{
+                                                        background: `${accent}18`,
+                                                        color: accent,
+                                                    }}
+                                                >
+                                                    {stat.total === 0 ? '—' : `${pct}%`}
+                                                </span>
+                                            </div>
+                                            <p
+                                                className="mt-1 line-clamp-2 text-xs leading-snug"
+                                                style={{ color: THEME.text.secondary }}
+                                            >
+                                                {subtitle}
+                                            </p>
+                                            {stat.total > 0 && (
+                                                <div
+                                                    className="mt-2 h-1 w-full overflow-hidden rounded-full"
+                                                    style={{ background: 'rgba(255,255,255,0.08)' }}
+                                                >
+                                                    <div
+                                                        className="h-full rounded-full transition-all duration-500"
+                                                        style={{
+                                                            width: `${pct}%`,
+                                                            background: `linear-gradient(90deg, ${accent}99, ${accent})`,
+                                                        }}
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                        <ArrowRight className="h-4 w-4 shrink-0" style={{ color: THEME.text.muted }} />
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </Card>
+                </div>
+
+                <PortfolioDailyIntelSection allProjects={allProjects} onOpenVenture={setActiveProject} />
+
+                {/* VENTURE LIST */}
+                <div className="mt-8">
+                    <SectionHeader title="Your Ventures" />
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {allProjects.map((project: any) => (
+                            <Card
+                                key={project.id}
+                                interactive
+                                onClick={() => setActiveProject(project)}
+                                className="p-5"
+                            >
+                                <div className="flex items-start justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div
+                                            className="flex h-10 w-10 items-center justify-center rounded-xl"
+                                            style={{ background: 'rgba(255,255,255,0.06)' }}
+                                        >
+                                            <Briefcase className="h-5 w-5" style={{ color: THEME.text.secondary }} />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-medium" style={{ color: THEME.text.primary }}>
+                                                {project.name}
+                                            </h3>
+                                            <p className="text-xs" style={{ color: THEME.text.tertiary }}>
+                                                {new Date(project.timestamp).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <StatusBadge status={project.strategy ? 'active' : 'pending'} />
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
+                    {allProjects.length === 0 && (
+                        <Card className="p-12 text-center">
+                            <p style={{ color: THEME.text.secondary }}>
+                                No ventures yet. Create your first venture to get started.
+                            </p>
+                        </Card>
+                    )}
+                </div>
+            </main>
+        </div>
+    );
+}
+
+function AnalyticsTab({
+    phasePieData,
+    priorityPieData,
+    executionScore,
+    businessImpact,
+    chartUid,
+    activeProject,
+    agents,
+    activeRoom,
+    switchRoom,
+}: any) {
+    return (
+        <div className="space-y-6">
+            <div className="grid gap-6 lg:grid-cols-2">
+                {/* PHASE STATUS */}
+                <Card className="p-6">
+                    <SectionHeader
+                        title="Phase Status"
+                        subtitle="Timeline distribution across phases"
+                    />
+                    {phasePieData.length > 0 ? (
+                        <div className="h-72">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <RePieChart>
+                                    <Pie
+                                        data={phasePieData}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={70}
+                                        outerRadius={100}
+                                        paddingAngle={4}
+                                        dataKey="value"
+                                    >
+                                        {phasePieData.map((entry: any, i: number) => (
+                                            <Cell key={`${chartUid}-ph-${i}`} fill={entry.fill} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip {...CHART_TOOLTIP} />
+                                        <Legend />
+                                    </RePieChart>
+                                </ResponsiveContainer>
+                            </div>
+                        ) : (
+                            <div className="flex h-72 flex-col items-center justify-center">
+                                <Layers className="h-12 w-12 opacity-20" style={{ color: THEME.text.muted }} />
+                            <p className="mt-4 text-sm" style={{ color: THEME.text.tertiary }}>
+                                No phases defined yet
+                            </p>
+                        </div>
+                    )}
+                </Card>
+
+                {/* PRIORITY COMPLETION */}
+                <Card className="p-6">
+                    <SectionHeader
+                        title="Priority Completion"
+                        subtitle="Open vs completed priorities"
+                    />
+                    {priorityPieData.length > 0 ? (
+                        <div className="h-72">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <RePieChart>
+                                    <Pie
+                                        data={priorityPieData}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={70}
+                                        outerRadius={100}
+                                        paddingAngle={4}
+                                        dataKey="value"
+                                    >
+                                        {priorityPieData.map((entry: any, i: number) => (
+                                            <Cell key={`${chartUid}-pr-${i}`} fill={entry.fill} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip {...CHART_TOOLTIP} />
+                                        <Legend />
+                                    </RePieChart>
+                                </ResponsiveContainer>
+                            </div>
+                        ) : (
+                            <div className="flex h-72 flex-col items-center justify-center">
+                                <Target className="h-12 w-12 opacity-20" style={{ color: THEME.text.muted }} />
+                            <p className="mt-4 text-sm" style={{ color: THEME.text.tertiary }}>
+                                No priorities listed yet
+                            </p>
+                        </div>
+                    )}
+                </Card>
+            </div>
+
+            {/* STAFF SNAPSHOT */}
+            {activeProject.agentStaffSnapshot && (
+                <Card className="p-6">
+                    <SectionHeader
+                        title="AI Staff Research"
+                        subtitle={`Last synced: ${new Date(activeProject.agentStaffSnapshot.at).toLocaleString()}`}
+                    />
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {[
+                            ['Strategy', activeProject.agentStaffSnapshot.desks.ceo, THEME.chart.violet],
+                            ['Product', activeProject.agentStaffSnapshot.desks.pm, THEME.chart.amber],
+                            ['Finance', activeProject.agentStaffSnapshot.desks.accountant, THEME.chart.emerald],
+                            ['Market', activeProject.agentStaffSnapshot.desks.scout, THEME.chart.blue],
+                            ['Growth', activeProject.agentStaffSnapshot.desks.cmo, THEME.chart.rose],
+                        ].map(([label, text, color]) =>
+                            text?.trim() ? (
+                                <div
+                                    key={label as string}
+                                    className="rounded-xl p-4"
+                                    style={{
+                                        background: 'rgba(255,255,255,0.04)',
+                                        borderLeft: `3px solid ${color}`,
+                                    }}
+                                >
+                                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide" style={{ color: THEME.text.muted }}>
+                                        {label as string}
+                                    </p>
+                                    <p className="text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
+                                        {text as string}
+                                    </p>
+                                </div>
+                            ) : null
+                        )}
+                    </div>
+                </Card>
+            )}
+
+            {/* DESK NAVIGATION */}
+            <Card className="p-6">
+                <SectionHeader title="Operational Desks" />
+                <div className="grid gap-3 sm:grid-cols-2">
+                    {[
+                        { agent: agents.ceo, room: 'ceo', status: activeProject.strategy ? 'active' : 'pending', accent: THEME.chart.violet },
+                        { agent: agents.scout, room: 'scout', status: activeProject.marketInsights ? 'active' : 'idle', accent: THEME.chart.blue },
+                        { agent: agents.accountant, room: 'accountant', status: activeProject.budget ? 'active' : 'pending', accent: THEME.chart.emerald },
+                        { agent: agents.pm, room: 'pm', status: activeProject.productPlan ? 'active' : 'idle', accent: THEME.chart.amber },
+                    ].map(({ agent, room, status, accent }) => (
+                        <button
+                            key={room}
+                            onClick={() => switchRoom(room)}
+                            className="flex items-center gap-4 rounded-xl border border-[var(--border)] bg-[rgba(255,255,255,0.06)] p-4 text-left transition-all hover:bg-[rgba(255,255,255,0.09)]"
+                            style={{ borderColor: THEME.border.subtle }}
+                        >
+                            <div
+                                className="flex h-12 w-12 items-center justify-center rounded-xl"
+                                style={{ background: `${accent}15` }}
+                            >
+                                {agent.icon}
+                            </div>
+                            <div className="flex-1">
+                                <p className="font-medium" style={{ color: THEME.text.primary }}>
+                                    {agent.title}
+                                </p>
+                                <div className="mt-1 flex items-center gap-2">
+                                    <span
+                                        className="h-2 w-2 rounded-full"
+                                        style={{ background: status === 'active' ? accent : THEME.text.muted }}
+                                    />
+                                    <span className="text-xs capitalize" style={{ color: THEME.text.secondary }}>
+                                        {status}
+                                    </span>
+                                </div>
+                            </div>
+                            <ChevronRight className="h-5 w-5" style={{ color: THEME.text.muted }} />
+                        </button>
+                    ))}
+                </div>
+            </Card>
+        </div>
+    );
+}
+
+function ActivityTab({ systemLogs, chartUid }: any) {
+    const activityBySource = useMemo(() => {
+        const m = new Map<string, number>();
+        for (const log of systemLogs) {
+            const k = (log.source && String(log.source).trim()) || 'Office';
+            m.set(k, (m.get(k) || 0) + 1);
+        }
+        return Array.from(m.entries())
+            .map(([name, count]) => ({ name, count }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 8);
+    }, [systemLogs]);
+
+    return (
+        <div className="space-y-6">
+            {/* ACTIVITY CHART */}
+            <Card className="p-6">
+                <SectionHeader title="Activity by Source" />
+                {activityBySource.length > 0 ? (
+                    <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={activityBySource} margin={{ top: 8, right: 8, left: 0, bottom: 24 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.border.subtle} vertical={false} />
+                                <XAxis
+                                    dataKey="name"
+                                    tick={{ fontSize: 11, fill: THEME.text.tertiary }}
+                                    interval={0}
+                                    angle={-20}
+                                    textAnchor="end"
+                                />
+                                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: THEME.text.tertiary }} />
+                                <Tooltip {...CHART_TOOLTIP} />
+                                <Bar dataKey="count" radius={[6, 6, 0, 0]} maxBarSize={48}>
+                                    {activityBySource.map((_, i) => (
+                                        <Cell
+                                            key={i}
+                                            fill={[
+                                                THEME.chart.emerald,
+                                                THEME.chart.violet,
+                                                THEME.chart.blue,
+                                                THEME.chart.amber,
+                                                THEME.chart.rose,
+                                                THEME.chart.cyan,
+                                            ][i % 6]}
+                                        />
+                                    ))}
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                ) : (
+                    <div className="flex h-80 flex-col items-center justify-center">
+                        <Activity className="h-12 w-12 opacity-20" style={{ color: THEME.text.muted }} />
+                        <p className="mt-4 text-sm" style={{ color: THEME.text.tertiary }}>
+                            No activity data yet
+                        </p>
+                    </div>
+                )}
+            </Card>
+
+            {/* ACTIVITY LOG */}
+            <Card className="p-6">
+                <SectionHeader title="Activity Log" />
+                <div className="space-y-3">
+                    {systemLogs.length === 0 ? (
+                        <p className="py-8 text-center text-sm" style={{ color: THEME.text.tertiary }}>
+                            No activity recorded yet
+                        </p>
+                    ) : (
+                        systemLogs.map((log: any) => (
+                            <div
+                                key={log.id}
+                                className="flex items-start gap-4 rounded-xl border p-4"
+                                style={{ borderColor: THEME.border.subtle }}
+                            >
+                                <div
+                                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                                    style={{ background: 'rgba(255,255,255,0.06)' }}
+                                >
+                                    <Activity className="h-4 w-4" style={{ color: THEME.text.tertiary }} />
+                                </div>
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                        <span
+                                            className="rounded-full px-2 py-0.5 text-[10px] font-medium uppercase"
+                                            style={{ background: 'rgba(255,255,255,0.08)', color: THEME.text.secondary }}
+                                        >
+                                            {log.source}
+                                        </span>
+                                        <span className="text-xs" style={{ color: THEME.text.tertiary }}>
+                                            {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </span>
+                                    </div>
+                                    <p className="mt-1 text-sm" style={{ color: THEME.text.primary }}>
+                                        {log.message}
+                                    </p>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+            </Card>
+        </div>
+    );
+}
+
+// ============================================================================
+// LEGACY SUPPORT - DashMessageSection for compatibility
+// ============================================================================
+
 const DASH_OUTLINE = {
-    goal: 'border-teal-500/35 bg-gradient-to-br from-teal-500/[0.07] to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
-    staff: 'border-violet-500/35 bg-gradient-to-br from-violet-500/[0.08] to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
-    focus: 'border-amber-500/40 bg-gradient-to-br from-amber-950/35 to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
-    snapshot: 'border-cyan-500/35 bg-gradient-to-br from-cyan-500/[0.07] to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
-    signal: 'border-sky-500/35 bg-gradient-to-br from-sky-500/[0.07] to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
-    desks: 'border-fuchsia-500/30 bg-gradient-to-br from-fuchsia-500/[0.06] to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
-    next: 'border-emerald-500/35 bg-gradient-to-br from-emerald-500/[0.07] to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
-    portfolio: 'border-zinc-500/30 bg-zinc-900/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
-} as const;
+    goal: '',
+    staff: '',
+    focus: '',
+    snapshot: '',
+    signal: '',
+    desks: '',
+    next: '',
+    portfolio: '',
+};
 
 type DashOutlineKey = keyof typeof DASH_OUTLINE;
 
@@ -148,1387 +2313,14 @@ function DashMessageSection({
     className?: string;
 }) {
     return (
-        <section
-            id={id}
-            className={`scroll-mt-6 rounded-2xl border px-4 py-4 sm:px-5 sm:py-5 ${DASH_OUTLINE[outline]} ${className}`}
-        >
-            <header className="mb-4 flex gap-3">
-                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-black/20 ring-1 ring-white/[0.08]">
-                    {icon}
-                </div>
-                <div className="min-w-0 flex-1">
-                    {eyebrow ? (
-                        <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-zinc-500">{eyebrow}</p>
-                    ) : null}
-                    <h2 className={`text-sm font-semibold tracking-tight text-brand-text ${eyebrow ? 'mt-1' : ''}`}>{title}</h2>
-                    {subtitle ? <p className="mt-1 text-[11px] leading-snug text-brand-muted">{subtitle}</p> : null}
-                </div>
-            </header>
-            <div className="text-[13px] leading-relaxed text-brand-text/95">{children}</div>
-        </section>
+        <Card id={id} className={`p-6 ${className}`}>
+            <SectionHeader
+                title={title}
+                subtitle={subtitle}
+            />
+            {children}
+        </Card>
     );
 }
 
-export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
-    const {
-        activeRoom,
-        switchRoom,
-        agents,
-        activeProject,
-        systemLogs,
-        systemState,
-        allProjects,
-        setActiveProject,
-        runAgentStaffSync,
-        agentSyncRunning,
-        livingOffice,
-        refreshLivingOffice,
-        markStaffFocusLineDone,
-    } = useOffice();
-    /** Inline dashboard panel (AI playground): tiles stay visible; metrics expand below — same column as chat bar */
-    const [dashboardExpanded, setDashboardExpanded] = useState(false);
-    /** Portfolio (no venture selected): collapse dense KPI/charts into a Dashboard tile */
-    const [portfolioDashExpanded, setPortfolioDashExpanded] = useState(false);
-    const [pendingScrollId, setPendingScrollId] = useState<string | null>(null);
-    const [autoStaffSync, setAutoStaffSyncState] = useState(true);
-
-    useEffect(() => {
-        setDashboardExpanded(false);
-        setPortfolioDashExpanded(false);
-    }, [activeProject?.id]);
-
-    useEffect(() => {
-        setAutoStaffSyncState(getAutoStaffSyncEnabled());
-    }, [activeProject?.id]);
-
-    useEffect(() => {
-        if (activeRoom === 'dashboard' && activeProject?.id) {
-            void refreshLivingOffice();
-        }
-    }, [activeRoom, activeProject?.id, refreshLivingOffice]);
-
-    useEffect(() => {
-        if (!dashboardExpanded || !pendingScrollId) return;
-        const t = window.setTimeout(() => {
-            document.getElementById(pendingScrollId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            setPendingScrollId(null);
-        }, 200);
-        return () => clearTimeout(t);
-    }, [dashboardExpanded, pendingScrollId]);
-
-    const openDashboard = (scrollId?: string) => {
-        setDashboardExpanded(true);
-        if (scrollId) setPendingScrollId(scrollId);
-    };
-
-    const strategyDoc = useMemo(() => parseStrategy(activeProject?.strategy || ''), [activeProject?.strategy]);
-    const phases = strategyDoc.phases || [];
-    const priorities = strategyDoc.priorities || [];
-    const phaseDone = phases.filter((p) => p.status === 'done').length;
-    const phaseTotal = phases.length;
-    const phaseActive = phases.filter((p) => p.status === 'in_progress').length;
-    const priDone = priorities.filter((p) => p.done).length;
-    const priTotal = priorities.length;
-    const hasIntent = !!(strategyDoc.strategicIntent?.trim() || strategyDoc.vision?.trim());
-    const narrativeRich = (strategyDoc.content || '').trim().length > 80;
-
-    const executionScore = useMemo(() => {
-        const intentW = hasIntent ? 1 : 0;
-        const narW = narrativeRich ? 1 : 0;
-        const phaseW = phaseTotal ? phaseDone / phaseTotal : 0;
-        const priW = priTotal ? priDone / priTotal : 0;
-        const raw = (intentW + narW + phaseW + priW) / 4;
-        return Math.round(raw * 1000) / 10;
-    }, [hasIntent, narrativeRich, phaseDone, phaseTotal, priDone, priTotal]);
-
-    const businessImpact = useMemo(() => {
-        const strategic = computeStrategicCoverageScore(activeProject?.strategy);
-        const executionPillar = computeExecutionDeliveryScore(activeProject?.strategy);
-        const financial = computeFinancialHealthScore(activeProject?.budget);
-        return aggregateImpact([fromVenturePillarScores({ strategic, financial, execution: executionPillar })]);
-    }, [activeProject?.strategy, activeProject?.budget]);
-    const impactDeskRoute = useMemo(() => getAffectedDesks(businessImpact), [businessImpact]);
-
-    /** Same inputs as execution score — shown as bars (snapshot, not a time series). */
-    const executionBreakdown = useMemo(
-        () => [
-            { label: 'Strategic intent', value: hasIntent ? 100 : 0, fill: DASH.score.intent },
-            { label: 'Narrative depth', value: narrativeRich ? 100 : 0, fill: DASH.score.narrative },
-            {
-                label: 'Phases',
-                value: phaseTotal ? Math.round((100 * phaseDone) / phaseTotal) : 0,
-                fill: DASH.score.phases,
-            },
-            {
-                label: 'Priorities',
-                value: priTotal ? Math.round((100 * priDone) / priTotal) : 0,
-                fill: DASH.score.priorities,
-            },
-        ],
-        [hasIntent, narrativeRich, phaseTotal, phaseDone, priTotal, priDone]
-    );
-
-    const phasePieData = useMemo(() => {
-        const planned = phases.filter((p) => p.status === 'planned').length;
-        const progress = phases.filter((p) => p.status === 'in_progress').length;
-        const done = phases.filter((p) => p.status === 'done').length;
-        return [
-            { name: 'Done', value: done, fill: DASH.phase.done },
-            { name: 'In progress', value: progress, fill: DASH.phase.inProgress },
-            { name: 'Planned', value: planned, fill: DASH.phase.planned },
-        ].filter((d) => d.value > 0);
-    }, [phases]);
-
-    const priorityPieData = useMemo(() => {
-        if (!priTotal) return [];
-        const open = Math.max(0, priTotal - priDone);
-        return [
-            { name: 'Complete', value: priDone, fill: DASH.priority.complete },
-            { name: 'Open', value: open, fill: DASH.priority.open },
-        ].filter((d) => d.value > 0);
-    }, [priTotal, priDone]);
-
-    const activityBySource = useMemo(() => {
-        const m = new Map<string, number>();
-        for (const log of systemLogs) {
-            const k = (log.source && String(log.source).trim()) || 'Office';
-            m.set(k, (m.get(k) || 0) + 1);
-        }
-        return Array.from(m.entries())
-            .map(([name, count]) => ({
-                name: name.length > 20 ? `${name.slice(0, 18)}…` : name,
-                count,
-            }))
-            .sort((a, b) => b.count - a.count)
-            .map((row, i) => ({
-                ...row,
-                fill: DASH.activity[i % DASH.activity.length],
-            }));
-    }, [systemLogs]);
-
-    const deskCoverage = useMemo(
-        () => [
-            { label: 'Research strategy', pct: activeProject?.strategy?.trim() ? 100 : 0, fill: DASH.desk.ceo },
-            { label: 'Research market', pct: activeProject?.marketInsights?.trim() ? 100 : 0, fill: DASH.desk.scout },
-            { label: 'Research fund', pct: activeProject?.budget?.trim() ? 100 : 0, fill: DASH.desk.finance },
-            { label: 'Research product', pct: activeProject?.productPlan?.trim() ? 100 : 0, fill: DASH.desk.pm },
-        ],
-        [activeProject]
-    );
-
-    const portfolioComposition = useMemo(() => {
-        const withStrategy = allProjects.filter((p) => p.strategy?.trim()).length;
-        const draft = Math.max(0, allProjects.length - withStrategy);
-        return [
-            { name: 'Strategy on file', value: withStrategy, fill: DASH.portfolio.strategy },
-            { name: 'Draft', value: draft, fill: DASH.portfolio.draft },
-        ].filter((d) => d.value > 0);
-    }, [allProjects]);
-
-    const venturesByMonth = useMemo(() => {
-        const bucket = new Map<string, number>();
-        for (const p of allProjects) {
-            if (typeof p.timestamp !== 'number' || Number.isNaN(p.timestamp)) continue;
-            const d = new Date(p.timestamp);
-            if (Number.isNaN(d.getTime())) continue;
-            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-            bucket.set(key, (bucket.get(key) || 0) + 1);
-        }
-        return Array.from(bucket.entries())
-            .sort(([a], [b]) => a.localeCompare(b))
-            .map(([key, count], i) => {
-                const [y, mo] = key.split('-').map(Number);
-                const name = new Date(y, mo - 1, 1).toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
-                const fill = DASH.activity[i % DASH.activity.length];
-                return { name, count, fill };
-            });
-    }, [allProjects]);
-
-    const chartUid = useId().replace(/:/g, '');
-
-    const intentPreview =
-        strategyDoc.strategicIntent?.trim() ||
-        strategyDoc.vision?.trim() ||
-        (strategyDoc.content || '').split('\n')[0]?.trim() ||
-        '';
-
-    if (!activeProject) {
-        const ventureCount = allProjects.length;
-        const gridVentureClass =
-            ventureCount <= 1
-                ? 'mx-auto max-w-xl grid-cols-1'
-                : 'mx-auto max-w-4xl grid-cols-1 sm:grid-cols-2';
-
-        return (
-            <div className="w-full min-w-0 bg-brand-bg">
-                <div className="dash-thread flex w-full flex-col px-4 py-8 sm:px-6 sm:py-10">
-                    <header className="mb-10 flex flex-col gap-6 pb-2 sm:flex-row sm:items-end sm:justify-between">
-                        <div className="min-w-0">
-                            <p className="dash-section-label">Office · Portfolio</p>
-                            <h1 className="mt-1.5 text-2xl font-semibold tracking-tight text-brand-text sm:text-3xl">Executive overview</h1>
-                            <p className="mt-2 max-w-lg text-sm leading-relaxed text-brand-muted">
-                                Select a venture or create one. Chat stays pinned below.
-                            </p>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-3 text-[11px] text-brand-muted">
-                            <span className="inline-flex items-center gap-1.5">
-                                <Shield className="h-3.5 w-3.5 opacity-70" aria-hidden />
-                                {systemState.networkStatus === 'secure' ? 'Secure' : 'Review'}
-                            </span>
-                            <span className="text-white/15" aria-hidden>
-                                ·
-                            </span>
-                            <span className="inline-flex items-center gap-1.5">
-                                <Clock className="h-3.5 w-3.5 opacity-70" aria-hidden />
-                                {new Date().toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
-                            </span>
-                        </div>
-                    </header>
-
-                    <section aria-label="Shortcuts" className="mb-10">
-                        <p className="dash-section-label">Surfaces</p>
-                        <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap">
-                            <button
-                                type="button"
-                                onClick={() => setPortfolioDashExpanded((o) => !o)}
-                                className={`flex min-w-0 flex-1 flex-col items-start gap-4 rounded-2xl border p-5 text-left transition-all sm:min-w-[14rem] ${
-                                    portfolioDashExpanded
-                                        ? 'border-white/[0.12] bg-white/[0.05] shadow-[0_2px_12px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.07)]'
-                                        : 'border-white/[0.08] bg-white/[0.025] shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.05)] hover:border-white/[0.13] hover:bg-white/[0.04]'
-                                }`}
-                            >
-                                <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.05]">
-                                    <LayoutDashboard className="h-4.5 w-4.5 text-brand-muted" aria-hidden />
-                                </div>
-                                <div className="flex w-full items-end justify-between gap-2">
-                                    <div>
-                                        <h2 className="text-sm font-semibold text-brand-text">Dashboard</h2>
-                                        <p className="mt-0.5 text-xs leading-relaxed text-brand-muted">
-                                            KPIs, portfolio mix, and cadence.
-                                        </p>
-                                    </div>
-                                    {portfolioDashExpanded && <ChevronUp className="h-4 w-4 shrink-0 text-brand-muted/60" aria-hidden />}
-                                </div>
-                            </button>
-                            {onNewVenture && (
-                                <button
-                                    type="button"
-                                    onClick={onNewVenture}
-                                    className="flex min-w-0 flex-1 flex-col items-start gap-4 rounded-2xl border border-white/[0.08] bg-white/[0.025] p-5 text-left shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.05)] transition-all hover:border-white/[0.13] hover:bg-white/[0.04] sm:min-w-[14rem]"
-                                >
-                                    <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.05]">
-                                        <Target className="h-4.5 w-4.5 text-brand-muted" aria-hidden />
-                                    </div>
-                                    <div>
-                                        <h2 className="text-sm font-semibold text-brand-text">New venture</h2>
-                                        <p className="mt-0.5 text-xs leading-relaxed text-brand-muted">
-                                            Describe your idea — the assistant builds your record.
-                                        </p>
-                                    </div>
-                                </button>
-                            )}
-                        </div>
-                        {ventureCount > 0 && (
-                            <button
-                                type="button"
-                                onClick={() => document.getElementById('portfolio-ventures')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-                                className="mt-6 w-full rounded-2xl py-3.5 text-sm font-medium text-brand-muted transition hover:bg-white/[0.04] hover:text-brand-text"
-                            >
-                                Jump to saved ventures ({ventureCount})
-                            </button>
-                        )}
-                    </section>
-
-                    {portfolioDashExpanded && (
-                        <div className="mb-10 animate-in fade-in slide-in-from-bottom-2 duration-300 overflow-hidden rounded-3xl bg-zinc-900/25 px-1 py-1 sm:px-2">
-                            <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-4 sm:px-5">
-                                <p className="text-sm font-semibold text-brand-text">Portfolio analytics</p>
-                                <button
-                                    type="button"
-                                    onClick={() => setPortfolioDashExpanded(false)}
-                                    className="text-xs font-semibold text-brand-muted hover:text-brand-text"
-                                >
-                                    Collapse
-                                </button>
-                            </div>
-                            <div className="space-y-5 p-4 sm:p-5">
-                                <div
-                                    className="flex flex-col gap-4 sm:flex-row sm:flex-wrap"
-                                    aria-label="Portfolio summary"
-                                >
-                                    <div className="dash-msg min-w-0 flex-1 sm:min-w-[8rem]">
-                                        <p className="text-[10px] font-medium text-brand-muted/90">Ventures</p>
-                                        <p className="mt-1 font-serif text-xl font-semibold tabular-nums text-brand-text">{ventureCount}</p>
-                                    </div>
-                                    <div className="dash-msg min-w-0 flex-1 sm:min-w-[8rem]">
-                                        <p className="text-[10px] font-medium text-brand-muted/90">Office sync</p>
-                                        <p className="mt-1 font-serif text-xl font-semibold tabular-nums text-brand-text">
-                                            {Math.max(0, Math.floor((Date.now() - systemState.lastSync) / 60000))}m
-                                        </p>
-                                    </div>
-                                    <div className="dash-msg min-w-0 flex-1 sm:min-w-[8rem]">
-                                        <p className="text-[10px] font-medium text-brand-muted/90">Research areas</p>
-                                        <p className="mt-1 font-serif text-xl font-semibold tabular-nums text-brand-text">5</p>
-                                    </div>
-                                </div>
-
-                    <section className="flex flex-col gap-5" aria-label="Portfolio charts">
-                        <div className="dash-msg">
-                            <h3 className="text-[11px] font-medium text-brand-muted/90">Portfolio mix</h3>
-                            <p className="mt-1 text-[10px] text-brand-muted">
-                                <span className="text-zinc-300">Strategy</span> on file vs{' '}
-                                <span className="text-slate-400">draft</span> records
-                            </p>
-                            {portfolioComposition.length > 0 ? (
-                                <div className="dash-chart-h mt-4 w-full">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <PieChart>
-                                            <Pie
-                                                data={portfolioComposition}
-                                                cx="50%"
-                                                cy="50%"
-                                                innerRadius={44}
-                                                outerRadius={68}
-                                                paddingAngle={2}
-                                                dataKey="value"
-                                                nameKey="name"
-                                            >
-                                                {portfolioComposition.map((entry, i) => (
-                                                    <Cell key={`${chartUid}-pf-${i}`} fill={entry.fill} />
-                                                ))}
-                                            </Pie>
-                                            <Tooltip
-                                                {...CHART_TOOLTIP}
-                                                formatter={(value: number | undefined, name: string | undefined) => {
-                                                    const v = value ?? 0;
-                                                    const total = portfolioComposition.reduce((s, d) => s + d.value, 0);
-                                                    const pct = total ? Math.round((v / total) * 100) : 0;
-                                                    return [`${v} ventures (${pct}% of ${total})`, name ?? ''];
-                                                }}
-                                            />
-                                            <Legend wrapperStyle={{ fontSize: '11px' }} />
-                                        </PieChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            ) : (
-                                <p className="mt-10 py-6 text-center text-sm text-brand-muted">Add a venture to see composition.</p>
-                            )}
-                        </div>
-                        <div className="dash-msg">
-                            <h3 className="text-[11px] font-medium text-brand-muted/90">New ventures by month</h3>
-                            <p className="mt-1 text-[10px] text-brand-muted">
-                                Count of ventures per calendar month (by created date) · colors rotate for contrast only
-                            </p>
-                            {venturesByMonth.length > 0 ? (
-                                <div className="dash-chart-h mt-4 w-full">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart data={venturesByMonth} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
-                                            <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" vertical={false} />
-                                            <XAxis dataKey="name" tick={{ fontSize: 9, fill: '#71717a' }} interval={0} />
-                                            <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: '#a1a1aa' }} width={32} />
-                                            <Tooltip {...CHART_TOOLTIP} formatter={(v: number | undefined) => [v ?? 0, 'Ventures']} />
-                                            <Bar dataKey="count" radius={[4, 4, 0, 0]} maxBarSize={40}>
-                                                {venturesByMonth.map((e, i) => (
-                                                    <Cell key={`${chartUid}-vm-${i}`} fill={e.fill} />
-                                                ))}
-                                            </Bar>
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            ) : (
-                                <p className="mt-10 py-6 text-center text-sm text-brand-muted">No venture timestamps yet.</p>
-                            )}
-                        </div>
-                    </section>
-                            </div>
-                        </div>
-                    )}
-
-                    <section id="portfolio-ventures" className="scroll-mt-8">
-                        <div className="mb-5">
-                            <h2 className="dash-section-label">
-                                {ventureCount > 0 ? 'Your ventures' : 'No ventures yet'}
-                            </h2>
-                            <p className="mt-1 text-sm text-brand-muted">
-                                {ventureCount > 0
-                                    ? 'Open one to continue in this workspace — chat stays below.'
-                                    : 'Use New venture (card or sidebar) — chat-first setup in Personal Assistant.'}
-                            </p>
-                        </div>
-
-                        {ventureCount > 0 ? (
-                            <div className={`grid gap-5 text-left ${gridVentureClass}`}>
-                                {allProjects.map((project) => (
-                                    <button
-                                        key={project.id ?? `${project.name}-${project.timestamp}`}
-                                        type="button"
-                                        onClick={() => setActiveProject(project)}
-                                        className="executive-card-interactive group relative flex w-full items-center gap-4 rounded-2xl p-5 text-left sm:p-5"
-                                    >
-                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.05] transition-colors group-hover:bg-white/[0.08]">
-                                            <Briefcase className="h-4.5 w-4.5 text-brand-muted" aria-hidden />
-                                        </div>
-                                        <div className="min-w-0 flex-1">
-                                            <h3 className="truncate text-sm font-semibold text-brand-text">{project.name}</h3>
-                                            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-brand-muted">
-                                                <span>
-                                                    {typeof project.timestamp === 'number' &&
-                                                    !Number.isNaN(project.timestamp)
-                                                        ? new Date(project.timestamp).toLocaleDateString()
-                                                        : '—'}
-                                                </span>
-                                                <span
-                                                    className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-medium ${
-                                                        project.strategy
-                                                            ? 'border border-violet-900/50 bg-violet-950/30 text-violet-400/90'
-                                                            : 'border border-brand-border bg-brand-input/90 text-brand-muted'
-                                                    }`}
-                                                >
-                                                    {project.strategy ? 'Active' : 'Draft'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <ChevronRight className="h-4 w-4 shrink-0 text-brand-muted/50 transition group-hover:translate-x-0.5 group-hover:text-brand-muted" aria-hidden />
-                                    </button>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="executive-empty dash-msg px-6 py-12 text-center">
-                                <p className="mx-auto max-w-sm text-sm leading-relaxed text-brand-muted">
-                                    No ventures yet — use <span className="text-brand-muted">New venture</span> on the left or the
-                                    card above (opens Personal Assistant).
-                                </p>
-                            </div>
-                        )}
-                    </section>
-
-                    <DashMessageSection
-                        outline="portfolio"
-                        icon={<LayoutGrid className="h-4 w-4 text-zinc-400" aria-hidden />}
-                        eyebrow="Portfolio"
-                        title="Research desks"
-                        subtitle="What each area saves in your venture"
-                        className="mt-8"
-                    >
-                        <ul className="grid gap-2 sm:grid-cols-2">
-                            {(['ceo', 'accountant', 'pm', 'cmo', 'scout'] as const satisfies readonly ResearchStaffRole[]).map((role) => {
-                                const row = RESEARCH_STAFF[role];
-                                return (
-                                    <li
-                                        key={role}
-                                        className="flex flex-col gap-0.5 rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2.5 ring-1 ring-white/[0.04]"
-                                    >
-                                        <span className="text-[11px] font-medium leading-snug text-brand-text">{row.navTitle}</span>
-                                        <span className="min-w-0 text-[10px] leading-snug text-brand-muted">{row.navHint}</span>
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                    </DashMessageSection>
-                </div>
-            </div>
-        );
-    }
-
-    return (
-        <div className="w-full min-w-0 bg-brand-bg px-4 py-6 pb-14 font-sans sm:px-5 sm:py-8">
-            <div className="dash-thread space-y-6 pb-4 animate-in fade-in duration-500">
-                        <header className="flex flex-col gap-5 pb-1 sm:flex-row sm:items-end sm:justify-between">
-                            <div className="min-w-0">
-                                <div className="mb-2 flex items-center gap-2.5">
-                                    <span
-                                        className={`h-2 w-2 shrink-0 rounded-full ${systemState.networkStatus === 'secure' ? 'bg-zinc-400' : 'bg-brand-muted/60'}`}
-                                        aria-hidden
-                                    />
-                                    <span className="dash-section-label !mb-0">Executive overview</span>
-                                </div>
-                                <h1 className="text-2xl font-semibold tracking-tight text-brand-text sm:text-3xl">{activeProject.name}</h1>
-                                <p className="mt-2 max-w-xl text-[13px] leading-snug text-brand-muted">
-                                    Office brief below · open <span className="text-brand-text/85">Dashboard</span> for charts and staff output.
-                                </p>
-                            </div>
-                            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-                                <button
-                                    type="button"
-                                    onClick={() => runAgentStaffSync()}
-                                    disabled={agentSyncRunning}
-                                    title="Run all AI desks: research + merge into market intel, finance notes, directives, kanban, calendar"
-                                    className="inline-flex items-center justify-center gap-2 rounded-full bg-white/[0.08] px-4 py-2 text-xs font-medium text-brand-text transition hover:bg-white/[0.12] disabled:opacity-50"
-                                >
-                                    <RefreshCw className={`h-3.5 w-3.5 ${agentSyncRunning ? 'animate-spin' : ''}`} aria-hidden />
-                                    {agentSyncRunning ? 'Staff syncing…' : 'Sync AI staff'}
-                                </button>
-                                <WorkspaceAiButton label="Research across desks (assistant)" />
-                                <label className="inline-flex cursor-pointer select-none items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-[11px] text-brand-muted transition hover:bg-white/[0.07]">
-                                    <input
-                                        type="checkbox"
-                                        checked={autoStaffSync}
-                                        onChange={(e) => {
-                                            const on = e.target.checked;
-                                            setAutoStaffSyncEnabled(on);
-                                            setAutoStaffSyncState(on);
-                                        }}
-                                        className="h-3.5 w-3.5 rounded border-white/25 bg-black/30 text-brand-text focus:ring-1 focus:ring-white/20"
-                                    />
-                                    <span className="text-brand-text/90">Auto-sync staff</span>
-                                    <span className="hidden text-[10px] text-brand-muted/90 sm:inline">· 3h stale, tab visible</span>
-                                </label>
-                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-brand-muted">
-                                    <span className="inline-flex items-center gap-1.5">
-                                        <Shield className="h-3.5 w-3.5 opacity-70" aria-hidden />
-                                        {systemState.networkStatus === 'secure' ? 'Secure' : 'Review'}
-                                    </span>
-                                    <span className="inline-flex items-center gap-1.5">
-                                        <Clock className="h-3.5 w-3.5 opacity-70" aria-hidden />
-                                        {(() => {
-                                            const m = Math.floor((Date.now() - systemState.lastSync) / 60000);
-                                            if (m < 1) return 'Staff sync just now';
-                                            if (m < 120) return `${m}m since staff sync`;
-                                            const h = Math.floor(m / 60);
-                                            return `${h}h since staff sync`;
-                                        })()}
-                                    </span>
-                                </div>
-                            </div>
-                        </header>
-
-                        {/* ── Contextual guide hints ── */}
-                        <div className="flex flex-col gap-2">
-                            <GuideHint
-                                id="dash-no-strategy"
-                                when={!hasIntent && !narrativeRich}
-                                variant="tip"
-                                message="Your venture has no strategy yet. Open the CEO desk and describe your vision — the AI team can't give useful advice without it."
-                                action="Open CEO desk"
-                                onAction={() => switchRoom('ceo')}
-                            />
-                            <GuideHint
-                                id="dash-no-sync"
-                                when={!activeProject?.agentStaffSnapshot && hasIntent}
-                                variant="info"
-                                message="Run Staff Sync to activate your AI team. GPT-4o and Claude Haiku will analyse your venture simultaneously and populate all five desks."
-                                action="Sync now"
-                                onAction={() => runAgentStaffSync()}
-                            />
-                            <ActionHint
-                                id="dash-post-sync"
-                                when={!!activeProject?.agentStaffSnapshot && !agentSyncRunning}
-                                heading="Your AI team has synced"
-                                steps={[
-                                    { label: 'Review AI Team Network to see what GPT and Claude contributed', onClick: () => switchRoom('suite_intelligence') },
-                                    { label: 'Check the Focus Today checklist and complete the top item' },
-                                    { label: 'Open any desk with a new notification (bell icon) to act on it' },
-                                ]}
-                            />
-                        </div>
-
-                        <section id="exec-goal-advancement" className="scroll-mt-6 space-y-3" aria-label="Office brief">
-                            <header className="pb-0.5">
-                                <p className="dash-section-label mb-1">Office brief</p>
-                                <p className="max-w-xl text-[12px] leading-snug text-brand-muted">
-                                    Tap any row to expand.
-                                </p>
-                            </header>
-                            {livingOffice ? (
-                                <div className="flex flex-col gap-3">
-                                    <OfficeBriefPanel
-                                        tone="teal"
-                                        icon={<Target className="h-4 w-4 text-teal-300/90" aria-hidden />}
-                                        title="Goal advancement"
-                                        teaser={`${livingOffice.progress.percentage}% toward horizon · risk ${livingOffice.progress.risk} · score, horizon, and where to update`}
-                                    >
-                                        <GoalAdvanceCard
-                                            detailOnly
-                                            progress={livingOffice.progress}
-                                            suggestedFocus={livingOffice.brief.suggestedFocus}
-                                        />
-                                    </OfficeBriefPanel>
-
-                                    {(() => {
-                                        const b = livingOffice.brief;
-                                        if (!b) return null;
-                                        const hasMorning =
-                                            Boolean(b.greeting?.trim()) ||
-                                            b.priorities.length > 0 ||
-                                            b.criticalAlerts.length > 0 ||
-                                            Boolean(b.suggestedFocus?.trim());
-                                        if (!hasMorning) return null;
-                                        const teaserLine =
-                                            b.greeting?.trim() ||
-                                            b.suggestedFocus?.trim() ||
-                                            b.priorities[0] ||
-                                            (b.criticalAlerts[0] ?? 'Priorities and alerts on the desk');
-                                        return (
-                                            <OfficeBriefPanel
-                                                tone="amber"
-                                                icon={<SunMedium className="h-4 w-4 text-amber-200/90" aria-hidden />}
-                                                eyebrow="Today"
-                                                title="Morning brief"
-                                                teaser={<span className="line-clamp-2">{teaserLine}</span>}
-                                            >
-                                                <MorningBriefCard brief={b} detailOnly />
-                                            </OfficeBriefPanel>
-                                        );
-                                    })()}
-
-                                    {livingOffice.suggestedActions.length > 0 ? (
-                                        <OfficeBriefPanel
-                                            tone="sky"
-                                            icon={<Compass className="h-4 w-4 text-sky-300/90" aria-hidden />}
-                                            title="Leadership hints"
-                                            teaser={`${livingOffice.suggestedActions.length} heuristic nudges — open for summary, desks, and steps`}
-                                        >
-                                            <div className="rounded-xl border border-sky-500/20 bg-sky-500/[0.04] p-3 sm:p-4 ring-1 ring-white/[0.05]">
-                                                <p className="text-[10px] leading-snug text-brand-muted">
-                                                    Use Personal Assistant to turn these into a concrete plan.
-                                                </p>
-                                                <ul className="mt-3 space-y-2">
-                                                    {livingOffice.suggestedActions.map((a, idx) => (
-                                                        <li
-                                                            key={`${a.intent}-${idx}`}
-                                                            className="rounded-lg border border-white/[0.08] bg-black/25 px-2.5 py-2"
-                                                        >
-                                                            <p className="text-[9px] font-medium uppercase tracking-wide text-zinc-500">
-                                                                {a.intent.replace(/_/g, ' ')} · {a.targetDesks.join(', ')}
-                                                            </p>
-                                                            <p className="mt-0.5 text-[12px] leading-snug text-brand-text/95">{a.summary}</p>
-                                                            {a.proposedSteps.length > 0 ? (
-                                                                <ul className="mt-1.5 space-y-0.5 border-t border-white/[0.04] pt-1.5 text-[10px] leading-snug text-brand-muted">
-                                                                    {a.proposedSteps.map((s, i) => (
-                                                                        <li
-                                                                            key={i}
-                                                                            className="flex gap-1.5 text-[10px] leading-snug text-brand-muted"
-                                                                        >
-                                                                            <span className="shrink-0 text-brand-muted/45">·</span>
-                                                                            <span>{s}</span>
-                                                                        </li>
-                                                                    ))}
-                                                                </ul>
-                                                            ) : null}
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        </OfficeBriefPanel>
-                                    ) : null}
-
-                                    {livingOffice.notifications.length > 0 ? (
-                                        <OfficeBriefPanel
-                                            tone="zinc"
-                                            icon={<Bell className="h-4 w-4 text-zinc-400" aria-hidden />}
-                                            title="Office pulse"
-                                            teaser={
-                                                <span className="line-clamp-2">
-                                                    {livingOffice.notifications[0].desk} · {livingOffice.notifications[0].message}
-                                                </span>
-                                            }
-                                        >
-                                            <AmbientNotificationTray
-                                                items={livingOffice.notifications}
-                                                detailOnly
-                                                maxVisible={8}
-                                            />
-                                        </OfficeBriefPanel>
-                                    ) : null}
-
-                                    {livingOffice.weeklyReview ? (
-                                        <OfficeBriefPanel
-                                            tone="emerald"
-                                            icon={<CalendarRange className="h-4 w-4 text-emerald-300/80" aria-hidden />}
-                                            eyebrow="Weekly"
-                                            title="Weekly office review"
-                                            teaser={`${livingOffice.weeklyReview.completedTasks} tasks (7d) · intel ${livingOffice.weeklyReview.growthChange > 0 ? '+' : ''}${livingOffice.weeklyReview.growthChange} · churn ${livingOffice.weeklyReview.churnRisk}`}
-                                        >
-                                            <WeeklyReviewCard review={livingOffice.weeklyReview} detailOnly />
-                                        </OfficeBriefPanel>
-                                    ) : null}
-                                </div>
-                            ) : (
-                                <div className="rounded-2xl border border-dashed border-teal-500/25 bg-teal-500/[0.04] px-5 py-8 text-center">
-                                    <p className="text-sm text-brand-muted">Office metrics have not loaded yet for this venture.</p>
-                                    <button
-                                        type="button"
-                                        onClick={() => void refreshLivingOffice()}
-                                        className="mt-4 inline-flex items-center justify-center rounded-full bg-white/[0.08] px-4 py-2 text-xs font-medium text-brand-text transition hover:bg-white/[0.12]"
-                                    >
-                                        Load goal advancement
-                                    </button>
-                                </div>
-                            )}
-                        </section>
-
-                        {activeProject.agentStaffSnapshot && (
-                            <button
-                                type="button"
-                                onClick={() => openDashboard('dash-staff-snapshot')}
-                                title="Opens Dashboard panel and expands latest staff research"
-                                className="flex w-full items-center justify-between gap-3 rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-left text-sm font-medium text-brand-text transition hover:bg-white/[0.07]"
-                            >
-                                <span className="flex min-w-0 items-center gap-2.5">
-                                    <Sparkles className="h-4 w-4 shrink-0 text-brand-muted" aria-hidden />
-                                    <span className="truncate">Latest staff research</span>
-                                </span>
-                                <span className="shrink-0 text-xs text-brand-muted">Open →</span>
-                            </button>
-                        )}
-
-                        <section aria-labelledby="exec-hub-tiles">
-                            <h2 id="exec-hub-tiles" className="dash-section-label">
-                                Surfaces
-                            </h2>
-                            <p className="mb-3 text-[12px] leading-snug text-brand-muted">
-                                Quick navigation across desks and views.
-                            </p>
-                            {/* Unified panel with hairline dividers instead of scattered cards */}
-                            <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-zinc-900/40">
-                                <div className="grid grid-cols-2 divide-x divide-white/[0.06] divide-y divide-white/[0.06] sm:grid-cols-3 lg:grid-cols-6">
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setDashboardExpanded((open) => !open);
-                                            setPendingScrollId(null);
-                                        }}
-                                        className={`group flex flex-col items-start gap-2 px-4 py-4 text-left transition sm:px-5 ${
-                                            dashboardExpanded ? 'bg-zinc-800/60' : 'hover:bg-white/[0.03]'
-                                        }`}
-                                        aria-expanded={dashboardExpanded}
-                                        title="Snapshot, score, charts, staff output, activity, desks — outlined insight blocks"
-                                    >
-                                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-400">
-                                            <LayoutDashboard className="h-4 w-4" aria-hidden />
-                                        </span>
-                                        <span className="text-xs font-semibold text-brand-text">Dashboard</span>
-                                        {dashboardExpanded && <span className="text-[10px] text-cyan-400">Open</span>}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            document.getElementById('exec-goal-advancement')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                        }}
-                                        className="group flex flex-col items-start gap-2 px-4 py-4 text-left transition hover:bg-white/[0.03] sm:px-5"
-                                        title="Scroll to goal advancement brief"
-                                    >
-                                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/10 text-teal-400">
-                                            <Target className="h-4 w-4" aria-hidden />
-                                        </span>
-                                        <span className="text-xs font-semibold text-brand-text">Goals</span>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => openDashboard('dash-signal')}
-                                        className="group flex flex-col items-start gap-2 px-4 py-4 text-left transition hover:bg-white/[0.03] sm:px-5"
-                                        title="Opens Dashboard panel to activity charts and log"
-                                    >
-                                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-400">
-                                            <Activity className="h-4 w-4" aria-hidden />
-                                        </span>
-                                        <span className="text-xs font-semibold text-brand-text">Signal</span>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => openDashboard('dash-desks')}
-                                        className="group flex flex-col items-start gap-2 px-4 py-4 text-left transition hover:bg-white/[0.03] sm:px-5"
-                                        title="Opens Dashboard panel to desk shortcuts"
-                                    >
-                                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-fuchsia-500/10 text-fuchsia-400">
-                                            <LayoutGrid className="h-4 w-4" aria-hidden />
-                                        </span>
-                                        <span className="text-xs font-semibold text-brand-text">Desks</span>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => switchRoom('reports')}
-                                        className="group flex flex-col items-start gap-2 px-4 py-4 text-left transition hover:bg-white/[0.03] sm:px-5"
-                                        title="Reports and saved artifacts"
-                                    >
-                                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/10 text-violet-400">
-                                            <FileText className="h-4 w-4" aria-hidden />
-                                        </span>
-                                        <span className="text-xs font-semibold text-brand-text">Knowledge</span>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => switchRoom('calendar')}
-                                        className="group flex flex-col items-start gap-2 px-4 py-4 text-left transition hover:bg-white/[0.03] sm:px-5"
-                                        title="Milestones and events"
-                                    >
-                                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-500/10 text-rose-400">
-                                            <Calendar className="h-4 w-4" aria-hidden />
-                                        </span>
-                                        <span className="text-xs font-semibold text-brand-text">Calendar</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </section>
-
-                        {dashboardExpanded && (
-                            <div
-                                id="exec-dashboard-panel"
-                                className="animate-in fade-in slide-in-from-bottom-2 duration-300 overflow-hidden rounded-3xl bg-zinc-900/30 px-1 py-1 sm:px-2"
-                            >
-                                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.06] px-4 py-4 sm:px-5">
-                                    <div>
-                                        <p className="text-[10px] font-medium text-brand-muted/90">Workspace canvas</p>
-                                        <p className="text-sm font-semibold text-brand-text">Dashboard</p>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setDashboardExpanded(false);
-                                            setPendingScrollId(null);
-                                        }}
-                                        className="inline-flex items-center gap-2 rounded-full bg-white/[0.08] px-3 py-2 text-xs font-semibold text-brand-text transition hover:bg-white/[0.12]"
-                                    >
-                                        <ChevronUp className="h-4 w-4" aria-hidden />
-                                        Collapse
-                                    </button>
-                                </div>
-                                <div className="space-y-2 px-3 py-4 sm:px-4 sm:py-5">
-                        {activeProject.agentStaffSnapshot && (
-                            <DashMessageSection
-                                id="dash-staff-snapshot"
-                                outline="staff"
-                                icon={<Sparkles className="h-4 w-4 text-violet-300/90" aria-hidden />}
-                                eyebrow="Staff sync"
-                                title="Latest AI staff research"
-                                subtitle={new Date(activeProject.agentStaffSnapshot.at).toLocaleString()}
-                            >
-                                <p className="rounded-xl bg-black/15 px-3 py-2.5 text-sm leading-relaxed text-brand-text/95 ring-1 ring-white/[0.06]">
-                                    {activeProject.agentStaffSnapshot.summary}
-                                </p>
-                                <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                                    {(
-                                        [
-                                            ['Strategy', activeProject.agentStaffSnapshot.desks.ceo, DASH.desk.ceo],
-                                            ['Product', activeProject.agentStaffSnapshot.desks.pm, DASH.desk.pm],
-                                            ['Finance', activeProject.agentStaffSnapshot.desks.accountant, DASH.desk.finance],
-                                            ['Market', activeProject.agentStaffSnapshot.desks.scout, DASH.desk.scout],
-                                            ['Growth', activeProject.agentStaffSnapshot.desks.cmo, '#f472b6'],
-                                        ] as const
-                                    ).map(([label, text, color]) =>
-                                        text?.trim() ? (
-                                            <div
-                                                key={label}
-                                                className="min-w-0 flex-1 rounded-xl border border-white/[0.08] bg-black/20 p-3.5 sm:min-w-[11rem]"
-                                                style={{ borderLeftWidth: 3, borderLeftColor: color }}
-                                            >
-                                                <p className="text-[10px] font-medium text-brand-muted/90">{label}</p>
-                                                <p className="mt-2 text-[11px] leading-snug text-brand-text/90 whitespace-pre-wrap">
-                                                    {text}
-                                                </p>
-                                            </div>
-                                        ) : null
-                                    )}
-                                </div>
-                            </DashMessageSection>
-                        )}
-
-                        {activeProject.staffFocusToday && activeProject.staffFocusToday.length > 0 && (
-                            <DashMessageSection
-                                id="dash-focus-today"
-                                outline="focus"
-                                icon={<Zap className="h-4 w-4 text-amber-300/90" aria-hidden />}
-                                eyebrow="Today"
-                                title="Focus from staff sync"
-                                subtitle={`${activeProject.staffFocusToday.length} line${activeProject.staffFocusToday.length === 1 ? '' : 's'} · check off below`}
-                            >
-                                <p className="mb-3 text-[10px] leading-snug text-amber-100/70">
-                                    Check off or add a note — saved to journal.
-                                </p>
-                                <StaffFocusChecklist
-                                    lines={activeProject.staffFocusToday}
-                                    completedLines={activeProject.staffFocusCompletedLines || []}
-                                    onMarkDone={(line, note) => markStaffFocusLineDone(line, note)}
-                                />
-                            </DashMessageSection>
-                        )}
-
-                <DashMessageSection
-                    id="dash-snapshot"
-                    outline="snapshot"
-                    icon={<LayoutDashboard className="h-4 w-4 text-cyan-300/90" aria-hidden />}
-                    eyebrow="Venture"
-                    title="Execution snapshot"
-                    subtitle={`${executionScore}% execution index · strategy line, drivers, and charts`}
-                    className="mb-2"
-                >
-                    <div className="flex flex-col gap-6">
-                        <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/[0.04] p-3.5 sm:p-4">
-                            <p className="text-[10px] font-medium text-brand-muted/90">Strategic line</p>
-                            <p className="mt-2 line-clamp-6 text-sm leading-relaxed text-brand-text">
-                                {intentPreview || 'Set your strategic intent in the CEO desk to populate this.'}
-                            </p>
-                            <div className="mt-8 grid grid-cols-2 gap-4 border-t border-white/[0.06] pt-6 sm:grid-cols-3">
-                                <div>
-                                    <p className="text-[10px] font-medium text-brand-muted/90">Phases</p>
-                                    <p className="mt-1 font-mono text-sm text-brand-text">
-                                        {phaseTotal ? `${phaseDone}/${phaseTotal}` : '—'}
-                                        {phaseActive > 0 ? (
-                                            <span className="text-brand-muted"> · {phaseActive} active</span>
-                                        ) : null}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-[10px] font-medium text-brand-muted/90">Priorities</p>
-                                    <p className="mt-1 font-mono text-sm text-brand-text">
-                                        {priTotal ? `${priDone}/${priTotal}` : '—'}
-                                    </p>
-                                </div>
-                                <div className="col-span-2 sm:col-span-1">
-                                    <p className="text-[10px] font-medium text-brand-muted/90">Execution score</p>
-                                    <p className="mt-1 font-serif text-2xl font-semibold tabular-nums text-brand-text">{executionScore}%</p>
-                                    <p className="mt-1 text-[10px] leading-snug text-brand-muted">
-                                        Heuristic checklist index (0–100), not revenue or financial performance.
-                                    </p>
-                                    <p className="mt-2 text-[10px] leading-snug text-brand-muted/90">
-                                        Decision layer: severity{' '}
-                                        <span className="font-medium text-brand-text/90">{businessImpact.severity}</span>
-                                        {businessImpact.requiresEscalation ? (
-                                            <span className="text-amber-400/90"> · escalation suggested</span>
-                                        ) : null}
-                                        {impactDeskRoute.length ? (
-                                            <>
-                                                {' '}
-                                                · desks: {impactDeskRoute.join(', ')}
-                                            </>
-                                        ) : null}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="rounded-xl border border-cyan-500/15 bg-cyan-500/[0.03] p-3.5 sm:p-4">
-                            <div className="mb-1 flex flex-wrap items-baseline justify-between gap-2">
-                                <h3 className="text-sm font-medium text-brand-text">Score drivers</h3>
-                                <span className="text-[10px] text-brand-muted">Current snapshot · not a time series</span>
-                            </div>
-                            <p className="mb-4 text-[11px] leading-snug text-brand-muted">
-                                Each bar uses the same inputs as the composite score (binary checks + phase/priority completion).
-                            </p>
-                            <div className="dash-chart-h w-full">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart
-                                        data={executionBreakdown}
-                                        layout="vertical"
-                                        margin={{ top: 4, right: 12, left: 4, bottom: 4 }}
-                                    >
-                                        <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" horizontal={false} />
-                                        <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10, fill: '#71717a' }} />
-                                        <YAxis
-                                            type="category"
-                                            dataKey="label"
-                                            width={108}
-                                            tick={{ fontSize: 10, fill: '#a1a1aa' }}
-                                        />
-                                        <Tooltip
-                                            {...CHART_TOOLTIP}
-                                            formatter={(v: number | undefined) => [`${v ?? 0}%`, 'Driver index (snapshot)']}
-                                        />
-                                        <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={22}>
-                                            {executionBreakdown.map((e, i) => (
-                                                <Cell key={`${chartUid}-drv-${i}`} fill={e.fill} />
-                                            ))}
-                                        </Bar>
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
-                               <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 border-t border-brand-border/60 pt-3 text-[10px] text-brand-muted">
-                                <li className="inline-flex items-center gap-1.5">
-                                    <span className="h-2 w-2 rounded-sm" style={{ background: DASH.score.intent }} aria-hidden />
-                                    Direction
-                                </li>
-                                <li className="inline-flex items-center gap-1.5">
-                                    <span className="h-2 w-2 rounded-sm" style={{ background: DASH.score.narrative }} aria-hidden />
-                                    Story
-                                </li>
-                                <li className="inline-flex items-center gap-1.5">
-                                    <span className="h-2 w-2 rounded-sm" style={{ background: DASH.score.phases }} aria-hidden />
-                                    Timeline
-                                </li>
-                                <li className="inline-flex items-center gap-1.5">
-                                    <span className="h-2 w-2 rounded-sm" style={{ background: DASH.score.priorities }} aria-hidden />
-                                    Checklist
-                                </li>
-                            </ul>
-                        </div>
-
-                    <div className="mt-8 flex flex-col gap-6 lg:flex-row lg:flex-wrap">
-                        <div className="min-w-0 flex-1 rounded-xl border border-violet-500/20 bg-violet-500/[0.04] p-3.5 lg:min-w-[18rem]">
-                            <h3 className="text-sm font-medium text-brand-text">Phase status</h3>
-                            <p className="mt-0.5 text-[10px] text-brand-muted">
-                                Timeline ·{' '}
-                                <span className="text-violet-400/90">done</span> ·{' '}
-                                <span className="text-amber-400/90">active</span> ·{' '}
-                                <span className="text-slate-400">planned</span>
-                            </p>
-                            {phasePieData.length > 0 ? (
-                                <div className="dash-chart-h mt-3 w-full">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <PieChart>
-                                            <Pie
-                                                data={phasePieData}
-                                                cx="50%"
-                                                cy="50%"
-                                                innerRadius={46}
-                                                outerRadius={72}
-                                                paddingAngle={2}
-                                                dataKey="value"
-                                                nameKey="name"
-                                            >
-                                                {phasePieData.map((entry, i) => (
-                                                    <Cell key={`${chartUid}-ph-${i}`} fill={entry.fill} />
-                                                ))}
-                                            </Pie>
-                                            <Tooltip
-                                                {...CHART_TOOLTIP}
-                                                formatter={(value: number | undefined, name: string | undefined) => {
-                                                    const v = value ?? 0;
-                                                    const total = phasePieData.reduce((s, d) => s + d.value, 0);
-                                                    const pct = total ? Math.round((v / total) * 100) : 0;
-                                                    return [`${v} phase${v === 1 ? '' : 's'} (${pct}% of ${total})`, name ?? ''];
-                                                }}
-                                            />
-                                            <Legend wrapperStyle={{ fontSize: '11px' }} />
-                                        </PieChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            ) : (
-                                <p className="mt-8 py-6 text-center text-sm text-brand-muted">No phases defined yet.</p>
-                            )}
-                        </div>
-                        <div className="min-w-0 flex-1 rounded-xl border border-rose-500/25 bg-rose-500/[0.05] p-3.5 lg:min-w-[18rem]">
-                            <h3 className="text-sm font-medium text-brand-text">Priority completion</h3>
-                            <p className="mt-0.5 text-[10px] text-brand-muted">
-                                <span className="text-violet-400/90">Complete</span> vs{' '}
-                                <span className="text-rose-400/90">open</span> items
-                            </p>
-                            {priorityPieData.length > 0 ? (
-                                <div className="dash-chart-h mt-3 w-full">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <PieChart>
-                                            <Pie
-                                                data={priorityPieData}
-                                                cx="50%"
-                                                cy="50%"
-                                                innerRadius={46}
-                                                outerRadius={72}
-                                                paddingAngle={2}
-                                                dataKey="value"
-                                                nameKey="name"
-                                            >
-                                                {priorityPieData.map((entry, i) => (
-                                                    <Cell key={`${chartUid}-pr-${i}`} fill={entry.fill} />
-                                                ))}
-                                            </Pie>
-                                            <Tooltip
-                                                {...CHART_TOOLTIP}
-                                                formatter={(value: number | undefined, name: string | undefined) => {
-                                                    const v = value ?? 0;
-                                                    const total = priorityPieData.reduce((s, d) => s + d.value, 0);
-                                                    const pct = total ? Math.round((v / total) * 100) : 0;
-                                                    return [`${v} priority item${v === 1 ? '' : 's'} (${pct}% of ${total})`, name ?? ''];
-                                                }}
-                                            />
-                                            <Legend wrapperStyle={{ fontSize: '11px' }} />
-                                        </PieChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            ) : (
-                                <p className="mt-8 py-6 text-center text-sm text-brand-muted">No priorities listed yet.</p>
-                            )}
-                        </div>
-                        <div className="min-w-0 flex-1 rounded-xl border border-amber-500/25 bg-amber-500/[0.05] p-3.5 lg:min-w-[18rem]">
-                            <h3 className="text-sm font-medium text-brand-text">Desk artifact coverage</h3>
-                            <p className="mt-0.5 text-[10px] text-brand-muted">
-                                One color per desk role · 100% = artifact saved
-                            </p>
-                            <div className="dash-chart-h mt-3 w-full">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart
-                                        data={deskCoverage}
-                                        layout="vertical"
-                                        margin={{ top: 4, right: 12, left: 4, bottom: 4 }}
-                                    >
-                                        <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" horizontal={false} />
-                                        <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10, fill: '#71717a' }} />
-                                        <YAxis type="category" dataKey="label" width={100} tick={{ fontSize: 9, fill: '#a1a1aa' }} />
-                                        <Tooltip
-                                            {...CHART_TOOLTIP}
-                                            formatter={(v: number | undefined) => [
-                                                `${v ?? 0}% · non-empty field only (not quality or completeness)`,
-                                                'Artifact present',
-                                            ]}
-                                        />
-                                        <Bar dataKey="pct" radius={[0, 4, 4, 0]} maxBarSize={18}>
-                                            {deskCoverage.map((e, i) => (
-                                                <Cell key={`${chartUid}-desk-${i}`} fill={e.fill} />
-                                            ))}
-                                        </Bar>
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </div>
-                    </div>
-                    </div>
-                </DashMessageSection>
-
-                <DashMessageSection
-                    id="dash-signal"
-                    outline="signal"
-                    icon={<Activity className="h-4 w-4 text-sky-300/90" aria-hidden />}
-                    eyebrow="Telemetry"
-                    title="Signal & activity"
-                    subtitle="Charts and live log stream"
-                    className="mb-2"
-                >
-                    <div className="flex flex-col gap-5 lg:flex-row lg:items-stretch">
-                        <div className="flex min-h-0 min-w-0 flex-1 flex-col rounded-xl border border-sky-500/20 bg-sky-500/[0.04] p-3.5">
-                            <div className="mb-1 flex items-start justify-between gap-3">
-                                <div>
-                                    <h3 className="text-sm font-medium text-brand-text">Activity by source</h3>
-                                    <p className="mt-0.5 text-[11px] text-brand-muted">
-                                        Log volume by emitter · colors distinguish sources (not severity)
-                                    </p>
-                                </div>
-                                <BarChart3 className="h-5 w-5 shrink-0 text-brand-muted" aria-hidden />
-                            </div>
-                            {activityBySource.length > 0 ? (
-                                <div className="dash-chart-h mt-5 w-full">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart data={activityBySource} margin={{ top: 8, right: 8, left: 0, bottom: 48 }}>
-                                            <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" vertical={false} />
-                                            <XAxis
-                                                dataKey="name"
-                                                tick={{ fontSize: 9, fill: '#71717a' }}
-                                                interval={0}
-                                                angle={-28}
-                                                textAnchor="end"
-                                                height={56}
-                                            />
-                                            <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: '#a1a1aa' }} width={40} />
-                                            <Tooltip {...CHART_TOOLTIP} formatter={(v: number | undefined) => [v ?? 0, 'Entries']} />
-                                            <Bar dataKey="count" radius={[4, 4, 0, 0]} maxBarSize={36}>
-                                                {activityBySource.map((e, i) => (
-                                                    <Cell key={`${chartUid}-act-${i}`} fill={e.fill} />
-                                                ))}
-                                            </Bar>
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            ) : (
-                                <p className="mt-8 flex flex-1 items-center justify-center py-12 text-center text-sm text-brand-muted">
-                                    No activity yet — system events will appear here.
-                                </p>
-                            )}
-                        </div>
-
-                        <div className="flex min-h-0 min-w-0 flex-1 flex-col rounded-xl border border-indigo-500/25 bg-indigo-500/[0.05] p-3.5 lg:min-h-[12rem]">
-                            <div className="mb-3 flex items-center justify-between">
-                                <h3 className="flex items-center gap-2 text-sm font-medium text-brand-text">
-                                    <Activity className="h-4 w-4 text-indigo-300/80" aria-hidden />
-                                    Activity log
-                                </h3>
-                                <span className="h-2 w-2 animate-pulse rounded-full bg-indigo-400/50" aria-hidden />
-                            </div>
-                            <div className="space-y-2.5">
-                                {systemLogs.length === 0 ? (
-                                    <div className="py-8 text-center text-sm text-brand-muted">No activity yet.</div>
-                                ) : (
-                                    systemLogs.map((log) => (
-                                        <div
-                                            key={log.id}
-                                            className="rounded-xl border border-white/[0.06] bg-black/20 px-3 py-2.5 ring-1 ring-white/[0.03]"
-                                        >
-                                            <div className="mb-1 flex flex-wrap items-center gap-2">
-                                                <span className="rounded-full bg-white/[0.08] px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide text-brand-muted">
-                                                    {log.source}
-                                                </span>
-                                                <span className="font-mono text-[10px] text-brand-muted">
-                                                    {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                </span>
-                                            </div>
-                                            <p className="text-[13px] leading-relaxed text-brand-text/95">{log.message}</p>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </DashMessageSection>
-
-                <DashMessageSection
-                    id="dash-desks"
-                    outline="desks"
-                    icon={<LayoutGrid className="h-4 w-4 text-fuchsia-300/90" aria-hidden />}
-                    eyebrow="Navigation"
-                    title="Operational desks"
-                    subtitle="Jump to strategy, product, finance, market"
-                    className="mb-2"
-                >
-                    {/* Unified desk panel with accent borders instead of separate cards */}
-                    <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-zinc-900/40">
-                        <div className="divide-y divide-white/[0.06]">
-                            <DeskRow
-                                agent={agents.ceo}
-                                activeRoom={activeRoom}
-                                onClick={() => switchRoom('ceo')}
-                                status={!!activeProject.strategy ? 'active' : 'pending'}
-                                accent="violet"
-                            />
-                            <DeskRow
-                                agent={agents.scout}
-                                activeRoom={activeRoom}
-                                onClick={() => switchRoom('scout')}
-                                status={!!activeProject.marketInsights ? 'active' : 'idle'}
-                                accent="sky"
-                            />
-                            <DeskRow
-                                agent={agents.accountant}
-                                activeRoom={activeRoom}
-                                onClick={() => switchRoom('accountant')}
-                                status={!!activeProject.budget ? 'active' : 'pending'}
-                                accent="emerald"
-                            />
-                            <DeskRow
-                                agent={agents.pm}
-                                activeRoom={activeRoom}
-                                onClick={() => switchRoom('pm')}
-                                status={!!activeProject.productPlan ? 'active' : 'idle'}
-                                accent="amber"
-                            />
-                        </div>
-                    </div>
-                </DashMessageSection>
-
-                <DashMessageSection
-                    id="dash-next"
-                    outline="next"
-                    icon={<Compass className="h-4 w-4 text-emerald-300/90" aria-hidden />}
-                    eyebrow="Suggested next"
-                    title="Where to steer next"
-                    subtitle="One line + shortcuts"
-                    className="mb-2"
-                >
-                    <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
-                        <div className="max-w-prose rounded-xl border border-emerald-500/25 bg-emerald-500/[0.05] p-4 md:p-5">
-                            <p className="font-serif text-xl leading-snug text-brand-text md:text-2xl">
-                                {phaseActive > 0
-                                    ? `Active phase in progress — ${phaseDone} of ${phaseTotal} phases complete.`
-                                    : activeProject.strategy
-                                      ? 'Strategy in motion — tune phases and priorities in the CEO desk.'
-                                      : 'Open the CEO desk to set intent, timeline phases, and priorities.'}
-                            </p>
-                        </div>
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/[0.06]">
-                            <Zap className="h-5 w-5 text-brand-muted" aria-hidden />
-                        </div>
-                    </div>
-                    <div className="mt-6 flex flex-wrap gap-3">
-                        <button
-                            type="button"
-                            onClick={() => switchRoom('ceo')}
-                            className="rounded-full bg-white/[0.08] px-4 py-2.5 text-xs font-semibold text-brand-text transition hover:bg-white/[0.12]"
-                        >
-                            CEO desk
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => switchRoom('reports')}
-                            className="rounded-full bg-white/[0.06] px-4 py-2.5 text-xs font-semibold text-brand-text transition hover:bg-white/[0.1]"
-                        >
-                            Knowledge base
-                        </button>
-                        <WorkspaceAiButton label="Ask across desks" />
-                    </div>
-                </DashMessageSection>
-                                </div>
-                            </div>
-                        )}
-            </div>
-        </div>
-    );
-}
-
-function AgentCard({ agent, activeRoom, onClick, status }: any) {
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            className="group relative flex min-h-[4.5rem] w-full items-center gap-4 rounded-2xl bg-white/[0.04] py-4 pl-4 pr-5 text-left transition-colors hover:bg-white/[0.07]"
-        >
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/[0.06] text-brand-muted">
-                {agent.icon}
-            </div>
-            <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-semibold text-brand-text">{agent.title}</div>
-                <div className="mt-1 flex items-center gap-2">
-                    <span
-                        className={`h-2 w-2 shrink-0 rounded-full ${status === 'active' ? 'bg-zinc-400' : 'bg-brand-muted/60'}`}
-                        aria-hidden
-                    />
-                    <span className="text-[11px] font-medium capitalize text-brand-muted">{status}</span>
-                </div>
-            </div>
-            <ChevronRight className="h-5 w-5 shrink-0 text-brand-muted transition group-hover:translate-x-0.5 group-hover:text-brand-muted" aria-hidden />
-            {activeRoom === agent.role && (
-                <div className="pointer-events-none absolute inset-0 rounded-2xl ring-2 ring-white/20" />
-            )}
-        </button>
-    );
-}
-
-const ACCENT_STYLES: Record<string, { border: string; icon: string; glow: string }> = {
-    violet: { border: 'border-l-violet-500/50', icon: 'text-violet-400', glow: 'bg-violet-500/10' },
-    sky: { border: 'border-l-sky-500/50', icon: 'text-sky-400', glow: 'bg-sky-500/10' },
-    emerald: { border: 'border-l-emerald-500/50', icon: 'text-emerald-400', glow: 'bg-emerald-500/10' },
-    amber: { border: 'border-l-amber-500/50', icon: 'text-amber-400', glow: 'bg-amber-500/10' },
-};
-
-function DeskRow({
-    agent,
-    activeRoom,
-    onClick,
-    status,
-    accent,
-}: {
-    agent: any;
-    activeRoom: string;
-    onClick: () => void;
-    status: string;
-    accent: keyof typeof ACCENT_STYLES;
-}) {
-    const styles = ACCENT_STYLES[accent] || ACCENT_STYLES.violet;
-    const isActive = activeRoom === agent.role;
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            className={`group flex w-full items-center gap-4 border-l-2 ${styles.border} px-4 py-4 text-left transition hover:bg-white/[0.03] sm:px-5 ${
-                isActive ? 'bg-white/[0.05]' : ''
-            }`}
-        >
-            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${styles.glow} ${styles.icon}`}>
-                {agent.icon}
-            </div>
-            <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                    <span className="truncate text-sm font-semibold text-brand-text">{agent.title}</span>
-                    {isActive && (
-                        <span className="rounded-full bg-white/10 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider text-white/70">
-                            Active
-                        </span>
-                    )}
-                </div>
-                <div className="mt-0.5 flex items-center gap-2">
-                    <span
-                        className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-                            status === 'active' ? styles.icon.replace('text-', 'bg-') : 'bg-brand-muted/50'
-                        }`}
-                        aria-hidden
-                    />
-                    <span className="text-[11px] capitalize text-brand-muted">{status}</span>
-                </div>
-            </div>
-            <ChevronRight className="h-5 w-5 shrink-0 text-brand-muted/50 transition group-hover:translate-x-0.5 group-hover:text-brand-muted" aria-hidden />
-        </button>
-    );
-}
+export default Dashboard;

@@ -5,6 +5,8 @@ import { Lock, Sparkles } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { PRO_INTELLIGENCE_FEATURES, type Plan } from '@/lib/plans';
 import { UpgradeModal } from '@/components/UpgradeModal';
+import { formatRegionalDualLine, getProBillingAmounts } from '@/lib/billingConfig';
+import { usePricingRegion } from '@/hooks/usePricingRegion';
 
 const PRO_FEATURE_LABELS: Record<string, string> = Object.fromEntries(
     PRO_INTELLIGENCE_FEATURES.map((f) => [f.key, f.name]),
@@ -20,6 +22,8 @@ interface PlanGateProps {
 export function PlanGate({ feature, label, lockedFallback, children }: PlanGateProps) {
     const { can } = useSubscription();
     const [modalOpen, setModalOpen] = useState(false);
+    const pricingRegion = usePricingRegion();
+    const proBilling = getProBillingAmounts();
 
     if (can(feature)) return <>{children}</>;
 
@@ -48,13 +52,15 @@ export function PlanGate({ feature, label, lockedFallback, children }: PlanGateP
                 <button
                     type="button"
                     onClick={() => setModalOpen(true)}
-                    className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-100 active:scale-[0.97]"
+                    className="inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-110 active:scale-[0.97]"
                 >
                     <Sparkles className="h-3.5 w-3.5" aria-hidden />
                     Upgrade to Pro
                 </button>
 
-                <p className="text-[11px] text-zinc-700">₹300/mo (~$4) · cancel anytime</p>
+                <p className="text-[11px] text-zinc-700">
+                    {formatRegionalDualLine(proBilling.monthlyInr, pricingRegion, { usdDecimals: 0 })}/mo · cancel anytime
+                </p>
             </div>
         </>
     );

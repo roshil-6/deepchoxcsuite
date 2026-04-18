@@ -147,15 +147,13 @@ export function enrichStrategyWithDefaults(doc: StrategyDoc, opts?: EnrichStrate
 
 /** Serialized strategy for new ventures — phases + flow only; narrative stays empty for PA discovery. */
 export function buildInitialStrategyJson(): string {
-    return serializeStrategy(
-        enrichStrategyWithDefaults(
-            {
-                content: '',
-                priorities: [],
-            },
-            { addPlaceholderNarrative: false }
-        )
-    );
+    return serializeStrategy({
+        content: '',
+        priorities: [],
+        flow: { nodes: [], edges: [] },
+        phases: [],
+        team: { members: [], thread: [] },
+    });
 }
 
 /** Legacy projects: same defaults plus optional narrative hint so the CEO desk is not blank. */

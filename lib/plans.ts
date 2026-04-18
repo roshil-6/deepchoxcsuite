@@ -1,3 +1,6 @@
+import { formatRegionalPricePair, getProBillingAmounts } from '@/lib/billingConfig';
+import type { PricingRegion } from '@/lib/pricingRegion';
+
 export type PlanId = 'free' | 'pro';
 
 export interface Plan {
@@ -21,49 +24,57 @@ export interface Plan {
     };
 }
 
-export const PLANS: Record<PlanId, Plan> = {
-    free: {
-        id: 'free',
-        name: 'Founder',
-        price: 'Free',
-        priceNote: 'No credit card needed',
-        features: {
-            allDesks: true,
-            personalAssistant: true,
-            dashboard: true,
-            pitchDeckExport: true,
-            multipleVentures: true,
-            relayMeetingRoom: true,
-            vcGauntlet: true,
-            wargameNexus: true,
-            intelligenceSuite: true,
-            executiveBriefingAutopilot: false,
-            wargameMultiRound: false,
-            crossVentureIntelligence: false,
-        },
-    },
-    pro: {
-        id: 'pro',
-        name: 'Co-Founder Pro',
-        price: '₹300',
-        priceNote: 'per month · cancel anytime',
-        features: {
-            allDesks: true,
-            personalAssistant: true,
-            dashboard: true,
-            pitchDeckExport: true,
-            multipleVentures: true,
-            relayMeetingRoom: true,
-            vcGauntlet: true,
-            wargameNexus: true,
-            intelligenceSuite: true,
-            executiveBriefingAutopilot: true,
-            wargameMultiRound: true,
-            crossVentureIntelligence: true,
-        },
+const FREE_PLAN_BASE: Plan = {
+    id: 'free',
+    name: 'Founder',
+    price: 'Free',
+    priceNote: 'No credit card needed',
+    features: {
+        allDesks: true,
+        personalAssistant: true,
+        dashboard: true,
+        pitchDeckExport: true,
+        multipleVentures: true,
+        relayMeetingRoom: true,
+        vcGauntlet: true,
+        wargameNexus: true,
+        intelligenceSuite: true,
+        executiveBriefingAutopilot: false,
+        wargameMultiRound: false,
+        crossVentureIntelligence: false,
     },
 };
 
+export function getPlans(region: PricingRegion): Record<PlanId, Plan> {
+    const monthlyInr = getProBillingAmounts().monthlyInr;
+    const proPrice = formatRegionalPricePair(monthlyInr, region, { usdDecimals: 0 }).primary;
+    return {
+        free: { ...FREE_PLAN_BASE },
+        pro: {
+            id: 'pro',
+            name: 'Co-Founder Pro',
+            price: proPrice,
+            priceNote: 'per month · cancel anytime',
+            features: {
+                allDesks: true,
+                personalAssistant: true,
+                dashboard: true,
+                pitchDeckExport: true,
+                multipleVentures: true,
+                relayMeetingRoom: true,
+                vcGauntlet: true,
+                wargameNexus: true,
+                intelligenceSuite: true,
+                executiveBriefingAutopilot: true,
+                wargameMultiRound: true,
+                crossVentureIntelligence: true,
+            },
+        },
+    };
+}
+
+/** Default catalog for non-interactive contexts (INTL-first). */
+export const PLANS = getPlans('INTL');
 export const FREE_PLAN = PLANS.free;
 export const PRO_PLAN = PLANS.pro;
 

@@ -20,27 +20,22 @@ export function TokenWarningBanner({ onUpgrade }: TokenWarningProps) {
     const isCritical = tokens.stats.isCritical;
     
     return (
-        <div className={`flex items-center justify-between gap-3 px-4 py-2.5 rounded-lg border ${
-            isCritical 
-                ? 'bg-red-500/15 border-red-500/30' 
-                : 'bg-amber-500/15 border-amber-500/30'
-        }`}>
+        <div
+            className={`flex items-center justify-between gap-3 rounded-lg border border-[var(--border)] px-4 py-2.5 ${
+                isCritical ? 'bg-white/[0.06]' : 'bg-white/[0.03]'
+            }`}
+        >
             <div className="flex items-center gap-2">
-                <Coins className={`h-3.5 w-3.5 ${isCritical ? 'text-red-400' : 'text-amber-400'}`} />
-                <span className={`text-[11px] ${isCritical ? 'text-red-300' : 'text-amber-300'}`}>
-                    {isCritical 
-                        ? `Only ${tokens.tokensRemaining} tokens left!` 
-                        : `${tokens.tokensRemaining} tokens remaining`
-                    }
+                <Coins className={`h-3.5 w-3.5 ${isCritical ? 'text-[var(--text)]' : 'text-[var(--muted)]'}`} />
+                <span className={`text-[11px] ${isCritical ? 'font-medium text-[var(--text)]' : 'text-[var(--muted)]'}`}>
+                    {isCritical
+                        ? `Only ${tokens.tokensRemaining} tokens left!`
+                        : `${tokens.tokensRemaining} tokens remaining`}
                 </span>
             </div>
             <button
                 onClick={onUpgrade}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors ${
-                    isCritical
-                        ? 'bg-red-500/20 text-red-300 hover:bg-red-500/30'
-                        : 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30'
-                }`}
+                className="flex items-center gap-1 rounded-md bg-white/[0.08] px-2.5 py-1 text-[10px] font-medium text-[var(--text)] transition-colors hover:bg-white/[0.12]"
             >
                 <Crown className="h-3 w-3" />
                 Upgrade
@@ -87,11 +82,11 @@ export function TokenCostPill({ cost }: { cost: number }) {
     const canAfford = tokens.canAfford(cost);
     
     return (
-        <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] ${
-            canAfford 
-                ? 'bg-slate-800 text-slate-500' 
-                : 'bg-red-500/20 text-red-400'
-        }`}>
+        <span
+            className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] ${
+                canAfford ? 'bg-white/[0.06] text-[var(--muted)]' : 'border border-[var(--border-strong)] bg-white/[0.06] text-[var(--text)]'
+            }`}
+        >
             <Coins className="h-2.5 w-2.5" />
             {cost}
         </span>

@@ -1,22 +1,49 @@
-import { parseStrategy } from '@/lib/strategyDoc';
+import { parseStrategy, type StrategyPhase } from '@/lib/strategyDoc';
 import { safeJsonParse } from '@/lib/utils';
+import {
+    isVentureFoundationSparse,
+    strategyHasSubstantiveFounderNarrative,
+    type VentureFoundationFields,
+} from '@/lib/ventureFoundation';
 
 function clampPillar(n: number): number {
     return Math.min(100, Math.max(0, n));
 }
 
+const DEFAULT_TIMELINE_PHASE_ID = /^default-phase-/;
+
+/** Shell timeline rows alone do not count until there is real founder narrative (matches empty-venture defaults). */
+function phasesCountForStrategicDepth(phases: StrategyPhase[], narrativeSubstantive: boolean): boolean {
+    if (!phases.length) return false;
+    const onlyDefaultIds = phases.every((p) => DEFAULT_TIMELINE_PHASE_ID.test(p.id));
+    if (!onlyDefaultIds) return true;
+    return narrativeSubstantive;
+}
+
+function prioritiesCountForDepth(priorities: { title?: string }[]): boolean {
+    return priorities.some((p) => (p.title?.trim().length ?? 0) >= 3);
+}
+
 /**
- * Strategy clarity and roadmap shape: intent, narrative, and whether phases/priorities exist.
- * Independent of how many milestones are already marked done (that is execution).
+ * How much **real** strategy substance is on the venture record — not “checkbox complete.”
+ * Uses the same founder-narrative bar as foundation sparsity; default-only phases do not score until narrative exists.
+ * When `foundation` is passed and the venture is still sparse across desks, the score is capped so health bars stay honest.
  */
-export function computeStrategicCoverageScore(strategyRaw: string | undefined): number {
+export function computeStrategicCoverageScore(
+    strategyRaw: string | undefined,
+    foundation?: VentureFoundationFields | null
+): number {
     const strategyDoc = parseStrategy(strategyRaw || '');
     const phases = strategyDoc.phases || [];
     const priorities = strategyDoc.priorities || [];
-    const hasIntent = !!(strategyDoc.strategicIntent?.trim() || strategyDoc.vision?.trim());
-    const narrativeRich = (strategyDoc.content || '').trim().length > 80;
-    const hasPhasePlan = phases.length > 0;
-    const hasPriorityPlan = priorities.length > 0;
+    const substantiveNarrative = strategyHasSubstantiveFounderNarrative(strategyRaw);
+
+    const intentLen = (s: string | undefined) => (s?.trim().length ?? 0);
+    const hasIntent = intentLen(strategyDoc.strategicIntent) >= 12 || intentLen(strategyDoc.vision) >= 12;
+    const narrativeRich = substantiveNarrative;
+    const hasPhasePlan = phasesCountForStrategicDepth(phases, substantiveNarrative);
+    const hasPriorityPlan = prioritiesCountForDepth(priorities);
+
     const parts = [
         hasIntent ? 100 : 0,
         narrativeRich ? 100 : 0,
@@ -24,7 +51,11 @@ export function computeStrategicCoverageScore(strategyRaw: string | undefined): 
         hasPriorityPlan ? 100 : 0,
     ];
     const raw = parts.reduce((a, b) => a + b, 0) / parts.length;
-    return Math.round(raw * 1000) / 10;
+    let score = Math.round(raw * 1000) / 10;
+    if (foundation != null && isVentureFoundationSparse(foundation)) {
+        score = Math.min(score, 44);
+    }
+    return score;
 }
 
 /**

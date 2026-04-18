@@ -7,7 +7,7 @@ import { DeskChatThreadMount } from '@/components/DeskChatThreadSlotContext';
 export function DeskMsgUser({ children }: { children: React.ReactNode }) {
     return (
         <div className="flex justify-end">
-            <div className="max-w-[min(100%,34rem)] rounded-2xl rounded-br-md border border-white/[0.08] bg-zinc-700/35 px-3.5 py-2.5 text-left sm:px-4 sm:py-3">
+            <div className="max-w-[min(100%,34rem)] rounded-2xl rounded-br-md border border-white/[0.12] bg-zinc-800/90 px-3.5 py-2.5 text-left shadow-[0_4px_20px_rgba(0,0,0,0.25)] sm:px-4 sm:py-3">
                 {children}
             </div>
         </div>
@@ -15,14 +15,47 @@ export function DeskMsgUser({ children }: { children: React.ReactNode }) {
 }
 
 /** Assistant-side details — label only; body flows on the canvas (no inner “card” around block content). */
-export function DeskMsgAssistant({ children }: { children: React.ReactNode }) {
+export function DeskMsgAssistant({
+    children,
+    variant = 'default',
+    hideDetailsLabel = false,
+}: {
+    children: React.ReactNode;
+    /** Full width for large canvases (e.g. strategy flow map). */
+    variant?: 'default' | 'fullBleed';
+    /** Hide the “Details” kicker (e.g. long-form narrative should feel like the page, not a inset panel). */
+    hideDetailsLabel?: boolean;
+}) {
+    const full = variant === 'fullBleed';
     return (
         <>
-            <div className="w-full max-w-[min(100%,42rem)]">
-                <p className="mb-2 text-[9px] font-semibold uppercase tracking-[0.12em] text-zinc-500">Details</p>
-                <div className="text-[13px] leading-relaxed text-zinc-300">{children}</div>
+            <div
+                className={
+                    full
+                        ? 'flex min-h-0 w-full min-w-0 flex-1 flex-col'
+                        : 'w-full max-w-[min(100%,42rem)]'
+                }
+            >
+                {hideDetailsLabel ? null : (
+                    <p className="mb-2 shrink-0 text-[9px] font-semibold uppercase tracking-[0.12em] text-zinc-500">Details</p>
+                )}
+                <div
+                    className={
+                        full
+                            ? 'min-h-0 flex-1 text-[13px] leading-relaxed text-zinc-300'
+                            : 'text-[13px] leading-relaxed text-zinc-300'
+                    }
+                >
+                    {children}
+                </div>
             </div>
-            <DeskChatThreadMount className="mx-0 mt-4 max-w-[min(100%,42rem)] sm:mt-5" />
+            <DeskChatThreadMount
+                className={
+                    full
+                        ? 'mx-auto mt-4 w-full max-w-[min(100%,42rem)] sm:mt-5'
+                        : 'mx-0 mt-4 max-w-[min(100%,42rem)] sm:mt-5'
+                }
+            />
         </>
     );
 }
@@ -42,7 +75,7 @@ export function DeskHubRow({
         <button
             type="button"
             onClick={onOpen}
-            className="flex w-full items-start gap-2 rounded-lg border border-white/[0.06] bg-zinc-900/12 px-3 py-2 text-left transition hover:border-white/[0.1] hover:bg-zinc-900/28 sm:gap-3 sm:px-3.5 sm:py-2.5"
+            className="flex w-full items-start gap-2 rounded-lg border border-white/[0.1] bg-zinc-900/55 px-3 py-2 text-left shadow-[0_2px_12px_rgba(0,0,0,0.2)] transition hover:border-white/[0.14] hover:bg-zinc-900/75 sm:gap-3 sm:px-3.5 sm:py-2.5"
         >
             <span className="min-w-0 flex-1">
                 <span className="block text-[13px] font-semibold leading-snug text-zinc-100">{title}</span>
@@ -61,6 +94,8 @@ export function DeskFocusToolbar({
     saving,
     saveLabel = 'Save',
     saveClassName,
+    className = '',
+    layout = 'default',
 }: {
     onBack: () => void;
     title: string;
@@ -69,12 +104,42 @@ export function DeskFocusToolbar({
     saving?: boolean;
     saveLabel?: string;
     saveClassName?: string;
+    /** Merged onto header — e.g. `border-b-0 bg-transparent` for a flat document surface */
+    className?: string;
+    /** `compact` — back + save only (title lives in the page body). */
+    layout?: 'default' | 'compact';
 }) {
     const saveBtn =
         saveClassName ??
         'inline-flex shrink-0 items-center gap-1 rounded-md border border-white/[0.1] px-2 py-1 text-[11px] font-medium text-[#0a0a0a] bg-[var(--accent)] hover:opacity-90';
+    const headerBase = `relative z-30 flex shrink-0 items-center gap-2 px-3 py-1.5 sm:gap-3 sm:px-4 sm:py-2 ${className}`;
+
+    if (layout === 'compact') {
+        return (
+            <header className={`${headerBase} border-b-0 bg-transparent backdrop-blur-none`}>
+                <button
+                    type="button"
+                    onClick={onBack}
+                    className="inline-flex shrink-0 items-center gap-1 rounded-md border border-white/[0.08] bg-white/[0.04] px-2 py-1 text-[11px] font-medium text-zinc-200 transition hover:bg-white/[0.07]"
+                >
+                    <ArrowLeft className="h-3 w-3" aria-hidden />
+                    Back
+                </button>
+                <div className="min-w-0 flex-1" aria-hidden />
+                {onSave ? (
+                    <button type="button" onClick={onSave} className={saveBtn}>
+                        {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
+                        {saveLabel}
+                    </button>
+                ) : null}
+            </header>
+        );
+    }
+
     return (
-        <header className="flex shrink-0 items-center gap-2 border-b border-white/[0.06] bg-brand-bg/90 px-3 py-1.5 backdrop-blur-sm sm:gap-3 sm:px-4 sm:py-2">
+        <header
+            className={`${headerBase} border-b border-white/[0.06] bg-brand-bg/90 backdrop-blur-sm`}
+        >
             <button
                 type="button"
                 onClick={onBack}

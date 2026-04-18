@@ -77,7 +77,7 @@ export default function GuidePage() {
                         Back to home
                     </Link>
                     <span className="text-right text-[10px] font-medium uppercase tracking-[0.14em] text-zinc-600">
-                        north<span className="text-zinc-400">ROC</span> LABS · Deepchox
+                        north<span className="text-zinc-400">ROSC</span> LABS · Deepchox
                     </span>
                 </div>
             </header>

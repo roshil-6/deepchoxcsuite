@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useTokens } from '@/lib/tokens/useTokens';
+import { TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 import { FileUp, Loader2, Mic, Sparkles, AlertCircle } from 'lucide-react';
 
 export type VentureExtracted = {
@@ -21,6 +23,7 @@ type Props = {
 };
 
 export function VentureAiAssist({ onExtracted }: Props) {
+  const tokens = useTokens();
   const [brief, setBrief] = useState('');
   const [extracting, setExtracting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -136,11 +139,23 @@ export function VentureAiAssist({ onExtracted }: Props) {
     }
     setError(null);
     setExtracting(true);
+    const paid = tokens.spend(TOKEN_COSTS.CHAT_MESSAGE, 'Onboarding extract');
+    if (!paid.success) {
+      setError(
+        paid.message ??
+          'Daily AI credits are used up. Upgrade to Pro for unlimited usage, or try again after the daily reset.',
+      );
+      setExtracting(false);
+      return;
+    }
     try {
-      const res = await fetch('/api/onboarding-extract', {
+      const res = await fetch('/api/dexo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({
+          action: 'onboardingExtract',
+          payload: { text },
+        }),
       });
       const json = await res.json();
       if (!json.ok) {

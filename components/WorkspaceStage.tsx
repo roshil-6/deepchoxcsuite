@@ -16,7 +16,6 @@ import { WargameNexus } from './WargameNexus';
 import { VCGauntlet } from './VCGauntlet';
 import { OperationalDesk } from './OperationalDesk';
 import { IntelligenceDiary } from './IntelligenceDiary';
-import { PersonalAssistant } from './PersonalAssistant';
 import { CsuiteIntelligenceGuide } from './CsuiteIntelligenceGuide';
 import { RoomChrome } from './RoomChrome';
 import { getWorkspaceShellTheme } from '@/lib/roomThemes';
@@ -63,7 +62,7 @@ export function WorkspaceStage({
             case 'intelligence_diary':
                 return <IntelligenceDiary />;
             case 'personal_assistant':
-                return <PersonalAssistant />;
+                return <DexoRoom />;
             case 'suite_intelligence':
                 return <CsuiteIntelligenceGuide />;
             case 'ceo':

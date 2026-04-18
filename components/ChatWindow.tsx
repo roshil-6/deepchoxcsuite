@@ -3,10 +3,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useOffice, getAgentSystemPrompt, AgentRole } from '@/lib/OfficeContext';
-import { updateProjectField } from '@/lib/db';
 import { Send, User, Sparkles, Paperclip, ArrowUp, Bot, Terminal, Shield, Wifi, Cpu, Activity, Lock, Smartphone, Settings, MoreVertical } from 'lucide-react';
 import { ModelAttribution } from '@/components/ModelAttribution';
 import { formatProductPlanForContext, formatStrategyForContext } from '@/lib/ventureReadableContext';
+import { useSubscription } from '@/hooks/useSubscription';
+import { useTokens } from '@/lib/tokens/useTokens';
+import { TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
+import { submitDexoVenturePatch } from '@/lib/dexoProposalClient';
 
 interface Message {
   id: string;
@@ -25,19 +28,18 @@ export function ChatWindow({ onProjectUpdate }: ChatWindowProps) {
     activeRoom,
     activeProject,
     agents,
-    updateMarketInsights,
     addFile,
-    updateStrategy,
-    updateProductPlan,
-    updateBudget,
+    updateProjectField,
     systemState,
     addSystemLog,
   } = useOffice();
 
+  const { isPro } = useSubscription();
+  const tokens = useTokens();
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [messageCount, setMessageCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -45,8 +47,7 @@ export function ChatWindow({ onProjectUpdate }: ChatWindowProps) {
   // Ensure we have a valid agent, otherwise default to CEO
   const safeRoom = (['ceo', 'pm', 'accountant', 'scout', 'cmo'].includes(activeRoom)) ? activeRoom as AgentRole : 'ceo';
   const currentAgent = agents[safeRoom];
-  const maxFreeMessages = 5;
-  const canChat = (messageCount < maxFreeMessages) && !systemState.isDeepWork;
+  const canChat = !systemState.isDeepWork && (isPro || tokens.canAfford(TOKEN_COSTS.CHAT_MESSAGE));
 
   // Auto-resize input
   useEffect(() => {
@@ -86,23 +87,30 @@ export function ChatWindow({ onProjectUpdate }: ChatWindowProps) {
     try {
       const structuredData = extractStructuredData(content, role);
       if (structuredData) {
+        const patch: Record<string, unknown> = {};
         switch (role) {
           case 'ceo':
-            updateStrategy(structuredData);
-            await updateProjectField(activeProject.id, 'strategy', structuredData);
+            patch.strategy = structuredData;
             break;
           case 'pm':
-            updateProductPlan(structuredData);
-            await updateProjectField(activeProject.id, 'productPlan', structuredData);
+            patch.productPlan = structuredData;
             break;
           case 'accountant':
-            updateBudget(structuredData);
-            await updateProjectField(activeProject.id, 'budget', structuredData);
+            patch.budget = structuredData;
             break;
           case 'scout':
-            updateMarketInsights(structuredData);
-            await updateProjectField(activeProject.id, 'marketInsights', structuredData);
+            patch.marketInsights = structuredData;
             break;
+        }
+        if (Object.keys(patch).length > 0) {
+          await submitDexoVenturePatch({
+            ventureId: activeProject.id,
+            source: 'legacy_chat_window',
+            model: 'Dexo',
+            summary: 'Legacy desk chat suggested an update',
+            patch,
+            updateProjectField,
+          });
         }
         onProjectUpdate?.();
       }
@@ -139,10 +147,17 @@ export function ChatWindow({ onProjectUpdate }: ChatWindowProps) {
       timestamp: Date.now(),
     };
 
+    const paid = tokens.spend(TOKEN_COSTS.CHAT_MESSAGE, 'Dexo Intelligence');
+    if (!paid.success) {
+      setError(paid.message ?? 'Daily AI credits are used up.');
+      setIsLoading(false);
+      return;
+    }
+
     setMessages((prev) => [...prev, userMessage]);
     setInputValue('');
     setIsLoading(true);
-    addSystemLog(`User Directive: ${inputValue.substring(0, 50)}...`, 'CEO', 'info');
+    addSystemLog(`User Directive: ${userMessage.content.substring(0, 50)}...`, 'CEO', 'info');
 
     try {
       const safeRoom = (['ceo', 'pm', 'accountant', 'scout', 'cmo'].includes(activeRoom)) ? activeRoom as AgentRole : 'ceo';
@@ -168,12 +183,15 @@ Founder's Diary: ${activeProject.diary ? JSON.stringify(activeProject.diary.slic
 ${fileContext}
       `.trim();
 
-      const response = await fetch('/api/chat', {
+      const response = await fetch('/api/dexo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [{ role: 'user', content: `${systemPrompt}\n\n${projectContext}\n\nUser message: ${inputValue}` }],
-          model: 'gemini-1.5-flash',
+          action: 'chat',
+          payload: {
+            messages: [{ role: 'user', content: `${systemPrompt}\n\n${projectContext}\n\nUser message: ${userMessage.content}` }],
+            model: 'gemini-1.5-flash',
+          },
         }),
       });
 
@@ -194,7 +212,6 @@ ${fileContext}
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
-      setMessageCount((prev) => prev + 1);
       addSystemLog(`Dexo Response: Analysis Complete.`, 'DEXO', 'success');
       await parseAndUpdateProject(assistantContent, activeRoom);
     } catch (err) {
@@ -213,26 +230,26 @@ ${fileContext}
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#0a0a0a] text-zinc-300 relative font-sans transition-colors duration-500">
+    <div className="relative flex h-full flex-col bg-[var(--bg-primary)] font-sans text-[var(--text-secondary)] transition-colors duration-500">
 
       {/* Header - Floating Glass */}
       <div className="absolute top-4 left-0 right-0 z-20 px-4 flex justify-center">
-        <header className="h-14 bg-black/60 backdrop-blur-xl border border-zinc-800 rounded-full px-6 flex items-center justify-between shadow-xl min-w-[320px] max-w-4xl w-full">
+        <header className="flex h-14 w-full min-w-[320px] max-w-4xl items-center justify-between rounded-full border border-[var(--border)] bg-[var(--bg-card)]/94 px-6 shadow-[var(--shadow-soft)] backdrop-blur-xl">
           <div className="flex items-center gap-4">
-            <div className="w-8 h-8 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[rgba(116,86,255,0.18)] bg-[var(--accent-soft)] text-[var(--accent)]">
               <Bot className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-zinc-100 tracking-tight">Dexo Intelligence</h2>
+              <h2 className="text-sm font-bold tracking-tight text-[var(--text-primary)]">Dexo Intelligence</h2>
               <div className="flex items-center gap-1.5">
-                <span className="w-1 h-1 bg-violet-500 rounded-full animate-pulse"></span>
-                <span className="text-[9px] font-bold text-violet-500/80 uppercase tracking-widest">Online</span>
+                <span className="h-1 w-1 rounded-full bg-[var(--accent)] animate-pulse"></span>
+                <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--accent)]">Online</span>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <button className="p-2 text-zinc-500 hover:text-white transition-colors rounded-full hover:bg-zinc-800/50">
+            <button className="rounded-full p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]">
               <Settings className="w-4 h-4" />
             </button>
           </div>
@@ -244,12 +261,12 @@ ${fileContext}
         <div className="max-w-3xl mx-auto space-y-8">
           {messages.length === 0 && (
             <div className="text-center py-20 animate-in fade-in duration-700 slide-in-from-bottom-4">
-              <div className="w-20 h-20 bg-zinc-900/30 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-zinc-800 shadow-2xl relative overflow-hidden">
-                <div className="absolute inset-0 bg-indigo-500/5 rotate-45 transform scale-150"></div>
-                <Terminal className="w-10 h-10 text-zinc-700" />
+              <div className="relative mx-auto mb-8 flex h-20 w-20 items-center justify-center overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--bg-card)] shadow-[var(--shadow-soft)]">
+                <div className="absolute inset-0 scale-150 rotate-45 transform bg-[var(--accent-soft)]/50"></div>
+                <Terminal className="h-10 w-10 text-[var(--text-muted)]" />
               </div>
-              <h3 className="text-xl font-bold text-zinc-200 mb-2 tracking-tight">Neural Link Established</h3>
-              <p className="text-zinc-600 max-w-sm mx-auto font-mono text-xs leading-relaxed uppercase tracking-widest">
+              <h3 className="mb-2 text-xl font-bold tracking-tight text-[var(--text-primary)]">Neural Link Established</h3>
+              <p className="mx-auto max-w-sm font-mono text-xs uppercase leading-relaxed tracking-widest text-[var(--text-muted)]">
                 {'>'} Awaiting input coordinates...<br />
                 {'>'} System ready.
               </p>
@@ -259,35 +276,35 @@ ${fileContext}
           {messages.map((msg, idx) => (
             <div key={idx} className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''} animate-in fade-in slide-in-from-bottom-2 duration-300 group`}>
               {/* Avatar */}
-              <div className={`w-8 h-8 rounded-full shrink-0 flex items-center justify-center shadow-lg border ${msg.role === 'user'
-                ? 'bg-zinc-800 border-zinc-700 text-zinc-300'
-                : 'bg-indigo-950/20 border-indigo-500/20 text-indigo-400'
+              <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border shadow-sm ${msg.role === 'user'
+                ? 'border-[rgba(116,86,255,0.18)] bg-[var(--accent-soft)] text-[var(--accent)]'
+                : 'border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-muted)]'
                 }`}>
                 {msg.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
               </div>
 
               {/* Bubble */}
               <div className={`flex flex-col max-w-[85%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                <div className={`px-6 py-4 rounded-3xl shadow-sm text-sm font-medium leading-relaxed backdrop-blur-sm border transition-all ${msg.role === 'user'
-                  ? 'bg-zinc-900 border-zinc-800 text-zinc-100 rounded-tr-sm hover:border-zinc-700'
-                  : 'bg-zinc-900/60 border-zinc-800 text-zinc-300 rounded-tl-sm hover:border-indigo-500/20'
+                <div className={`rounded-3xl border px-6 py-4 text-sm font-medium leading-relaxed shadow-sm backdrop-blur-sm transition-all ${msg.role === 'user'
+                  ? 'rounded-tr-sm border-[rgba(116,86,255,0.18)] bg-[var(--accent-soft)] text-[var(--text-primary)] hover:border-[rgba(116,86,255,0.26)]'
+                  : 'rounded-tl-sm border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:border-[rgba(116,86,255,0.16)]'
                   }`}>
                   <ReactMarkdown components={{
                     code: ({ node, inline, className, children, ...props }: any) => (
                       inline ?
-                        <code className="bg-zinc-950 px-1.5 py-0.5 rounded text-indigo-400 font-mono text-xs border border-zinc-800" {...props}>{children}</code> :
-                        <div className="bg-black/40 border border-zinc-800 rounded-xl p-4 my-3 overflow-x-auto shadow-inner">
-                          <code className="text-xs font-mono text-zinc-400" {...props}>{children}</code>
+                        <code className="rounded border border-[var(--border)] bg-[var(--bg-elevated)] px-1.5 py-0.5 font-mono text-xs text-[var(--accent)]" {...props}>{children}</code> :
+                        <div className="my-3 overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]/70 p-4 shadow-inner">
+                          <code className="font-mono text-xs text-[var(--text-secondary)]" {...props}>{children}</code>
                         </div>
                     ),
-                    strong: ({ node, children }) => <strong className="text-white font-bold">{children}</strong>,
-                    a: ({ node, children, href }) => <a href={href} className="text-indigo-400 hover:text-indigo-300 underline underline-offset-2" target="_blank" rel="noreferrer">{children}</a>
+                    strong: ({ node, children }) => <strong className="font-bold text-[var(--text-primary)]">{children}</strong>,
+                    a: ({ node, children, href }) => <a href={href} className="text-[var(--accent)] underline underline-offset-2 hover:opacity-80" target="_blank" rel="noreferrer">{children}</a>
                   }}>
                     {msg.content}
                   </ReactMarkdown>
                   {msg.role === 'assistant' ? <ModelAttribution model={msg.model} /> : null}
                 </div>
-                <span className="text-[9px] text-zinc-600 mt-2 font-mono px-1 opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-widest">
+                <span className="mt-2 px-1 font-mono text-[9px] uppercase tracking-widest text-[var(--text-muted)] opacity-0 transition-opacity group-hover:opacity-100">
                   {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
@@ -296,13 +313,13 @@ ${fileContext}
 
           {isLoading && (
             <div className="flex gap-4 animate-in fade-in pl-1">
-              <div className="w-8 h-8 rounded-full bg-indigo-950/20 border border-indigo-500/20 shrink-0 flex items-center justify-center text-indigo-400">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--bg-card)] text-[var(--accent)]">
                 <Bot className="w-4 h-4 animate-pulse" />
               </div>
-              <div className="bg-zinc-900 border border-zinc-800 rounded-3xl rounded-tl-sm px-5 py-4 flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce"></div>
+              <div className="flex items-center gap-2 rounded-3xl rounded-tl-sm border border-[var(--border)] bg-[var(--bg-card)] px-5 py-4">
+                <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-[var(--accent)] [animation-delay:-0.3s]"></div>
+                <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-[var(--accent)] [animation-delay:-0.15s]"></div>
+                <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-[var(--accent)]"></div>
               </div>
             </div>
           )}
@@ -312,11 +329,11 @@ ${fileContext}
 
       {/* Input Area - Floating Capsule */}
       <div className="absolute bottom-6 left-0 right-0 px-4 flex justify-center z-20">
-        <div className="max-w-3xl w-full bg-black/80 backdrop-blur-xl border border-zinc-800 rounded-[2rem] shadow-2xl shadow-black/80 p-2 flex items-end gap-2 transition-all hover:border-zinc-700 focus-within:border-indigo-500/50 focus-within:ring-4 focus-within:ring-indigo-500/10">
+        <div className="flex w-full max-w-3xl items-end gap-2 rounded-[2rem] border border-[var(--border)] bg-[var(--bg-card)]/95 p-2 shadow-[var(--shadow-panel)] backdrop-blur-xl transition-all hover:border-[var(--border-strong)] focus-within:border-[rgba(116,86,255,0.20)] focus-within:ring-4 focus-within:ring-[rgba(116,86,255,0.08)]">
 
           <button
             onClick={() => document.getElementById('chat-upload')?.click()}
-            className="w-10 h-10 rounded-full flex items-center justify-center text-zinc-500 hover:bg-zinc-800 hover:text-white transition-colors flex-shrink-0"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[var(--text-muted)] transition-colors hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]"
             title="Upload Data"
           >
             <Paperclip className="w-4 h-4" />
@@ -334,7 +351,7 @@ ${fileContext}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Enter command or message..."
-            className="flex-1 bg-transparent border-none focus:ring-0 text-zinc-200 placeholder:text-zinc-600 resize-none outline-none font-medium text-sm leading-relaxed py-3 max-h-32 min-h-[44px]"
+            className="max-h-32 min-h-[44px] flex-1 resize-none border-none bg-transparent py-3 text-sm font-medium leading-relaxed text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)] focus:ring-0"
             rows={1}
           />
 
@@ -342,8 +359,8 @@ ${fileContext}
             onClick={() => handleSendMessage()}
             disabled={!inputValue.trim() || isLoading}
             className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${inputValue.trim() && !isLoading
-              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 hover:bg-indigo-500 hover:scale-110'
-              : 'bg-zinc-800/50 text-zinc-600 cursor-not-allowed'
+              ? 'bg-[var(--accent)] text-white shadow-lg shadow-[rgba(116,86,255,0.22)] hover:scale-110 hover:opacity-90'
+              : 'cursor-not-allowed bg-[var(--bg-secondary)] text-[var(--text-muted)]'
               }`}
           >
             <ArrowUp className="w-4 h-4" />

@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useAnalysisData } from '@/lib/useAnalysisData';
-import { MoreVertical, Plus, Clock, CheckCircle2, Tag, Target, Filter } from 'lucide-react';
+import { MoreVertical, Plus, Clock, CheckCircle2, Tag, Target, Filter, ArrowRight } from 'lucide-react';
 
 export function KanbanBoard() {
     const { analysis } = useAnalysisData();
@@ -87,41 +88,12 @@ export function KanbanBoard() {
 
                                     {/* Cards */}
                                     <div className="custom-scrollbar flex-1 space-y-3 overflow-y-auto p-3">
-                                        {tasks.map((task: any) => (
-                                            <div
-                                                key={task.id}
-                                                className="group cursor-grab rounded-lg border border-white/[0.07] bg-[var(--color-brand-bg)] p-4 transition-colors hover:border-white/[0.14] active:cursor-grabbing"
-                                            >
-                                                <div className="mb-2 flex items-center gap-2">
-                                                    <span className={`rounded border px-2 py-0.5 text-[10px] font-medium ${
-                                                        task.priority === 'High' ? 'border-rose-500/20 bg-rose-950/30 text-rose-400'
-                                                        : task.priority === 'Med'  ? 'border-amber-500/20 bg-amber-950/30 text-amber-400'
-                                                        : 'border-white/[0.07] bg-white/[0.03] text-[var(--muted)]'
-                                                    }`}>
-                                                        {task.priority}
-                                                    </span>
-                                                </div>
-
-                                                <p className="mb-3 text-sm leading-relaxed text-[var(--text)]/80 transition-colors group-hover:text-[var(--text)]">
-                                                    {task.title}
-                                                </p>
-
-                                                <div className="flex items-center justify-between border-t border-white/[0.05] pt-3">
-                                                    <div className="flex h-5 w-5 items-center justify-center rounded-full border border-indigo-500/30 bg-indigo-900/50 text-[8px] font-bold text-indigo-200">
-                                                        PM
-                                                    </div>
-                                                    <div className="flex items-center gap-1 text-[var(--muted)]">
-                                                        <Tag className="h-3 w-3" />
-                                                        <span className="text-[10px]">Sprint 1</span>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                        {tasks.map((task: any, index: number) => (
+                                            <TaskCard key={task.id} task={task} index={index} />
                                         ))}
 
                                         {tasks.length === 0 && (
-                                            <div className="flex h-24 flex-col items-center justify-center rounded-lg border border-dashed border-white/[0.06]">
-                                                <p className="text-[10px] font-medium text-[var(--muted)]">Empty</p>
-                                            </div>
+                                            <EmptyColumn />
                                         )}
                                     </div>
                                 </div>
@@ -131,5 +103,142 @@ export function KanbanBoard() {
                 </div>
             </div>
         </div>
+    );
+}
+
+// Interactive Task Card Component
+function TaskCard({ task, index }: { task: any; index: number }) {
+    const [isHovered, setIsHovered] = useState(false);
+    const [isPressed, setIsPressed] = useState(false);
+
+    const priorityStyles = {
+        High: { border: 'border-rose-500/20', bg: 'bg-rose-950/30', text: 'text-rose-400', glow: 'rgba(244,63,94,0.3)' },
+        Med: { border: 'border-amber-500/20', bg: 'bg-amber-950/30', text: 'text-amber-400', glow: 'rgba(245,158,11,0.3)' },
+        Low: { border: 'border-white/[0.07]', bg: 'bg-white/[0.03]', text: 'text-[var(--muted)]', glow: 'rgba(255,255,255,0.1)' },
+    };
+    const style = priorityStyles[task.priority as keyof typeof priorityStyles] || priorityStyles.Low;
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05, duration: 0.3 }}
+            className={`group relative cursor-grab rounded-lg border ${style.border} ${style.bg} p-4 active:cursor-grabbing`}
+            style={{
+                background: isHovered
+                    ? `linear-gradient(180deg, rgba(255,255,255,0.05), ${style.glow.replace('0.3', '0.05')})`
+                    : 'var(--color-brand-bg)',
+                borderColor: isHovered ? style.glow.replace('0.3', '0.3') : undefined,
+            }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            onMouseDown={() => setIsPressed(true)}
+            onMouseUp={() => setIsPressed(false)}
+            whileHover={{ y: -2, boxShadow: `0 8px 24px -8px ${style.glow}` }}
+            whileTap={{ scale: 0.98 }}
+        >
+            {/* Priority Badge */}
+            <div className="mb-2 flex items-center gap-2">
+                <motion.span
+                    className={`rounded border px-2 py-0.5 text-[10px] font-medium ${style.border} ${style.bg} ${style.text}`}
+                    animate={{ scale: isHovered ? 1.05 : 1 }}
+                    transition={{ duration: 0.2 }}
+                >
+                    {task.priority}
+                </motion.span>
+
+                {/* Hover Actions */}
+                <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: isHovered ? 1 : 0, x: isHovered ? 0 : -10 }}
+                    className="ml-auto flex items-center gap-1"
+                >
+                    <button
+                        type="button"
+                        className="rounded p-1 text-[var(--muted)] transition-colors hover:bg-white/[0.06] hover:text-[var(--text)]"
+                        title="Edit task"
+                    >
+                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                    </button>
+                </motion.div>
+            </div>
+
+            {/* Task Title */}
+            <p className="mb-3 text-sm leading-relaxed text-[var(--text)]/80 transition-colors group-hover:text-[var(--text)]">
+                {task.title}
+            </p>
+
+            {/* Footer */}
+            <div className="flex items-center justify-between border-t border-white/[0.05] pt-3">
+                <div className="flex h-5 w-5 items-center justify-center rounded-full border border-indigo-500/30 bg-indigo-900/50 text-[8px] font-bold text-indigo-200">
+                    PM
+                </div>
+
+                <div className="flex items-center gap-2">
+                    {/* Expand hint on hover */}
+                    <motion.span
+                        initial={{ opacity: 0, width: 0 }}
+                        animate={{ opacity: isHovered ? 0.6 : 0, width: isHovered ? 'auto' : 0 }}
+                        className="overflow-hidden text-[9px] text-[var(--muted)]"
+                    >
+                        View details
+                    </motion.span>
+
+                    <motion.div
+                        animate={{ x: isHovered ? 3 : 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="text-[var(--muted)]"
+                    >
+                        <ArrowRight className="h-3 w-3" />
+                    </motion.div>
+
+                    <div className="flex items-center gap-1 text-[var(--muted)]">
+                        <Tag className="h-3 w-3" />
+                        <span className="text-[10px]">Sprint 1</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Hover glow effect */}
+            <motion.div
+                className="absolute inset-0 rounded-lg pointer-events-none"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: isHovered ? 1 : 0 }}
+                transition={{ duration: 0.2 }}
+                style={{
+                    background: `radial-gradient(circle at 50% 0%, ${style.glow.replace('0.3', '0.15')}, transparent 70%)`,
+                }}
+            />
+        </motion.div>
+    );
+}
+
+// Empty State with Interactive Element
+function EmptyColumn() {
+    const [isHovered, setIsHovered] = useState(false);
+
+    return (
+        <motion.div
+            className="flex h-24 flex-col items-center justify-center rounded-lg border border-dashed border-white/[0.06]"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            animate={{
+                borderColor: isHovered ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.06)',
+                backgroundColor: isHovered ? 'rgba(255,255,255,0.02)' : 'transparent',
+            }}
+            transition={{ duration: 0.2 }}
+        >
+            <motion.div
+                animate={{ scale: isHovered ? 1.1 : 1, y: isHovered ? -2 : 0 }}
+                transition={{ duration: 0.2 }}
+            >
+                <Plus className="h-5 w-5 text-[var(--muted)]" />
+            </motion.div>
+            <p className="mt-2 text-[10px] font-medium text-[var(--muted)]">
+                {isHovered ? 'Click to add task' : 'Empty column'}
+            </p>
+        </motion.div>
     );
 }

@@ -2,7 +2,7 @@
 
 import React, { useCallback, useState, useRef, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { useOffice, getAgentSystemPrompt, AgentRole } from '@/lib/OfficeContext';
+import { useOffice, AgentRole } from '@/lib/OfficeContext';
 import { getChatRailTheme, getChatAgentRoleForRoom } from '@/lib/roomThemes';
 import {
     Paperclip,
@@ -15,32 +15,26 @@ import {
     ChevronUp,
     MessageSquare,
     Plus,
-    AudioLines,
     Volume2,
     Square,
     Sparkles,
 } from 'lucide-react';
 import { ModelAttribution } from '@/components/ModelAttribution';
-import { EXEC_CHAT_MODEL_STORAGE_KEY, isExecChatModelId } from '@/lib/deskConstants';
 import { PA_BUDDY_NAME } from '@/lib/paBuddy';
 import { useSpeechRecognition } from '@/lib/useSpeechRecognition';
 import { formatProductPlanForContext, formatStrategyForContext } from '@/lib/ventureReadableContext';
+import { buildDexoJarvisVentureContext } from '@/lib/dexoJarvisContext';
+import { isVentureFoundationSparse } from '@/lib/ventureFoundation';
+import { dexoAutoSaveHintLines, dexoFullVenturePatchFromJarvis } from '@/lib/dexoApplyJarvisProductPatch';
+import { submitDexoVenturePatch } from '@/lib/dexoProposalClient';
+import type { JarvisReport } from '@/app/api/jarvis/route';
 import { useReadAloud } from '@/lib/useReadAloud';
+import { useTokens } from '@/lib/tokens/useTokens';
+import { TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 
-const VENTURE_THREAD_WELCOME_TITLE = 'Welcome to your venture thread';
+const VENTURE_THREAD_WELCOME_TITLE = 'Dexo · venture thread';
 const VENTURE_THREAD_WELCOME_BODY =
-    "I'll help you build your venture — strategy, execution, and aligned decisions in one place. Use the bar below to ask anything; use read aloud on any reply when you want to listen.";
-
-function readStoredExecModel(): string {
-    if (typeof window === 'undefined') return 'llama3';
-    try {
-        const v = localStorage.getItem(EXEC_CHAT_MODEL_STORAGE_KEY);
-        if (v && isExecChatModelId(v)) return v;
-    } catch {
-        /* noop */
-    }
-    return 'llama3';
-}
+    "Same Dexo engine as the command center — strategy, files, and desk context in one thread. Use the bar below; read aloud on any reply when you want to listen.";
 
 interface Message {
     id: string;
@@ -88,7 +82,10 @@ export function ChatAssistant({
         clearExecutiveThread,
         deskSectionFocus,
         suiteIntelOpenDesk,
+        updateProjectField,
     } = useOffice();
+
+    const tokens = useTokens();
 
     const sidebarSectionLabel =
         deskSectionFocus && deskSectionFocus.room === activeRoom
@@ -112,6 +109,18 @@ export function ChatAssistant({
     const { speak, stop, speakingKey } = useReadAloud();
 
     const isCeoSplit = variant === 'ceoSplit';
+    /** CEO strategy narrative: one continuous page — no floating thread panel; transcript renders in the desk body. */
+    const narrativeDocMode =
+        isCeoSplit &&
+        useExecutiveThread &&
+        activeRoom === 'ceo' &&
+        deskSectionFocus?.room === 'ceo' &&
+        deskSectionFocus?.sectionId === 'narrative';
+
+    useEffect(() => {
+        if (narrativeDocMode) setFloatOpen(false);
+    }, [narrativeDocMode]);
+
     // Thread always floats above the message bar — never portals into desk sections
     const wantsBlockInlineThread = false;
     const focusAnchorsThread = false;
@@ -165,12 +174,6 @@ export function ChatAssistant({
         if (useExecutiveThread) return;
         setLocalMessages([]);
     }, [activeRoom, useExecutiveThread]);
-
-    const [selectedModel, setSelectedModel] = useState('llama3');
-
-    useEffect(() => {
-        setSelectedModel(readStoredExecModel());
-    }, []);
 
     const appendTranscript = useCallback((t: string) => {
         setInputValue((prev) => (prev ? `${prev.trim()} ${t}` : t));
@@ -228,7 +231,29 @@ export function ChatAssistant({
         if ((!inputValue.trim() && !pendingChat) || isLoading || !activeProject) return;
 
         onComposerInteract?.();
-        if (variant === 'ceoSplit') { setFloatOpen(true); }
+        if (variant === 'ceoSplit' && !narrativeDocMode) setFloatOpen(true);
+
+        const paid = tokens.spend(TOKEN_COSTS.CHAT_MESSAGE, 'Venture desk chat');
+        if (!paid.success) {
+            const msg =
+                paid.message ??
+                'Daily AI credits are used up. Upgrade to Pro for unlimited usage, or try again after the daily reset.';
+            if (useExecutiveThread) {
+                appendExecutiveThread({
+                    id: Date.now().toString(),
+                    role: 'assistant',
+                    content: msg,
+                    ts: Date.now(),
+                    channel: 'cos',
+                });
+            } else {
+                setLocalMessages((prev) => [
+                    ...prev,
+                    { id: Date.now().toString(), role: 'assistant', content: msg, timestamp: Date.now() },
+                ]);
+            }
+            return;
+        }
 
         const userMessage: Message = {
             id: Date.now().toString(),
@@ -256,11 +281,13 @@ export function ChatAssistant({
         setIsLoading(true);
 
         try {
-            const systemPrompt = getAgentSystemPrompt(effectiveAgentRole as AgentRole, activeProject);
-
             let fileContext = '';
             if (activeProject.files && activeProject.files.length > 0) {
-                fileContext = '\n\nATTACHED FILE DATA:\n' + activeProject.files.map(f => `--- FILE: ${f.name} ---\n${f.content.substring(0, 5000)}...\n--- END FILE ---`).join('\n');
+                fileContext =
+                    '\n\nATTACHED FILE DATA:\n' +
+                    activeProject.files
+                        .map((f) => `--- FILE: ${f.name} ---\n${f.content.substring(0, 5000)}...\n--- END FILE ---`)
+                        .join('\n');
             }
 
             const deskSectionLine =
@@ -270,47 +297,69 @@ export function ChatAssistant({
                       ? `Intelligence Suite: user expanded the "${suiteIntelOpenDesk}" role row. Ground answers in agentStaffSnapshot.desks.${suiteIntelOpenDesk} and the venture record; do not invent facts.`
                       : 'Desk block in focus: none (general room).';
 
-            const projectContext = `
-            Current Project: ${activeProject.name}
-            CEO Strategy (readable summary — not raw JSON):
-            ${formatStrategyForContext(activeProject.strategy)}
-            Product / PM plan (readable summary — not raw JSON):
-            ${formatProductPlanForContext(activeProject.productPlan)}
-            Budget: ${activeProject.budget || 'N/A'}
-            Market Insights: ${activeProject.marketInsights || 'N/A'}
-            Active View: ${activeRoom}
-            ${deskSectionLine}
-            Executive Journal: ${activeProject.userNotes || 'N/A'}
-            Team Directives: ${activeProject.teamDirectives || 'N/A'}
-            ${fileContext}
-            `.trim();
+            const deskAgentLine = `Active desk channel: ${effectiveAgentRole} (room: ${activeRoom}). Ground recommendations in this desk when relevant.`;
 
-            const fullMessages = [
-                { role: 'system', content: systemPrompt + '\n\nContext:\n' + projectContext },
-                ...priorForApi,
-                { role: 'user', content: userMessage.content },
-            ];
+            const extendedSnapshot =
+                `${buildDexoJarvisVentureContext(activeProject)}\n\n` +
+                `---\n${deskAgentLine}\n${deskSectionLine}\n` +
+                `---\nReadable strategy excerpt:\n${formatStrategyForContext(activeProject.strategy)}\n\n` +
+                `Readable product plan excerpt:\n${formatProductPlanForContext(activeProject.productPlan)}\n`;
 
-            const response = await fetch('/api/chat', {
+            const conversationHistory = priorForApi.map((m) => ({
+                role: m.role,
+                text: m.content,
+            }));
+
+            const response = await fetch('/api/dexo', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    messages: fullMessages,
-                    model: selectedModel,
+                    action: 'jarvis',
+                    payload: {
+                        mode: 'converse',
+                        context: extendedSnapshot.slice(0, 24_000),
+                        sparseContext: isVentureFoundationSparse(activeProject),
+                        userMessage: userMessage.content,
+                        conversationHistory,
+                        attachmentNotes: fileContext.trim() || undefined,
+                        deskContextLine: `${deskAgentLine}\n${deskSectionLine}`,
+                    },
                 }),
             });
 
-            if (!response.ok) throw new Error('Failed to fetch response');
+            const data = (await response.json()) as { ok?: boolean; report?: JarvisReport; error?: string };
 
-            const data = await response.json();
-            const assistantContent = data.message?.content || "Connection established, but no content generated.";
+            if (!data.ok || !data.report) {
+                throw new Error(data.error || 'Dexo (Jarvis) did not return a report');
+            }
+
+            let assistantContent = data.report.voiceResponse || data.report.headline;
+            const patch = dexoFullVenturePatchFromJarvis(activeProject, data.report.proposedUpdates);
+            const pending = dexoAutoSaveHintLines(patch);
+            if (pending.length > 0 && activeProject.id) {
+                const out = await submitDexoVenturePatch({
+                    ventureId: activeProject.id,
+                    source: 'desk_chat',
+                    model: 'Dexo',
+                    summary: `Dexo suggests: ${pending.join(' · ')}`,
+                    patch,
+                    updateProjectField,
+                });
+                if (!out.ok) {
+                    assistantContent += `\n\n_Could not store or apply proposal (${out.error})._`;
+                } else if (out.applied) {
+                    assistantContent += `\n\n_Applied to your venture: ${pending.join(' · ')} (${out.mode} mode)._`;
+                } else {
+                    assistantContent += `\n\n_Pending your approval: ${pending.join(' · ')}._`;
+                }
+            }
 
             const assistantMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 role: 'assistant',
                 content: assistantContent,
                 timestamp: Date.now(),
-                model: typeof data.model === 'string' ? data.model : undefined,
+                model: 'Dexo',
             };
 
             if (useExecutiveThread) {
@@ -371,14 +420,19 @@ export function ChatAssistant({
     const threadBody = (
         <>
             {useExecutiveThread ? (
-                <div className="rounded-xl border border-violet-500/25 bg-gradient-to-br from-violet-500/[0.07] via-zinc-800/80 to-cyan-500/[0.04] px-3.5 py-3 sm:px-4">
+                <div className="rounded-xl border border-violet-500/20 px-3.5 py-3 sm:px-4"
+                    style={{ 
+                        background: 'linear-gradient(180deg, rgba(39,39,42,0.92) 0%, rgba(24,24,27,0.96) 100%)',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.35)'
+                    }}>
                     <div className="flex items-start gap-3">
-                        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-violet-500/15 text-violet-200">
+                        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+                            style={{ background: 'rgba(139,92,246,0.15)', color: '#A78BFA' }}>
                             <Sparkles className="h-4 w-4" aria-hidden />
                         </div>
                         <div className="min-w-0 flex-1">
-                            <p className="text-[12px] font-semibold text-zinc-100">{VENTURE_THREAD_WELCOME_TITLE}</p>
-                            <p className="mt-1 text-[11px] leading-relaxed text-zinc-400">{VENTURE_THREAD_WELCOME_BODY}</p>
+                            <p className="text-[12px] font-semibold" style={{ color: 'var(--text-primary)' }}>{VENTURE_THREAD_WELCOME_TITLE}</p>
+                            <p className="mt-1 text-[11px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{VENTURE_THREAD_WELCOME_BODY}</p>
                         </div>
                         <button
                             type="button"
@@ -387,7 +441,19 @@ export function ChatAssistant({
                                     ? stop()
                                     : speak(`${VENTURE_THREAD_WELCOME_TITLE}. ${VENTURE_THREAD_WELCOME_BODY}`, 'venture-welcome')
                             }
-                            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-white/[0.1] bg-white/[0.05] px-2.5 py-1.5 text-[10px] font-medium text-zinc-300 transition hover:bg-white/[0.09] hover:text-zinc-100"
+                            className="flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[10px] font-medium transition"
+                            style={{ 
+                                background: 'rgba(255,255,255,0.06)',
+                                color: 'var(--text-secondary)'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                                e.currentTarget.style.color = 'var(--text-primary)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                                e.currentTarget.style.color = 'var(--text-secondary)';
+                            }}
                             title={speakingKey === 'venture-welcome' ? 'Stop' : 'Read aloud'}
                         >
                             {speakingKey === 'venture-welcome' ? (
@@ -454,20 +520,33 @@ export function ChatAssistant({
                     className={`flex gap-2.5 sm:gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
                 >
                     {msg.role === 'assistant' && (
-                        <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--accent-soft)] text-brand-text">
+                        <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full" 
+                            style={{ background: 'rgba(16,185,129,0.15)', color: 'var(--text-primary)' }}>
                             <Bot className="h-3.5 w-3.5 opacity-90" strokeWidth={1.75} aria-hidden />
                         </div>
                     )}
 
                     <div
-                        className={`max-w-[88%] text-sm leading-relaxed ${
+                        className="max-w-[88%] text-sm leading-relaxed px-3.5 py-2.5 rounded-xl"
+                        style={
                             msg.role === 'user'
-                                ? 'rounded-xl rounded-br-sm border border-white/[0.1] bg-white/[0.07] px-3.5 py-2.5 text-brand-text'
-                                : 'rounded-xl rounded-tl-sm border border-white/[0.08] border-l-[3px] border-l-[color-mix(in_srgb,var(--accent)_40%,transparent)] bg-gradient-to-b from-white/[0.05] to-white/[0.02] px-3.5 py-2.5 text-brand-text/95'
-                        }`}
+                                ? {
+                                    background: 'linear-gradient(180deg, rgba(16,185,129,0.15) 0%, rgba(16,185,129,0.08) 100%)',
+                                    borderRadius: '1rem 1rem 0.25rem 1rem',
+                                    color: 'var(--text-primary)',
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                                }
+                                : {
+                                    background: 'linear-gradient(180deg, rgba(39,39,42,0.95) 0%, rgba(24,24,27,0.98) 100%)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: '1rem 1rem 1rem 0.25rem',
+                                    color: 'var(--text-primary)',
+                                    boxShadow: '0 4px 16px rgba(0,0,0,0.35)'
+                                }
+                        }
                     >
                         {useExecutiveThread && !focusAnchorsThread ? (
-                            <p className="mb-1.5 text-[10px] font-medium tracking-wide text-zinc-500">
+                            <p className="mb-1.5 text-[10px] font-medium tracking-wide" style={{ color: 'var(--text-tertiary)' }}>
                                 {msg.channel === 'cos'
                                     ? 'Strategy desk'
                                     : msg.role === 'user'
@@ -485,7 +564,19 @@ export function ChatAssistant({
                                             ? stop()
                                             : speak(msg.content, `msg-${msg.id}`)
                                     }
-                                    className="inline-flex items-center gap-1 rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-1 text-[10px] font-medium text-zinc-400 transition hover:border-white/[0.14] hover:bg-white/[0.07] hover:text-zinc-200"
+                                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-medium transition"
+                                    style={{ 
+                                        background: 'rgba(255,255,255,0.06)',
+                                        color: 'var(--text-secondary)'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                                        e.currentTarget.style.color = 'var(--text-primary)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                                        e.currentTarget.style.color = 'var(--text-secondary)';
+                                    }}
                                     title={speakingKey === `msg-${msg.id}` ? 'Stop' : 'Read aloud'}
                                 >
                                     {speakingKey === `msg-${msg.id}` ? (
@@ -506,16 +597,21 @@ export function ChatAssistant({
 
             {isLoading && (
                 <div className="flex gap-2.5 sm:gap-3">
-                    <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--accent-soft)] text-brand-text">
+                    <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
+                        style={{ background: 'rgba(16,185,129,0.15)', color: 'var(--text-primary)' }}>
                         <Bot className="h-3.5 w-3.5 opacity-90" strokeWidth={1.75} aria-hidden />
                     </div>
-                    <div className="flex items-center rounded-xl rounded-tl-sm border border-white/[0.08] border-l-[3px] border-l-[color-mix(in_srgb,var(--accent)_40%,transparent)] bg-gradient-to-b from-white/[0.05] to-white/[0.02] px-3.5 py-2.5">
+                    <div className="flex items-center rounded-xl rounded-tl-sm border border-white/[0.1] px-3.5 py-2.5"
+                        style={{ 
+                            background: 'linear-gradient(180deg, rgba(39,39,42,0.95) 0%, rgba(24,24,27,0.98) 100%)',
+                            boxShadow: '0 4px 16px rgba(0,0,0,0.35)'
+                        }}>
                         <span className="inline-flex gap-1">
-                            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-zinc-500" />
-                            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-zinc-500 [animation-delay:150ms]" />
-                            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-zinc-500 [animation-delay:300ms]" />
+                            <span className="h-1.5 w-1.5 animate-pulse rounded-full" style={{ background: 'var(--text-tertiary)' }} />
+                            <span className="h-1.5 w-1.5 animate-pulse rounded-full [animation-delay:150ms]" style={{ background: 'var(--text-tertiary)' }} />
+                            <span className="h-1.5 w-1.5 animate-pulse rounded-full [animation-delay:300ms]" style={{ background: 'var(--text-tertiary)' }} />
                         </span>
-                        <span className="ml-2 text-[12px] text-zinc-500">Thinking…</span>
+                        <span className="ml-2 text-[12px]" style={{ color: 'var(--text-tertiary)' }}>Thinking…</span>
                     </div>
                 </div>
             )}
@@ -547,7 +643,7 @@ export function ChatAssistant({
         window.addEventListener('mouseup', onUp);
     }, [dragOffset.x, dragOffset.y]);
 
-    const floatingThreadPanel = isCeoSplit && mounted
+    const floatingThreadPanel = isCeoSplit && mounted && !narrativeDocMode
         ? createPortal(
             <>
                 {/* Pill toggle — visible when thread has messages but panel is closed */}
@@ -556,25 +652,27 @@ export function ChatAssistant({
                         type="button"
                         onClick={() => setFloatOpen(true)}
                         style={{ transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)` }}
-                        className="fixed bottom-[108px] left-1/2 z-[60] flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/[0.1] bg-zinc-800 px-3.5 py-2 text-[12px] text-zinc-400 shadow-[0_4px_24px_rgba(0,0,0,0.45)] transition hover:bg-zinc-700 hover:text-zinc-200 lg:left-auto lg:translate-x-0 lg:right-[360px]"
+                        className="fixed bottom-[108px] left-1/2 z-[60] flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/[0.14] bg-zinc-900/95 px-3.5 py-2 text-[12px] font-medium text-zinc-100 shadow-[0_8px_32px_rgba(0,0,0,0.55)] backdrop-blur-sm transition hover:bg-zinc-800 hover:text-white lg:left-auto lg:translate-x-0 lg:right-[360px]"
                     >
                         <MessageSquare className="h-3.5 w-3.5" aria-hidden />
                         <span>Thread</span>
-                        <span className="ml-0.5 rounded-full bg-white/[0.08] px-1.5 py-px text-[10px] text-zinc-500">{messages.length}</span>
+                        <span className="ml-0.5 rounded-full border border-white/[0.1] bg-zinc-950/80 px-1.5 py-px text-[10px] tabular-nums text-zinc-300">{messages.length}</span>
                     </button>
                 )}
                 {/* Floating thread panel */}
                 {floatOpen && (
                     <div
                         style={{ transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)` }}
-                        className={`fixed bottom-[108px] left-2 right-2 z-[60] flex flex-col overflow-hidden rounded-2xl border border-white/[0.1] bg-zinc-800 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.55)] transition-[height] duration-300 ease-in-out lg:left-auto lg:right-[360px] ${
-                            floatExpanded ? 'h-[520px] lg:w-[500px]' : 'h-[300px] lg:w-[380px]'
+                        className={`fixed bottom-[108px] left-1/2 z-[60] flex w-[min(calc(100vw-1rem),380px)] -translate-x-1/2 flex-col overflow-hidden rounded-2xl border border-white/[0.14] bg-zinc-900/98 shadow-[0_24px_56px_-12px_rgba(0,0,0,0.65)] backdrop-blur-md transition-[height,width] duration-300 ease-in-out lg:left-auto lg:w-[380px] lg:translate-x-0 lg:right-[360px] ${
+                            floatExpanded
+                                ? 'h-[min(520px,calc(100dvh-140px))] w-[min(calc(100vw-1rem),680px)] lg:h-[520px] lg:w-[680px]'
+                                : 'h-[300px] lg:h-[300px]'
                         }`}
                     >
                         {/* Drag-handle header */}
                         <div
                             onMouseDown={onDragHeaderMouseDown}
-                            className="flex shrink-0 cursor-grab select-none items-center justify-between gap-2 border-b border-white/[0.08] bg-zinc-800 px-4 py-2.5 active:cursor-grabbing"
+                            className="flex shrink-0 cursor-grab select-none items-center justify-between gap-2 border-b border-white/[0.1] bg-zinc-950/95 px-4 py-2.5 active:cursor-grabbing"
                         >
                             <div className="flex items-center gap-2 min-w-0">
                                 <MessageSquare className="h-3.5 w-3.5 shrink-0 text-zinc-600" aria-hidden />
@@ -832,38 +930,19 @@ export function ChatAssistant({
                                         ? 'Voice input needs Chrome, Edge, or Safari'
                                         : listening
                                           ? 'Stop dictation'
-                                          : 'Voice input'
+                                          : 'Voice input (dictation)'
                                 }
                                 aria-label={listening ? 'Stop voice input' : 'Voice input'}
                                 aria-pressed={listening}
                             >
                                 <Mic className={`h-5 w-5 ${listening ? 'animate-pulse' : ''}`} strokeWidth={1.8} />
                             </button>
-                            <button
-                                type="button"
-                                onClick={handleVoiceToggle}
-                                disabled={isLoading || !voiceSupported}
-                                className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-white/[0.1] disabled:opacity-40 ${
-                                    listening ? 'bg-white/15 text-white' : 'text-[#b4b4b4]'
-                                }`}
-                                title={
-                                    !voiceSupported
-                                        ? 'Voice input needs Chrome, Edge, or Safari'
-                                        : listening
-                                          ? 'Stop dictation'
-                                          : 'Voice input'
-                                }
-                                aria-label={listening ? 'Stop voice input' : 'Voice input'}
-                                aria-pressed={listening}
-                            >
-                                <AudioLines className={`h-5 w-5 ${listening ? 'animate-pulse' : ''}`} strokeWidth={1.8} />
-                            </button>
                             {inputValue.trim() && (
                                 <button
                                     type="button"
                                     onClick={handleSendMessage}
                                     disabled={isLoading}
-                                    className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-zinc-900 transition hover:bg-zinc-200 active:scale-[0.96] disabled:opacity-30"
+                                    className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--accent)] text-white transition hover:brightness-110 active:scale-[0.96] disabled:opacity-30"
                                     title="Send"
                                     aria-label="Send"
                                 >
@@ -940,7 +1019,7 @@ export function ChatAssistant({
                                     type="button"
                                     onClick={handleSendMessage}
                                     disabled={!inputValue.trim() || isLoading}
-                                    className="rounded-full bg-[var(--text)] p-2 text-[#0f1115] transition-colors hover:bg-white/90 active:scale-[0.98] disabled:opacity-40"
+                                    className="rounded-full bg-[var(--accent)] p-2 text-white transition-colors hover:brightness-110 active:scale-[0.98] disabled:opacity-40"
                                     title="Send"
                                     aria-label="Send"
                                 >

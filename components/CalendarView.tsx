@@ -51,22 +51,22 @@ export function CalendarView() {
         [activeProject, updateStrategy]
     );
 
-    /** Calendar grid reads from allProjects; unsaved ventures only exist on activeProject. */
+    /** Calendar is venture-specific — only show events for the active venture. */
     const allEvents = useMemo(() => {
-        const fromDb = allProjects.flatMap((p) =>
-            (p.events || []).map((e) => ({ ...e, projectName: p.name }))
-        );
-        if (activeProject && !activeProject.id) {
-            return (activeProject.events || []).map((e) => ({
-                ...e,
-                projectName: activeProject.name,
-            }));
-        }
-        return fromDb;
-    }, [allProjects, activeProject]);
+        if (!activeProject) return [];
+        return (activeProject.events || []).map((e) => ({
+            ...e,
+            projectName: activeProject.name,
+        }));
+    }, [activeProject]);
 
     const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
     const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
+
+    const calendarNow = new Date();
+    const isViewingTodayMonth =
+        currentDate.getFullYear() === calendarNow.getFullYear() &&
+        currentDate.getMonth() === calendarNow.getMonth();
 
     const handlePrevMonth = () => {
         setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
@@ -309,12 +309,29 @@ export function CalendarView() {
                                 );
                             });
 
+                            const isToday = isViewingTodayMonth && day === calendarNow.getDate();
+
                             return (
                                 <div
                                     key={day}
-                                    className="group relative flex min-h-[4.5rem] flex-col rounded-lg border border-brand-border bg-brand-bg/80 p-1.5 transition-colors hover:border-brand-teal/40 hover:bg-brand-input/30 sm:min-h-[5rem] sm:p-2"
+                                    aria-current={isToday ? 'date' : undefined}
+                                    className={`group relative flex min-h-[4.5rem] flex-col rounded-lg border p-1.5 transition-colors sm:min-h-[5rem] sm:p-2 ${
+                                        isToday
+                                            ? 'border-brand-teal/55 bg-brand-teal/[0.12] shadow-[inset_0_0_0_1px_rgba(116,86,255,0.25)] hover:border-brand-teal/70 hover:bg-brand-teal/[0.16]'
+                                            : 'border-brand-border bg-brand-bg/80 hover:border-brand-teal/40 hover:bg-brand-input/30'
+                                    }`}
                                 >
-                                    <span className="text-[11px] font-semibold text-brand-muted sm:text-xs">{day}</span>
+                                    <span
+                                        className={`text-[11px] font-semibold sm:text-xs ${
+                                            isToday ? 'text-brand-teal' : 'text-brand-muted'
+                                        }`}
+                                        title={isToday ? 'Today' : undefined}
+                                    >
+                                        {day}
+                                    </span>
+                                    {isToday ? (
+                                        <span className="sr-only">Today</span>
+                                    ) : null}
                                     <div className="mt-0.5 flex-1 space-y-1">
                                         {dayEvents.map((evt, idx) => (
                                             <div

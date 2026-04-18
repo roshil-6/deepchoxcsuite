@@ -26,7 +26,7 @@ export function MorningBriefCard({
                         <SunMedium className="h-5 w-5" aria-hidden />
                     </div>
                     <div className="min-w-0 flex-1">
-                        <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">Morning brief</p>
+                        <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">Partner check-in</p>
                         <p className="mt-1 text-sm font-medium leading-snug text-zinc-100">{brief.greeting}</p>
                     </div>
                 </div>

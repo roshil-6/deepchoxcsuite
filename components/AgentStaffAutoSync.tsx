@@ -3,7 +3,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useOffice } from '@/lib/OfficeContext';
 import {
-    getAutoStaffSyncEnabled,
     shouldRunAutoStaffSyncNow,
     AUTO_STAFF_SYNC_TICK_MS,
     AUTO_STAFF_SYNC_COOLDOWN_MS,
@@ -11,8 +10,8 @@ import {
 } from '@/lib/autoStaffSyncPreferences';
 
 /**
- * Background staff sync: when enabled (Dashboard toggle), runs while the tab is visible
- * if the last sync is older than the stale threshold and the venture has enough context.
+ * Background staff sync: runs while the tab is visible (and on focus / reopen) when
+ * the last sync is stale and the venture has enough context.
  */
 export function AgentStaffAutoSync() {
     const { activeProject, agentSyncRunning, runAgentStaffSync, addSystemLog } = useOffice();
@@ -21,7 +20,6 @@ export function AgentStaffAutoSync() {
 
     const tick = useCallback(async () => {
         if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
-        if (!getAutoStaffSyncEnabled()) return;
         if (!activeProject?.id || agentSyncRunning) return;
 
         const now = Date.now();
@@ -45,12 +43,20 @@ export function AgentStaffAutoSync() {
         const onVis = () => {
             if (document.visibilityState === 'visible') void tick();
         };
+        const onFocus = () => void tick();
+        const onPageShow = (e: PageTransitionEvent) => {
+            if (e.persisted) void tick();
+        };
         document.addEventListener('visibilitychange', onVis);
+        window.addEventListener('focus', onFocus);
+        window.addEventListener('pageshow', onPageShow as EventListener);
         void tick();
 
         return () => {
             window.clearInterval(id);
             document.removeEventListener('visibilitychange', onVis);
+            window.removeEventListener('focus', onFocus);
+            window.removeEventListener('pageshow', onPageShow as EventListener);
         };
     }, [tick]);
 

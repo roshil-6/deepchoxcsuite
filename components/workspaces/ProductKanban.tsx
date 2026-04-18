@@ -23,7 +23,6 @@ import {
     BookOpen,
     Loader2,
     Save,
-    Sparkles,
     History,
     Map,
     FolderOpen,
@@ -100,7 +99,7 @@ const PM_FOCUS: Record<MainTool, { title: string; question: string; prompt: stri
     },
     planning: {
         title: 'Planning room',
-        question: 'How do CEO flow and delivery phases line up?',
+        question: 'How does the strategy map line up with dated phases?',
         prompt:
             'PM desk · planning room. Two read-only inputs: (1) CEO strategy flow from `strategy` via parseStrategy → flow nodes/edges shown here; (2) phase timeline from the same strategy doc (`phases`). Describe alignment or gaps using only those structures. If flow or phases are empty, say which is missing. Do not invent milestones.',
     },
@@ -272,7 +271,7 @@ export function ProductKanban() {
         { id: 'roadmap', label: 'Roadmap brief', sub: 'Narrative' },
         { id: 'war', label: 'War room', sub: 'Persistent whiteboard' },
         { id: 'recent', label: 'Recent actions', sub: 'Structured log' },
-        { id: 'planning', label: 'Planning room', sub: 'Strategy flow mirror' },
+        { id: 'planning', label: 'Planning room', sub: 'Map + phases in one view' },
         { id: 'docs', label: 'Desk documents', sub: 'Clients & meetings' },
     ];
 
@@ -436,39 +435,67 @@ export function ProductKanban() {
                 );
             case 'planning':
                 return (
-                    <div className="flex flex-col gap-4">
-                        <div>
-                            <p className="mb-2 text-[11px] text-brand-muted">
-                                {ceoFlow.nodes.length > 0
-                                    ? `Mirror of strategy (${ceoFlow.nodes.length} steps · ${ceoFlow.edges.length} links). Edit on the strategy desk.`
-                                    : 'Mirror of strategy. Edit on the strategy desk.'}
+                    <div className="relative overflow-hidden rounded-2xl border border-violet-500/22 bg-[var(--bg-card)] shadow-[0_0_40px_-12px_rgba(139,92,246,0.22)]">
+                        <div
+                            className="pointer-events-none absolute -top-16 left-1/2 h-40 w-[min(100%,28rem)] -translate-x-1/2 rounded-full bg-violet-500/18 blur-3xl"
+                            aria-hidden
+                        />
+                        <div className="relative border-b border-[var(--border)] px-4 py-3 sm:px-5">
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-violet-300/85">Planning room</p>
+                            <p className="mt-1.5 max-w-2xl text-[12px] leading-relaxed text-[var(--text-secondary)]">
+                                Scroll in <span className="font-medium text-[var(--text-primary)]">one column</span>: the CEO strategy map
+                                (read-only here), then the phase horizons you edit. Keep dates honest against what the map says you are
+                                building.
                             </p>
-                            {ceoFlow.nodes.length === 0 ? (
-                                <p className="rounded-xl border border-dashed border-brand-border bg-brand-bg/50 px-4 py-8 text-center text-sm text-brand-muted">
-                                    No flow yet. Build it under Strategy → Visualise your plan.
-                                </p>
-                            ) : (
-                                <div className="min-h-[240px] sm:min-h-[300px]">
-                                    <StrategyFlowCanvas
-                                        key={activeProject.strategy ?? ''}
-                                        readOnly
-                                        nodes={ceoFlow.nodes}
-                                        edges={ceoFlow.edges}
-                                        onChange={() => {}}
-                                    />
-                                </div>
-                            )}
                         </div>
-                        <div className="overflow-hidden rounded-xl border border-brand-border bg-brand-bg">
-                            <p className="border-b border-brand-border/60 px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-brand-muted">
-                                Phase timeline (editable) · {strategyPhases.length} phase{strategyPhases.length === 1 ? '' : 's'}
-                            </p>
-                            <TimelinePhaseSetter
-                                embedded
-                                projectName={activeProject.name}
-                                phases={strategyPhases}
-                                onPhasesChange={persistStrategyPhases}
+                        <div className="relative bg-[var(--bg-elevated)]/20">
+                            <section className="border-b border-[var(--border)] px-4 py-4 sm:px-5">
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-violet-300/80">
+                                    Strategy map · mirror from CEO desk
+                                </p>
+                                <p className="mt-1 text-[10px] text-[var(--text-secondary)]">
+                                    {ceoFlow.nodes.length > 0
+                                        ? `${ceoFlow.nodes.length} steps · ${ceoFlow.edges.length} links · edit the map on Strategy → Visualise your plan`
+                                        : 'Nothing mirrored yet — map the plan on the strategy desk first.'}
+                                </p>
+                                {ceoFlow.nodes.length === 0 ? (
+                                    <p className="mt-4 rounded-xl border border-dashed border-[var(--border)] bg-[var(--bg-card)]/60 px-4 py-10 text-center text-[13px] leading-relaxed text-[var(--text-secondary)]">
+                                        No flow to mirror yet. When it exists on the strategy desk, it shows up here automatically.
+                                    </p>
+                                ) : (
+                                    <div className="mt-3 min-h-[240px] sm:min-h-[300px]">
+                                        <StrategyFlowCanvas
+                                            key={activeProject.strategy ?? ''}
+                                            readOnly
+                                            nodes={ceoFlow.nodes}
+                                            edges={ceoFlow.edges}
+                                            onChange={() => {}}
+                                        />
+                                    </div>
+                                )}
+                            </section>
+                            <div
+                                className="h-px bg-gradient-to-r from-transparent via-violet-400/25 to-transparent"
+                                aria-hidden
                             />
+                            <section className="min-h-0 overflow-hidden">
+                                <div className="border-b border-[var(--border)] px-4 py-2.5 sm:px-5">
+                                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-violet-300/80">
+                                        Phase horizons · editable on this venture
+                                    </p>
+                                    <p className="mt-0.5 text-[10px] text-[var(--text-secondary)]">
+                                        {strategyPhases.length} phase{strategyPhases.length === 1 ? '' : 's'} saved · align dates with the
+                                        map above
+                                    </p>
+                                </div>
+                                <TimelinePhaseSetter
+                                    embedded
+                                    planningStripOnly
+                                    projectName={activeProject.name}
+                                    phases={strategyPhases}
+                                    onPhasesChange={persistStrategyPhases}
+                                />
+                            </section>
                         </div>
                     </div>
                 );
@@ -528,7 +555,7 @@ export function ProductKanban() {
 
     return (
         <div className="flex w-full min-w-0 flex-1 flex-col bg-brand-bg">
-            <div className={`flex min-w-0 flex-1 flex-col ${deskFocus ? '' : 'lg:flex-row'}`}>
+            <div className="flex min-w-0 flex-1 flex-col">
                 <DeskShell
                     className="w-full min-w-0 flex-1"
                     bodyFlush={Boolean(deskFocus)}
@@ -556,6 +583,38 @@ export function ProductKanban() {
                         </>
                     ) : (
                         <div className="space-y-3">
+                            <div className="relative overflow-hidden rounded-2xl border border-violet-500/20 bg-[var(--bg-card)] px-4 py-3 shadow-[0_0_32px_-10px_rgba(139,92,246,0.2)] sm:px-5 sm:py-4">
+                                <div
+                                    className="pointer-events-none absolute -right-8 -top-12 h-28 w-40 rounded-full bg-violet-500/12 blur-2xl"
+                                    aria-hidden
+                                />
+                                <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-violet-300/90">
+                                            Product &amp; delivery · pinned intent
+                                        </p>
+                                        <p className="mt-1 text-[11px] leading-snug text-[var(--text-secondary)]">
+                                            One strip for what you ship next — not a second page. Blocks below open focused threads; this stays visible.
+                                        </p>
+                                        <textarea
+                                            value={pd.intent ?? ''}
+                                            onChange={(e) => setPd({ ...pd, intent: e.target.value })}
+                                            onBlur={(e) => persistProduct({ ...pd, intent: e.target.value })}
+                                            placeholder={intent}
+                                            rows={2}
+                                            className="mt-2 w-full resize-none rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] p-3 text-[13px] leading-relaxed text-[var(--text-primary)] placeholder:text-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-violet)]/25"
+                                        />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => persistProduct(pd)}
+                                        className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-2.5 text-xs font-semibold text-[var(--text-primary)] transition hover:border-violet-500/35 hover:bg-violet-500/[0.08] sm:w-auto"
+                                    >
+                                        {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                                        Save product desk
+                                    </button>
+                                </div>
+                            </div>
                             <GuideHint
                                 id="pm-hub-guide"
                                 when
@@ -564,11 +623,10 @@ export function ProductKanban() {
                                 dismissible={false}
                             />
                             <div className="flex justify-start">
-                                <div className="max-w-[min(100%,26rem)] rounded-2xl rounded-bl-md border border-white/[0.08] bg-zinc-950/35 px-3.5 py-2.5 text-left">
-                                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500">Suite</p>
-                                    <p className="mt-1 text-[12px] leading-relaxed text-zinc-300">
-                                        Pick a topic below — each opens like a focused thread. Chat at the bottom uses that block’s context until you go
-                                        back.
+                                <div className="max-w-[min(100%,26rem)] rounded-2xl rounded-bl-md border border-[var(--border)] bg-[var(--bg-elevated)]/80 px-3.5 py-2.5 text-left">
+                                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">How this desk works</p>
+                                    <p className="mt-1 text-[12px] leading-relaxed text-[var(--text-primary)]">
+                                        Pick a topic — each opens like a thread. Chat at the bottom follows that block until you go back.
                                     </p>
                                 </div>
                             </div>
@@ -595,37 +653,6 @@ export function ProductKanban() {
                         </div>
                     )}
                 </DeskShell>
-
-                {!deskFocus ? (
-            <aside className="flex w-[min(100%,14rem)] shrink-0 flex-col border-l border-zinc-800 bg-zinc-900/30">
-                {/** Headroom on narrow viewports: sync pill stays top-right until sm breakpoint. */}
-                <div className="border-b border-zinc-800 p-4 pt-14 sm:pt-4">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">Product intent · pinned</p>
-                    <textarea
-                        value={pd.intent ?? ''}
-                        onChange={(e) => setPd({ ...pd, intent: e.target.value })}
-                        onBlur={(e) => persistProduct({ ...pd, intent: e.target.value })}
-                        placeholder={intent}
-                        rows={3}
-                        className="mt-2 w-full resize-none rounded-lg border border-zinc-700 bg-zinc-900/60 p-3 text-xs leading-relaxed text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-zinc-500/30"
-                    />
-                    <p className="mt-2 flex items-center gap-1 text-[10px] text-zinc-600">
-                        <Sparkles className="h-3 w-3 shrink-0" aria-hidden />
-                        Open a block to edit; intent stays pinned here.
-                    </p>
-                </div>
-                <div className="mt-auto border-t border-zinc-800 p-3">
-                    <button
-                        type="button"
-                        onClick={() => persistProduct(pd)}
-                        className="flex w-full items-center justify-center gap-2 rounded-lg border border-brand-border bg-brand-card py-2 text-xs font-semibold text-zinc-100 hover:bg-brand-input"
-                    >
-                        {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-                        Save product desk
-                    </button>
-                </div>
-            </aside>
-                ) : null}
             </div>
         </div>
     );

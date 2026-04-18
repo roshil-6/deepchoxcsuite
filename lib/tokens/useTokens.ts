@@ -55,13 +55,23 @@ export function useTokens(): UseTokensReturn {
     // Listen for storage changes (multi-tab sync)
     useEffect(() => {
         const handleStorage = (e: StorageEvent) => {
-            if (e.key === 'dexo-token-state' || e.key === 'dexo-user-tier') {
+            if (
+                e.key === 'dexo-token-state' ||
+                e.key === 'dexo-user-tier' ||
+                e.key === 'deepchox_plan' ||
+                e.key === 'deepchox_trial_start'
+            ) {
                 refresh();
             }
         };
-        
+        const sameTab = () => refresh();
+
         window.addEventListener('storage', handleStorage);
-        return () => window.removeEventListener('storage', handleStorage);
+        window.addEventListener('deepchox-subscription-changed', sameTab);
+        return () => {
+            window.removeEventListener('storage', handleStorage);
+            window.removeEventListener('deepchox-subscription-changed', sameTab);
+        };
     }, [refresh]);
     
     // Spend tokens wrapper

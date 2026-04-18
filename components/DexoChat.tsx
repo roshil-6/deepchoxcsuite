@@ -6,6 +6,8 @@ import { useOffice } from '@/lib/OfficeContext';
 import { Bot, Youtube, Sparkles, Send, Copy, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { safeJsonParse } from '@/lib/utils';
 import { ModelAttribution } from '@/components/ModelAttribution';
+import { useTokens } from '@/lib/tokens/useTokens';
+import { TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 
 interface Message {
     id: string;
@@ -17,6 +19,7 @@ interface Message {
 
 export function DexoChat() {
     const { activeProject } = useOffice();
+    const tokens = useTokens();
     const [messages, setMessages] = useState<Message[]>([{
         id: 'welcome',
         role: 'assistant',
@@ -34,6 +37,22 @@ export function DexoChat() {
 
     const handleSendMessage = async () => {
         if (!inputValue.trim() || isLoading) return;
+
+        const paid = tokens.spend(TOKEN_COSTS.CHAT_MESSAGE, 'Dexo chat');
+        if (!paid.success) {
+            setMessages((prev) => [
+                ...prev,
+                {
+                    id: Date.now().toString(),
+                    role: 'assistant',
+                    content:
+                        paid.message ??
+                        'Daily AI credits are used up. Upgrade to Pro for unlimited usage, or try again after the daily reset.',
+                    timestamp: Date.now(),
+                },
+            ]);
+            return;
+        }
 
         const userMessage: Message = {
             id: Date.now().toString(),
@@ -57,16 +76,19 @@ export function DexoChat() {
             `
                 : 'No active project context.';
 
-            const response = await fetch('/api/chat', {
+            const response = await fetch('/api/dexo', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    messages: [
-                        { role: 'system', content: `You are Dexo. A high-intelligence general assistant.` + context },
-                        ...messages.map(m => ({ role: m.role, content: m.content })),
-                        { role: 'user', content: userMessage.content }
-                    ],
-                    model: 'llama3',
+                    action: 'chat',
+                    payload: {
+                        messages: [
+                            { role: 'system', content: `You are Dexo. A high-intelligence general assistant.` + context },
+                            ...messages.map(m => ({ role: m.role, content: m.content })),
+                            { role: 'user', content: userMessage.content }
+                        ],
+                        model: 'llama3',
+                    },
                 }),
             });
 

@@ -29,6 +29,7 @@ import { DeskChatThreadMount } from '@/components/DeskChatThreadSlotContext';
 import { DualAgentWorkPanel, useDualAgentPanelState } from '@/components/DualAgentWorkPanel';
 import { GuideHint, ProgressTrail } from '@/components/ui/ContextualGuide';
 import { WorkflowNeuralMap } from '@/components/WorkflowNeuralMap';
+import { AITeamNetwork } from '@/components/AITeamNetwork';
 
 const DESK_ORDER: { key: keyof AgentStaffSnapshot['desks']; title: string; subtitle: string }[] = [
     { key: 'ceo', title: RESEARCH_STAFF.ceo.navTitle, subtitle: RESEARCH_STAFF.ceo.navHint },
@@ -91,21 +92,21 @@ function IntelMessageSection({
             className={`scroll-mt-28 rounded-2xl px-4 py-4 sm:px-5 sm:py-5 ${INTEL_OUTLINE[outline]} ${className}`}
         >
             <header className="mb-4 shrink-0 flex gap-3">
-                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900/80 text-zinc-400">
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/[0.06] bg-white/[0.04] text-[#A1A1AA]">
                     {icon}
                 </div>
                 <div className="min-w-0 flex-1">
                     {eyebrow ? (
-                        <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-zinc-500">{eyebrow}</p>
+                        <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[#71717A]">{eyebrow}</p>
                     ) : null}
                     <div className="flex flex-wrap items-start justify-between gap-2">
-                        <h2 className={`text-sm font-semibold tracking-tight text-zinc-100 ${eyebrow ? 'mt-1' : ''}`}>{title}</h2>
+                        <h2 className={`text-sm font-semibold tracking-tight text-[#FAFAFA] ${eyebrow ? 'mt-1' : ''}`}>{title}</h2>
                         {headerRight ? <div className="shrink-0">{headerRight}</div> : null}
                     </div>
-                    {subtitle ? <p className="mt-1 text-[11px] leading-snug text-zinc-500">{subtitle}</p> : null}
+                    {subtitle ? <p className="mt-1 text-[11px] leading-snug text-[#71717A]">{subtitle}</p> : null}
                 </div>
             </header>
-            <div className={`min-h-0 text-[13px] leading-relaxed text-zinc-300/95 ${bodyClassName}`}>{children}</div>
+            <div className={`min-h-0 text-[13px] leading-relaxed text-[#A1A1AA] ${bodyClassName}`}>{children}</div>
         </section>
     );
 }
@@ -164,7 +165,7 @@ function formatSyncTime(at: number) {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
     return (
-        <span className="inline-block text-[9px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
+        <span className="inline-block text-[9px] font-semibold uppercase tracking-[0.14em] text-[#71717A]">
             {children}
         </span>
     );
@@ -256,20 +257,20 @@ export function CsuiteIntelligenceGuide() {
     /* ── Empty state ── */
     if (!activeProject?.id) {
         return (
-            <div className="flex h-full min-h-0 flex-col items-center justify-center gap-4 bg-[#131314] px-6 text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.04]">
-                    <Radio className="h-6 w-6 text-zinc-200" strokeWidth={1.85} aria-hidden />
+            <div className="flex h-full min-h-0 flex-col items-center justify-center gap-4 px-6 text-center" style={{ background: '#0A0A0B' }}>
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-white/[0.06] bg-white/[0.03]">
+                    <Radio className="h-6 w-6 text-[#FAFAFA]" strokeWidth={1.85} aria-hidden />
                 </div>
                 <div>
-                    <p className="text-[13px] font-medium text-zinc-200">No venture selected</p>
-                    <p className="mt-1.5 max-w-sm text-[12px] leading-relaxed text-zinc-500">
+                    <p className="text-[13px] font-medium text-[#FAFAFA]">No venture selected</p>
+                    <p className="mt-1.5 max-w-sm text-[12px] leading-relaxed text-[#71717A]">
                         Select a venture to configure how AI staff coordinate and to run staff sync for that workspace.
                     </p>
                 </div>
                 <button
                     type="button"
                     onClick={() => switchRoom('dashboard')}
-                    className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-4 py-2 text-[11px] font-medium text-zinc-200 transition-colors hover:bg-white/[0.07]"
+                    className="rounded-lg border border-white/[0.06] bg-white/[0.04] px-4 py-2 text-[11px] font-medium text-[#FAFAFA] transition-colors hover:bg-white/[0.06]"
                 >
                     Go to Executive Overview
                 </button>
@@ -280,22 +281,22 @@ export function CsuiteIntelligenceGuide() {
 
     /* ── Fullscreen flow overlay ── */
     return (
-        <div className="w-full min-w-0 bg-[#131314]">
+        <div className="w-full min-w-0" style={{ background: '#0A0A0B' }}>
                 <div className="mx-auto max-w-3xl space-y-6 px-4 pt-5 pb-16 sm:px-5 lg:max-w-5xl">
-                    <header className="rounded-2xl border border-zinc-800/90 bg-zinc-950/40 px-4 py-5 sm:px-5">
+                    <header className="rounded-2xl border border-white/[0.06] px-4 py-5 sm:px-5" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))' }}>
                         <SectionLabel>northROSC LABS · Deepchox</SectionLabel>
-                        <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
+                        <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#71717A]">
                             AI-powered team for founders
                         </p>
-                        <h1 className="mt-2 text-xl font-semibold tracking-tight text-zinc-100 sm:text-[22px]">
+                        <h1 className="mt-2 text-xl font-semibold tracking-tight text-[#FAFAFA] sm:text-[22px]">
                             Intelligence suite
                         </h1>
-                        <p className="mt-2.5 max-w-2xl text-[13px] leading-relaxed text-zinc-400">
-                            Configure <span className="text-zinc-300">how your AI teammates stay aligned</span>, then run staff sync
+                        <p className="mt-2.5 max-w-2xl text-[13px] leading-relaxed text-[#A1A1AA]">
+                            Configure <span className="text-[#FAFAFA]">how your AI teammates stay aligned</span>, then run staff sync
                             so every desk brief is generated from the same venture snapshot. Desk chats and your notes still edit the
                             record between runs.
                         </p>
-                        <p className="mt-3 text-[11px] leading-snug text-zinc-600">
+                        <p className="mt-3 text-[11px] leading-snug text-[#52525B]">
                             Outlined blocks group controls (your setup) from readouts (model output). Nothing here replaces your judgment
                             — verify anything that affects real decisions.
                         </p>
@@ -314,7 +315,28 @@ export function CsuiteIntelligenceGuide() {
                         </div>
                     </header>
 
-                    <WorkflowNeuralMap />
+                    <section className="relative scroll-mt-28 overflow-hidden rounded-2xl border border-violet-500/22 bg-[var(--bg-card)] shadow-[0_0_48px_-16px_rgba(139,92,246,0.28)]">
+                        <div
+                            className="pointer-events-none absolute -top-20 left-1/2 h-40 w-[min(100%,36rem)] -translate-x-1/2 rounded-full bg-violet-500/15 blur-3xl"
+                            aria-hidden
+                        />
+                        <div className="relative border-b border-[var(--border)] px-4 py-3 sm:px-5">
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-violet-300/85">AI network</p>
+                            <p className="mt-1 max-w-2xl text-[12px] leading-relaxed text-[var(--text-secondary)]">
+                                Your <span className="text-[var(--text-primary)]">neural map</span> (workflows &amp; model lanes) and{' '}
+                                <span className="text-[var(--text-primary)]">team link diagram</span> (desks) live in one surface so the suite feels
+                                like one system, not two separate tools.
+                            </p>
+                        </div>
+                        <div className="relative space-y-0 px-3 py-4 sm:px-4 sm:py-5">
+                            <WorkflowNeuralMap embedded />
+                            <div
+                                className="my-6 h-px bg-gradient-to-r from-transparent via-violet-400/25 to-transparent"
+                                aria-hidden
+                            />
+                            <AITeamNetwork embedded />
+                        </div>
+                    </section>
 
                     {/* First-time guide hints */}
                     <div className="flex flex-col gap-2">
@@ -705,7 +727,7 @@ export function CsuiteIntelligenceGuide() {
                                 {
                                     icon: Bot,
                                     label: 'Automated on demand',
-                                    text: 'Staff sync (button) calls the server once and merges results into the venture. With Auto-sync on (Executive overview), the app also refreshes desk briefs automatically when the last sync is older than three hours while this tab is visible.',
+                                    text: 'Staff sync (button) calls the server once and merges results into the venture. The app also refreshes desk briefs in the background when the last sync is older than three hours while this tab is visible or when you return to the window.',
                                     tone: 'border-l-2 border-l-zinc-600',
                                 },
                                 {

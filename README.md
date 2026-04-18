@@ -71,6 +71,54 @@ A cutting-edge multi-agent business intelligence application built with Next.js 
 
 ## 🚀 Getting Started
 
+## Python Cofounder Backend (new)
+
+This repo now includes a Flask-compatible backend starter for a persistent AI cofounder loop under `backend/`.
+
+### Backend structure
+
+```text
+backend/
+  app.py                         # Flask entrypoint
+  requirements.txt               # Python deps
+  cofounder/
+    models.py                    # Canonical Project + structured state types
+    agents/
+      personal_architect.py      # Intake + semantic project writes
+      research_agent.py          # Gap filling + uncertainty labels
+      dexo_execution.py          # Roadmap + task generation
+    engine/
+      completeness.py            # Completeness / weak-field analysis
+      desk_feed.py               # Structured desk update generation
+      loop.py                    # run_cofounder_loop(project, ...)
+    scheduler/
+      daily.py                   # Daily loop trigger wrapper
+    storage/
+      repository.py              # In-memory repository starter
+  examples/
+    sample_run.py                # Example project creation run
+```
+
+### Run the backend example
+
+```bash
+python -m backend.examples.sample_run
+```
+
+### Run the Flask app
+
+```bash
+pip install -r backend/requirements.txt
+python -m backend.app
+```
+
+API endpoints:
+
+- `POST /projects`
+- `POST /projects/<project_id>/input`
+- `POST /scheduler/daily`
+- `GET /projects/<project_id>`
+
 ### 1. Setup Environment Variables
 Create `.env.local` in the project root:
 ```bash

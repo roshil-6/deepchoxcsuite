@@ -2,50 +2,16 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Brain, Check, Mail, Lock, Network, Sparkles, Target, User, Shield, Volume2, VolumeX } from 'lucide-react';
+import { ArrowRight, Check, Infinity, Mail, Lock, Sparkles, User, Shield, Volume2, VolumeX } from 'lucide-react';
+import { FREE_DAILY_TOKENS, TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
+import { formatRegionalPricePair, getProBillingAmounts } from '@/lib/billingConfig';
+import { usePricingRegion } from '@/hooks/usePricingRegion';
+import { SITE_HERO_H1, SITE_HERO_LEAD, SITE_PULL_QUOTE, SITE_TAGLINE_SHORT } from '@/lib/siteSeo';
 
 /** Default hero video — `public/landing-hero-demo.mp4`. Override with `NEXT_PUBLIC_LANDING_HERO_VIDEO_URL` (full URL). */
 export const LANDING_HERO_VIDEO_DEFAULT = '/landing-hero-demo.mp4';
 
-const FREE_PRICING_ITEMS = [
-    'All 11 AI desks and rooms',
-    'Unlimited ventures',
-    'Personal Assistant + Meeting Room',
-    'Strategy, Finance, Product & GTM desks',
-    'Wargame Nexus (1 round)',
-    'VC Gauntlet — pitch practice',
-    'Intelligence Suite & Reports',
-    'Manual executive briefings on demand',
-    'Calendar, Kanban & Pitch Forge',
-];
-
-const LANDING_PRO_FEATURES = [
-    {
-        icon: Brain,
-        name: 'Executive Briefing Autopilot',
-        desc: 'Daily AI brief auto-delivered every morning — progress, risks flagged, priorities, and market intel without asking.',
-        color: 'text-violet-400',
-        bg: 'bg-violet-400/[0.07]',
-        border: 'border-violet-400/20',
-    },
-    {
-        icon: Target,
-        name: 'Wargame Multi-Round Simulation',
-        desc: 'Full adversarial simulation with competitor counter-moves, board stress-test mode, and downloadable scenario reports.',
-        color: 'text-rose-400',
-        bg: 'bg-rose-400/[0.07]',
-        border: 'border-rose-400/20',
-    },
-    {
-        icon: Network,
-        name: 'Cross-Venture Intelligence',
-        desc: 'AI layer that finds patterns, conflicts, and synergies across all your ventures simultaneously — portfolio-level decisions.',
-        color: 'text-sky-400',
-        bg: 'bg-sky-400/[0.07]',
-        border: 'border-sky-400/20',
-    },
-] as const;
-
+const LANDING_FREE_METERING = `${FREE_DAILY_TOKENS} Dexo tokens per day (resets midnight) · ${TOKEN_COSTS.ANALYSIS} per new analysis · ${TOKEN_COSTS.REANALYZE} per re-analyze · ${TOKEN_COSTS.CHAT_MESSAGE} per Dexo message`;
 interface LandingPageProps {
     onStart: () => void;
     /** MP4/WebM URL — overrides env and default file in `public/`. */
@@ -53,6 +19,8 @@ interface LandingPageProps {
 }
 
 export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
+    const pricingRegion = usePricingRegion();
+    const PRO_BILLING = getProBillingAmounts();
     /** Hero video only. Prop → env → `public/landing-hero-demo.mp4`. */
     const resolvedHeroVideo = (() => {
         const fromProp =
@@ -169,7 +137,7 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                 <header className="sticky top-0 z-30 bg-transparent">
                     <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-x-4 gap-y-3 px-5 py-3.5 sm:px-8 lg:px-12">
                         <span className="font-sans text-[12px] font-semibold tracking-[0.12em] text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.85)]">
-                            your ultimate ai powered cofounder
+                            {SITE_TAGLINE_SHORT}
                         </span>
                         <nav
                             className="flex flex-1 flex-wrap items-center justify-end gap-x-1 gap-y-2 sm:flex-initial sm:gap-x-2 md:gap-x-3 [text-shadow:0_2px_24px_rgba(0,0,0,0.85)]"
@@ -251,7 +219,7 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                                     aria-hidden
                                 />
                                 <p className="mt-5 max-w-[26rem] font-sans text-[16px] font-light leading-[1.7] text-zinc-300 sm:max-w-[30rem] sm:text-[18px]">
-                                    Your ultimate AI powered cofounder
+                                    {SITE_TAGLINE_SHORT}
                                 </p>
                             </div>
                         </div>
@@ -292,8 +260,8 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                             </p>
                         </div>
 
-                        <h1 className="font-serif mx-auto mt-5 max-w-[22ch] text-balance text-[clamp(2.15rem,6vw,4.25rem)] font-semibold leading-[1.08] tracking-[0.015em] text-white sm:mt-6 sm:max-w-[24ch] [text-shadow:0_4px_40px_rgba(0,0,0,0.55)]">
-                            The AI that runs your company, not just your tasks
+                        <h1 className="font-serif mx-auto mt-5 max-w-[24ch] text-balance text-[clamp(2.15rem,6vw,4.25rem)] font-semibold leading-[1.08] tracking-[0.015em] text-white sm:mt-6 sm:max-w-[28ch] [text-shadow:0_4px_40px_rgba(0,0,0,0.55)]">
+                            {SITE_HERO_H1}
                         </h1>
                     </div>
                 </section>
@@ -303,10 +271,10 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
 
                     <div className="mt-12 grid gap-10 text-left lg:mt-14 lg:grid-cols-2 lg:gap-x-16 lg:gap-y-0">
                             <p className="font-serif text-[clamp(1.35rem,2.8vw,1.85rem)] font-normal italic leading-[1.55] text-zinc-200 lg:leading-[1.5] [text-shadow:0_2px_20px_rgba(0,0,0,0.5)]">
-                                Every other AI answers questions. Deepchox runs operations.
+                                {SITE_PULL_QUOTE}
                             </p>
                             <p className="font-sans text-[clamp(1.05rem,2.1vw,1.25rem)] font-normal leading-[1.75] text-zinc-300 lg:text-[1.35rem] lg:leading-[1.8]">
-                                Five specialist desks — strategy, finance, product, GTM, market intel — all coordinated on one venture record. Each desk knows what the others are doing. The founder gets a full company view, not five disconnected chat windows.
+                                {SITE_HERO_LEAD}
                             </p>
                         </div>
 
@@ -315,9 +283,18 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                             role="list"
                         >
                             {[
-                                { t: 'Coordinated AI team', d: 'Five executives. One venture record. All aligned.' },
-                                { t: 'Decisions, not chat', d: 'Each desk gives a call, not a list of options' },
-                                { t: 'Built for solo founders', d: 'One person running a whole company — this is for you' },
+                                {
+                                    t: 'Research',
+                                    d: 'Live web research so you build from real markets and sources, not guesswork.',
+                                },
+                                {
+                                    t: 'Actions',
+                                    d: 'Concrete suggestions for your venture — not only chat, but changes you can apply.',
+                                },
+                                {
+                                    t: 'A full team',
+                                    d: 'Strategy, product, finance, GTM, and intel — one workspace, like a co-founding team.',
+                                },
                             ].map(({ t, d }) => (
                                 <span
                                     key={t}
@@ -362,8 +339,8 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                             Start free. Upgrade when you need the edge.
                         </h2>
                         <p className="mx-auto mt-3 max-w-xl font-sans text-[15px] leading-relaxed text-zinc-400">
-                            Every desk, room, and AI tool is free forever. Pro adds three automated intelligence
-                            features that run your company while you focus.
+                            The full workspace is free. The only difference is how much AI you can run: Founder uses a daily
+                            token pool; Co-Founder Pro is unlimited.
                         </p>
                     </div>
 
@@ -413,19 +390,20 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                                 forever, no card required
                             </p>
                             <div className="my-5 h-px bg-zinc-800/80" />
-                            <ul className="flex-1 space-y-2.5">
-                                {FREE_PRICING_ITEMS.map((item) => (
-                                    <li
-                                        key={item}
-                                        className="flex items-start gap-2.5 font-sans text-[13px] text-zinc-500"
-                                    >
-                                        <Check
-                                            className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-600"
-                                            aria-hidden
-                                        />
-                                        {item}
-                                    </li>
-                                ))}
+                            <ul className="flex-1 space-y-3">
+                                <li className="flex items-start gap-2.5 font-sans text-[13px] leading-relaxed text-zinc-400">
+                                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
+                                    <span>
+                                        <span className="font-semibold text-zinc-200">Full product</span> — all desks, Dexo,
+                                        sync, calendar, ventures, and tools. Nothing extra is paywalled.
+                                    </span>
+                                </li>
+                                <li className="flex items-start gap-2.5 font-sans text-[13px] leading-relaxed text-zinc-400">
+                                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
+                                    <span>
+                                        <span className="font-semibold text-zinc-200">Metered AI</span> — {LANDING_FREE_METERING}
+                                    </span>
+                                </li>
                             </ul>
                             <button
                                 type="button"
@@ -451,10 +429,12 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                                     <>
                                         <div className="mt-3 flex items-end gap-2">
                                             <p className="font-sans text-[34px] font-bold leading-none text-zinc-100">
-                                                $4
+                                                {formatRegionalPricePair(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 }).primary}
                                             </p>
                                             <span className="mb-1 font-sans text-[15px] text-zinc-500">/mo</span>
-                                            <span className="mb-1 font-sans text-[13px] text-zinc-600">(₹300)</span>
+                                            <span className="mb-1 font-sans text-[13px] text-zinc-600">
+                                                ({formatRegionalPricePair(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 }).secondary})
+                                            </span>
                                         </div>
                                         <p className="mt-1 font-sans text-[13px] text-zinc-600">
                                             billed monthly &middot; cancel anytime
@@ -464,49 +444,52 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                                     <>
                                         <div className="mt-3 flex items-end gap-2">
                                             <p className="font-sans text-[34px] font-bold leading-none text-zinc-100">
-                                                $3.33
+                                                {
+                                                    formatRegionalPricePair(PRO_BILLING.effectiveMonthlyInr, pricingRegion, {
+                                                        usdDecimals: 2,
+                                                        inrMaximumFractionDigits: 2,
+                                                    }).primary
+                                                }
                                             </p>
                                             <span className="mb-1 font-sans text-[15px] text-zinc-500">/mo</span>
-                                            <span className="mb-1 font-sans text-[13px] text-zinc-600">(₹250)</span>
+                                            <span className="mb-1 font-sans text-[13px] text-zinc-600">
+                                                (
+                                                {
+                                                    formatRegionalPricePair(PRO_BILLING.effectiveMonthlyInr, pricingRegion, {
+                                                        usdDecimals: 2,
+                                                        inrMaximumFractionDigits: 2,
+                                                    }).secondary
+                                                }
+                                                )
+                                            </span>
                                         </div>
                                         <p className="mt-1 font-sans text-[13px] text-zinc-600">
-                                            $40/yr (₹2,999) &middot; billed annually
+                                            {formatRegionalPricePair(PRO_BILLING.yearlyInr, pricingRegion, { usdDecimals: 2 }).primary}/yr (
+                                            {formatRegionalPricePair(PRO_BILLING.yearlyInr, pricingRegion, { usdDecimals: 2 }).secondary}) &middot;
+                                            billed annually
                                         </p>
                                     </>
                                 )}
 
                                 <div className="my-5 h-px bg-zinc-800" />
 
-                                {/* 3 Pro features */}
-                                <p className="mb-3 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">
-                                    Pro-exclusive intelligence
-                                </p>
-                                <div className="flex-1 space-y-3">
-                                    {LANDING_PRO_FEATURES.map(
-                                        ({ icon: Icon, name, desc }) => (
-                                            <div
-                                                key={name}
-                                                className="flex gap-3 rounded-xl border border-zinc-800 bg-zinc-900/70 p-3"
-                                            >
-                                                <span className="mt-0.5 shrink-0 text-zinc-400">
-                                                    <Icon className="h-4 w-4" aria-hidden />
-                                                </span>
-                                                <div>
-                                                    <p className="font-sans text-[12px] font-semibold leading-snug text-zinc-200">
-                                                        {name}
-                                                    </p>
-                                                    <p className="mt-0.5 font-sans text-[11px] leading-snug text-zinc-500">
-                                                        {desc}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        ),
-                                    )}
+                                <div className="flex flex-1 flex-col gap-3">
+                                    <div className="flex gap-3 rounded-xl border border-emerald-500/25 bg-emerald-500/[0.07] p-3.5">
+                                        <Infinity className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" aria-hidden />
+                                        <div>
+                                            <p className="font-sans text-[12px] font-semibold leading-snug text-zinc-100">
+                                                Unlimited AI usage
+                                            </p>
+                                            <p className="mt-1 font-sans text-[11px] leading-snug text-zinc-400">
+                                                No daily token cap — Dexo, analyses, and chat run without the Founder tier
+                                                meter. Same app; you only remove limits.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <p className="font-sans text-[12px] leading-relaxed text-zinc-500">
+                                        Everything else matches Founder: same desks, same data, same features.
+                                    </p>
                                 </div>
-
-                                <p className="mt-3 font-sans text-[12px] text-zinc-500">
-                                    + everything in Free
-                                </p>
 
                                 <button
                                     type="button"
@@ -514,7 +497,9 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                                     className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white py-3 font-sans text-[14px] font-bold text-zinc-900 shadow-[0_2px_24px_rgba(255,255,255,0.12)] transition hover:bg-zinc-100 active:scale-[0.98]"
                                 >
                                     <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
-                                    {landingBilling === 'monthly' ? 'Get Pro - $4/mo' : 'Get Pro - $40/yr'}
+                                    {landingBilling === 'monthly'
+                                        ? `Get Pro - ${formatRegionalPricePair(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 }).primary}/mo`
+                                        : `Get Pro - ${formatRegionalPricePair(PRO_BILLING.yearlyInr, pricingRegion, { usdDecimals: 2 }).primary}/yr`}
                                 </button>
                                 <p className="mt-2 text-center font-sans text-[10px] text-zinc-600">
                                     Instant access &middot; cancel anytime &middot; no questions asked
@@ -528,14 +513,14 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                     <div className="[text-shadow:0_2px_20px_rgba(0,0,0,0.6)]">
                         <div className="flex items-baseline gap-2">
                             <span className="font-sans text-[20px] font-black tracking-tighter text-white">
-                                north<span className="text-brand-teal">ROC</span>
+                                north<span className="text-brand-teal">ROSC</span>
                             </span>
                             <span className="font-sans text-[13px] font-bold tracking-[0.15em] text-zinc-400">
                                 LABS
                             </span>
                         </div>
                         <span className="mt-2 block font-sans text-[14px] font-normal leading-relaxed text-zinc-500">
-                            Your ultimate AI powered cofounder
+                            {SITE_TAGLINE_SHORT}
                         </span>
                     </div>
                     <Link

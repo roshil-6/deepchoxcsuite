@@ -67,10 +67,13 @@ async function mockLLMCall(role: ExecutiveRole, context: string): Promise<string
 
 async function invokeLiveAgent(role: ExecutiveRole, context: string): Promise<AnyAgentResponse | null> {
     try {
-        const res = await fetch('/api/boardroom', {
+        const res = await fetch('/api/dexo', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ role, context }),
+            body: JSON.stringify({
+                action: 'boardroom',
+                payload: { role, context },
+            }),
         });
         const data = (await res.json()) as {
             ok?: boolean;

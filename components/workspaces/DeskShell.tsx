@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 export type DeskShellProps = {
     /** Optional kicker above the title */
@@ -38,15 +38,22 @@ export function DeskShell({
     className,
     bodyFlush,
     bodyClassName,
-    headerSpineClassName = 'bg-white/20',
+    headerSpineClassName = 'bg-[var(--accent)]/70',
     headerClassName,
 }: DeskShellProps) {
+    const [entered, setEntered] = useState(false);
+    useEffect(() => { requestAnimationFrame(() => setEntered(true)); }, []);
+
     return (
-        <div className={`executive-panel flex min-h-0 w-full min-w-0 flex-col overflow-hidden bg-[var(--color-brand-bg)] ${className ?? ''}`}>
+        <div
+            className={`executive-panel flex min-h-0 w-full min-w-0 flex-col overflow-hidden bg-[var(--bg-elevated)] transition-all duration-300 ease-out ${className ?? ''}`}
+            style={{ opacity: entered ? 1 : 0, transform: entered ? 'translateY(0)' : 'translateY(6px)' }}
+        >
             {/* ── Desk header ── */}
-            <header className={`shrink-0 border-b border-white/[0.06] bg-white/[0.02] px-5 py-4 sm:px-6 sm:py-5 ${headerClassName ?? ''}`}>
+            <header
+                className={`shrink-0 border-b border-[var(--border)] bg-[var(--bg-card)] px-5 py-4 sm:px-6 sm:py-5 ${headerClassName ?? ''}`}
+            >
                 <div className="flex items-start gap-3">
-                    {/* Accent indicator — subtle presence of the AI role */}
                     <div className={`mt-1 h-10 w-1 shrink-0 rounded-full ${headerSpineClassName}`} aria-hidden />
                     <div className="min-w-0 flex-1">
                         {eyebrow ? (
@@ -78,7 +85,7 @@ export function DeskShell({
 
             {/* ── Desk footer ── */}
             {footer ? (
-                <div className="shrink-0 border-t border-white/[0.06] bg-white/[0.02] px-5 py-3 sm:px-6">
+                <div className="shrink-0 border-t border-[var(--border)] bg-[var(--bg-card)] px-5 py-3 sm:px-6">
                     {footer}
                 </div>
             ) : null}
@@ -94,6 +101,7 @@ export function DeskTabButton({
     icon,
     type = 'button',
     className,
+    chroming = 'default',
 }: {
     active: boolean;
     onClick: () => void;
@@ -101,19 +109,31 @@ export function DeskTabButton({
     icon?: React.ReactNode;
     type?: 'button' | 'submit';
     className?: string;
+    /** `ghost` — no stroke (e.g. Relay header). */
+    chroming?: 'default' | 'ghost';
 }) {
+    const ghost = chroming === 'ghost';
     return (
         <button
             type={type}
             onClick={onClick}
-            className={`inline-flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs font-medium transition-all ${
+            className={`relative inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-medium transition-all duration-200 ${
+                ghost ? 'border-0' : 'border'
+            } ${
                 active
-                    ? 'border-white/[0.12] bg-white/[0.07] text-[var(--text)]'
-                    : 'border-transparent bg-transparent text-[var(--muted)] hover:-translate-y-px hover:border-white/[0.07] hover:bg-white/[0.04] hover:text-[var(--text)]'
+                    ? ghost
+                        ? 'bg-[var(--accent-soft)] text-[var(--text)]'
+                        : 'border-[rgba(116,86,255,0.18)] bg-[var(--accent-soft)] text-[var(--text)]'
+                    : ghost
+                      ? 'bg-transparent text-[var(--muted)] hover:-translate-y-px hover:bg-[var(--accent-soft)] hover:text-[var(--text)]'
+                      : 'border-transparent bg-transparent text-[var(--muted)] hover:-translate-y-px hover:border-[var(--border)] hover:bg-[var(--accent-soft)] hover:text-[var(--text)]'
             } ${className ?? ''}`}
         >
             {icon}
             {children}
+            {active && (
+                <span className="absolute bottom-0 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full bg-[var(--accent)]" />
+            )}
         </button>
     );
 }

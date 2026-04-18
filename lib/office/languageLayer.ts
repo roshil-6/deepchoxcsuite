@@ -4,11 +4,60 @@ import type { KanbanTask } from '@/lib/db';
 import type { GoalProgress } from '@/types/office';
 import type { StrategyDoc } from '@/lib/strategyDoc';
 
-function hourGreeting(): string {
-    const h = new Date().getHours();
-    if (h < 12) return 'Good morning';
-    if (h < 17) return 'Good afternoon';
-    return 'Good evening';
+/** Stable pick for the day so copy does not flicker on re-render. */
+function dayStableIndex(seed: string, modulo: number): number {
+    const day = new Date().toDateString();
+    let h = 0;
+    const s = `${day}::${seed}`;
+    for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+    return Math.abs(h) % modulo;
+}
+
+type OpenerCtx = { name: string; phaseTitle?: string };
+
+const COFOUNDER_OPENERS: Array<(ctx: OpenerCtx) => string> = [
+    ({ name }) =>
+        `I've been sitting with ${name} — I'll be direct: one clear move today beats five half-finished ones.`,
+    ({ name, phaseTitle }) =>
+        phaseTitle
+            ? `${name} is in “${phaseTitle}” right now. I'd protect momentum there before we chase new shiny objects.`
+            : `Let's anchor ${name} on one phase and one measurable proof point — I'll mirror that back as we go.`,
+    ({ name }) =>
+        `Partner read on ${name}: I'm treating you like a co-founder, not a dashboard — here's what I'd push.`,
+    ({ name }) =>
+        `Quick alignment on ${name} — I care about signal, not theater. Here's the thread I'm holding.`,
+    ({ name }) =>
+        `${name}: if we only ship one meaningful conversation with reality today, make it this next block.`,
+];
+
+/**
+ * Single PA / executive-thread message body: one voice, no repeated “Good morning” blocks.
+ */
+export function formatDailyBriefThreadMessage(brief: MorningBrief): string {
+    const lines: string[] = [];
+
+    lines.push(brief.greeting);
+    lines.push('');
+    lines.push(`My one focus for you today: ${brief.suggestedFocus.trim()}`);
+
+    const focusLower = brief.suggestedFocus.trim().toLowerCase();
+    const extraPri = brief.priorities
+        .map((p) => p.trim())
+        .filter((p) => p && p.toLowerCase() !== focusLower);
+
+    if (extraPri.length > 0) {
+        lines.push('');
+        lines.push("Still on our plate:");
+        for (const p of extraPri) lines.push(`• ${p}`);
+    }
+
+    if (brief.criticalAlerts.length > 0) {
+        lines.push('');
+        lines.push('Heads up:');
+        for (const a of brief.criticalAlerts.slice(0, 4)) lines.push(`• ${a}`);
+    }
+
+    return lines.join('\n');
 }
 
 function pickPriorities(strategy: StrategyDoc, tasks: KanbanTask[], max: number): string[] {
@@ -75,7 +124,10 @@ export function generateMorningBrief(
     strategy: StrategyDoc
 ): MorningBrief {
     const name = venture.name?.trim() || 'your venture';
-    const greeting = `${hourGreeting()} — ${name} is on the desk.`;
+    const phase = (strategy.phases || []).find((p) => p.status === 'in_progress');
+    const phaseTitle = phase?.title?.trim();
+    const openerIdx = dayStableIndex(`${name}::${phaseTitle ?? ''}`, COFOUNDER_OPENERS.length);
+    const greeting = COFOUNDER_OPENERS[openerIdx]({ name, phaseTitle });
     let priorities = pickPriorities(strategy, tasks, 5);
     const doneFocus = new Set((venture.staffFocusCompletedLines || []).map((s) => s.trim()));
     const openFocus = (venture.staffFocusToday || []).map((s) => s.trim()).filter((s) => s && !doneFocus.has(s));
@@ -85,9 +137,8 @@ export function generateMorningBrief(
     const budget = venture.budget || '';
     const budgetSnippet = budget.length > 1200 ? budget.slice(0, 1200) : budget;
     const criticalAlerts = criticalFromAlerts(progress, budgetSnippet, venture.agentStaffSnapshot?.summary, venture);
-    const phase = (strategy.phases || []).find((p) => p.status === 'in_progress');
     const suggestedFocus =
-        phase?.title?.trim() ||
+        phaseTitle ||
         priorities[0] ||
         'Sharpen strategic intent and one measurable milestone for the week.';
 

@@ -1,20 +1,23 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { PLANS, type Plan, type PlanId } from '@/lib/plans';
-
-const PLAN_KEY = 'deepchox_plan';
-const TRIAL_KEY = 'deepchox_trial_start';
-const TRIAL_DURATION_MS = 3 * 24 * 60 * 60 * 1000;
+import { getPlans, type Plan, type PlanId } from '@/lib/plans';
+import { usePricingRegion } from '@/hooks/usePricingRegion';
+import {
+    PLAN_STORAGE_KEY,
+    TRIAL_START_KEY,
+    TRIAL_DURATION_MS,
+    emitSubscriptionChanged,
+} from '@/lib/subscriptionLocal';
 
 function readPlan(): PlanId {
     if (typeof window === 'undefined') return 'free';
-    return localStorage.getItem(PLAN_KEY) === 'pro' ? 'pro' : 'free';
+    return localStorage.getItem(PLAN_STORAGE_KEY) === 'pro' ? 'pro' : 'free';
 }
 
 function readTrialStart(): number | null {
     if (typeof window === 'undefined') return null;
-    const v = localStorage.getItem(TRIAL_KEY);
+    const v = localStorage.getItem(TRIAL_START_KEY);
     if (!v) return null;
     const n = Number(v);
     return isNaN(n) ? null : n;
@@ -52,22 +55,32 @@ export interface SubscriptionState {
 export function useSubscription(): SubscriptionState {
     const [planId, setPlanId] = useState<PlanId>('free');
     const [trialStart, setTrialStart] = useState<number | null>(null);
+    const pricingRegion = usePricingRegion();
 
     useEffect(() => {
         setPlanId(readPlan());
         setTrialStart(readTrialStart());
         const handler = (e: StorageEvent) => {
-            if (e.key === PLAN_KEY) setPlanId(readPlan());
-            if (e.key === TRIAL_KEY) setTrialStart(readTrialStart());
+            if (e.key === PLAN_STORAGE_KEY) setPlanId(readPlan());
+            if (e.key === TRIAL_START_KEY) setTrialStart(readTrialStart());
         };
+        const sameTab = () => {
+            setPlanId(readPlan());
+            setTrialStart(readTrialStart());
+        };
+        window.addEventListener('deepchox-subscription-changed', sameTab);
         window.addEventListener('storage', handler);
-        return () => window.removeEventListener('storage', handler);
+        return () => {
+            window.removeEventListener('storage', handler);
+            window.removeEventListener('deepchox-subscription-changed', sameTab);
+        };
     }, []);
 
     const trial = calcTrialState(trialStart);
     const isPaidPro = planId === 'pro';
     const isPro = isPaidPro || trial.isInTrial;
-    const activePlan = isPro ? PLANS.pro : PLANS.free;
+    const catalog = getPlans(pricingRegion);
+    const activePlan = isPro ? catalog.pro : catalog.free;
 
     const can = useCallback(
         (feature: keyof Plan['features']) => activePlan.features[feature],
@@ -77,18 +90,21 @@ export function useSubscription(): SubscriptionState {
     const startTrial = useCallback(() => {
         if (trial.hasUsedTrial || isPaidPro) return;
         const now = Date.now();
-        localStorage.setItem(TRIAL_KEY, String(now));
+        localStorage.setItem(TRIAL_START_KEY, String(now));
         setTrialStart(now);
+        emitSubscriptionChanged();
     }, [trial.hasUsedTrial, isPaidPro]);
 
     const activatePro = useCallback(() => {
-        localStorage.setItem(PLAN_KEY, 'pro');
+        localStorage.setItem(PLAN_STORAGE_KEY, 'pro');
         setPlanId('pro');
+        emitSubscriptionChanged();
     }, []);
 
     const deactivatePro = useCallback(() => {
-        localStorage.setItem(PLAN_KEY, 'free');
+        localStorage.setItem(PLAN_STORAGE_KEY, 'free');
         setPlanId('free');
+        emitSubscriptionChanged();
     }, []);
 
     return {

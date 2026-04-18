@@ -29,6 +29,8 @@ import {
     DeskFocusToolbar,
 } from '@/components/workspaces/DeskBlockFocusUI';
 import type { MarketIntelLens, MarketIntelTimeWindow, MarketResearchTopic } from '@/lib/marketIntelQuery';
+import { useTokens } from '@/lib/tokens/useTokens';
+import { TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 
 type IntelItem = {
     title: string;
@@ -146,6 +148,8 @@ const SCOUT_FOCUS_META: Record<
 
 export function ScoutTerminal() {
     const { activeProject, updateMarketInsights, setDeskSectionFocus } = useOffice();
+    /** `spend` is stable; never depend on the whole `useTokens()` object (new ref every render → infinite effects). */
+    const { spend: spendTokens } = useTokens();
     const [scoutFocus, setScoutFocus] = useState<ScoutFocusKey | null>(null);
     const [newsItems, setNewsItems] = useState<IntelItem[]>([]);
     const [intelMeta, setIntelMeta] = useState<IntelMeta | null>(null);
@@ -194,6 +198,18 @@ export function ScoutTerminal() {
         if (!activeProject?.name) return;
         setIsLoading(true);
         setIntelMeta(null);
+        const paid = spendTokens(TOKEN_COSTS.CHAT_MESSAGE, 'Scout intel');
+        if (!paid.success) {
+            setNewsItems([]);
+            setIntelMeta({
+                error: true,
+                disclaimer:
+                    paid.message ??
+                    'Daily AI credits are used up. Upgrade to Pro for unlimited usage, or try again after the daily reset.',
+            });
+            setIsLoading(false);
+            return;
+        }
         try {
             const res = await fetch('/api/intel', {
                 method: 'POST',
@@ -216,7 +232,7 @@ export function ScoutTerminal() {
         } finally {
             setIsLoading(false);
         }
-    }, [activeProject?.name, csoFrame, lens, strategicSnippet, timeWindow, userNotesSnippet]);
+    }, [activeProject?.name, csoFrame, lens, strategicSnippet, timeWindow, userNotesSnippet, spendTokens]);
 
     const fetchCustomIntel = useCallback(
         async (q: string) => {
@@ -227,6 +243,18 @@ export function ScoutTerminal() {
             setCsoFrame(null);
             setIsLoading(true);
             setIntelMeta(null);
+            const paid = spendTokens(TOKEN_COSTS.CHAT_MESSAGE, 'Scout intel query');
+            if (!paid.success) {
+                setNewsItems([]);
+                setIntelMeta({
+                    error: true,
+                    disclaimer:
+                        paid.message ??
+                        'Daily AI credits are used up. Upgrade to Pro for unlimited usage, or try again after the daily reset.',
+                });
+                setIsLoading(false);
+                return;
+            }
             try {
                 const res = await fetch('/api/intel', {
                     method: 'POST',
@@ -243,7 +271,7 @@ export function ScoutTerminal() {
                 setIsLoading(false);
             }
         },
-        [fetchVentureIntel, timeWindow]
+        [fetchVentureIntel, timeWindow, spendTokens]
     );
 
     useEffect(() => {

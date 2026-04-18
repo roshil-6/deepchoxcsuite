@@ -40,8 +40,12 @@ import {
   setLastFocus,
   updateOfficeMemory,
 } from '@/lib/office/officeMemory';
+import { formatDailyBriefThreadMessage } from '@/lib/office/languageLayer';
+import type { DexoBootstrapPayload } from '@/lib/dexoBootstrap';
+import { isVentureFoundationSparse } from '@/lib/ventureFoundation';
+import { buildDexoJarvisVentureContext } from '@/lib/dexoJarvisContext';
 
-export type AgentRole = 'ceo' | 'pm' | 'accountant' | 'scout' | 'cmo' | 'chief_of_staff' | 'dexo' | 'shark';
+export type AgentRole = 'ceo' | 'pm' | 'accountant' | 'scout' | 'cmo' | 'dexo' | 'shark';
 
 /** Any research desk — which block is in focus (feeds desk chat context). */
 export type DeskSectionFocus = { room: string; sectionId: string; title: string; prompt: string };
@@ -80,6 +84,10 @@ export interface OfficeContextType {
   agents: Record<AgentRole, AgentPersona>;
   pendingChat: { role: AgentRole; message: string } | null;
   setPendingChat: (val: { role: AgentRole; message: string } | null) => void;
+
+  /** When set, Dexo shows setup context and opens a converse turn (consumed when Dexo reads it). */
+  dexoBootstrap: DexoBootstrapPayload | null;
+  setDexoBootstrap: (val: DexoBootstrapPayload | null) => void;
 
   /** Shared PA + Chief-of-staff messages for the active venture (localStorage per project). */
   executiveThread: ExecutiveThreadMessage[];
@@ -208,15 +216,6 @@ const AGENT_PERSONAS: Record<AgentRole, AgentPersona> = {
     description: RESEARCH_STAFF.scout.deskHelp,
     icon: <ScanSearch className="w-5 h-5" />,
   },
-  chief_of_staff: {
-    name: RESEARCH_STAFF.chief_of_staff.line,
-    title: RESEARCH_STAFF.chief_of_staff.navTitle,
-    execOutput: RESEARCH_STAFF.chief_of_staff.navHint,
-    role: 'chief_of_staff',
-    style: 'Coordination',
-    description: RESEARCH_STAFF.chief_of_staff.deskHelp,
-    icon: <LayoutDashboard className="w-5 h-5" />,
-  },
   dexo: {
     name: RESEARCH_STAFF.dexo.line,
     title: RESEARCH_STAFF.dexo.navTitle,
@@ -252,6 +251,7 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
   const [activeProject, setActiveProjectState] = useState<Project | null>(null);
   const [allProjects, setAllProjects] = useState<Project[]>([]);
   const [pendingChat, setPendingChat] = useState<{ role: AgentRole; message: string } | null>(null);
+  const [dexoBootstrap, setDexoBootstrap] = useState<DexoBootstrapPayload | null>(null);
   const [deskSectionFocus, setDeskSectionFocus] = useState<DeskSectionFocus | null>(null);
   const [suiteIntelOpenDesk, setSuiteIntelOpenDesk] = useState<string | null>(null);
   const [executiveThread, setExecutiveThread] = useState<ExecutiveThreadMessage[]>([]);
@@ -278,8 +278,26 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
       setExecutiveThread([]);
       return;
     }
-    setExecutiveThread(loadExecutiveThread(id));
-  }, [activeProject?.id]);
+    const loaded = loadExecutiveThread(id);
+    if (!activeProject || !isVentureFoundationSparse(activeProject)) {
+      setExecutiveThread(loaded);
+      return;
+    }
+    const hasUserReply = loaded.some((m) => m.role === 'user' && m.content.trim().length > 0);
+    const cleaned = hasUserReply
+      ? loaded
+      : loaded.filter((m) => {
+          if (m.role !== 'assistant' || m.channel !== 'pa') return true;
+          if (
+            m.content.startsWith("I'm Relay — your Personal Assistant for this venture.") ||
+            m.content.startsWith("Welcome — I'm Relay, your Personal Assistant for this venture.")
+          ) return false;
+          if (m.content.includes('My one focus for you today:')) return false;
+          if (m.id.startsWith('pa-welcome-') || m.id.startsWith('morning-brief-')) return false;
+          return true;
+        });
+    setExecutiveThread(cleaned);
+  }, [activeProject]);
 
   useEffect(() => {
     const id = activeProject?.id;
@@ -287,6 +305,27 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
     const t = window.setTimeout(() => saveExecutiveThread(id, executiveThread), 280);
     return () => window.clearTimeout(t);
   }, [executiveThread, activeProject?.id]);
+
+  useEffect(() => {
+    if (!activeProject?.id) return;
+    const contextSnapshot = buildDexoJarvisVentureContext(activeProject);
+    void fetch('/api/dexo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'ventureRegistryUpsert',
+        payload: {
+          ventureId: activeProject.id,
+          ventureName: activeProject.name,
+          contextSnapshot,
+          sparseContext: isVentureFoundationSparse(activeProject),
+          isActive: true,
+        },
+      }),
+    }).catch(() => {
+      /* non-blocking registry refresh */
+    });
+  }, [activeProject]);
 
   const appendExecutiveThread = useCallback((msg: ExecutiveThreadMessage) => {
     setExecutiveThread((prev) => [...prev, msg]);
@@ -344,6 +383,9 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
   ) => {
     setDeskSectionFocus(null);
     setSuiteIntelOpenDesk(null);
+    if (room !== 'dexo' && room !== 'personal_assistant') {
+      setDexoBootstrap(null);
+    }
     setActiveRoom(room);
   };
 
@@ -359,10 +401,13 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
     addSystemLog('AI staff sync started — researching across desks…', 'agent-sync', 'info');
     try {
       const dto = projectToSyncDto(activeProject);
-      const res = await fetch('/api/agent-sync', {
+      const res = await fetch('/api/dexo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ project: dto }),
+        body: JSON.stringify({
+          action: 'agentSync',
+          payload: { project: dto },
+        }),
       });
       const data = await res.json();
       if (!data.ok) {
@@ -419,21 +464,8 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
         dismissed: false,
       }));
 
-      /** Merge CEO desk narrative from sync into saved strategy so the CEO workspace stays current without manual copy-paste. */
-      let mergedStrategy = p.strategy || '';
-      const ceoDesk = typeof result.desks?.ceo === 'string' ? result.desks.ceo.trim() : '';
-      if (ceoDesk.length > 20) {
-        try {
-          const sDoc = parseStrategy(mergedStrategy);
-          const fingerprint = ceoDesk.slice(0, Math.min(120, ceoDesk.length));
-          if (!sDoc.content?.includes(fingerprint)) {
-            sDoc.content = `${(sDoc.content || '').trim()}\n\n### Staff sync — CEO desk\n${ceoDesk}\n`.trim();
-            mergedStrategy = serializeStrategy(sDoc);
-          }
-        } catch {
-          /* keep previous strategy string */
-        }
-      }
+      /** Keep founder strategy narrative separate from sync output; sync lives in snapshots, not the thesis field. */
+      const mergedStrategy = p.strategy || '';
 
       const focusNext = (result.focusToday || []).slice(0, 10);
       const prevDone = p.staffFocusCompletedLines || [];
@@ -559,7 +591,7 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
       activeProjectRef.current = saved;
       const projects = await getAllProjects();
       setAllProjects(projects);
-      setActiveRoom('ceo');
+      setActiveRoom('dexo');
     })();
   };
 
@@ -627,6 +659,20 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
   const updateProjectFieldRef = useRef(updateProjectField);
   updateProjectFieldRef.current = updateProjectField;
 
+  useEffect(() => {
+    const p = activeProject;
+    if (!p?.id || !isVentureFoundationSparse(p)) return;
+    const doc = parseStrategy(p.strategy || '');
+    const marker = '### Staff sync — CEO desk';
+    const idx = doc.content.indexOf(marker);
+    if (idx < 0) return;
+    const cleanedContent = doc.content.slice(0, idx).trim();
+    const cleanedStrategy = serializeStrategy({ ...doc, content: cleanedContent });
+    if (cleanedStrategy === p.strategy) return;
+    patchActiveProject({ strategy: cleanedStrategy });
+    void updateProjectFieldRef.current('strategy', cleanedStrategy);
+  }, [activeProject?.id, activeProject?.strategy]);
+
   const refreshLivingOffice = useCallback(async (projectOverride?: Project | null) => {
     const p = projectOverride ?? activeProjectRef.current;
     if (!p?.id) {
@@ -634,40 +680,61 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
       return;
     }
     const list = await getAllProjects();
-    const result = await runDailyOfficeCycle(String(p.id), list, p);
+    const freshP = list.find((x) => String(x.id) === String(p.id)) ?? p;
+    const result = await runDailyOfficeCycle(String(p.id), list, freshP);
     setLivingOffice(result);
 
-    if (result.brief.greeting === 'No venture selected.') {
+    if (result.brief.greeting === 'No venture selected.' || isVentureFoundationSparse(freshP) || !result.brief.greeting.trim()) {
       return;
     }
 
-    const memoryBefore = getOfficeMemory(p);
+    const memoryBefore = getOfficeMemory(freshP);
     const today = new Date().toDateString();
-    const shouldBrief = memoryBefore.lastMorningBriefDay !== today;
+    const todayIso = new Date().toISOString().slice(0, 10);
+    const briefId = `morning-brief-${p.id}-${todayIso}`;
+    const threadSnapshot = loadExecutiveThread(String(p.id));
+    const alreadyInThread =
+      threadSnapshot.some((m) => m.id === briefId) ||
+      threadSnapshot.some(
+        (m) =>
+          m.role === 'assistant' &&
+          m.channel === 'pa' &&
+          new Date(m.ts).toDateString() === today &&
+          (m.id.startsWith(`morning-brief-${p.id}-`) ||
+            /\bSuggested focus:\s*/i.test(m.content) ||
+            m.content.includes('My one focus for you today:'))
+      );
+    const shouldBrief = memoryBefore.lastMorningBriefDay !== today && !alreadyInThread;
 
     let nextMem = setLastFocus(memoryBefore, result.brief.suggestedFocus);
     for (const a of result.brief.criticalAlerts) {
       nextMem = appendUnresolvedRisk(nextMem, a);
     }
+    if (alreadyInThread && memoryBefore.lastMorningBriefDay !== today) {
+      nextMem = updateOfficeMemory(nextMem, { lastMorningBriefDay: today });
+    }
     if (shouldBrief) {
       nextMem = updateOfficeMemory(nextMem, { lastMorningBriefDay: today });
-      const lines = result.brief.priorities.map((x) => `• ${x}`).join('\n');
-      const body = `${result.brief.greeting}\n\n${
-        lines ? `Priorities:\n${lines}\n\n` : ''
-      }Suggested focus: ${result.brief.suggestedFocus}`;
-      appendExecutiveThread({
-        id: `living-office-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+      const body = formatDailyBriefThreadMessage(result.brief);
+      const msg: ExecutiveThreadMessage = {
+        id: briefId,
         role: 'assistant',
         content: body,
         ts: Date.now(),
         channel: 'pa',
+      };
+      setExecutiveThread((prev) => {
+        if (prev.some((m) => m.id === briefId)) return prev;
+        const next = [...prev, msg];
+        saveExecutiveThread(String(p.id), next);
+        return next;
       });
     }
     const json = serializeOfficeMemory(nextMem);
-    if (json !== (p.officeEngineMemoryJson || '')) {
+    if (json !== (freshP.officeEngineMemoryJson || '')) {
       await updateProjectFieldRef.current('officeEngineMemoryJson', json);
     }
-  }, [appendExecutiveThread]);
+  }, []);
 
   useEffect(() => {
     void refreshLivingOffice();
@@ -804,6 +871,7 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
     setDeskSectionFocus(null);
     setSuiteIntelOpenDesk(null);
     setLivingOffice(null);
+    setDexoBootstrap(null);
     setActiveRoom('dashboard');
     setSystemState(prev => ({ ...prev, alertLevel: 'stable', isDeepWork: false }));
   };
@@ -826,6 +894,8 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
     allProjects,
     pendingChat,
     setPendingChat,
+    dexoBootstrap,
+    setDexoBootstrap,
     executiveThread,
     appendExecutiveThread,
     setExecutiveThread,
@@ -1007,22 +1077,6 @@ export function getAgentSystemPrompt(role: AgentRole, project?: Project | null):
     
     FORMAT: Clear headings, short bullets, optional message house (headline / sub / proof).`,
 
-    chief_of_staff: `You are the Chief of Staff.
-    CORE RULE: You are the ORCHESTRATOR. You do NOT do the deep work yourself.
-    
-    TASK: analyze the user's request and delegate it to the right department (CEO, CTO, CFO, CMO, CSO).
-    - If the user asks for "strategy" -> Delegation: CEO
-    - If the user asks for "product / tech / architecture" -> Delegation: CTO (pm desk)
-    - If the user asks for "costs" -> Delegation: CFO (accountant desk)
-    - If the user asks for "GTM / marketing / narrative" -> Delegation: CMO
-    - If the user asks for "competitors" -> Delegation: CSO (scout desk)
-    
-    OUTPUT FORMAT:
-    1. Acknowledge the request professionally.
-    2. Explicitly state which agent you are assigning this to.
-    3. Summarize the directive you are logging for the team.
-    
-    Example: "I understand. This requires a strategic pivot. I am assigning this to the CEO desk to draft a new plan."`,
 
     dexo: `You are Dexo, the Central Intelligence Brain of the Deepchox Suite (by northROSC LABS).
     ROLE: You are the OMNISCIENT ORCHESTRATOR. You are not just an assistant; you are the strategic core.

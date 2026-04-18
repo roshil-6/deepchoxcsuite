@@ -39,6 +39,8 @@ import {
 } from 'lucide-react';
 import { useOffice } from '@/lib/OfficeContext';
 import type { JarvisReport, JarvisSection } from '@/app/api/jarvis/route';
+import { useTokens } from '@/lib/tokens/useTokens';
+import { TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 
 // ─── Utility types ────────────────────────────────────────────────────────────
 
@@ -295,8 +297,10 @@ export function JarvisRoom() {
         updateMarketInsights,
         updateBudget,
         updateDirectives,
-        patchActiveProject,
+        updateProjectField,
     } = useOffice();
+
+    const tokens = useTokens();
 
     const [report, setReport] = useState<JarvisReport | null>(null);
     const [loading, setLoading] = useState(false);
@@ -333,15 +337,25 @@ export function JarvisRoom() {
         if (!activeProject?.id) return;
         setLoading(true);
         setError(null);
+        const cost = mode === 'analyze' ? TOKEN_COSTS.ANALYSIS : TOKEN_COSTS.CHAT_MESSAGE;
+        const paid = tokens.spend(cost, mode === 'analyze' ? 'Jarvis analysis' : 'Jarvis chat');
+        if (!paid.success) {
+            setError(paid.message ?? 'Insufficient daily AI credits.');
+            setLoading(false);
+            return;
+        }
         try {
-            const res = await fetch('/api/jarvis', {
+            const res = await fetch('/api/dexo', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    mode,
-                    context: buildContext(),
-                    userMessage,
-                    previousHeadline: report?.headline,
+                    action: 'jarvis',
+                    payload: {
+                        mode,
+                        context: buildContext(),
+                        userMessage,
+                        previousHeadline: report?.headline,
+                    },
                 }),
             });
             const data = await res.json() as { ok: boolean; report?: JarvisReport; error?: string };
@@ -369,7 +383,7 @@ export function JarvisRoom() {
         } finally {
             setLoading(false);
         }
-    }, [activeProject, buildContext, report?.headline, isMuted, speak]);
+    }, [activeProject, buildContext, report?.headline, isMuted, speak, tokens]);
 
     // Auto-analyze on first load
     useEffect(() => {
@@ -405,19 +419,45 @@ export function JarvisRoom() {
         setAppliedFields((prev) => new Set([...prev, field]));
     };
 
+    const applyKanbanAdds = () => {
+        if (!report || !activeProject) return;
+        const adds = report.proposedUpdates.kanbanAdds;
+        if (!adds?.length) return;
+        void import('@/lib/dexoApplyJarvisProductPatch').then(({ dexoProductDeliveryPatchFromJarvis }) => {
+            const patch = dexoProductDeliveryPatchFromJarvis(activeProject, {
+                strategy: null,
+                productPlan: null,
+                marketInsights: null,
+                budget: null,
+                teamDirectives: null,
+                kanbanAdds: adds,
+            });
+            if (patch.kanban !== undefined) {
+                void updateProjectField('kanban', patch.kanban);
+                setAppliedFields((prev) => new Set([...prev, 'kanbanAdds']));
+            }
+        });
+    };
+
     const applyAllUpdates = () => {
-        if (!report) return;
+        if (!report || !activeProject) return;
         const upd = report.proposedUpdates;
         if (upd.strategy)      applyUpdate('strategy', upd.strategy);
         if (upd.productPlan)   applyUpdate('productPlan', upd.productPlan);
         if (upd.marketInsights)applyUpdate('marketInsights', upd.marketInsights);
         if (upd.budget)        applyUpdate('budget', upd.budget);
         if (upd.teamDirectives)applyUpdate('teamDirectives', upd.teamDirectives);
+        if (upd.kanbanAdds?.length && !appliedFields.has('kanbanAdds')) applyKanbanAdds();
     };
 
     const pendingUpdates = report
-        ? Object.entries(report.proposedUpdates).filter(([, v]) => v !== null) as [string, string][]
+        ? (Object.entries(report.proposedUpdates).filter(
+              ([k, v]) => k !== 'kanbanAdds' && v !== null && typeof v === 'string'
+          ) as [string, string][])
         : [];
+
+    const pendingKanbanCount = report?.proposedUpdates.kanbanAdds?.length ?? 0;
+    const proposedSectionCount = pendingUpdates.length + (pendingKanbanCount > 0 ? 1 : 0);
 
     const readFullReport = () => {
         if (!report) return;
@@ -496,7 +536,7 @@ export function JarvisRoom() {
             </header>
 
             {/* ── Main scrollable content ── */}
-            <div className="custom-scrollbar flex-1 overflow-y-auto">
+            <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]">
                 <div className="mx-auto max-w-3xl space-y-5 px-4 pt-6 pb-4 sm:px-5">
 
                     {/* ── Orb + headline ── */}
@@ -584,13 +624,14 @@ export function JarvisRoom() {
                             )}
 
                             {/* ── Proposed updates ── */}
-                            {pendingUpdates.length > 0 && (
+                            {proposedSectionCount > 0 && (
                                 <section>
                                     <div className="mb-3 flex items-center justify-between">
                                         <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-600">
-                                            Proposed Updates ({pendingUpdates.length})
+                                            Proposed Updates ({proposedSectionCount})
                                         </p>
-                                        {pendingUpdates.some(([k]) => !appliedFields.has(k)) && (
+                                        {(pendingUpdates.some(([k]) => !appliedFields.has(k)) ||
+                                            (pendingKanbanCount > 0 && !appliedFields.has('kanbanAdds'))) && (
                                             <button
                                                 type="button"
                                                 onClick={applyAllUpdates}
@@ -610,6 +651,19 @@ export function JarvisRoom() {
                                                 onApply={() => applyUpdate(field as keyof JarvisReport['proposedUpdates'], content)}
                                             />
                                         ))}
+                                        {pendingKanbanCount > 0 && (
+                                            <ProposedUpdateRow
+                                                key="kanbanAdds"
+                                                label="Execution board"
+                                                content={
+                                                    report!.proposedUpdates.kanbanAdds!
+                                                        .map((t) => `• ${t.title}${t.status ? ` (${t.status})` : ''}`)
+                                                        .join('\n')
+                                                }
+                                                applied={appliedFields.has('kanbanAdds')}
+                                                onApply={applyKanbanAdds}
+                                            />
+                                        )}
                                     </div>
                                 </section>
                             )}

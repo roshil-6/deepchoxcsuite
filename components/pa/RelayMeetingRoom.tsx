@@ -7,6 +7,8 @@ import { buildHeuristicMeetingPlan, type RelayMeetingGoTo, type RelayMeetingStep
 import { usePersonalAssistantChat } from '@/components/pa/PersonalAssistantChatContext';
 import { PA_BUDDY_NAME } from '@/lib/paBuddy';
 import { Loader2, RefreshCw, MessageSquare, ArrowRight, Video } from 'lucide-react';
+import { useTokens } from '@/lib/tokens/useTokens';
+import { TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 
 type ApiOk = {
     ok: true;
@@ -22,6 +24,7 @@ type ApiErr = { ok: false; error?: string; fallback?: string };
 export function RelayMeetingRoom({ onSwitchToChat }: { onSwitchToChat: () => void }) {
     const { activeProject, switchRoom } = useOffice();
     const { relayDraftToComposer, loading: chatBusy } = usePersonalAssistantChat();
+    const { spend: spendTokens } = useTokens();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [intro, setIntro] = useState('');
@@ -40,11 +43,24 @@ export function RelayMeetingRoom({ onSwitchToChat }: { onSwitchToChat: () => voi
         const local = buildHeuristicMeetingPlan(activeProject);
         const payload = projectPayloadForPA(activeProject);
 
+        const paid = spendTokens(TOKEN_COSTS.CHAT_MESSAGE, 'Relay meeting plan');
+        if (!paid.success) {
+            setIntro(local.intro);
+            setSteps(local.steps);
+            setSource('heuristic');
+            setError(paid.message ?? 'Daily AI credits are used up.');
+            setLoading(false);
+            return;
+        }
+
         try {
-            const res = await fetch('/api/relay-meeting-room', {
+            const res = await fetch('/api/dexo', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ project: payload }),
+                body: JSON.stringify({
+                    action: 'relayMeetingRoom',
+                    payload: { project: payload },
+                }),
             });
             const data = (await res.json()) as ApiOk | ApiErr;
 
@@ -77,7 +93,7 @@ export function RelayMeetingRoom({ onSwitchToChat }: { onSwitchToChat: () => voi
         } finally {
             setLoading(false);
         }
-    }, [activeProject]);
+    }, [activeProject, spendTokens]);
 
     useEffect(() => {
         void loadPlan();
@@ -103,9 +119,9 @@ export function RelayMeetingRoom({ onSwitchToChat }: { onSwitchToChat: () => voi
 
     return (
         <div className="mx-auto w-full max-w-2xl px-4 py-6 sm:px-5">
-            <div className="mb-6 flex flex-col gap-3 border-b border-brand-border/60 pb-5 sm:flex-row sm:items-start sm:justify-between">
+            <div className="mb-6 flex flex-col gap-3 pb-5 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex min-w-0 gap-3">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-brand-border bg-brand-panel text-brand-text">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-panel text-brand-text">
                         <Video className="h-5 w-5" aria-hidden />
                     </span>
                     <div className="min-w-0">
@@ -120,7 +136,7 @@ export function RelayMeetingRoom({ onSwitchToChat }: { onSwitchToChat: () => voi
                     type="button"
                     onClick={() => void loadPlan()}
                     disabled={loading}
-                    className="inline-flex shrink-0 items-center justify-center gap-2 self-start rounded-lg border border-brand-border bg-brand-card px-3 py-2 text-[11px] font-semibold text-brand-text transition hover:bg-brand-input disabled:opacity-50"
+                    className="inline-flex shrink-0 items-center justify-center gap-2 self-start rounded-lg bg-brand-card px-3 py-2 text-[11px] font-semibold text-brand-text transition hover:bg-brand-input disabled:opacity-50"
                 >
                     <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} aria-hidden />
                     Refresh plan
@@ -128,13 +144,13 @@ export function RelayMeetingRoom({ onSwitchToChat }: { onSwitchToChat: () => voi
             </div>
 
             {banner ? (
-                <p className="mb-4 rounded-lg border border-brand-border/70 bg-brand-panel/40 px-3 py-2 text-[11px] text-brand-muted">
+                <p className="mb-4 rounded-lg bg-brand-panel/40 px-3 py-2 text-[11px] text-brand-muted">
                     {banner}
                 </p>
             ) : null}
 
             {error ? (
-                <p className="mb-4 rounded-lg border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-200/90">
+                <p className="mb-4 rounded-lg bg-amber-500/10 px-3 py-2 text-[11px] text-amber-200/90">
                     {error}
                 </p>
             ) : null}
@@ -154,7 +170,7 @@ export function RelayMeetingRoom({ onSwitchToChat }: { onSwitchToChat: () => voi
                         {steps.map((step) => (
                             <li
                                 key={`${step.order}-${step.title}`}
-                                className="rounded-xl border border-brand-border bg-brand-panel/35 px-4 py-4 sm:px-5"
+                                className="rounded-xl bg-brand-panel/35 px-4 py-4 sm:px-5"
                             >
                                 <div className="flex flex-wrap items-start justify-between gap-2">
                                     <div className="flex min-w-0 gap-2">
@@ -171,7 +187,7 @@ export function RelayMeetingRoom({ onSwitchToChat }: { onSwitchToChat: () => voi
                                     <button
                                         type="button"
                                         onClick={() => go(step.goTo)}
-                                        className="inline-flex items-center gap-1.5 rounded-lg border border-brand-teal/30 bg-brand-teal/10 px-3 py-2 text-[11px] font-semibold text-brand-text transition hover:bg-brand-teal/18"
+                                        className="inline-flex items-center gap-1.5 rounded-lg bg-brand-teal/10 px-3 py-2 text-[11px] font-semibold text-brand-text transition hover:bg-brand-teal/18"
                                     >
                                         {step.goToLabel}
                                         <ArrowRight className="h-3.5 w-3.5 opacity-80" aria-hidden />
@@ -180,7 +196,7 @@ export function RelayMeetingRoom({ onSwitchToChat }: { onSwitchToChat: () => voi
                                         type="button"
                                         disabled={chatBusy}
                                         onClick={() => draftInChat(step)}
-                                        className="inline-flex items-center gap-1.5 rounded-lg border border-brand-border bg-brand-bg px-3 py-2 text-[11px] font-medium text-brand-muted transition hover:border-brand-border hover:text-brand-text disabled:opacity-50"
+                                        className="inline-flex items-center gap-1.5 rounded-lg bg-brand-bg px-3 py-2 text-[11px] font-medium text-brand-muted transition hover:bg-brand-panel/30 hover:text-brand-text disabled:opacity-50"
                                     >
                                         <MessageSquare className="h-3.5 w-3.5" aria-hidden />
                                         Draft in {PA_BUDDY_NAME} chat
@@ -190,7 +206,7 @@ export function RelayMeetingRoom({ onSwitchToChat }: { onSwitchToChat: () => voi
                         ))}
                     </ol>
 
-                    <div className="mt-8 rounded-xl border border-dashed border-brand-border/70 bg-brand-bg/60 px-4 py-4 text-center">
+                    <div className="mt-8 rounded-xl bg-brand-bg/60 px-4 py-4 text-center">
                         <p className="text-[11px] text-brand-muted">
                             {source === 'ai'
                                 ? `Plan generated with ${modelLabel || 'AI'} from your live venture snapshot.`

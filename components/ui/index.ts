@@ -1,11 +1,7 @@
-export { AppShell } from './AppShell';
-export { AIInputBarShell } from './AIInputBar';
-export { LeftRail } from './LeftRail';
-export { WorkspacePanel } from './WorkspacePanel';
-export { ContextPanel } from './ContextPanel';
-export { ExecutiveResponseCard } from './ExecutiveResponseCard';
-export { HealthWidget } from './HealthWidget';
-export { AlertWidget } from './AlertWidget';
-export { executiveCardClass, executiveSurfaceClass } from './cardStyles';
-export { APP_NAV_ITEMS, WORKSPACE_TITLES } from './appNav';
-export type { AppNavRoom } from './appNav';
+// Export all interactive UI components
+export { InteractiveCard, ExpandableCard, HoverRevealCard } from './InteractiveCard';
+export { AnimatedMetric, PulseIndicator, CountUp } from './AnimatedMetric';
+export { QuickActionGrid, ActionButton } from './QuickActionGrid';
+export { Tooltip, IconTooltip } from './Tooltip';
+export { VoiceInput, VoiceTextarea, SpeakButton, useTextToSpeech } from './VoiceInput';
+export { AICompanion, AICompanionExpanded } from './AICompanion';

@@ -5,6 +5,8 @@ import { useOffice, AgentRole } from '@/lib/OfficeContext';
 import { safeJsonParse } from '@/lib/utils';
 import { Send, LayoutDashboard, ArrowUp, Loader2, CheckCircle2, Bot, Command } from 'lucide-react';
 import { ModelAttribution } from '@/components/ModelAttribution';
+import { useTokens } from '@/lib/tokens/useTokens';
+import { TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 
 interface Message {
     id: string;
@@ -26,6 +28,8 @@ export function ChiefOfStaff() {
         agents
     } = useOffice();
 
+    const tokens = useTokens();
+
     const [messages, setMessages] = useState<Message[]>([{
         id: 'welcome',
         role: 'assistant',
@@ -44,6 +48,22 @@ export function ChiefOfStaff() {
     const handleSendMessage = async () => {
         if (!inputValue.trim() || isLoading || !activeProject) return;
 
+        const paid = tokens.spend(TOKEN_COSTS.CHAT_MESSAGE, 'Chief of Staff');
+        if (!paid.success) {
+            setMessages((prev) => [
+                ...prev,
+                {
+                    id: Date.now().toString(),
+                    role: 'assistant',
+                    content:
+                        paid.message ??
+                        'Daily AI credits are used up. Upgrade to Pro for unlimited usage, or try again after the daily reset.',
+                    timestamp: Date.now(),
+                },
+            ]);
+            return;
+        }
+
         const userMessage: Message = {
             id: Date.now().toString(),
             role: 'user',
@@ -56,14 +76,16 @@ export function ChiefOfStaff() {
         setIsLoading(true);
 
         try {
-            const response = await fetch('/api/chat', {
+            const response = await fetch('/api/dexo', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    messages: [
-                        {
-                            role: 'system',
-                            content: `You are the Chief of Staff.
+                    action: 'chat',
+                    payload: {
+                        messages: [
+                            {
+                                role: 'system',
+                                content: `You are the Chief of Staff.
                             CORE RULE: You are the ORCHESTRATOR. You do NOT do the deep work yourself.
                             
                             TASK: analyze the user's request and delegate it to the right department (CEO, PM, Accountant, Scout).
@@ -83,11 +105,12 @@ export function ChiefOfStaff() {
                                 }
                             }
                             `
-                        },
-                        ...messages.map(m => ({ role: m.role, content: m.content })),
-                        { role: 'user', content: userMessage.content }
-                    ],
-                    model: 'llama3', // Fast model for orchestration
+                            },
+                            ...messages.map(m => ({ role: m.role, content: m.content })),
+                            { role: 'user', content: userMessage.content }
+                        ],
+                        model: 'llama3', // Fast model for orchestration
+                    },
                 }),
             });
 

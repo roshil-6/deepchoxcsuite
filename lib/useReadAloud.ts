@@ -1,18 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { speechFriendlyText } from './speechFriendly';
+import { pickEnglishPlaybackVoice, resumeSpeechSynthIfNeeded } from './voiceEngine';
 
-/** Strip common markdown / formatting noise for TTS. */
+/** Markdown strip + spoken-language cleanup for TTS. */
 export function plainTextForSpeech(raw: string): string {
-    return raw
-        .replace(/\*\*([^*]+)\*\*/g, '$1')
-        .replace(/\*([^*]+)\*/g, '$1')
-        .replace(/^#{1,6}\s+/gm, '')
-        .replace(/`{1,3}[^`]*`{1,3}/g, ' ')
-        .replace(/\[[^\]]*\]\([^)]*\)/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim()
-        .slice(0, 12000);
+    return speechFriendlyText(raw);
 }
 
 export function useReadAloud() {
@@ -32,17 +26,14 @@ export function useReadAloud() {
             if (!text) return;
 
             window.speechSynthesis.cancel();
+            resumeSpeechSynthIfNeeded();
             const utt = new SpeechSynthesisUtterance(text);
-            utt.rate = 0.92;
+            utt.rate = 1;
             utt.pitch = 1;
             utt.volume = 1;
 
             const run = () => {
-                const voices = window.speechSynthesis.getVoices();
-                const voice =
-                    voices.find((v) => /en-GB/i.test(v.lang) && !/female|zira|hazel/i.test(v.name)) ??
-                    voices.find((v) => v.lang.startsWith('en')) ??
-                    voices[0];
+                const voice = pickEnglishPlaybackVoice();
                 if (voice) utt.voice = voice;
                 utt.onstart = () => setSpeakingKey(key);
                 utt.onend = () => setSpeakingKey(null);

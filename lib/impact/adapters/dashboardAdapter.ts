@@ -27,7 +27,9 @@ export function fromVenturePillarScores(
 
     const recommendations: string[] = [];
     if (strategic < 55) {
-        recommendations.push('Strengthen strategy: intent, narrative, and at least one phase and priority.');
+        recommendations.push(
+            'Add real strategy depth on the CEO desk: intent lines, narrative, a timeline you own, and concrete priorities.'
+        );
     }
     if (financial < 55) {
         recommendations.push('Capture runway and burn in Finance (structured metrics or clear notes) for an accurate read.');

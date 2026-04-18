@@ -14,6 +14,8 @@ type Props = {
     variant?: 'page' | 'rail';
     /** Use app-shell surfaces (Timeline room) — no inner dark canvas or duplicate “Timeline” chrome */
     embedded?: boolean;
+    /** Planning room: parent already titles the section — compact toolbar only, no duplicate venture headline */
+    planningStripOnly?: boolean;
 };
 
 function formatRange(start: string, end: string) {
@@ -28,10 +30,12 @@ export function TimelinePhaseSetter({
     onPhasesChange,
     variant = 'page',
     embedded: embeddedProp = false,
+    planningStripOnly: planningStripOnlyProp = false,
 }: Props) {
     const [expanded, setExpanded] = useState<Record<string, boolean>>({});
     const rail = variant === 'rail';
     const embedded = Boolean(embeddedProp) && !rail;
+    const planningStrip = embedded && Boolean(planningStripOnlyProp);
 
     const stats = useMemo(() => {
         const total = phases.length;
@@ -172,22 +176,24 @@ export function TimelinePhaseSetter({
         return <span className="h-3 w-3 shrink-0 rounded-full border-2 border-zinc-500 bg-zinc-800" />;
     };
 
-    const statChipClass = embedded
-        ? 'rounded-full border border-brand-border/80 bg-brand-bg/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-brand-muted'
-        : '';
-
     return (
         <div
             className={`flex flex-col ${rail || embedded ? 'bg-transparent' : 'h-full min-h-0 bg-[#141416]'}`}
         >
             {/* Header */}
             <div
-                className={`shrink-0 ${rail ? 'border-b border-zinc-800/80 px-3 py-2.5' : embedded ? 'border-b border-brand-border/80 py-3' : 'border-b border-zinc-800/80 px-4 py-4 sm:px-6'}`}
+                className={`shrink-0 ${rail ? 'border-b border-zinc-800/80 px-3 py-2.5' : planningStrip ? 'border-0 px-4 py-3 sm:px-5' : embedded ? 'border-b border-[var(--border)] py-2.5' : 'border-b border-zinc-800/80 px-4 py-4 sm:px-6'}`}
             >
-                <div className={`flex flex-col ${rail ? 'gap-2' : embedded ? 'gap-3 lg:flex-row lg:items-start lg:justify-between' : 'gap-4 lg:flex-row lg:items-start lg:justify-between'}`}>
-                    <div className="min-w-0">
+                <div
+                    className={`flex flex-col ${rail ? 'gap-2' : planningStrip ? 'gap-3' : embedded ? 'gap-2.5 lg:flex-row lg:items-center lg:justify-between' : 'gap-4 lg:flex-row lg:items-start lg:justify-between'}`}
+                >
+                    {planningStrip ? <span className="sr-only">Phase horizons for {projectName}</span> : null}
+                    <div className={`min-w-0 ${planningStrip ? 'hidden' : ''}`}>
                         {embedded ? (
-                            <p className="truncate text-sm font-semibold text-brand-text">{projectName}</p>
+                            <p className="text-[11px] text-[var(--text-secondary)]">
+                                Horizons for{' '}
+                                <span className="font-medium text-[var(--text-primary)]">{projectName}</span>
+                            </p>
                         ) : (
                             <>
                                 <p
@@ -200,7 +206,7 @@ export function TimelinePhaseSetter({
                         )}
                     </div>
                     <div
-                        className={`flex flex-col items-stretch ${rail ? 'gap-2' : 'gap-3 sm:flex-row sm:items-center'}`}
+                        className={`flex flex-col items-stretch ${rail ? 'gap-2' : planningStrip ? 'gap-3 sm:flex-row sm:flex-wrap sm:items-center' : 'gap-3 sm:flex-row sm:items-center'}`}
                     >
                         <div className={`flex flex-col gap-1 ${rail ? 'min-w-0' : 'min-w-[140px]'}`}>
                             <div
@@ -219,7 +225,7 @@ export function TimelinePhaseSetter({
                             <span
                                 className={
                                     embedded
-                                        ? 'rounded-full border border-brand-border bg-brand-panel px-3 py-1 text-center text-[11px] font-medium text-brand-muted'
+                                        ? 'rounded-lg border border-violet-500/20 bg-violet-500/[0.08] px-2.5 py-1 text-center text-[10px] font-semibold text-violet-200/95'
                                         : 'rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-center text-[11px] font-medium text-zinc-400'
                                 }
                             >
@@ -229,7 +235,7 @@ export function TimelinePhaseSetter({
                         <button
                             type="button"
                             onClick={addPhase}
-                            className={`inline-flex shrink-0 items-center justify-center rounded-md text-xs font-medium ${rail ? 'gap-1.5 bg-zinc-700 px-3 py-1.5 text-zinc-100 hover:bg-zinc-600' : `gap-2 border border-white/15 px-4 py-2 font-bold uppercase tracking-wide shadow-md shadow-black/25 ${ceo.accentBg} ${ceo.accentBgHover} text-brand-bg hover:text-brand-bg`}`}
+                            className={`inline-flex shrink-0 items-center justify-center rounded-md text-xs font-medium ${rail ? 'gap-1.5 bg-zinc-700 px-3 py-1.5 text-zinc-100 hover:bg-zinc-600' : embedded ? `gap-2 border border-violet-500/35 px-3 py-2 font-semibold uppercase tracking-wide ${ceo.accentBg} ${ceo.accentBgHover} text-brand-bg hover:text-brand-bg` : `gap-2 border border-white/15 px-4 py-2 font-bold uppercase tracking-wide shadow-md shadow-black/25 ${ceo.accentBg} ${ceo.accentBgHover} text-brand-bg hover:text-brand-bg`}`}
                         >
                             <Plus className={rail ? 'h-3.5 w-3.5' : 'h-4 w-4'} aria-hidden />
                             Add phase
@@ -237,57 +243,48 @@ export function TimelinePhaseSetter({
                     </div>
                 </div>
 
-                <div
-                    className={
-                        rail
-                            ? 'mt-2 grid grid-cols-2 gap-1.5'
-                            : embedded
-                              ? 'mt-3 flex flex-wrap gap-2'
-                              : 'mt-4 flex flex-wrap gap-2'
-                    }
-                >
-                    <span
+                {embedded && !planningStrip ? (
+                    <p className="mt-2 text-[10px] leading-relaxed text-[var(--text-secondary)]">
+                        <span className="tabular-nums text-[var(--text-primary)]">{stats.total}</span> total ·{' '}
+                        <span className="tabular-nums text-[var(--text-primary)]">{stats.done}</span> done ·{' '}
+                        <span className="tabular-nums text-violet-300/90">{stats.active}</span> active ·{' '}
+                        <span className="tabular-nums text-[var(--text-primary)]">{stats.planned}</span> planned
+                    </p>
+                ) : !embedded ? (
+                    <div
                         className={
-                            embedded
-                                ? statChipClass
-                                : `rounded border border-zinc-700/60 bg-zinc-900/50 px-2 py-0.5 text-[10px] font-normal text-zinc-500 ${rail ? '' : 'rounded-full px-3 py-1 font-semibold uppercase tracking-wide'}`
+                            rail
+                                ? 'mt-2 grid grid-cols-2 gap-1.5'
+                                : 'mt-4 flex flex-wrap gap-2'
                         }
                     >
-                        {stats.total} total
-                    </span>
-                    <span
-                        className={
-                            embedded
-                                ? statChipClass
-                                : `rounded border border-zinc-700/60 bg-zinc-900/50 px-2 py-0.5 text-[10px] font-normal text-zinc-500 ${rail ? '' : 'rounded-full border-violet-500/30 bg-violet-950/25 px-3 py-1 font-semibold uppercase tracking-wide text-violet-400/90'}`
-                        }
-                    >
-                        {stats.done} done
-                    </span>
-                    <span
-                        className={
-                            embedded
-                                ? statChipClass
-                                : `rounded border border-zinc-700/60 bg-zinc-900/50 px-2 py-0.5 text-[10px] font-normal text-zinc-500 ${rail ? '' : 'rounded-full border-orange-500/30 bg-orange-950/25 px-3 py-1 font-semibold uppercase tracking-wide text-orange-300/90'}`
-                        }
-                    >
-                        {stats.active} active
-                    </span>
-                    <span
-                        className={
-                            embedded
-                                ? statChipClass
-                                : `rounded border border-zinc-700/60 bg-zinc-900/50 px-2 py-0.5 text-[10px] font-normal text-zinc-500 ${rail ? '' : 'rounded-full px-3 py-1 font-semibold uppercase tracking-wide'}`
-                        }
-                    >
-                        {stats.planned} planned
-                    </span>
-                </div>
+                        <span
+                            className={`rounded border border-zinc-700/60 bg-zinc-900/50 px-2 py-0.5 text-[10px] font-normal text-zinc-500 ${rail ? '' : 'rounded-full px-3 py-1 font-semibold uppercase tracking-wide'}`}
+                        >
+                            {stats.total} total
+                        </span>
+                        <span
+                            className={`rounded border border-zinc-700/60 bg-zinc-900/50 px-2 py-0.5 text-[10px] font-normal text-zinc-500 ${rail ? '' : 'rounded-full border-violet-500/30 bg-violet-950/25 px-3 py-1 font-semibold uppercase tracking-wide text-violet-400/90'}`}
+                        >
+                            {stats.done} done
+                        </span>
+                        <span
+                            className={`rounded border border-zinc-700/60 bg-zinc-900/50 px-2 py-0.5 text-[10px] font-normal text-zinc-500 ${rail ? '' : 'rounded-full border-orange-500/30 bg-orange-950/25 px-3 py-1 font-semibold uppercase tracking-wide text-orange-300/90'}`}
+                        >
+                            {stats.active} active
+                        </span>
+                        <span
+                            className={`rounded border border-zinc-700/60 bg-zinc-900/50 px-2 py-0.5 text-[10px] font-normal text-zinc-500 ${rail ? '' : 'rounded-full px-3 py-1 font-semibold uppercase tracking-wide'}`}
+                        >
+                            {stats.planned} planned
+                        </span>
+                    </div>
+                ) : null}
             </div>
 
             {/* Timeline — embedded: no inner scroll; parent workspace scrolls as one column */}
             <div
-                className={`flex flex-col ${rail ? 'px-2 py-2 sm:px-3' : embedded ? 'pb-8 pt-2' : 'px-4 py-6 sm:px-8'}`}
+                className={`flex flex-col ${rail ? 'px-2 py-2 sm:px-3' : planningStrip ? 'px-4 pb-8 pt-1 sm:px-5' : embedded ? 'pb-8 pt-2' : 'px-4 py-6 sm:px-8'}`}
             >
                 <div className={rail || embedded ? 'w-full max-w-none' : 'mx-auto w-full max-w-3xl'}>
                     {phases.length === 0 ? (
@@ -348,7 +345,7 @@ export function TimelinePhaseSetter({
 
                                         {/* Card */}
                                         <div
-                                            className={`min-w-0 flex-1 overflow-hidden shadow-sm ${rail ? 'rounded-md border border-white/[0.06] bg-zinc-900/20 p-3' : embedded ? 'rounded-xl border border-brand-border bg-brand-card/90 p-4' : `${ceo.card} p-4`}`}
+                                            className={`min-w-0 flex-1 overflow-hidden ${rail ? 'rounded-md border border-white/[0.06] bg-zinc-900/20 p-3 shadow-sm' : embedded ? 'rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)]/95 p-4' : `${ceo.card} p-4 shadow-sm`}`}
                                         >
                                             <div
                                                 className={

@@ -16,7 +16,9 @@ import { SyncToastHost } from '@/components/SyncToastHost';
 import { AgentStaffAutoSync } from '@/components/AgentStaffAutoSync';
 import { PersonalAssistantChatProvider } from '@/components/pa/PersonalAssistantChatContext';
 import { FloatingDexoOrb } from '@/components/Dexo/FloatingDexoOrb';
+import { DexoKnowledgePromptModal } from '@/components/DexoKnowledgePromptModal';
 import { DeskChatThreadSlotProvider } from '@/components/DeskChatThreadSlotContext';
+import { SectionGuideProvider } from '@/components/SectionGuideCoach';
 
 export default function Home() {
   const [hasStarted, setHasStarted] = useState(false);
@@ -34,7 +36,7 @@ export default function Home() {
       setAllProjects(list);
       setActiveProject(saved);
       setNameVentureOpen(false);
-      switchRoom('personal_assistant');
+      switchRoom('dexo');
     } catch (e) {
       console.error('Failed to create venture:', e);
     }
@@ -63,6 +65,7 @@ export default function Home() {
       <OfficeShell>
         <PersonalAssistantChatProvider>
           <DeskChatThreadSlotProvider>
+          <SectionGuideProvider>
           <AppShell
             onLogout={() => {
               void resetSystem();
@@ -81,8 +84,10 @@ export default function Home() {
           >
             <WorkspaceStage hideWorkspaceHeader onNewVenture={openNameVentureModal} />
           </AppShell>
+          </SectionGuideProvider>
           </DeskChatThreadSlotProvider>
           <FloatingDexoOrb />
+          <DexoKnowledgePromptModal />
         </PersonalAssistantChatProvider>
         <SyncToastHost />
         <AgentStaffAutoSync />

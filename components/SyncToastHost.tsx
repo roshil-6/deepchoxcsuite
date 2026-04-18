@@ -31,13 +31,15 @@ export function SyncToastHost() {
         role="dialog"
         aria-modal="true"
         aria-labelledby="sync-trace-title"
-        className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 p-4"
+        className="fixed inset-0 z-[200] flex items-end justify-center bg-black/65 p-0 sm:items-center sm:p-4"
         onClick={() => setTraceOpen(false)}
       >
         <div
-          className="executive-panel-strong max-h-[min(70vh,520px)] w-full max-w-md overflow-y-auto p-4"
+          className="executive-panel-strong max-h-[min(88dvh,560px)] w-full max-w-md overflow-y-auto rounded-t-2xl border border-white/[0.08] p-4 shadow-[0_-8px_40px_rgba(0,0,0,0.5)] sm:rounded-2xl sm:shadow-2xl"
+          style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
           onClick={(e) => e.stopPropagation()}
         >
+          <div className="mx-auto mb-3 h-1 w-10 shrink-0 rounded-full bg-white/20 sm:hidden" aria-hidden />
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-2">
               <ListOrdered className="h-5 w-5 shrink-0 text-brand-teal" aria-hidden />
@@ -48,7 +50,7 @@ export function SyncToastHost() {
             <button
               type="button"
               onClick={() => setTraceOpen(false)}
-              className="rounded p-1 text-brand-muted hover:text-brand-text"
+              className="rounded-lg p-2 text-brand-muted transition hover:bg-white/[0.06] hover:text-brand-text"
               aria-label="Close"
             >
               <X className="h-4 w-4" />
@@ -78,23 +80,24 @@ export function SyncToastHost() {
     <>
       <div
         role="status"
-        className="pointer-events-auto fixed bottom-6 left-1/2 z-[100] flex max-w-lg -translate-x-1/2 animate-in fade-in slide-in-from-bottom-4 duration-300"
+        className="pointer-events-auto fixed left-1/2 z-[100] w-[min(100vw-1.25rem,32rem)] max-w-lg -translate-x-1/2 animate-in fade-in slide-in-from-bottom-4 duration-300"
+        style={{
+          bottom: 'max(5.5rem, calc(0.75rem + env(safe-area-inset-bottom)))',
+        }}
       >
-        <div className="executive-panel-strong flex flex-col gap-2 px-4 py-3">
+        <div className="executive-panel-strong flex flex-col gap-2 rounded-2xl border border-white/[0.08] px-3 py-3 shadow-[0_12px_40px_rgba(0,0,0,0.45)] backdrop-blur-xl sm:px-4">
           <div className="flex items-start gap-3">
             <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand-teal" aria-hidden />
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-medium text-brand-teal">
-                Staff sync complete
-              </p>
-              <p className="mt-1 text-sm leading-snug text-brand-text">{syncToastMessage}</p>
+              <p className="text-[11px] font-medium text-brand-teal">Staff sync complete</p>
+              <p className="mt-1 text-[13px] leading-snug text-brand-text sm:text-sm">{syncToastMessage}</p>
               {hasTrace ? (
                 <button
                   type="button"
                   onClick={() => setTraceOpen(true)}
-                  className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-brand-teal underline-offset-2 hover:underline"
+                  className="mt-2 inline-flex min-h-[44px] items-center gap-1.5 rounded-lg px-1 text-xs font-medium text-brand-teal underline-offset-2 hover:underline"
                 >
-                  <ListOrdered className="h-3.5 w-3.5" aria-hidden />
+                  <ListOrdered className="h-3.5 w-3.5 shrink-0" aria-hidden />
                   What ran on this sync
                 </button>
               ) : null}
@@ -102,10 +105,10 @@ export function SyncToastHost() {
             <button
               type="button"
               onClick={dismissSyncToast}
-              className="shrink-0 rounded p-1 text-brand-muted hover:text-brand-text"
+              className="min-h-[44px] min-w-[44px] shrink-0 rounded-lg text-brand-muted transition hover:bg-white/[0.06] hover:text-brand-text"
               aria-label="Dismiss"
             >
-              <X className="h-4 w-4" />
+              <X className="mx-auto h-4 w-4" />
             </button>
           </div>
         </div>

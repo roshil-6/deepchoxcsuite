@@ -1,45 +1,48 @@
 'use client';
 
-import React, { useState, useCallback, useRef, useEffect, useId } from 'react';
+/**
+ * Strategy plan canvas — draggable steps, explicit linking, bendable edges.
+ * Uses Pointer Events + refs for stable drag (avoids listener churn when parent re-renders each move).
+ */
+
+import React, { useState, useCallback, useRef, useEffect, useId, useMemo } from 'react';
 import type { FlowEdge, FlowNode } from '@/lib/strategyDoc';
-import { Plus, Trash2, GripVertical, LayoutGrid, Link2 } from 'lucide-react';
+import {
+    Plus,
+    Trash2,
+    GripHorizontal,
+    LayoutGrid,
+    Link2,
+    X,
+    ZoomIn,
+    ZoomOut,
+    RotateCcw,
+    ArrowLeft,
+    ArrowRight,
+    ArrowUp,
+    ArrowDown,
+    Hand,
+} from 'lucide-react';
 
-const NODE_W = 220;
-/** Used for drag bounds & line anchors — keep in sync with card layout */
-const NODE_H = 52;
-const ANCHOR_Y = NODE_H / 2;
+const NODE_W = 248;
+/** Approx. full card height (Move rail + label + actions); used for drag bounds and anchors */
+const NODE_BOX_H = 132;
+const RAIL_H = 28;
+const ANCHOR_Y = NODE_BOX_H / 2;
+const CANVAS_PAD = 96;
+const ZOOM_MIN = 0.4;
+const ZOOM_MAX = 2.5;
+const ZOOM_FACTOR = 1.12;
+const PAN_STEP = 80;
 
-/** Nearest point on the node border to the cursor (local node coords). */
-function clampPointToBorder(lx: number, ly: number, w: number, h: number): { x: number; y: number } {
-    const cx = Math.max(0, Math.min(w, lx));
-    const cy = Math.max(0, Math.min(h, ly));
-    const dTop = cy;
-    const dBottom = h - cy;
-    const dLeft = cx;
-    const dRight = w - cx;
-    const m = Math.min(dTop, dBottom, dLeft, dRight);
-    if (m === dTop) return { x: cx, y: 0 };
-    if (m === dBottom) return { x: cx, y: h };
-    if (m === dLeft) return { x: 0, y: cy };
-    return { x: w, y: cy };
-}
+/** Subtle left-edge tint per step (no gradients on cards) */
+const STEP_EDGE = [
+    'border-l-teal-500/55',
+    'border-l-violet-500/50',
+    'border-l-amber-500/50',
+    'border-l-sky-500/50',
+];
 
-/** Smooth curve between any two anchor points (direction-aware) — used for live preview while wiring. */
-function cubicEdgePath(p1: { x: number; y: number }, p2: { x: number; y: number }) {
-    const dx = p2.x - p1.x;
-    const dy = p2.y - p1.y;
-    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-    const pull = Math.min(140, Math.max(40, dist * 0.38));
-    const ux = dx / dist;
-    const uy = dy / dist;
-    const c1x = p1.x + ux * pull;
-    const c1y = p1.y + uy * pull;
-    const c2x = p2.x - ux * pull;
-    const c2y = p2.y - uy * pull;
-    return `M ${p1.x} ${p1.y} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${p2.x} ${p2.y}`;
-}
-
-/** Perpendicular bulge along the chord — default curve when bend is not stored yet. */
 function defaultBendForChord(p1: { x: number; y: number }, p2: { x: number; y: number }) {
     const dx = p2.x - p1.x;
     const dy = p2.y - p1.y;
@@ -54,7 +57,6 @@ function getBendForEdge(e: FlowEdge, p1: { x: number; y: number }, p2: { x: numb
     return defaultBendForChord(p1, p2);
 }
 
-/** Quadratic Bézier: control point = chord midpoint + bend offset */
 function quadraticEdgePath(
     p1: { x: number; y: number },
     p2: { x: number; y: number },
@@ -81,9 +83,10 @@ type Props = {
     readOnly?: boolean;
     expanded?: boolean;
     fillHeight?: boolean;
+    /** Fill parent flex height only (e.g. full-screen CEO map); avoids a fixed vh min that can overflow the shell */
+    edgeToEdge?: boolean;
 };
 
-/** Resolve which flow node (if any) sits under the viewport point — works anywhere inside the box */
 function findNodeIdAtPoint(
     clientX: number,
     clientY: number,
@@ -107,29 +110,36 @@ function findNodeIdAtPoint(
     return null;
 }
 
-export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded, fillHeight }: Props) {
+export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded, fillHeight, edgeToEdge }: Props) {
     const uid = useId();
     const safeSvgId = uid.replace(/:/g, '');
     const markerId = `arrow-${safeSvgId}`;
+
     const [dragId, setDragId] = useState<string | null>(null);
-    const offset = useRef({ x: 0, y: 0 });
+    const dragIdRef = useRef<string | null>(null);
+    dragIdRef.current = dragId;
+
+    const dragOffsetRef = useRef({ x: 0, y: 0 });
     const wrapRef = useRef<HTMLDivElement>(null);
+    const surfaceSizeRef = useRef({ w: 800, h: 560 });
+    const [scrollViewport, setScrollViewport] = useState({ w: 0, h: 0 });
 
-    const [connectFrom, setConnectFrom] = useState<string | null>(null);
-    /** Border anchor on source node (local px) while dragging a link */
-    const [connectFromLocal, setConnectFromLocal] = useState<{ x: number; y: number } | null>(null);
-    const [connectPos, setConnectPos] = useState<{ x: number; y: number } | null>(null);
-    /** Node under cursor while wiring — live drop hint */
-    const [connectHoverTarget, setConnectHoverTarget] = useState<string | null>(null);
-
-    const getCanvasPoint = useCallback((clientX: number, clientY: number) => {
-        if (!wrapRef.current) return null;
-        const rect = wrapRef.current.getBoundingClientRect();
+    const { surfaceW, surfaceH } = useMemo(() => {
+        const maxR = nodes.length ? Math.max(...nodes.map((n) => n.x + NODE_W)) : 0;
+        const maxB = nodes.length ? Math.max(...nodes.map((n) => n.y + NODE_BOX_H)) : 0;
+        const vw = scrollViewport.w || 640;
+        const vh = scrollViewport.h || 420;
         return {
-            x: clientX - rect.left,
-            y: clientY - rect.top,
+            surfaceW: Math.max(vw, maxR + CANVAS_PAD, 800),
+            surfaceH: Math.max(vh, maxB + CANVAS_PAD, 560),
         };
-    }, []);
+    }, [nodes, scrollViewport.w, scrollViewport.h]);
+
+    surfaceSizeRef.current = { w: surfaceW, h: surfaceH };
+
+    const [zoom, setZoom] = useState(1);
+    const zoomRef = useRef(1);
+    zoomRef.current = zoom;
 
     const nodesRef = useRef(nodes);
     const edgesRef = useRef(edges);
@@ -137,164 +147,245 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
     nodesRef.current = nodes;
     edgesRef.current = edges;
     onChangeRef.current = onChange;
-    const connectDragRef = useRef<{ fromId: string; fromLocal: { x: number; y: number } } | null>(null);
 
-    /** Dragging the bend handle on an edge (by edge index) */
-    const [bendDragIndex, setBendDragIndex] = useState<number | null>(null);
+    useEffect(() => {
+        const el = wrapRef.current;
+        if (!el) return;
+        const ro = new ResizeObserver(() => {
+            setScrollViewport({ w: el.clientWidth, h: el.clientHeight });
+        });
+        ro.observe(el);
+        setScrollViewport({ w: el.clientWidth, h: el.clientHeight });
+        return () => ro.disconnect();
+    }, []);
 
-    const onMoveNodeStart = (e: React.MouseEvent, id: string) => {
-        if (readOnly) return;
-        const node = nodes.find((n) => n.id === id);
-        if (!node || !wrapRef.current) return;
-        const rect = wrapRef.current.getBoundingClientRect();
-        offset.current = {
-            x: e.clientX - rect.left - node.x,
-            y: e.clientY - rect.top - node.y,
+    useEffect(() => {
+        const el = wrapRef.current;
+        if (!el) return;
+        const onWheel = (e: WheelEvent) => {
+            if (!e.ctrlKey && !e.metaKey) return;
+            e.preventDefault();
+            const dz = e.deltaY > 0 ? -0.09 : 0.09;
+            setZoom((z) => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z + dz)));
         };
-        setDragId(id);
-    };
+        el.addEventListener('wheel', onWheel, { passive: false });
+        return () => el.removeEventListener('wheel', onWheel);
+    }, []);
 
-    const onMouseMove = useCallback(
-        (e: MouseEvent) => {
-            if (!dragId || !wrapRef.current) return;
-            const rect = wrapRef.current.getBoundingClientRect();
-            const x = Math.max(0, Math.min(rect.width - NODE_W, e.clientX - rect.left - offset.current.x));
-            const y = Math.max(0, Math.min(rect.height - NODE_H, e.clientY - rect.top - offset.current.y));
-            onChange({
-                nodes: nodes.map((n) => (n.id === dragId ? { ...n, x, y } : n)),
-                edges,
-            });
+    const zoomIn = useCallback(() => {
+        setZoom((z) => Math.min(ZOOM_MAX, Math.round(z * ZOOM_FACTOR * 100) / 100));
+    }, []);
+
+    const zoomOut = useCallback(() => {
+        setZoom((z) => Math.max(ZOOM_MIN, Math.round((z / ZOOM_FACTOR) * 100) / 100));
+    }, []);
+
+    const resetView = useCallback(() => {
+        setZoom(1);
+        requestAnimationFrame(() => {
+            wrapRef.current?.scrollTo({ left: 0, top: 0, behavior: 'smooth' });
+        });
+    }, []);
+
+    const panBy = useCallback((dx: number, dy: number) => {
+        wrapRef.current?.scrollBy({ left: dx, top: dy, behavior: 'smooth' });
+    }, []);
+
+    /** Armed source for explicit “Connect” → click target */
+    const [linkFrom, setLinkFrom] = useState<string | null>(null);
+    const [linkHover, setLinkHover] = useState<string | null>(null);
+
+    /** Hold and drag on empty canvas to pan (hand tool) */
+    const [holdPanMode, setHoldPanMode] = useState(false);
+    const [canvasPanning, setCanvasPanning] = useState(false);
+
+    const onCanvasPointerDown = useCallback(
+        (e: React.PointerEvent<HTMLDivElement>) => {
+            if (!holdPanMode || linkFrom) return;
+            if (e.button !== 0) return;
+            const t = e.target as HTMLElement;
+            if (t.closest('[data-flow-node]') || t.closest('button') || t.closest('input')) return;
+            const wrap = wrapRef.current;
+            if (!wrap) return;
+            e.preventDefault();
+            const start = {
+                px: e.clientX,
+                py: e.clientY,
+                sl: wrap.scrollLeft,
+                st: wrap.scrollTop,
+            };
+            setCanvasPanning(true);
+            const onMove = (ev: PointerEvent) => {
+                wrap.scrollLeft = start.sl - (ev.clientX - start.px);
+                wrap.scrollTop = start.st - (ev.clientY - start.py);
+            };
+            const onUp = () => {
+                window.removeEventListener('pointermove', onMove);
+                window.removeEventListener('pointerup', onUp);
+                window.removeEventListener('pointercancel', onUp);
+                setCanvasPanning(false);
+            };
+            window.addEventListener('pointermove', onMove);
+            window.addEventListener('pointerup', onUp);
+            window.addEventListener('pointercancel', onUp);
         },
-        [dragId, nodes, edges, onChange]
+        [holdPanMode, linkFrom]
     );
 
-    const onMouseUpMove = useCallback(() => setDragId(null), []);
+    const [bendDragIndex, setBendDragIndex] = useState<number | null>(null);
+
+    const addEdgeIfAbsent = useCallback((fromId: string, toId: string) => {
+        if (fromId === toId) return;
+        const curNodes = nodesRef.current;
+        const curEdges = edgesRef.current;
+        if (curEdges.some((x) => x.from === fromId && x.to === toId)) return;
+        const a = curNodes.find((n) => n.id === fromId);
+        const b = curNodes.find((n) => n.id === toId);
+        if (!a || !b) return;
+        const fromLocal = { x: NODE_W, y: ANCHOR_Y };
+        const toLocal = { x: 0, y: ANCHOR_Y };
+        const p1 = { x: a.x + fromLocal.x, y: a.y + fromLocal.y };
+        const p2 = { x: b.x + toLocal.x, y: b.y + toLocal.y };
+        const { bendMx, bendMy } = defaultBendForChord(p1, p2);
+        onChangeRef.current({
+            nodes: curNodes,
+            edges: [
+                ...curEdges,
+                {
+                    from: fromId,
+                    to: toId,
+                    fromX: fromLocal.x,
+                    fromY: fromLocal.y,
+                    toX: toLocal.x,
+                    toY: toLocal.y,
+                    bendMx,
+                    bendMy,
+                },
+            ],
+        });
+    }, []);
+
+    const beginDrag = useCallback(
+        (e: React.PointerEvent, id: string) => {
+            if (readOnly) return;
+            e.preventDefault();
+            e.stopPropagation();
+            const node = nodesRef.current.find((n) => n.id === id);
+            const wrap = wrapRef.current;
+            if (!node || !wrap) return;
+            const rect = wrap.getBoundingClientRect();
+            const z = zoomRef.current;
+            const px = (e.clientX - rect.left + wrap.scrollLeft) / z;
+            const py = (e.clientY - rect.top + wrap.scrollTop) / z;
+            dragOffsetRef.current = { x: px - node.x, y: py - node.y };
+            setDragId(id);
+            try {
+                (e.target as HTMLElement).setPointerCapture(e.pointerId);
+            } catch {
+                /* ignore */
+            }
+        },
+        [readOnly]
+    );
+
+    const endDrag = useCallback((e: React.PointerEvent) => {
+        try {
+            (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+        } catch {
+            /* ignore */
+        }
+        setDragId(null);
+    }, []);
 
     useEffect(() => {
         if (!dragId) return;
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('mouseup', onMouseUpMove);
-        return () => {
-            window.removeEventListener('mousemove', onMouseMove);
-            window.removeEventListener('mouseup', onMouseUpMove);
-        };
-    }, [dragId, onMouseMove, onMouseUpMove]);
 
-    const beginConnect = useCallback(
-        (e: React.MouseEvent, fromId: string) => {
-            if (readOnly) return;
-            e.stopPropagation();
-            e.preventDefault();
+        const onMove = (e: PointerEvent) => {
+            const id = dragIdRef.current;
             const wrap = wrapRef.current;
-            const n = nodesRef.current.find((x) => x.id === fromId);
-            if (!wrap || !n) return;
+            if (!id || !wrap) return;
             const rect = wrap.getBoundingClientRect();
-            const fromLocal = clampPointToBorder(
-                e.clientX - rect.left - n.x,
-                e.clientY - rect.top - n.y,
-                NODE_W,
-                NODE_H
-            );
-            const pt = getCanvasPoint(e.clientX, e.clientY);
-            if (!pt) return;
-            connectDragRef.current = { fromId, fromLocal };
-            setConnectFrom(fromId);
-            setConnectFromLocal(fromLocal);
-            setConnectPos(pt);
-        },
-        [readOnly, getCanvasPoint]
-    );
-
-    useEffect(() => {
-        if (!connectFrom) return;
-
-        const move = (e: MouseEvent) => {
-            const pt = getCanvasPoint(e.clientX, e.clientY);
-            if (pt) setConnectPos(pt);
-            const wrap = wrapRef.current;
-            const pending = connectDragRef.current;
-            if (wrap && pending) {
-                const ids = nodesRef.current.map((n) => n.id);
-                const hit = findNodeIdAtPoint(e.clientX, e.clientY, wrap, ids);
-                setConnectHoverTarget(hit && hit !== pending.fromId ? hit : null);
-            }
-        };
-
-        const up = (e: MouseEvent) => {
-            const pending = connectDragRef.current;
-            connectDragRef.current = null;
-            setConnectFrom(null);
-            setConnectFromLocal(null);
-            setConnectPos(null);
-            setConnectHoverTarget(null);
-
-            const wrap = wrapRef.current;
-            if (!pending || !wrap) return;
-
-            const { fromId, fromLocal } = pending;
-            const ids = nodesRef.current.map((n) => n.id);
-            const toId = findNodeIdAtPoint(e.clientX, e.clientY, wrap, ids);
-
-            if (!toId || toId === fromId) return;
-            const curEdges = edgesRef.current;
+            const z = zoomRef.current;
+            const { w: sw, h: sh } = surfaceSizeRef.current;
             const curNodes = nodesRef.current;
-            if (curEdges.some((x) => x.from === fromId && x.to === toId)) return;
-            const toNode = curNodes.find((n) => n.id === toId);
-            if (!toNode) return;
-            const rect = wrap.getBoundingClientRect();
-            const toLocal = clampPointToBorder(
-                e.clientX - rect.left - toNode.x,
-                e.clientY - rect.top - toNode.y,
-                NODE_W,
-                NODE_H
-            );
-            const fromNode = curNodes.find((n) => n.id === fromId)!;
-            const p1 = { x: fromNode.x + fromLocal.x, y: fromNode.y + fromLocal.y };
-            const p2 = { x: toNode.x + toLocal.x, y: toNode.y + toLocal.y };
-            const { bendMx, bendMy } = defaultBendForChord(p1, p2);
+            const curEdges = edgesRef.current;
+            const wx = (e.clientX - rect.left + wrap.scrollLeft) / z - dragOffsetRef.current.x;
+            const wy = (e.clientY - rect.top + wrap.scrollTop) / z - dragOffsetRef.current.y;
+            const x = Math.max(0, Math.min(sw - NODE_W, wx));
+            const y = Math.max(0, Math.min(sh - NODE_BOX_H, wy));
             onChangeRef.current({
-                nodes: curNodes,
-                edges: [
-                    ...curEdges,
-                    {
-                        from: fromId,
-                        to: toId,
-                        fromX: fromLocal.x,
-                        fromY: fromLocal.y,
-                        toX: toLocal.x,
-                        toY: toLocal.y,
-                        bendMx,
-                        bendMy,
-                    },
-                ],
+                nodes: curNodes.map((n) => (n.id === id ? { ...n, x, y } : n)),
+                edges: curEdges,
             });
         };
 
-        const key = (ev: KeyboardEvent) => {
+        const onUp = () => setDragId(null);
+
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+        window.addEventListener('pointercancel', onUp);
+        return () => {
+            window.removeEventListener('pointermove', onMove);
+            window.removeEventListener('pointerup', onUp);
+            window.removeEventListener('pointercancel', onUp);
+        };
+    }, [dragId]);
+
+    useEffect(() => {
+        if (!linkFrom || readOnly) return;
+        const wrap = wrapRef.current;
+        if (!wrap) return;
+
+        const fromId = linkFrom;
+
+        const onMove = (e: MouseEvent) => {
+            const ids = nodesRef.current.map((n) => n.id);
+            const hit = findNodeIdAtPoint(e.clientX, e.clientY, wrap, ids);
+            setLinkHover(hit && hit !== fromId ? hit : null);
+        };
+
+        const onDown = (e: MouseEvent) => {
+            const t = e.target as HTMLElement;
+            if (t.closest('button') || t.closest('input')) return;
+            const ids = nodesRef.current.map((n) => n.id);
+            const toId = findNodeIdAtPoint(e.clientX, e.clientY, wrap, ids);
+            if (!toId || toId === fromId) return;
+            addEdgeIfAbsent(fromId, toId);
+            setLinkFrom(null);
+            setLinkHover(null);
+        };
+
+        const onKey = (ev: KeyboardEvent) => {
             if (ev.key === 'Escape') {
-                connectDragRef.current = null;
-                setConnectFrom(null);
-                setConnectFromLocal(null);
-                setConnectPos(null);
-                setConnectHoverTarget(null);
+                setLinkFrom(null);
+                setLinkHover(null);
             }
         };
 
-        window.addEventListener('mousemove', move);
-        window.addEventListener('mouseup', up);
-        window.addEventListener('keydown', key);
+        wrap.addEventListener('mousemove', onMove);
+        wrap.addEventListener('mousedown', onDown);
+        window.addEventListener('keydown', onKey);
         return () => {
-            window.removeEventListener('mousemove', move);
-            window.removeEventListener('mouseup', up);
-            window.removeEventListener('keydown', key);
+            wrap.removeEventListener('mousemove', onMove);
+            wrap.removeEventListener('mousedown', onDown);
+            window.removeEventListener('keydown', onKey);
         };
-    }, [connectFrom, getCanvasPoint]);
+    }, [linkFrom, readOnly, addEdgeIfAbsent]);
 
     useEffect(() => {
         if (bendDragIndex === null || readOnly) return;
 
         const move = (e: MouseEvent) => {
-            const pt = getCanvasPoint(e.clientX, e.clientY);
+            const pt = (() => {
+                const wrap = wrapRef.current;
+                if (!wrap) return null;
+                const rect = wrap.getBoundingClientRect();
+                const z = zoomRef.current;
+                return {
+                    x: (e.clientX - rect.left + wrap.scrollLeft) / z,
+                    y: (e.clientY - rect.top + wrap.scrollTop) / z,
+                };
+            })();
             if (!pt) return;
             const curEdges = edgesRef.current;
             const curNodes = nodesRef.current;
@@ -306,11 +397,11 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
             const { p1, p2 } = anchorsForEdge(edge, na, nb);
             const midX = (p1.x + p2.x) / 2;
             const midY = (p1.y + p2.y) / 2;
-            const bendMx = pt.x - midX;
-            const bendMy = pt.y - midY;
             onChangeRef.current({
                 nodes: curNodes,
-                edges: curEdges.map((ed, i) => (i === bendDragIndex ? { ...ed, bendMx, bendMy } : ed)),
+                edges: curEdges.map((ed, i) =>
+                    i === bendDragIndex ? { ...ed, bendMx: pt.x - midX, bendMy: pt.y - midY } : ed
+                ),
             });
         };
 
@@ -322,7 +413,7 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
             window.removeEventListener('mousemove', move);
             window.removeEventListener('mouseup', up);
         };
-    }, [bendDragIndex, readOnly, getCanvasPoint]);
+    }, [bendDragIndex, readOnly]);
 
     const addNode = () => {
         if (readOnly) return;
@@ -333,8 +424,8 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
                 ...nodes,
                 {
                     id,
-                    x: 36 + (n % 4) * 200,
-                    y: 36 + Math.floor(n / 4) * 88,
+                    x: 40 + (n % 3) * (NODE_W + 36),
+                    y: 48 + Math.floor(n / 3) * (NODE_BOX_H + 40),
                     label: `Step ${n + 1}`,
                 },
             ],
@@ -345,12 +436,12 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
     const autoLayout = () => {
         if (readOnly || nodes.length === 0) return;
         const cols = Math.max(1, Math.ceil(Math.sqrt(nodes.length)));
-        const gapX = NODE_W + 32;
-        const gapY = 96;
+        const gapX = NODE_W + 40;
+        const gapY = NODE_BOX_H + 48;
         const next = nodes.map((node, i) => ({
             ...node,
-            x: 28 + (i % cols) * gapX,
-            y: 28 + Math.floor(i / cols) * gapY,
+            x: 32 + (i % cols) * gapX,
+            y: 32 + Math.floor(i / cols) * gapY,
         }));
         onChange({ nodes: next, edges });
     };
@@ -365,6 +456,7 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
 
     const removeNode = (id: string) => {
         if (readOnly) return;
+        if (linkFrom === id) setLinkFrom(null);
         onChange({
             nodes: nodes.filter((n) => n.id !== id),
             edges: edges.filter((e) => e.from !== id && e.to !== id),
@@ -378,110 +470,291 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
 
     const nodeById = (id: string) => nodes.find((n) => n.id === id);
 
-    /** fillHeight: parent is flex column — use a real min-height so the canvas never collapses to a strip */
     const canvasBoxClass =
         expanded && fillHeight
-            ? 'min-h-[min(68vh,820px)] flex-1'
+            ? edgeToEdge
+                ? 'min-h-0 flex-1'
+                : 'min-h-[min(86vh,1024px)] flex-1'
             : expanded
-              ? 'min-h-[min(72vh,820px)] flex-1'
+              ? 'min-h-[min(78vh,900px)] flex-1'
               : 'min-h-[420px]';
 
-    const gradStrokeId = `edge-grad-${safeSvgId}`;
-    const markerFillId = `marker-fill-${safeSvgId}`;
-
-    const previewPath =
-        connectFrom && connectPos && connectFromLocal && nodeById(connectFrom)
-            ? (() => {
-                  const n = nodeById(connectFrom)!;
-                  const a = { x: n.x + connectFromLocal.x, y: n.y + connectFromLocal.y };
-                  const d = cubicEdgePath(a, connectPos);
-                  return (
-                      <path
-                          d={d}
-                          fill="none"
-                          stroke={`url(#${gradStrokeId})`}
-                          strokeWidth="1.15"
-                          strokeLinecap="round"
-                          opacity={0.72}
-                      />
-                  );
-              })()
-            : null;
-
     const isEmpty = nodes.length === 0;
+    const linkActive = Boolean(linkFrom);
+    const ee = Boolean(edgeToEdge);
+    /** Planning-room mirror: no nested card chrome — one surface with the parent panel */
+    const mirror = Boolean(readOnly);
 
     return (
-        <div className={`space-y-3 ${expanded ? 'flex min-h-0 flex-1 flex-col' : ''}`}>
+        <div
+            className={`${ee || mirror ? 'gap-0 space-y-0' : 'space-y-4'} ${expanded ? 'flex min-h-0 min-w-0 flex-1 flex-col' : ''}`}
+        >
             {!readOnly && (
-                <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div
+                    className={`flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between ${
+                        ee
+                            ? 'border-b border-zinc-800 bg-zinc-900/50 px-3 py-2 sm:px-4'
+                            : 'rounded-lg border border-zinc-700 bg-zinc-900/40 px-4 py-3'
+                    }`}
+                >
+                    <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+                        <span className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-zinc-600 bg-zinc-800 text-zinc-400">
+                            <LayoutGrid className="h-4 w-4" aria-hidden />
+                        </span>
+                        <div className="min-w-0">
+                            <p className="text-[11px] font-medium text-zinc-200">Plan canvas</p>
+                            <p className="text-[10px] leading-snug text-zinc-500">
+                                Drag the <span className="text-zinc-400">strip</span> to move a step.{' '}
+                                <span className="text-zinc-400">Connect</span> then tap the target. Turn on{' '}
+                                <span className="text-zinc-400">Hold &amp; move</span> to drag the map. Esc cancels linking.
+                            </p>
+                        </div>
+                    </div>
                     <div className="flex flex-wrap items-center gap-2">
                         <button
                             type="button"
                             onClick={addNode}
-                            className="inline-flex items-center gap-2 rounded-full bg-white/[0.08] px-4 py-2 text-xs font-medium text-zinc-100 transition hover:bg-white/[0.12]"
+                            className="inline-flex items-center gap-2 rounded-md bg-teal-600 px-3 py-2 text-xs font-medium text-white hover:bg-teal-500"
                         >
-                            <Plus className="h-3.5 w-3.5 text-zinc-400" aria-hidden />
+                            <Plus className="h-3.5 w-3.5" aria-hidden />
                             Add step
                         </button>
                         <button
                             type="button"
                             onClick={autoLayout}
                             disabled={isEmpty}
-                            className="inline-flex items-center gap-2 rounded-full bg-white/[0.04] px-3 py-2 text-xs font-medium text-zinc-400 transition hover:bg-white/[0.08] hover:text-zinc-200 disabled:cursor-not-allowed disabled:opacity-40"
+                            className="inline-flex items-center gap-2 rounded-md border border-zinc-600 bg-zinc-800 px-3 py-2 text-xs font-medium text-zinc-200 hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             <LayoutGrid className="h-3.5 w-3.5" aria-hidden />
-                            Tidy grid
+                            Auto layout
                         </button>
+                        {linkActive && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setLinkFrom(null);
+                                    setLinkHover(null);
+                                }}
+                                className="inline-flex items-center gap-1.5 rounded-md border border-rose-500/40 bg-rose-950/40 px-3 py-2 text-xs font-medium text-rose-200"
+                            >
+                                <X className="h-3.5 w-3.5" aria-hidden />
+                                Cancel link
+                            </button>
+                        )}
                     </div>
-                    <div className="flex flex-wrap items-center gap-3 text-[11px] text-zinc-500">
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.05] px-2.5 py-1 tabular-nums text-zinc-400">
+                    <div className="flex flex-wrap items-center gap-2 text-[11px] text-zinc-500">
+                        <span className="rounded border border-zinc-700 bg-zinc-800/80 px-2 py-0.5 tabular-nums text-zinc-400">
                             {nodes.length} step{nodes.length === 1 ? '' : 's'}
                         </span>
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.05] px-2.5 py-1 tabular-nums text-zinc-400">
-                            <Link2 className="h-3 w-3 opacity-70" aria-hidden />
+                        <span className="rounded border border-zinc-700 bg-zinc-800/80 px-2 py-0.5 tabular-nums text-zinc-400">
+                            <Link2 className="mr-1 inline h-3 w-3 opacity-70" aria-hidden />
                             {edges.length} link{edges.length === 1 ? '' : 's'}
                         </span>
                     </div>
                 </div>
             )}
 
-            {!readOnly && (
-                <p className="text-[11px] leading-relaxed text-zinc-500">
-                    <span className="font-medium text-zinc-400">Link</span> — drag from a step&apos;s surface onto another.{' '}
-                    <span className="font-medium text-zinc-400">Bend</span> — drag the dot on the line.
+            <div
+                className={`flex shrink-0 flex-wrap items-center gap-2 ${
+                    mirror
+                        ? 'border-0 border-b border-[var(--border)] bg-transparent px-0 py-2'
+                        : ee
+                          ? 'border-b border-zinc-800 bg-zinc-900/40 px-3 py-2 sm:px-4'
+                          : 'rounded-lg border border-zinc-700 bg-zinc-900/40 px-3 py-2 sm:px-4'
+                }`}
+            >
+                <span
+                    className={`text-[10px] font-semibold uppercase tracking-[0.14em] ${mirror ? 'text-[var(--text-secondary)]' : 'text-zinc-500'}`}
+                >
+                    {mirror ? 'Pan & zoom' : 'View'}
+                </span>
+                <div className="flex flex-wrap items-center gap-1">
+                    <button
+                        type="button"
+                        onClick={zoomOut}
+                        disabled={zoom <= ZOOM_MIN + 0.001}
+                        className={`inline-flex h-8 w-8 items-center justify-center rounded-lg border text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-35 ${
+                            mirror
+                                ? 'border-[var(--border)] bg-[var(--bg-elevated)] hover:bg-[var(--bg-card)]'
+                                : 'border-zinc-600 bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-zinc-100'
+                        }`}
+                        title="Zoom out"
+                        aria-label="Zoom out"
+                    >
+                        <ZoomOut className="h-4 w-4" aria-hidden />
+                    </button>
+                    <span
+                        className={`min-w-[2.75rem] text-center text-[11px] tabular-nums ${mirror ? 'text-[var(--text-secondary)]' : 'text-zinc-400'}`}
+                    >
+                        {Math.round(zoom * 100)}%
+                    </span>
+                    <button
+                        type="button"
+                        onClick={zoomIn}
+                        disabled={zoom >= ZOOM_MAX - 0.001}
+                        className={`inline-flex h-8 w-8 items-center justify-center rounded-lg border disabled:cursor-not-allowed disabled:opacity-35 ${
+                            mirror
+                                ? 'border-[var(--border)] bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:bg-[var(--bg-card)]'
+                                : 'border-zinc-600 bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-zinc-100'
+                        }`}
+                        title="Zoom in"
+                        aria-label="Zoom in"
+                    >
+                        <ZoomIn className="h-4 w-4" aria-hidden />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={resetView}
+                        className={`inline-flex h-8 items-center gap-1 rounded-lg border px-2 text-[10px] font-medium ${
+                            mirror
+                                ? 'border-[var(--border)] bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)]'
+                                : 'border-zinc-600 bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-200'
+                        }`}
+                        title="Reset zoom and pan"
+                        aria-label="Reset zoom and pan"
+                    >
+                        <RotateCcw className="h-3.5 w-3.5" aria-hidden />
+                        Reset
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setHoldPanMode((v) => !v)}
+                        aria-pressed={holdPanMode}
+                        className={`inline-flex h-8 items-center gap-1 rounded-lg border px-2 text-[10px] font-medium transition ${
+                            holdPanMode
+                                ? mirror
+                                    ? 'border-violet-500/45 bg-violet-500/15 text-violet-100'
+                                    : 'border-teal-500/50 bg-teal-950/50 text-teal-200'
+                                : mirror
+                                  ? 'border-[var(--border)] bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)]'
+                                  : 'border-zinc-600 bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-200'
+                        }`}
+                        title="Hold and drag on empty map to pan"
+                        aria-label="Hold and move: drag the map by pressing on empty space"
+                    >
+                        <Hand className="h-3.5 w-3.5" aria-hidden />
+                        Hold &amp; move
+                    </button>
+                </div>
+                <span
+                    className={`hidden h-4 w-px sm:block ${mirror ? 'bg-[var(--border)]' : 'bg-zinc-700'}`}
+                    aria-hidden
+                />
+                <div
+                    className={`flex items-center gap-0.5 rounded-lg p-0.5 ${
+                        mirror
+                            ? 'border border-[var(--border)] bg-[var(--bg-elevated)]/80'
+                            : 'border border-zinc-700 bg-zinc-800/50'
+                    }`}
+                >
+                    <button
+                        type="button"
+                        onClick={() => panBy(-PAN_STEP, 0)}
+                        className={`inline-flex h-7 w-7 items-center justify-center rounded-md ${
+                            mirror
+                                ? 'text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)]'
+                                : 'text-zinc-400 hover:bg-zinc-700 hover:text-zinc-100'
+                        }`}
+                        title="Pan left"
+                        aria-label="Pan canvas left"
+                    >
+                        <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => panBy(0, -PAN_STEP)}
+                        className={`inline-flex h-7 w-7 items-center justify-center rounded-md ${
+                            mirror
+                                ? 'text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)]'
+                                : 'text-zinc-400 hover:bg-zinc-700 hover:text-zinc-100'
+                        }`}
+                        title="Pan up"
+                        aria-label="Pan canvas up"
+                    >
+                        <ArrowUp className="h-3.5 w-3.5" aria-hidden />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => panBy(0, PAN_STEP)}
+                        className={`inline-flex h-7 w-7 items-center justify-center rounded-md ${
+                            mirror
+                                ? 'text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)]'
+                                : 'text-zinc-400 hover:bg-zinc-700 hover:text-zinc-100'
+                        }`}
+                        title="Pan down"
+                        aria-label="Pan canvas down"
+                    >
+                        <ArrowDown className="h-3.5 w-3.5" aria-hidden />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => panBy(PAN_STEP, 0)}
+                        className={`inline-flex h-7 w-7 items-center justify-center rounded-md ${
+                            mirror
+                                ? 'text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)]'
+                                : 'text-zinc-400 hover:bg-zinc-700 hover:text-zinc-100'
+                        }`}
+                        title="Pan right"
+                        aria-label="Pan canvas right"
+                    >
+                        <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+                    </button>
+                </div>
+                <p
+                    className={`ml-auto hidden text-[10px] sm:block ${mirror ? 'text-[var(--text-secondary)]' : 'text-zinc-600'}`}
+                >
+                    Ctrl / ⌘ + scroll to zoom
                 </p>
-            )}
+            </div>
 
             <div
                 ref={wrapRef}
-                className={`relative w-full cursor-default overflow-hidden rounded-2xl border transition-colors duration-300 ${
-                    connectFrom ? 'border-white/[0.14] bg-white/[0.04]' : 'border-white/[0.06] bg-[#141416]'
-                } ${connectFrom ? 'cursor-crosshair' : ''} ${canvasBoxClass}`}
+                onPointerDown={onCanvasPointerDown}
+                className={`relative w-full min-h-0 overflow-auto transition-colors ${
+                    holdPanMode ? (canvasPanning ? 'cursor-grabbing' : 'cursor-grab') : ''
+                } ${
+                    mirror
+                        ? 'rounded-xl border-0 ring-1 ring-inset ring-violet-500/10'
+                        : ee
+                          ? `rounded-none border-0 ${linkActive ? 'ring-1 ring-inset ring-teal-600/25' : ''}`
+                          : `rounded-lg border ${linkActive ? 'border-teal-600/40' : 'border-zinc-700'}`
+                } ${canvasBoxClass}`}
                 style={{
-                    backgroundImage: `linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)`,
-                    backgroundSize: '28px 28px',
+                    background: mirror ? 'transparent' : ee ? '#0A0A0B' : '#111113',
                 }}
             >
                 <div
-                    className="pointer-events-none absolute inset-0 z-[1] opacity-[0.06]"
+                    className="relative shrink-0"
                     style={{
-                        backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.35) 1px, transparent 0)`,
-                        backgroundSize: '22px 22px',
+                        width: Math.max(1, Math.ceil(surfaceW * zoom)),
+                        height: Math.max(1, Math.ceil(surfaceH * zoom)),
+                    }}
+                >
+                    <div
+                        className="absolute left-0 top-0 origin-top-left will-change-transform"
+                        style={{
+                            width: surfaceW,
+                            height: surfaceH,
+                            transform: `scale(${zoom})`,
+                        }}
+                    >
+                <div
+                    className="pointer-events-none absolute inset-0 opacity-[0.22]"
+                    style={{
+                        backgroundImage: mirror
+                            ? `linear-gradient(rgba(167,139,250,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(167,139,250,0.07) 1px, transparent 1px)`
+                            : `linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)`,
+                        backgroundSize: '32px 32px',
                     }}
                 />
-                {/* Edges behind nodes */}
+
                 <svg className="pointer-events-none absolute inset-0 z-[2] h-full w-full">
                     <defs>
-                        <linearGradient id={gradStrokeId} x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#a1a1aa" stopOpacity="0.95" />
-                            <stop offset="100%" stopColor="#d4d4d8" stopOpacity="0.85" />
-                        </linearGradient>
-                        <linearGradient id={markerFillId} x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0%" stopColor="#a1a1aa" />
-                            <stop offset="100%" stopColor="#e4e4e7" />
-                        </linearGradient>
                         <marker id={markerId} markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto" markerUnits="userSpaceOnUse">
-                            <path d="M0,0 L5,2.5 L0,5 Z" fill={`url(#${markerFillId})`} />
+                            <path
+                                d="M0,0 L5,2.5 L0,5 Z"
+                                fill={mirror ? 'rgb(167 139 250 / 0.78)' : 'rgb(94 234 212 / 0.75)'}
+                            />
                         </marker>
                     </defs>
                     {edges.map((e, i) => {
@@ -492,101 +765,108 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
                         const { bendMx, bendMy } = getBendForEdge(e, p1, p2);
                         const d = quadraticEdgePath(p1, p2, bendMx, bendMy);
                         return (
-                            <g key={`${e.from}-${e.to}-${i}`}>
-                                <path
-                                    d={d}
-                                    fill="none"
-                                    stroke="rgba(255,255,255,0.06)"
-                                    strokeWidth="0.85"
-                                    strokeLinecap="round"
-                                    opacity={0.9}
-                                />
-                                <path
-                                    d={d}
-                                    fill="none"
-                                    stroke={`url(#${gradStrokeId})`}
-                                    strokeWidth="1.35"
-                                    strokeLinecap="round"
-                                    markerEnd={`url(#${markerId})`}
-                                />
-                            </g>
+                            <path
+                                key={`${e.from}-${e.to}-${i}`}
+                                d={d}
+                                fill="none"
+                                stroke={mirror ? 'rgba(167, 139, 250, 0.4)' : 'rgb(94 234 212 / 0.38)'}
+                                strokeWidth="1.25"
+                                strokeLinecap="round"
+                                markerEnd={`url(#${markerId})`}
+                            />
                         );
                     })}
-                    {previewPath}
                 </svg>
 
                 {nodes.map((n, index) => {
                     const isDragging = dragId === n.id;
-                    const isLinkSource = connectFrom === n.id;
-                    const isLinkTarget = connectHoverTarget === n.id;
+                    const armed = linkFrom === n.id;
+                    const isTarget = linkHover === n.id;
+                    const edgeTint = STEP_EDGE[index % STEP_EDGE.length];
+
                     return (
                         <div
                             key={n.id}
                             data-flow-node={n.id}
-                            onMouseDown={(e) => {
-                                if (readOnly) return;
-                                const t = e.target as HTMLElement;
-                                if (t.closest('button') || t.closest('input') || t.closest('textarea')) return;
-                                beginConnect(e, n.id);
-                            }}
-                            className={`group/node absolute z-[10] flex items-stretch overflow-hidden rounded-xl border bg-[var(--surface)]/95 shadow-sm backdrop-blur-sm transition-[box-shadow,transform,border-color] duration-200 will-change-transform ${
+                            className={`group/node absolute z-[10] overflow-hidden rounded-md border border-zinc-600 bg-zinc-900 ${edgeTint} border-l-2 ${
                                 isDragging
-                                    ? 'z-[30] scale-[1.02] border-white/[0.18] shadow-md shadow-black/20'
-                                    : isLinkSource
-                                      ? 'border-white/[0.2]'
-                                      : isLinkTarget
-                                        ? 'border-white/[0.14]'
-                                        : 'border-white/[0.08] hover:border-white/[0.12]'
+                                    ? 'z-[30] border-zinc-500'
+                                    : armed
+                                      ? 'border-teal-500/70'
+                                      : isTarget
+                                        ? 'border-violet-500/60'
+                                        : ''
                             }`}
-                            style={{ left: n.x, top: n.y, width: NODE_W, minHeight: NODE_H }}
+                            style={{ left: n.x, top: n.y, width: NODE_W, minHeight: NODE_BOX_H }}
                         >
-                            <span className="pointer-events-none absolute left-0 top-0 h-full w-px bg-white/[0.12]" aria-hidden />
                             {!readOnly && (
                                 <button
                                     type="button"
-                                    aria-label="Drag to move step"
+                                    aria-label={`Drag to move: ${n.label || 'step'}`}
                                     title="Drag to move"
-                                    className="flex w-8 shrink-0 cursor-grab items-center justify-center border-r border-white/[0.06] bg-white/[0.03] text-zinc-500 active:cursor-grabbing hover:text-zinc-300"
-                                    onMouseDown={(e) => onMoveNodeStart(e, n.id)}
+                                    onPointerDown={(e) => beginDrag(e, n.id)}
+                                    onPointerUp={endDrag}
+                                    onPointerCancel={endDrag}
+                                    className="flex w-full cursor-grab touch-none items-center justify-center gap-2 border-b border-zinc-700 bg-zinc-800/60 py-1.5 text-[10px] font-medium uppercase tracking-[0.08em] text-zinc-500 active:cursor-grabbing hover:bg-zinc-800"
+                                    style={{ height: RAIL_H }}
                                 >
-                                    <GripVertical className="h-4 w-4" aria-hidden />
+                                    <GripHorizontal className="h-4 w-4 text-zinc-500" aria-hidden />
+                                    Move
                                 </button>
                             )}
-                            {readOnly && (
-                                <div className="flex w-6 shrink-0 items-center justify-center border-r border-brand-border text-[10px] tabular-nums text-zinc-500">
+
+                            <div className="flex items-stretch">
+                                <div className="flex w-9 shrink-0 items-center justify-center border-r border-zinc-700 bg-zinc-800/40 text-[11px] font-semibold tabular-nums text-zinc-500">
                                     {index + 1}
                                 </div>
-                            )}
-
-                            <div className="relative flex min-w-0 flex-1 items-center gap-2 px-2.5 py-2 pl-3">
-                                <label className="sr-only">Step label</label>
-                                {!readOnly && (
-                                    <span className="shrink-0 rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-zinc-400">
-                                        {index + 1}
-                                    </span>
-                                )}
-                                <input
-                                    value={n.label}
-                                    readOnly={readOnly}
-                                    onChange={(e) => updateLabel(n.id, e.target.value)}
-                                    onMouseDown={(e) => e.stopPropagation()}
-                                    className="min-w-0 flex-1 border-0 bg-transparent text-[13px] font-medium leading-tight text-zinc-100 placeholder:text-zinc-600 outline-none"
-                                    placeholder="Step name"
-                                />
-                                {!readOnly && (
-                                    <button
-                                        type="button"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            removeNode(n.id);
-                                        }}
-                                        className="shrink-0 rounded p-1 text-zinc-600 opacity-0 transition hover:bg-brand-input hover:text-rose-400 group-hover/node:opacity-100"
-                                        title="Remove step"
-                                        aria-label="Remove step"
-                                    >
-                                        <Trash2 className="h-3.5 w-3.5" aria-hidden />
-                                    </button>
-                                )}
+                                <div className="relative flex min-w-0 flex-1 flex-col gap-1 px-2.5 py-2">
+                                    <label className="sr-only">Step label</label>
+                                    <input
+                                        value={n.label}
+                                        readOnly={readOnly}
+                                        onChange={(e) => updateLabel(n.id, e.target.value)}
+                                        className="min-w-0 border-0 bg-transparent text-[13px] font-medium leading-tight text-zinc-100 placeholder:text-zinc-600 outline-none"
+                                        placeholder="Name this step"
+                                    />
+                                    {!readOnly && (
+                                        <div className="flex items-center gap-1.5">
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    if (linkFrom && linkFrom !== n.id) {
+                                                        addEdgeIfAbsent(linkFrom, n.id);
+                                                        setLinkFrom(null);
+                                                        setLinkHover(null);
+                                                        return;
+                                                    }
+                                                    setLinkFrom((prev) => (prev === n.id ? null : n.id));
+                                                    setLinkHover(null);
+                                                }}
+                                                className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[10px] font-medium ${
+                                                    armed
+                                                        ? 'border-teal-500/50 bg-teal-950/40 text-teal-200'
+                                                        : 'border-zinc-600 bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                                                }`}
+                                            >
+                                                <Link2 className="h-3 w-3" aria-hidden />
+                                                {armed ? 'Tap target…' : 'Connect'}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    removeNode(n.id);
+                                                }}
+                                                className="ml-auto rounded p-1 text-zinc-500 hover:bg-zinc-800 hover:text-rose-400"
+                                                title="Remove step"
+                                                aria-label="Remove step"
+                                            >
+                                                <Trash2 className="h-3.5 w-3.5" aria-hidden />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     );
@@ -600,19 +880,22 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
 
                 {!readOnly && isEmpty && (
                     <div className="pointer-events-none absolute inset-0 z-[25] flex items-center justify-center p-6">
-                        <div className="pointer-events-auto max-w-sm rounded-2xl border border-white/[0.08] bg-[var(--surface)]/95 px-6 py-8 text-center backdrop-blur-md">
-                            <p className="text-sm font-semibold text-zinc-100">Start your strategy flow</p>
-                            <p className="mt-2 text-xs leading-relaxed text-zinc-500">
-                                Add steps for each milestone or decision, then link them in order. Use <span className="text-zinc-300">Tidy grid</span>{' '}
-                                any time to neaten the canvas.
+                        <div className="pointer-events-auto max-w-md rounded-lg border border-zinc-700 bg-zinc-900 px-8 py-8 text-center">
+                            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-md border border-zinc-600 bg-zinc-800">
+                                <LayoutGrid className="h-6 w-6 text-zinc-400" aria-hidden />
+                            </div>
+                            <p className="text-base font-medium text-zinc-200">Map your plan</p>
+                            <p className="mt-2 text-sm leading-relaxed text-zinc-500">
+                                Add steps, arrange on the canvas, then use{' '}
+                                <span className="text-zinc-400">Connect</span> for dependencies.
                             </p>
                             <button
                                 type="button"
                                 onClick={addNode}
-                                className="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-white/[0.1] px-4 py-2.5 text-xs font-medium text-zinc-100 transition hover:bg-white/[0.14]"
+                                className="mt-5 inline-flex items-center justify-center gap-2 rounded-md bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-500"
                             >
                                 <Plus className="h-4 w-4" aria-hidden />
-                                Add first step
+                                First step
                             </button>
                         </div>
                     </div>
@@ -637,8 +920,8 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
                                     type="button"
                                     aria-label="Drag to bend line"
                                     title="Bend line"
-                                    className={`pointer-events-auto absolute h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-zinc-500 bg-[#141416] transition hover:scale-110 hover:border-zinc-400 focus:outline-none ${
-                                        isActive ? 'scale-125 cursor-grabbing border-zinc-300' : 'cursor-grab'
+                                    className={`pointer-events-auto absolute h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-teal-500/60 bg-zinc-900 focus:outline-none ${
+                                        isActive ? 'cursor-grabbing border-teal-400' : 'cursor-grab hover:border-teal-400/90'
                                     }`}
                                     style={{ left: hx, top: hy }}
                                     onMouseDown={(ev) => {
@@ -651,27 +934,41 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
                         })}
                     </div>
                 )}
+                    </div>
+                </div>
             </div>
 
             {edges.length > 0 && (
                 <div
-                    className={`flex flex-wrap gap-2 ${expanded && fillHeight ? 'max-h-24 shrink-0 overflow-y-auto' : ''}`}
+                    className={`flex flex-wrap gap-2 ${
+                        mirror
+                            ? 'border-0 border-t border-[var(--border)] bg-transparent px-0 py-2'
+                            : ee
+                              ? 'border-t border-zinc-800 bg-[#0A0A0B] px-3 py-2 sm:px-4'
+                              : ''
+                    } ${expanded && fillHeight ? 'max-h-28 shrink-0 overflow-y-auto' : ''}`}
                 >
                     {edges.map((e, i) => (
                         <div
                             key={i}
-                            className="inline-flex max-w-full items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1 text-[11px] text-zinc-400"
+                            className={`inline-flex max-w-full items-center gap-2 rounded-lg border px-2.5 py-1 text-[10px] ${
+                                mirror
+                                    ? 'border-[var(--border)] bg-[var(--bg-elevated)]/90 text-[var(--text-secondary)]'
+                                    : 'border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[11px] text-zinc-400'
+                            }`}
                         >
-                            <span className="min-w-0 truncate text-zinc-300">
+                            <span
+                                className={`min-w-0 truncate ${mirror ? 'text-[var(--text-primary)]' : 'text-zinc-300'}`}
+                            >
                                 {nodeById(e.from)?.label || e.from}
-                                <span className="mx-1 text-zinc-500">→</span>
+                                <span className={`mx-1 ${mirror ? 'text-[var(--text-secondary)]' : 'text-zinc-600'}`}>→</span>
                                 {nodeById(e.to)?.label || e.to}
                             </span>
                             {!readOnly && (
                                 <button
                                     type="button"
                                     onClick={() => removeEdge(i)}
-                                    className="shrink-0 rounded-full p-0.5 text-zinc-500 hover:bg-brand-input hover:text-rose-400"
+                                    className="shrink-0 rounded-lg p-0.5 text-zinc-500 hover:bg-rose-500/15 hover:text-rose-400"
                                     aria-label="Remove link"
                                 >
                                     <Trash2 className="h-3 w-3" />

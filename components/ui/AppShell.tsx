@@ -10,6 +10,7 @@ import { ContextPanel } from '@/components/ui/ContextPanel';
 import { useOffice } from '@/lib/OfficeContext';
 import { WORKSPACE_TITLES } from '@/components/ui/appNav';
 import { UpgradeModal } from '@/components/UpgradeModal';
+import { SectionGuideMobileHeaderButton } from '@/components/SectionGuideCoach';
 
 const INTEL_DESKTOP_COLLAPSED_KEY = 'deepchox-intel-panel-collapsed';
 
@@ -55,53 +56,63 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
     const title = WORKSPACE_TITLES[activeRoom] ?? activeRoom;
 
     return (
-        <div className="flex h-full min-h-0 w-full flex-col bg-[var(--bg)] pb-14 text-[var(--text)] lg:pb-0">
-            <header className="executive-panel-strong mx-3 mt-3 flex shrink-0 items-center justify-between gap-3 px-4 py-3 sm:mx-4 sm:px-5 lg:hidden">
+        <div
+            className="flex h-full min-h-0 w-full flex-col bg-[var(--bg-primary)] text-[var(--text-primary)] pb-[calc(5.75rem+env(safe-area-inset-bottom,0px))] lg:pb-0"
+        >
+            {/* Mobile Header */}
+            <header 
+                className="mx-3 mt-3 flex shrink-0 items-center justify-between gap-3 rounded-[1.35rem] border border-[var(--border)] bg-[var(--bg-card)]/92 px-4 py-3 shadow-[var(--shadow-soft)] sm:mx-4 sm:px-5 lg:hidden"
+                style={{ 
+                    backdropFilter: 'blur(18px)',
+                    WebkitBackdropFilter: 'blur(18px)',
+                }}
+            >
                 <div className="flex min-w-0 items-center gap-2">
                     <button
                         type="button"
-                        className="rounded-xl p-2 text-[var(--muted)] transition-colors hover:bg-white/[0.06] lg:hidden"
+                        className="rounded-xl p-2 text-[var(--text-secondary)] transition-colors hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)] lg:hidden"
                         onClick={() => setMobileNav(true)}
                         aria-label="Open navigation"
                     >
                         <Menu className="h-5 w-5" />
                     </button>
                     <div className="min-w-0">
-                        <h1 className="text-base font-semibold tracking-tight text-[var(--text)] sm:text-[17px]">{title}</h1>
-                        <p className="truncate text-[11px] text-[var(--muted)] opacity-90">
+                        <h1 className="text-base font-semibold tracking-tight text-[var(--text-primary)] sm:text-[17px]">
+                            {title}
+                        </h1>
+                        <p className="truncate text-[11px] text-[var(--text-secondary)]">
                             {activeProject?.name ?? 'Select or create a venture'}
                         </p>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
+                    <SectionGuideMobileHeaderButton />
                     <button
                         type="button"
-                        className="hidden rounded-lg border border-[var(--border)] bg-white/[0.03] p-2 text-[var(--muted)] transition-colors hover:bg-white/[0.06] hover:text-[var(--text)] lg:inline-flex"
+                        className="hidden rounded-lg p-2 text-[var(--text-secondary)] transition-colors hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)] lg:inline-flex"
                         onClick={toggleIntelDesktop}
                         aria-expanded={!intelDesktopCollapsed}
                         aria-label={intelDesktopCollapsed ? 'Show intelligence panel' : 'Hide intelligence panel'}
-                        title={intelDesktopCollapsed ? 'Show alerts panel' : 'Hide alerts panel'}
                     >
                         <PanelRight className="h-4 w-4" strokeWidth={1.75} aria-hidden />
                     </button>
                     <button
                         type="button"
-                        className="executive-pill lg:hidden"
+                        className="flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--bg-card)] px-3 py-1.5 text-[11px] font-medium text-[var(--text-secondary)] shadow-[0_1px_2px_rgba(0,0,0,0.25)] transition-colors hover:bg-[rgba(255,255,255,0.08)] lg:hidden"
                         onClick={() => setMobileContext(true)}
                     >
-                        <span className="inline-flex items-center gap-1.5">
-                            <PanelRight className="h-4 w-4 opacity-70" aria-hidden />
-                            Intel
-                        </span>
+                        <PanelRight className="h-4 w-4 opacity-70" aria-hidden />
+                        Intel
                     </button>
                 </div>
             </header>
 
-            <div className="lg:hidden">
+            <div className="lg:hidden px-3 py-2">
                 <DailySyncBanner />
             </div>
 
             <div className="relative flex min-h-0 flex-1 overflow-hidden">
+                {/* Desktop Sidebar */}
                 <div className="hidden h-full min-h-0 shrink-0 items-stretch lg:flex">
                     <LeftRail
                         onLogout={onLogout}
@@ -113,84 +124,103 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
                     />
                 </div>
 
-                <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden lg:gap-5 lg:px-6 lg:pb-4 lg:pt-3">
-                <AnimatePresence>
-                    {mobileNav && (
-                        <>
-                            <motion.button
-                                type="button"
-                                aria-label="Close navigation"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                className="fixed inset-0 z-[60] bg-black/55 backdrop-blur-sm lg:hidden"
-                                onClick={() => setMobileNav(false)}
-                            />
+                {/* Main Content Area */}
+                <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden lg:gap-5 lg:px-5 lg:pb-5 lg:pt-4">
+                    {/* Mobile Navigation Overlay */}
+                    <AnimatePresence>
+                        {mobileNav && (
+                            <>
+                                <motion.button
+                                    type="button"
+                                    aria-label="Close navigation"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="fixed inset-0 z-[60] bg-black/20 backdrop-blur-sm lg:hidden"
+                                    onClick={() => setMobileNav(false)}
+                                />
                             <motion.aside
                                 initial={{ x: -320 }}
                                 animate={{ x: 0 }}
                                 exit={{ x: -320 }}
                                 transition={{ type: 'spring', stiffness: 360, damping: 34 }}
-                                className="fixed inset-y-3 left-3 z-[70] flex h-[calc(100%-1.5rem)] w-[min(20rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-2xl border border-white/[0.1] bg-[var(--bg)]/95 shadow-[0_12px_40px_-8px_rgba(0,0,0,0.5)] backdrop-blur-xl lg:hidden"
+                                className="fixed inset-y-3 left-3 z-[70] flex h-[calc(100%-1.5rem)] w-[min(20rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-[1.5rem] border border-[var(--border)] lg:hidden"
+                                style={{ 
+                                    background: 'rgba(30,30,30,0.96)',
+                                    boxShadow: 'var(--shadow-panel)',
+                                    backdropFilter: 'blur(24px)',
+                                    WebkitBackdropFilter: 'blur(24px)',
+                                }}
                             >
-                                <div className="flex shrink-0 items-center justify-end border-b border-white/[0.06] p-2">
-                                    <button
-                                        type="button"
-                                        onClick={() => setMobileNav(false)}
-                                        className="rounded-xl p-2 text-[var(--muted)] hover:bg-white/[0.06]"
-                                        aria-label="Close"
-                                    >
-                                        <X className="h-5 w-5" />
-                                    </button>
-                                </div>
-                                <div className="min-h-0 flex-1 overflow-hidden">
-                                    <LeftRail
-                                        variant="flush"
-                                        onLogout={onLogout}
-                                        onNewVenture={onNewVenture}
-                                        onUpgrade={() => { setMobileNav(false); setUpgradeOpen(true); }}
-                                    />
-                                </div>
-                            </motion.aside>
-                        </>
-                    )}
-                </AnimatePresence>
+                                    <div className="flex shrink-0 items-center justify-end p-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => setMobileNav(false)}
+                                            className="rounded-xl p-2 text-[var(--text-secondary)] transition-colors hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]"
+                                            aria-label="Close"
+                                        >
+                                            <X className="h-5 w-5" />
+                                        </button>
+                                    </div>
+                                    <div className="min-h-0 flex-1 overflow-hidden">
+                                        <LeftRail
+                                            variant="flush"
+                                            onLogout={onLogout}
+                                            onNewVenture={onNewVenture}
+                                            onNavigate={() => setMobileNav(false)}
+                                            onUpgrade={() => { setMobileNav(false); setUpgradeOpen(true); }}
+                                        />
+                                    </div>
+                                </motion.aside>
+                            </>
+                        )}
+                    </AnimatePresence>
 
-                <WorkspacePanel
-                    reserveBottom={Boolean(bottomBar)}
-                    fillViewport={activeRoom === 'personal_assistant' || activeRoom === 'dexo'}
-                >
-                    <motion.div
-                        key={activeRoom}
-                        initial={{ opacity: 0, y: 4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, ease: 'easeOut' }}
-                        className={
-                            activeRoom === 'personal_assistant' || activeRoom === 'dexo'
-                                ? 'flex min-h-0 min-w-0 flex-1 flex-col'
-                                : 'flex min-h-full flex-col'
-                        }
+                    {/* Main Workspace */}
+                    <WorkspacePanel
+                        reserveBottom={Boolean(bottomBar)}
+                        fillViewport={activeRoom === 'dexo' || activeRoom === 'personal_assistant'}
+                        roomKey={activeRoom}
                     >
-                        {children}
-                    </motion.div>
-                </WorkspacePanel>
+                        <motion.div
+                            key={activeRoom}
+                            initial={{ opacity: 0, y: 4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3, ease: 'easeOut' }}
+                            className={
+                                activeRoom === 'dexo' || activeRoom === 'personal_assistant'
+                                    ? 'flex min-h-0 min-w-0 flex-1 flex-col'
+                                    : 'flex min-h-full flex-col'
+                            }
+                        >
+                            {children}
+                        </motion.div>
+                    </WorkspacePanel>
 
-                <ContextPanel
-                    mobileOpen={mobileContext}
-                    onCloseMobile={() => setMobileContext(false)}
-                    desktopCollapsed={intelDesktopCollapsed}
-                    onToggleDesktopCollapse={toggleIntelDesktop}
-                />
+                    {/* Context Panel (Intel) */}
+                    <ContextPanel
+                        mobileOpen={mobileContext}
+                        onCloseMobile={() => setMobileContext(false)}
+                        desktopCollapsed={intelDesktopCollapsed}
+                        onToggleDesktopCollapse={toggleIntelDesktop}
+                    />
                 </div>
             </div>
 
             {bottomBar}
 
-            <nav className="executive-panel-strong fixed bottom-2 left-2 right-2 z-40 flex px-2 py-1.5 lg:hidden">
+            {/* Mobile Bottom Navigation */}
+            <nav 
+                className="fixed bottom-3 left-3 right-3 z-40 flex rounded-[1.35rem] border border-[var(--border)] bg-[var(--bg-card)]/94 px-2 py-2 shadow-[var(--shadow-soft)] lg:hidden"
+                style={{ 
+                    backdropFilter: 'blur(18px)',
+                    WebkitBackdropFilter: 'blur(18px)',
+                }}
+            >
                 <button
                     type="button"
                     onClick={() => setMobileNav(true)}
-                    className="flex flex-1 flex-col items-center gap-0.5 rounded-xl py-1.5 text-[10px] font-medium text-[var(--muted)] transition-colors hover:bg-white/[0.05] hover:text-[var(--text)]"
+                    className="flex flex-1 flex-col items-center gap-0.5 rounded-xl py-2 text-[10px] font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]"
                 >
                     <Menu className="h-5 w-5" />
                     Desks
@@ -198,12 +228,13 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
                 <button
                     type="button"
                     onClick={() => setMobileContext(true)}
-                    className="flex flex-1 flex-col items-center gap-0.5 rounded-xl py-1.5 text-[10px] font-medium text-[var(--muted)] transition-colors hover:bg-white/[0.05] hover:text-[var(--text)]"
+                    className="flex flex-1 flex-col items-center gap-0.5 rounded-xl py-2 text-[10px] font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]"
                 >
                     <PanelRight className="h-5 w-5" />
                     Intel
                 </button>
             </nav>
+            
             <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} />
         </div>
     );

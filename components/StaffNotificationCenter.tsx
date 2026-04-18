@@ -3,10 +3,10 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useOffice, type AgentRole } from '@/lib/OfficeContext';
-import { Bell, X, ExternalLink } from 'lucide-react';
+import { Bell, X, ExternalLink, Sparkles } from 'lucide-react';
+import { buildDexoStaffAttentionBootstrap } from '@/lib/dexoStaffAttentionPrompt';
 
 function deskRouteForRole(role: string): AgentRole | 'dexo' {
-  if (role === 'chief_of_staff') return 'dexo';
   if (['ceo', 'pm', 'accountant', 'scout', 'cmo'].includes(role)) return role as AgentRole;
   return 'ceo';
 }
@@ -14,7 +14,7 @@ function deskRouteForRole(role: string): AgentRole | 'dexo' {
 type PanelPos = { top: number; left: number; width: number };
 
 export function StaffNotificationCenter({ className = '' }: { className?: string }) {
-  const { staffAttentionPending, dismissStaffAttention, switchRoom } = useOffice();
+  const { staffAttentionPending, dismissStaffAttention, switchRoom, setDexoBootstrap } = useOffice();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [panelPos, setPanelPos] = useState<PanelPos | null>(null);
@@ -101,17 +101,29 @@ export function StaffNotificationCenter({ className = '' }: { className?: string
       </div>
       <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain">
         {count === 0 ? (
-          <p className="px-3 py-6 text-center text-[12px] text-brand-muted">
+          <p className="px-3 py-6 text-center text-[12px] text-zinc-400">
             No pending notifications. Run “Sync AI staff” on Executive Overview to refresh.
           </p>
         ) : (
           <ul className="divide-y divide-brand-border">
             {staffAttentionPending.map((item) => (
               <li key={item.id} className="px-3 py-3 transition-colors hover:bg-white/[0.03]">
-                <p className="text-[11px] font-medium text-brand-muted">{item.role.replace('_', ' ')}</p>
-                <p className="mt-1 text-[13px] font-medium text-brand-text">{item.title}</p>
-                <p className="mt-1 text-[12px] leading-snug text-brand-muted">{item.message}</p>
+                <p className="text-[11px] font-medium text-zinc-500">{item.role.replace('_', ' ')}</p>
+                <p className="mt-1 text-[13px] font-medium text-zinc-100">{item.title}</p>
+                <p className="mt-1 text-[12px] leading-snug text-zinc-400">{item.message}</p>
                 <div className="mt-2 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDexoBootstrap(buildDexoStaffAttentionBootstrap(item));
+                      switchRoom('dexo');
+                      setOpen(false);
+                    }}
+                    className="inline-flex items-center gap-1 rounded-lg border border-violet-500/35 bg-violet-500/15 px-2 py-1 text-[11px] font-semibold text-violet-100 transition hover:bg-violet-500/25"
+                  >
+                    <Sparkles className="h-3 w-3" aria-hidden />
+                    Set up in Dexo
+                  </button>
                   <button
                     type="button"
                     onClick={() => {
@@ -126,7 +138,7 @@ export function StaffNotificationCenter({ className = '' }: { className?: string
                   <button
                     type="button"
                     onClick={() => dismissStaffAttention(item.id)}
-                    className="text-[11px] text-brand-muted underline-offset-2 hover:text-brand-text hover:underline"
+                    className="text-[11px] text-zinc-500 underline-offset-2 hover:text-zinc-200 hover:underline"
                   >
                     Dismiss
                   </button>

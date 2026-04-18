@@ -8,7 +8,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "db:migrate": "dotenv -e .env -e .env.local -- prisma migrate deploy",
+    "db:migrate:dev": "dotenv -e .env -e .env.local -- prisma migrate dev"
   },
   "keywords": [],
   "author": "",
@@ -34,6 +36,7 @@
     "tailwindcss": "^4.1.18"
   },
   "devDependencies": {
+    "dotenv-cli": "^8.0.0",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "25.2.1",
     "@types/react": "19.2.13",

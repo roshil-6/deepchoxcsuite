@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useOffice } from '@/lib/OfficeContext';
 import {
     Save,
@@ -13,11 +14,11 @@ import {
     GitBranch,
     Users,
     MessageSquare,
+    Eraser,
 } from 'lucide-react';
 import type { ProjectEvent } from '@/lib/db';
 import type { StrategyDoc } from '@/lib/strategyDoc';
 import { parseStrategy, serializeStrategy } from '@/lib/strategyDoc';
-import { enrichLegacyStrategyDoc, needsTimelineAndFlowBootstrap } from '@/lib/defaultStrategyTimeline';
 import { ceo } from '@/lib/ceoTheme';
 import { StrategyFlowCanvas } from '@/components/workspaces/StrategyFlowCanvas';
 import { TimelinePhaseSetter } from '@/components/workspaces/TimelinePhaseSetter';
@@ -29,6 +30,8 @@ import {
     DeskHubRow,
     DeskFocusToolbar,
 } from '@/components/workspaces/DeskBlockFocusUI';
+import { ModelAttribution } from '@/components/ModelAttribution';
+import { PA_BUDDY_NAME } from '@/lib/paBuddy';
 import { GuideHint } from '@/components/ui/ContextualGuide';
 
 type ToolId = 'narrative' | 'flow' | 'phases' | 'team' | 'schedule' | 'priorities';
@@ -89,7 +92,16 @@ const FOCUS_META: Record<StrategyFocusKey, { title: string; question: string }> 
 };
 
 export function StrategyNotebook() {
-    const { activeProject, updateStrategy, addEvent, updateProjectField, setDeskSectionFocus } = useOffice();
+    const {
+        activeProject,
+        updateStrategy,
+        addEvent,
+        updateProjectField,
+        setDeskSectionFocus,
+        executiveThread,
+        clearExecutiveThread,
+        switchRoom,
+    } = useOffice();
     const [focusKey, setFocusKey] = useState<StrategyFocusKey | null>(null);
     const [doc, setDoc] = useState<StrategyDoc>({ content: '', priorities: [] });
     const [isSaving, setIsSaving] = useState(false);
@@ -99,9 +111,36 @@ export function StrategyNotebook() {
     const [calType, setCalType] = useState<ProjectEvent['type']>('milestone');
     const [memberDraft, setMemberDraft] = useState({ name: '', role: '' });
     const [chatLine, setChatLine] = useState('');
-    const timelineBootstrapRef = useRef<Set<number>>(new Set());
+    const narrativeTextareaRef = useRef<HTMLTextAreaElement>(null);
+    const narrativeThreadEndRef = useRef<HTMLDivElement>(null);
     const updateStrategyRef = useRef(updateStrategy);
     updateStrategyRef.current = updateStrategy;
+
+    const syncNarrativeTextareaHeight = useCallback(() => {
+        const el = narrativeTextareaRef.current;
+        if (!el) return;
+        el.style.height = 'auto';
+        const minPx = typeof window !== 'undefined' ? Math.round(window.innerHeight * 0.32) : 280;
+        el.style.height = `${Math.max(minPx, el.scrollHeight)}px`;
+    }, []);
+
+    useLayoutEffect(() => {
+        if (focusKey !== 'narrative') return;
+        syncNarrativeTextareaHeight();
+    }, [focusKey, doc.content, syncNarrativeTextareaHeight]);
+
+    useEffect(() => {
+        if (focusKey !== 'narrative') return;
+        const onResize = () => syncNarrativeTextareaHeight();
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, [focusKey, syncNarrativeTextareaHeight]);
+
+    const lastExecMsgId = executiveThread[executiveThread.length - 1]?.id;
+    useEffect(() => {
+        if (focusKey !== 'narrative' || !lastExecMsgId) return;
+        narrativeThreadEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }, [focusKey, lastExecMsgId]);
 
     const strategySyncKey = activeProject?.id ?? null;
     const strategyRaw = activeProject?.strategy ?? '';
@@ -111,18 +150,7 @@ export function StrategyNotebook() {
     const loadFromProject = useCallback(() => {
         const ap = activeProjectRef.current;
         if (!ap) return;
-        const parsed = parseStrategy(ap.strategy || '');
-        const id = ap.id;
-        if (id != null && needsTimelineAndFlowBootstrap(parsed) && !timelineBootstrapRef.current.has(id)) {
-            timelineBootstrapRef.current.add(id);
-            const enriched = enrichLegacyStrategyDoc(parsed);
-            setDoc(enriched);
-            setIsSaving(true);
-            updateStrategyRef.current(serializeStrategy(enriched));
-            setTimeout(() => setIsSaving(false), 450);
-            return;
-        }
-        setDoc(parsed);
+        setDoc(parseStrategy(ap.strategy || ''));
     }, [strategySyncKey, strategyRaw]);
 
     useEffect(() => {
@@ -161,10 +189,25 @@ export function StrategyNotebook() {
     }, [flow.nodes, flow.edges]);
     const phases = doc.phases || [];
     const team = doc.team || { members: [], thread: [] };
+    const hasClearPlanIntent = useMemo(() => {
+        const strategicIntent = doc.strategicIntent?.trim() ?? '';
+        const vision = doc.vision?.trim() ?? '';
+        const narrative = doc.content?.trim() ?? '';
+        const meaningfulNarrative = narrative.length >= 120;
+        return strategicIntent.length >= 12 && (vision.length >= 12 || meaningfulNarrative);
+    }, [doc.strategicIntent, doc.vision, doc.content]);
 
     const goHub = () => {
         setDeskSectionFocus(null);
         setFocusKey(null);
+    };
+
+    const openPlanMap = () => {
+        if (!hasClearPlanIntent) {
+            openFocusKey('strategic_intent');
+            return;
+        }
+        openFocusKey('flow');
     };
 
     const togglePriority = (id: string) => {
@@ -265,15 +308,28 @@ export function StrategyNotebook() {
 
     const meta = focusKey ? FOCUS_META[focusKey] : null;
 
-    const focusToolbar = meta ? (
-        <DeskFocusToolbar
-            onBack={goHub}
-            title={meta.title}
-            onSave={() => persist(doc)}
-            saving={isSaving}
-            saveClassName={`inline-flex shrink-0 items-center gap-1 rounded-md border border-white/[0.1] px-2 py-1 text-[11px] font-medium text-[#0a0a0a] ${ceo.accentBg} ${ceo.accentBgHover}`}
-        />
-    ) : null;
+    const toolbarSaveClass = `inline-flex shrink-0 items-center gap-1 rounded-md border border-white/[0.1] px-2 py-1 text-[11px] font-medium text-[#0a0a0a] ${ceo.accentBg} ${ceo.accentBgHover}`;
+
+    const focusToolbar =
+        meta && focusKey && focusKey !== 'flow' ? (
+            <DeskFocusToolbar
+                layout={focusKey === 'narrative' ? 'compact' : 'default'}
+                onBack={goHub}
+                title={meta.title}
+                onSave={() => persist(doc)}
+                saving={isSaving}
+                saveClassName={toolbarSaveClass}
+            />
+        ) : null;
+
+    useEffect(() => {
+        if (focusKey !== 'flow') return;
+        const prev = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = prev;
+        };
+    }, [focusKey]);
 
     const renderFocusBody = (key: StrategyFocusKey) => {
         switch (key) {
@@ -443,30 +499,67 @@ export function StrategyNotebook() {
                 );
             case 'narrative':
                 return (
-                    <textarea
-                        value={doc.content}
-                        onChange={(e) => setDoc({ ...doc, content: e.target.value })}
-                        onBlur={(e) => persist({ ...doc, content: e.target.value })}
-                        placeholder="North star, where you play, how you win, and what is out of scope…"
-                        className="min-h-[min(55vh,28rem)] w-full rounded-lg border border-brand-border bg-brand-card p-3 text-[15px] leading-relaxed text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand-teal/30"
-                    />
+                    <label className="block w-full min-w-0">
+                        <span className="sr-only">Strategy narrative — full thesis</span>
+                        <textarea
+                            ref={narrativeTextareaRef}
+                            value={doc.content}
+                            onChange={(e) => setDoc({ ...doc, content: e.target.value })}
+                            onBlur={(e) => persist({ ...doc, content: e.target.value })}
+                            placeholder="North star, where you play, how you win, and what is out of scope…"
+                            className="w-full resize-none overflow-hidden border-0 bg-transparent py-1 text-[16px] leading-[1.75] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none"
+                        />
+                    </label>
                 );
             case 'flow':
-                return (
-                    <div className="flex min-h-[50vh] flex-col">
-                        <div className="mb-2 flex flex-wrap items-center gap-2 text-[10px] text-zinc-500">
-                            <span className="rounded-full bg-white/[0.06] px-2 py-0.5 tabular-nums">{flow.nodes.length} steps</span>
-                            <span className="rounded-full bg-white/[0.06] px-2 py-0.5 tabular-nums">{flow.edges.length} links</span>
-                        </div>
-                        <div className="min-h-[45vh] flex-1">
-                            <StrategyFlowCanvas
-                                expanded
-                                fillHeight
-                                nodes={flow.nodes}
-                                edges={flow.edges}
-                                onChange={({ nodes, edges }) => persist({ ...doc, flow: { nodes, edges } })}
+                if (!hasClearPlanIntent) {
+                    return (
+                        <div className="relative overflow-hidden rounded-2xl border border-violet-500/20 bg-[#141416] p-5 shadow-[0_0_48px_-12px_rgba(139,92,246,0.28),inset_0_1px_0_0_rgba(255,255,255,0.04)]">
+                            <div
+                                className="pointer-events-none absolute -top-24 left-1/2 h-48 w-[min(100%,28rem)] -translate-x-1/2 rounded-full bg-violet-500/25 blur-3xl"
+                                aria-hidden
                             />
+                            <div className="relative">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-violet-300/80">
+                                Plan map locked for now
+                            </p>
+                            <h3 className="mt-2 text-lg font-semibold text-zinc-100">
+                                Hold off on mapping steps until the intent is clear.
+                            </h3>
+                            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400">
+                                Dexo should not invent a generic discovery-to-scale plan. First confirm what this venture is trying to achieve,
+                                what problem it is actually solving, and the shape of the plan with the founder.
+                            </p>
+                            <div className="mt-4 flex flex-wrap gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => openFocusKey('strategic_intent')}
+                                    className="rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-xs font-semibold text-zinc-100 transition hover:bg-zinc-700"
+                                >
+                                    Set strategic intent
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => switchRoom('dexo')}
+                                    className="rounded-lg border border-violet-500/30 bg-violet-500/10 px-3 py-2 text-xs font-semibold text-violet-200 transition hover:bg-violet-500/15"
+                                >
+                                    Discuss with Dexo
+                                </button>
+                            </div>
+                            </div>
                         </div>
+                    );
+                }
+                return (
+                    <div className="flex min-h-0 w-full flex-1 flex-col">
+                        <StrategyFlowCanvas
+                            expanded
+                            fillHeight
+                            edgeToEdge
+                            nodes={flow.nodes}
+                            edges={flow.edges}
+                            onChange={({ nodes, edges }) => persist({ ...doc, flow: { nodes, edges } })}
+                        />
                     </div>
                 );
             case 'phases':
@@ -601,30 +694,150 @@ export function StrategyNotebook() {
         }
     };
 
+    /** Above app chrome (Dexo orb ~10049); true viewport overlay, not clipped by desk panels */
+    const flowFullScreenPortal =
+        focusKey === 'flow' && meta && typeof document !== 'undefined'
+            ? createPortal(
+                  <div
+                      className="fixed inset-0 z-[12000] flex h-[100dvh] max-h-[100dvh] w-screen max-w-none flex-col overflow-hidden bg-[#0A0A0B]"
+                      role="dialog"
+                      aria-modal="true"
+                      aria-label={`${meta.title} — full screen plan map`}
+                  >
+                      <div
+                          className="pointer-events-none absolute inset-0 opacity-[0.18]"
+                          style={{
+                              backgroundImage:
+                                  'linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)',
+                              backgroundSize: '40px 40px',
+                          }}
+                          aria-hidden
+                      />
+                      <div className="relative z-[1] flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden pt-[env(safe-area-inset-top)]">
+                          <DeskFocusToolbar
+                              onBack={goHub}
+                              title={meta.title}
+                              hint="Full viewport map — sits above the desk shell. Back returns to Strategy hub."
+                              onSave={() => persist(doc)}
+                              saving={isSaving}
+                              saveClassName={toolbarSaveClass}
+                          />
+                          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden p-0">
+                              {renderFocusBody('flow')}
+                          </div>
+                      </div>
+                  </div>,
+                  document.body
+              )
+            : null;
+
     return (
         <>
-            <div className="flex w-full min-w-0 flex-col bg-[var(--color-brand-bg)]">
-                <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--color-brand-bg)]">
-                    {focusKey && meta ? (
-                        <>
-                            {focusToolbar}
-                            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-                                <div className="custom-scrollbar flex-1 space-y-3 overflow-y-auto px-4 py-3 pb-28 sm:space-y-4 sm:px-5 sm:pb-32">
-                                    <DeskMsgUser>
-                                        <p className="text-[13px] font-semibold text-zinc-50">{meta.title}</p>
-                                        <p className="mt-1 text-[12px] leading-relaxed text-zinc-300">{meta.question}</p>
-                                    </DeskMsgUser>
-                                    <DeskMsgAssistant>{renderFocusBody(focusKey)}</DeskMsgAssistant>
+            {flowFullScreenPortal}
+            <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col bg-[var(--color-brand-bg)]">
+                <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[var(--color-brand-bg)]">
+                    {focusKey && meta && focusKey !== 'flow' ? (
+                        focusKey === 'narrative' ? (
+                            <div className="custom-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden">
+                                {focusToolbar}
+                                <div className="px-4 pb-10 pt-2 sm:px-6 sm:pb-12">
+                                    <h2 className="text-[20px] font-semibold tracking-tight text-[var(--text-primary)] sm:text-[21px]">
+                                        {meta.title}
+                                    </h2>
+                                    <p className="mt-3 max-w-3xl text-[14px] leading-relaxed text-[var(--text-secondary)]">
+                                        {meta.question}
+                                    </p>
+                                    <div className="mt-8">{renderFocusBody('narrative')}</div>
+                                    <section className="mt-14" aria-label="Venture conversation">
+                                        <div className="flex flex-wrap items-end justify-between gap-2">
+                                            <h3 className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
+                                                Replies
+                                            </h3>
+                                            {executiveThread.length > 0 ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => clearExecutiveThread()}
+                                                    className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-medium text-[var(--text-muted)] transition-colors hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]"
+                                                >
+                                                    <Eraser className="h-3 w-3" aria-hidden />
+                                                    Clear
+                                                </button>
+                                            ) : null}
+                                        </div>
+                                        {executiveThread.length === 0 ? (
+                                            <p className="mt-3 max-w-2xl text-[13px] leading-relaxed text-[var(--text-secondary)]">
+                                                Use the message bar below — answers stay on this page with your narrative, not in a separate thread
+                                                panel.
+                                            </p>
+                                        ) : (
+                                            <div className="mt-6 space-y-8">
+                                                {executiveThread.map((m) => (
+                                                    <div key={m.id} className="max-w-none">
+                                                        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">
+                                                            {m.role === 'user'
+                                                                ? 'You'
+                                                                : m.channel === 'pa'
+                                                                  ? PA_BUDDY_NAME
+                                                                  : 'Assistant'}
+                                                        </p>
+                                                        <p className="mt-2 whitespace-pre-wrap text-[15px] leading-[1.75] text-[var(--text-primary)]">
+                                                            {m.content}
+                                                        </p>
+                                                        {m.role === 'assistant' && m.model ? (
+                                                            <div className="mt-2 opacity-80">
+                                                                <ModelAttribution model={m.model} />
+                                                            </div>
+                                                        ) : null}
+                                                    </div>
+                                                ))}
+                                                <div ref={narrativeThreadEndRef} />
+                                            </div>
+                                        )}
+                                    </section>
                                 </div>
                             </div>
-                        </>
-                    ) : (
-                        <div className="flex w-full flex-col bg-[var(--color-brand-bg)]">
+                        ) : (
+                            <>
+                                {focusToolbar}
+                                <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                                    <div className="custom-scrollbar flex-1 space-y-3 overflow-y-auto px-4 py-3 pb-28 sm:space-y-4 sm:px-5 sm:pb-32">
+                                        <div className="space-y-3">
+                                            <DeskMsgUser>
+                                                <p className="text-[13px] font-semibold text-zinc-50">{meta.title}</p>
+                                                <p className="mt-1 text-[12px] leading-relaxed text-zinc-300">{meta.question}</p>
+                                            </DeskMsgUser>
+                                            <DeskMsgAssistant>{renderFocusBody(focusKey)}</DeskMsgAssistant>
+                                        </div>
+                                    </div>
+                                </div>
+                            </>
+                        )
+                    ) : !focusKey ? (
+                        <div className="flex min-h-0 w-full flex-1 flex-col overflow-y-auto bg-[var(--color-brand-bg)]">
                             <div className="space-y-2 px-4 py-3 pb-28 sm:px-5 sm:py-4 sm:pb-32">
                                 <p className="text-[10px] leading-snug text-zinc-500">
                                     Tap a block — other sections hide while you work. The bar below chats in context of the open block until you
                                     press Back.
                                 </p>
+
+                                {activeProject?.agentStaffSnapshot?.desks?.ceo?.trim() ? (
+                                    <div className="rounded-2xl border border-emerald-500/30 bg-zinc-950/95 px-4 py-3 shadow-[0_8px_30px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.06)]">
+                                        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-emerald-400/95">
+                                            What ran on this desk · last staff sync
+                                        </p>
+                                        <p className="mt-1 text-[11px] text-zinc-500">
+                                            {new Date(activeProject.agentStaffSnapshot.at).toLocaleString(undefined, {
+                                                dateStyle: 'medium',
+                                                timeStyle: 'short',
+                                            })}
+                                        </p>
+                                        <div className="mt-2 max-h-48 overflow-y-auto rounded-lg border border-white/[0.1] bg-zinc-950/90 px-3 py-2.5 shadow-inner">
+                                            <p className="whitespace-pre-wrap text-[13px] leading-relaxed text-zinc-200">
+                                                {activeProject.agentStaffSnapshot.desks.ceo.trim()}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ) : null}
 
                                 <GuideHint
                                     id="ceo-no-intent"
@@ -675,31 +888,99 @@ export function StrategyNotebook() {
                                     />
                                 </div>
 
-                                <p className="pt-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-zinc-600">More on this desk</p>
+                                <div
+                                    onClick={openPlanMap}
+                                    className="group relative w-full cursor-pointer overflow-hidden rounded-3xl border border-violet-500/25 bg-[#121216] px-5 py-6 text-left shadow-[0_18px_54px_-24px_rgba(0,0,0,0.72),0_0_56px_-8px_rgba(139,92,246,0.32),inset_0_1px_0_0_rgba(255,255,255,0.05)] transition duration-300 hover:border-violet-400/45 hover:shadow-[0_22px_60px_-20px_rgba(0,0,0,0.75),0_0_72px_-4px_rgba(167,139,250,0.42)] sm:px-6 sm:py-7"
+                                >
+                                    <div
+                                        className="pointer-events-none absolute -top-1/2 left-1/2 h-[min(140%,28rem)] w-[min(120%,42rem)] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(139,92,246,0.35)_0%,rgba(99,102,241,0.12)_35%,transparent_70%)] opacity-90 blur-2xl transition duration-500 group-hover:opacity-100"
+                                        aria-hidden
+                                    />
+                                    <div
+                                        className="pointer-events-none absolute inset-0 rounded-3xl bg-[radial-gradient(ellipse_120%_80%_at_50%_-10%,rgba(167,139,250,0.14),transparent_52%)]"
+                                        aria-hidden
+                                    />
+                                    <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-violet-300/90">
+                                                Strategy map
+                                            </p>
+                                            <h3 className="mt-2 text-xl font-semibold tracking-tight text-zinc-50 sm:text-2xl">
+                                                Visualise your plan
+                                            </h3>
+                                            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-400 sm:text-[15px]">
+                                                {hasClearPlanIntent
+                                                    ? flowStats.steps > 0
+                                                        ? 'Shape the sequence and dependencies you have actually agreed with the founder. This map stays linked to Product → Planning.'
+                                                        : 'Your intent is clear enough to map the real plan now. Start adding the actual steps and dependencies you want Dexo to reason over.'
+                                                    : 'This stays blank until the venture intent is clear. No generic validate / MVP / launch filler gets created for you.'}
+                                            </p>
+                                        </div>
+                                        <div className="flex shrink-0 items-center gap-3">
+                                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-violet-500/22 bg-violet-500/[0.08]">
+                                                <GitBranch className="h-6 w-6 text-violet-200" aria-hidden />
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-[11px] font-medium text-zinc-200">
+                                                    {hasClearPlanIntent ? `${flowStats.steps} steps · ${flowStats.links} links` : 'Waiting for confirmed intent'}
+                                                </p>
+                                                <p className="mt-0.5 text-[11px] text-zinc-500">
+                                                    {hasClearPlanIntent ? 'Open the map when you are ready to structure it.' : 'Start with strategy intent, then discuss the plan.'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="relative mt-5 flex flex-wrap gap-2 border-t border-white/[0.06] pt-4">
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                openPlanMap();
+                                            }}
+                                            className={`rounded-lg px-3 py-2 text-xs font-semibold transition ${
+                                                hasClearPlanIntent
+                                                    ? 'border border-violet-500/30 bg-violet-500/[0.12] text-violet-100 hover:bg-violet-500/[0.18]'
+                                                    : 'border border-zinc-700 bg-zinc-900 text-zinc-200 hover:bg-zinc-800'
+                                            }`}
+                                        >
+                                            {hasClearPlanIntent ? 'Open plan map' : 'Set intent first'}
+                                        </button>
+                                        {!hasClearPlanIntent ? (
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    switchRoom('dexo');
+                                                }}
+                                                className="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800"
+                                            >
+                                                Discuss with Dexo
+                                            </button>
+                                        ) : null}
+                                    </div>
+                                </div>
+
+                                <p className="pt-2 text-[9px] font-semibold uppercase tracking-[0.12em] text-zinc-600">More on this desk</p>
                                 <ul className="grid gap-1.5 sm:gap-2">
-                                    {navItems.map((item) => {
-                                        const isFlow = item.id === 'flow';
-                                        const fk = item.id as StrategyFocusKey;
-                                        return (
-                                            <li key={item.id}>
-                                                <DeskHubRow
-                                                    title={item.label}
-                                                    subtitle={item.sub}
-                                                    onOpen={() => openFocusKey(fk)}
-                                                    right={
-                                                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.04] text-zinc-400 sm:h-9 sm:w-9">
-                                                            {modeIcon(item.id)}
-                                                        </span>
-                                                    }
-                                                />
-                                                {isFlow ? (
-                                                    <p className="mt-0.5 px-1 text-[9px] text-zinc-600">
-                                                        {flowStats.steps} steps · {flowStats.links} links · live mirror under Product → Planning
-                                                    </p>
-                                                ) : null}
-                                            </li>
-                                        );
-                                    })}
+                                    {navItems
+                                        .filter((item) => item.id !== 'flow')
+                                        .map((item) => {
+                                            const fk = item.id as StrategyFocusKey;
+                                            return (
+                                                <li key={item.id}>
+                                                    <DeskHubRow
+                                                        title={item.label}
+                                                        subtitle={item.sub}
+                                                        onOpen={() => openFocusKey(fk)}
+                                                        right={
+                                                            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.04] text-zinc-400 sm:h-9 sm:w-9">
+                                                                {modeIcon(item.id)}
+                                                            </span>
+                                                        }
+                                                    />
+                                                </li>
+                                            );
+                                        })}
                                 </ul>
 
                                 <div className="flex flex-wrap gap-2 pt-2">
@@ -714,7 +995,7 @@ export function StrategyNotebook() {
                                 </div>
                             </div>
                         </div>
-                    )}
+                    ) : null}
                 </div>
             </div>
         </>

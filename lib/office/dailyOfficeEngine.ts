@@ -14,6 +14,7 @@ import { buildAmbientNotifications } from '@/lib/office/notificationEngine';
 import { generateWeeklyOfficeReview } from '@/lib/office/reviewEngine';
 import { routeOfficeAction } from '@/lib/office/actionRouter';
 import { getOfficeMemory } from '@/lib/office/officeMemory';
+import { isVentureFoundationSparse } from '@/lib/ventureFoundation';
 
 function asTasks(project: Project): KanbanTask[] {
     const raw = project.kanban;
@@ -78,6 +79,27 @@ export async function runDailyOfficeCycle(
     const strategy = parseStrategy(project.strategy || '');
     const tasks = asTasks(project);
     const phases = strategy.phases || [];
+    if (isVentureFoundationSparse(project)) {
+        return {
+            brief: {
+                greeting: '',
+                priorities: [],
+                criticalAlerts: [],
+                suggestedFocus: 'Tell Dexo what you are building before the office starts scoring progress.',
+            },
+            progress: { percentage: 0, projectedDaysRemaining: 0, risk: 'Medium', paceScore: 0 },
+            notifications: [],
+            suggestedActions: [],
+            taskFindings: [],
+            rescheduleSuggestions: [],
+            weeklyReview: {
+                completedTasks: 0,
+                growthChange: 0,
+                churnRisk: 'Low',
+                nextWeekFocus: 'Describe the venture first',
+            },
+        };
+    }
     const progress = calculateGoalProgress(tasks, phases);
     const brief = generateMorningBrief(project, tasks, progress, strategy);
 

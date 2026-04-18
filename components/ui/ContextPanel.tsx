@@ -17,6 +17,7 @@ import { AlertWidget } from '@/components/ui/AlertWidget';
 import { executiveSurfaceClass, executiveToolbarButtonClass } from '@/components/ui/cardStyles';
 import { EmptyStateGuide } from '@/components/ui/ContextualGuide';
 import { WORKSPACE_TITLES } from '@/components/ui/appNav';
+import { isVentureFoundationSparse } from '@/lib/ventureFoundation';
 
 type Props = {
     className?: string;
@@ -37,8 +38,13 @@ export function ContextPanel({
     const { activeProject, activeRoom, staffAttentionPending, livingOffice } = useOffice();
     const hasActiveVenture = Boolean(activeProject?.id);
 
+    const foundationSparse = useMemo(
+        () => isVentureFoundationSparse(activeProject ?? undefined),
+        [activeProject]
+    );
+
     const businessImpact = useMemo(() => {
-        const strategic = computeStrategicCoverageScore(activeProject?.strategy);
+        const strategic = computeStrategicCoverageScore(activeProject?.strategy, activeProject ?? undefined);
         const execution = computeExecutionDeliveryScore(activeProject?.strategy);
         const financial = computeFinancialHealthScore(activeProject?.budget);
         return aggregateImpact([fromVenturePillarScores({ strategic, financial, execution })]);
@@ -63,14 +69,15 @@ export function ContextPanel({
 
     const deskLabel = WORKSPACE_TITLES[activeRoom] ?? activeRoom;
 
-    const inner = (
-        <div className="flex h-full flex-col gap-4 overflow-y-auto p-4">
+    const panelBody = (
+        <div className="flex flex-col gap-4 p-4">
             {hasActiveVenture ? (
                 <>
                     <HealthWidget
                         strategic={businessImpact.strategic}
                         financial={businessImpact.financial}
                         execution={businessImpact.execution}
+                        needsSetup={foundationSparse}
                     />
                     <AlertWidget
                         severity={businessImpact.severity}
@@ -150,7 +157,7 @@ export function ContextPanel({
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
+                        className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm lg:hidden"
                         onClick={onCloseMobile}
                     />
                 ) : null}
@@ -158,58 +165,72 @@ export function ContextPanel({
             <aside
                 className={`
                   ${className}
-                  fixed inset-y-0 right-0 z-50 flex w-[min(100%,20rem)] flex-col border-l border-[var(--border)] bg-[var(--bg)] transition-[width,transform] duration-300 ease-out
-                  lg:static lg:z-0 lg:translate-x-0
+                  fixed inset-y-0 right-0 z-50 flex h-[100dvh] min-h-0 w-[min(100%,20rem)] flex-col border-l border-[var(--border)] bg-[var(--bg-secondary)]/94 transition-[width,transform] duration-300 ease-out
+                  lg:static lg:z-0 lg:h-full lg:translate-x-0
                   ${mobileOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
                   ${desktopCollapsed ? 'lg:w-11 lg:min-w-[2.75rem]' : 'lg:w-80 lg:max-w-[20rem]'}
                 `}
+                style={{
+                    backdropFilter: 'blur(18px)',
+                    WebkitBackdropFilter: 'blur(18px)',
+                }}
             >
-                <div className="flex shrink-0 items-center justify-between gap-2 border-b border-[var(--border)] px-4 py-3 lg:hidden">
-                    <span className="text-sm font-medium text-[var(--text)]">Intelligence</span>
-                    <button
-                        type="button"
-                        onClick={onCloseMobile}
-                        className="rounded-lg px-2 py-1 text-xs text-[var(--muted)] hover:bg-white/[0.06]"
-                    >
-                        Close
-                    </button>
-                </div>
-
-                {onToggleDesktopCollapse ? (
-                    <div className="hidden shrink-0 border-b border-[var(--border)] lg:block">
+                {onToggleDesktopCollapse && desktopCollapsed ? (
+                    <div className="hidden min-h-0 flex-1 flex-col border-b border-[var(--border)] lg:flex">
                         <button
                             type="button"
                             onClick={onToggleDesktopCollapse}
-                            aria-expanded={!desktopCollapsed}
-                            aria-label={desktopCollapsed ? 'Show alerts and context' : 'Hide alerts and context'}
-                            className="flex h-10 w-full items-center justify-center text-[var(--muted)] transition-colors hover:bg-white/[0.04] hover:text-[var(--text)]"
+                            aria-expanded={false}
+                            aria-label="Show alerts and context"
+                            className="flex h-10 w-full shrink-0 items-center justify-center text-[var(--muted)] transition-colors hover:bg-[var(--accent-soft)] hover:text-[var(--text)]"
                         >
-                            {desktopCollapsed ? (
-                                <PanelRight className="h-4 w-4" strokeWidth={1.75} aria-hidden />
-                            ) : (
-                                <ChevronRight className="h-4 w-4" strokeWidth={1.75} aria-hidden />
-                            )}
-                        </button>
-                    </div>
-                ) : null}
-
-                {!desktopCollapsed ? (
-                    <div className="hidden shrink-0 items-center justify-between gap-2 border-b border-[var(--border)] px-4 py-3 lg:flex">
-                        <div>
-                            <p className="executive-kicker">Intelligence</p>
-                            <p className="mt-1 text-xs text-[var(--muted)]">Live venture health and routed desk context</p>
-                        </div>
-                        <button type="button" className={executiveToolbarButtonClass} onClick={onToggleDesktopCollapse}>
-                            <PanelRight className="h-3.5 w-3.5" aria-hidden />
-                            Collapse
+                            <PanelRight className="h-4 w-4" strokeWidth={1.75} aria-hidden />
                         </button>
                     </div>
                 ) : null}
 
                 <div
-                    className={`min-h-0 flex-1 overflow-hidden ${desktopCollapsed ? 'lg:hidden' : ''}`}
+                    className={`custom-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden ${desktopCollapsed ? 'lg:hidden' : ''}`}
                 >
-                    {inner}
+                    {onToggleDesktopCollapse ? (
+                        <div className="hidden shrink-0 border-b border-[var(--border)] lg:block">
+                            <button
+                                type="button"
+                                onClick={onToggleDesktopCollapse}
+                                aria-expanded={!desktopCollapsed}
+                                aria-label="Hide alerts and context"
+                                className="flex h-10 w-full items-center justify-center text-[var(--muted)] transition-colors hover:bg-[var(--accent-soft)] hover:text-[var(--text)]"
+                            >
+                                <ChevronRight className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+                            </button>
+                        </div>
+                    ) : null}
+
+                    <div className="flex shrink-0 items-center justify-between gap-2 border-b border-[var(--border)] px-4 py-3 lg:hidden">
+                        <span className="text-sm font-medium text-[var(--text)]">Intelligence</span>
+                        <button
+                            type="button"
+                            onClick={onCloseMobile}
+                            className="rounded-lg px-2 py-1 text-xs text-[var(--muted)] hover:bg-[var(--accent-soft)]"
+                        >
+                            Close
+                        </button>
+                    </div>
+
+                    {!desktopCollapsed ? (
+                        <div className="hidden shrink-0 items-center justify-between gap-2 border-b border-[var(--border)] px-4 py-3 lg:flex">
+                            <div>
+                                <p className="executive-kicker">Intelligence</p>
+                                <p className="mt-1 text-xs text-[var(--muted)]">Live venture health and routed desk context</p>
+                            </div>
+                            <button type="button" className={executiveToolbarButtonClass} onClick={onToggleDesktopCollapse}>
+                                <PanelRight className="h-3.5 w-3.5" aria-hidden />
+                                Collapse
+                            </button>
+                        </div>
+                    ) : null}
+
+                    {panelBody}
                 </div>
             </aside>
         </>

@@ -1,243 +1,217 @@
-import Dexie, { Table } from 'dexie';
+/**
+ * Venture persistence: PostgreSQL via `/api/ventures/*` + `x-deepchox-session`.
+ * Dexo thread fallback when API down: localStorage (see convo fallback below).
+ */
 
-// --- Interfaces ---
+export * from './projectTypes';
+export { DEXO_CONVERSATION_AGENT } from './projectTypes';
 
-/** Latest multi-desk AI staff sync — summaries per role (does not replace manual CEO/PM JSON). */
-export interface AgentStaffSnapshot {
-  at: number;
-  summary: string;
-  desks: {
-    ceo: string;
-    pm: string;
-    accountant: string;
-    scout: string;
-    cmo: string;
+import type {
+  Project,
+  JournalEntry,
+  ProjectEvent,
+  ProjectFile,
+  ConversationMessage,
+  SystemLog,
+} from './projectTypes';
+import { DEXO_CONVERSATION_AGENT } from './projectTypes';
+import { getDeviceSessionId } from './deviceSession';
+
+function ventureApiErrorMessage(data: unknown): string {
+  const d = data as { error?: string; hint?: string };
+  const parts = [d.error, d.hint].filter((x): x is string => typeof x === 'string' && x.length > 0);
+  return parts.join(' — ') || 'request_failed';
+}
+
+function apiHeaders(): HeadersInit {
+  return {
+    'Content-Type': 'application/json',
+    'x-deepchox-session': getDeviceSessionId(),
   };
 }
 
-/** Role-tagged “waiting for you” items after staff sync (bell + desk banners). */
-export type StaffAttentionRole = 'ceo' | 'pm' | 'accountant' | 'scout' | 'cmo' | 'chief_of_staff';
-
-export interface StaffAttentionItem {
-  id: string;
-  role: StaffAttentionRole;
-  /** Short headline, e.g. “CFO — discuss runway” */
-  title: string;
-  message: string;
-  createdAt: number;
-  dismissed?: boolean;
-}
-
-export interface Project {
-  id?: number;
-  name: string;
-  timestamp: number;
-
-  agentStaffSnapshot?: AgentStaffSnapshot;
-
-  /** In-app staff notifications (replaced each sync; user can dismiss). */
-  staffAttentionItems?: StaffAttentionItem[];
-  /** Short bullets from latest sync — “what to focus on today”. */
-  staffFocusToday?: string[];
-  /** Subset of staffFocusToday lines the founder marked done (exact string match); pruned when sync replaces focus list. */
-  staffFocusCompletedLines?: string[];
-
-  // Strategy (CEO)
-  strategy: string; // JSON string
-
-  // Product (PM)
-  productPlan: string;
-
-  // Finance (CFO)
-  budget: string;
-
-  // Intelligence (Scout)
-  marketInsights: string;
-
-  // Shared Narrative fields
-  userNotes: string;
-  teamDirectives: string;
-  onboardingData: string;
-
-  // Arrays
-  journal: JournalEntry[];
-  events: ProjectEvent[];
-  files: ProjectFile[];
-  orgStructure: any[];
-  kanban: any[];
-  diary: any[];
-  /** Cross-desk documents (clients, meetings, notes) */
-  deskDocuments?: DeskDocument[];
-
-  /** JSON string: Living Office Engine continuity (see lib/office/officeMemory.ts). */
-  officeEngineMemoryJson?: string;
-
-  /**
-   * Founder-authored instructions for how AI staff should coordinate on this venture
-   * (priorities, tone, which lanes matter). Sent with the staff-sync snapshot.
-   */
-  agentCoordinationBrief?: string;
-}
-
-export interface DeskDocument {
-  id: string;
-  title: string;
-  category: 'client' | 'meeting' | 'internal' | 'other';
-  body: string;
-  createdAt: number;
-}
-
-export interface JournalEntry {
-  id: string;
-  content: string;
-  timestamp: number;
-}
-
-export interface ProjectEvent {
-  id: string;
-  title: string;
-  date: number;
-  type: 'milestone' | 'meeting' | 'launch' | 'deadline' | 'task';
-}
-
-export interface ProjectFile {
-  id: string;
-  name: string;
-  content: string;
-  type: string;
-  timestamp: number;
-}
-
-export interface KanbanTask {
-  id: string;
-  title: string;
-  status: 'todo' | 'in_progress' | 'next' | 'completed';
-  timestamp: number;
-}
-
-export interface OrgNode {
-  id: string;
-  role: string;
-  name: string;
-  department: string;
-  reportsTo: string;
-  description?: string;
-}
-
-export interface SystemLog {
-  id?: number;
-  timestamp: number;
-  agentRole: string;
-  message: string;
-  type: 'info' | 'alert' | 'success' | 'warning' | 'error';
-  relatedProjectId?: number;
-  source?: string; // Compatibility
-}
-
-export interface ConversationMessage {
-  id?: number;
-  projectId: number;
-  role: string; // 'user' | 'assistant'
-  content: string;
-  agentRole: string; // 'CEO', 'CFO', etc.
-  timestamp: number;
-}
-
-// --- Database Class ---
-
-class DeepChoxDB extends Dexie {
-  projects!: Table<Project>;
-  systemLogs!: Table<SystemLog>;
-  conversations!: Table<ConversationMessage>;
-
-  constructor() {
-    super('DeepChoxOrganicDB');
-    this.version(1).stores({
-      projects: '++id, name, timestamp',
-      systemLogs: '++id, timestamp, agentRole, relatedProjectId',
-      conversations: '++id, projectId, agentRole, timestamp'
-    });
+let migrateOnce: Promise<void> | null = null;
+async function ensureDexieMigrated(): Promise<void> {
+  if (typeof window === 'undefined') return;
+  if (!migrateOnce) {
+    migrateOnce = import('./migrateDexieOnce').then((m) => m.runDexieMigrationIfNeeded());
   }
+  await migrateOnce;
 }
 
-export const db = new DeepChoxDB();
+// --- Dexo / desk conversation fallback (when Postgres dexo-convo API unavailable) ---
+const CONVO_FB = 'deepchox-convo-fb-v1:';
 
-// --- Helper Functions ---
+function convoFallbackKey(projectId: number): string {
+  return `${CONVO_FB}${projectId}`;
+}
+
+// --- Public API ---
+
+export async function getAllProjects(): Promise<Project[]> {
+  await ensureDexieMigrated();
+  const res = await fetch('/api/ventures', { headers: apiHeaders(), cache: 'no-store' });
+  const data = (await res.json()) as { ok?: boolean; projects?: Project[] };
+  if (!res.ok || !data.ok || !Array.isArray(data.projects)) {
+    console.warn('[db] getAllProjects failed', res.status);
+    return [];
+  }
+  return data.projects;
+}
+
+export async function getProject(id: number): Promise<Project | undefined> {
+  await ensureDexieMigrated();
+  const res = await fetch(`/api/ventures/${id}`, { headers: apiHeaders(), cache: 'no-store' });
+  const data = (await res.json()) as { ok?: boolean; project?: Project };
+  if (!res.ok || !data.ok || !data.project) return undefined;
+  return data.project;
+}
 
 export async function saveProject(project: Project): Promise<number> {
+  await ensureDexieMigrated();
   const ts =
     typeof project.timestamp === 'number' && !Number.isNaN(project.timestamp)
       ? project.timestamp
       : Date.now();
-  const id = await db.projects.put({ ...project, timestamp: ts });
-  return id as number;
-}
+  const payload = { ...project, timestamp: ts };
 
-/** All ventures, newest first. Sorts in JS so rows with missing/invalid `timestamp` (legacy) still appear reliably. */
-export async function getAllProjects(): Promise<Project[]> {
-  const rows = await db.projects.toArray();
-  return [...rows].sort((a, b) => {
-    const ta = typeof a.timestamp === 'number' && !Number.isNaN(a.timestamp) ? a.timestamp : 0;
-    const tb = typeof b.timestamp === 'number' && !Number.isNaN(b.timestamp) ? b.timestamp : 0;
-    return tb - ta;
+  if (project.id != null && Number.isFinite(project.id)) {
+    const res = await fetch(`/api/ventures/${project.id}`, {
+      method: 'PUT',
+      headers: apiHeaders(),
+      body: JSON.stringify({ project: payload }),
+    });
+    const data = await res.json();
+    const parsed = data as { ok?: boolean; project?: Project };
+    if (!res.ok || !parsed.ok || !parsed.project?.id) {
+      throw new Error(ventureApiErrorMessage(data));
+    }
+    return parsed.project.id;
+  }
+
+  const res = await fetch('/api/ventures', {
+    method: 'POST',
+    headers: apiHeaders(),
+    body: JSON.stringify({ project: payload }),
   });
+  const data = await res.json();
+  const parsed = data as { ok?: boolean; project?: Project };
+  if (!res.ok || !parsed.ok || !parsed.project?.id) {
+    throw new Error(ventureApiErrorMessage(data));
+  }
+  return parsed.project.id;
 }
 
 export async function deleteProject(id: number): Promise<void> {
-  await db.projects.delete(id);
-}
-
-export async function getProject(id: number): Promise<Project | undefined> {
-  return await db.projects.get(id);
-}
-
-export async function addLog(log: Omit<SystemLog, 'id'>) {
-  return await db.systemLogs.add(log);
-}
-
-export async function getRecentLogs(limit = 50): Promise<SystemLog[]> {
-  return await db.systemLogs.orderBy('timestamp').reverse().limit(limit).toArray();
-}
-
-export async function saveMessage(msg: Omit<ConversationMessage, 'id'>) {
-  return await db.conversations.add(msg);
-}
-
-export async function getProjectHistory(projectId: number): Promise<ConversationMessage[]> {
-  return await db.conversations.where('projectId').equals(projectId).sortBy('timestamp');
-}
-
-// --- Compatibility Functions (for OfficeContext) ---
-
-export async function updateProjectField(id: number, field: keyof Project, value: any) {
-  await db.projects.update(id, { [field]: value });
-}
-
-export async function addJournalEntry(projectId: number, entry: JournalEntry) {
-  const project = await db.projects.get(projectId);
-  if (project) {
-    const updatedJournal = [entry, ...(project.journal || [])];
-    await db.projects.update(projectId, { journal: updatedJournal });
+  await fetch(`/api/ventures/${id}`, { method: 'DELETE', headers: apiHeaders() });
+  try {
+    localStorage.removeItem(convoFallbackKey(id));
+  } catch {
+    /* noop */
   }
 }
 
-export async function addProjectEvent(projectId: number, event: ProjectEvent) {
-  const project = await db.projects.get(projectId);
-  if (project) {
-    const updatedEvents = [...(project.events || []), event];
-    await db.projects.update(projectId, { events: updatedEvents });
+export async function updateProjectField(id: number, field: keyof Project, value: unknown): Promise<void> {
+  const res = await fetch(`/api/ventures/${id}`, {
+    method: 'PATCH',
+    headers: apiHeaders(),
+    body: JSON.stringify({ field, value }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(ventureApiErrorMessage(data));
   }
 }
 
-export async function addProjectFile(projectId: number, file: ProjectFile) {
-  const project = await db.projects.get(projectId);
-  if (project) {
-    const updatedFiles = [...(project.files || []), file];
-    await db.projects.update(projectId, { files: updatedFiles });
+export async function addJournalEntry(projectId: number, entry: JournalEntry): Promise<void> {
+  const p = await getProject(projectId);
+  if (!p) return;
+  const journal = [entry, ...(p.journal || [])];
+  await updateProjectField(projectId, 'journal', journal);
+}
+
+export async function addProjectEvent(projectId: number, event: ProjectEvent): Promise<void> {
+  const p = await getProject(projectId);
+  if (!p) return;
+  const events = [...(p.events || []), event];
+  await updateProjectField(projectId, 'events', events);
+}
+
+export async function addProjectFile(projectId: number, file: ProjectFile): Promise<void> {
+  const p = await getProject(projectId);
+  if (!p) return;
+  const files = [...(p.files || []), file];
+  await updateProjectField(projectId, 'files', files);
+}
+
+export async function addLog(_log: Omit<SystemLog, 'id'>): Promise<void> {
+  /* Reserved for future server logs */
+}
+
+export async function getRecentLogs(_limit = 50): Promise<SystemLog[]> {
+  return [];
+}
+
+export async function saveMessage(_msg: Omit<ConversationMessage, 'id'>): Promise<void> {
+  /* Legacy — unused */
+}
+
+export async function getProjectHistory(_projectId: number): Promise<ConversationMessage[]> {
+  return [];
+}
+
+export async function getDexoConvoMessagesForProject(projectId: number): Promise<ConversationMessage[]> {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(convoFallbackKey(projectId));
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as ConversationMessage[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
   }
 }
 
-export async function secureWipeDatabase() {
-  await db.delete();
-  await db.open();
+export async function replaceDexoConvoMessages(
+  projectId: number,
+  messages: { id: number; role: 'user' | 'dexo'; text: string }[]
+): Promise<void> {
+  if (typeof window === 'undefined') return;
+  const now = Date.now();
+  const rows: ConversationMessage[] = messages.map((m, i) => ({
+    projectId,
+    role: m.role === 'user' ? 'user' : 'assistant',
+    content: m.text,
+    agentRole: DEXO_CONVERSATION_AGENT,
+    timestamp: now + i,
+    dexoClientId: m.id,
+  }));
+  try {
+    localStorage.setItem(convoFallbackKey(projectId), JSON.stringify(rows));
+  } catch {
+    /* noop */
+  }
+}
+
+export async function clearDexoConvoMessagesForProject(projectId: number): Promise<void> {
+  try {
+    localStorage.removeItem(convoFallbackKey(projectId));
+  } catch {
+    /* noop */
+  }
+}
+
+export async function secureWipeDatabase(): Promise<void> {
+  await fetch('/api/ventures/wipe-session', { method: 'POST', headers: apiHeaders() });
+  if (typeof window === 'undefined') return;
+  try {
+    const keys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(CONVO_FB)) keys.push(k);
+    }
+    keys.forEach((k) => localStorage.removeItem(k));
+  } catch {
+    /* noop */
+  }
 }

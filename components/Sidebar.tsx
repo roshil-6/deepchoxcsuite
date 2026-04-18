@@ -27,7 +27,7 @@ interface SidebarProps {
 }
 
 /** Desk teammates in the rail (VC gauntlet / shark excluded — overlaps coordination bar) */
-const TEAM_DESK_ORDER = ['ceo', 'accountant', 'pm', 'cmo', 'scout', 'chief_of_staff', 'dexo'] as const;
+const TEAM_DESK_ORDER = ['ceo', 'accountant', 'pm', 'cmo', 'scout', 'dexo'] as const;
 
 export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
   const { activeRoom, switchRoom, agents, activeProject, setActiveProject, setAllProjects, allProjects, staffAttentionPending } = useOffice();

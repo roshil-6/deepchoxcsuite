@@ -60,7 +60,7 @@ Your job is synthesizing all dimensions of the venture into what the founder nee
 // 10 requests per minute per IP — HuggingFace inference is expensive.
 const RATE_LIMIT = 10;
 
-export async function POST(request) {
+async function POST_LEGACY(request) {
   // --- Rate limiting ---
   const ip = getClientIp(request);
   const rl = checkRateLimit(`ai:${ip}`, RATE_LIMIT);
@@ -149,4 +149,15 @@ export async function POST(request) {
       { status: 500 }
     );
   }
+}
+
+export async function POST(request) {
+  // Legacy endpoint kept as a compatibility shim.
+  if (process.env.DEXO_ENABLE_LEGACY_AI === "1") {
+    return POST_LEGACY(request);
+  }
+  return NextResponse.json(
+    { ok: false, error: "deprecated_use_api_dexo" },
+    { status: 410, headers: { "x-dexo-deprecated": "true" } }
+  );
 }

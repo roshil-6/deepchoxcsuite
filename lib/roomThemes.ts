@@ -24,36 +24,36 @@ export interface ChatRailTheme {
 
 /** Flat dark-grey chat rail — room copy varies, chrome stays calm */
 const DEFAULT_CHAT: ChatRailTheme = {
-  agentRole: 'chief_of_staff',
-  roleLabel: RESEARCH_STAFF.chief_of_staff.navTitle,
+  agentRole: 'dexo',
+  roleLabel: RESEARCH_STAFF.dexo.navTitle,
   subtitle: 'Side thread for this room.',
   emptyPrompt: 'Ask something about this venture or desk.',
-  headerClass: 'border-b border-white/[0.07] bg-brand-panel/70 backdrop-blur-sm',
-  railClass: 'border-r border-white/[0.07] bg-brand-panel/70',
-  userBubbleClass: 'border border-white/[0.1] bg-brand-input/90 text-brand-text shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
-  accentDot: 'bg-brand-teal',
+  headerClass: 'border-b border-[var(--border)] bg-[var(--bg-secondary)]/95 backdrop-blur-md',
+  railClass: 'border-r border-[var(--border)] bg-[var(--bg-secondary)]/92 backdrop-blur-md',
+  userBubbleClass: 'border border-[rgba(116,86,255,0.22)] bg-[var(--accent-soft)] text-brand-text shadow-[0_1px_2px_rgba(0,0,0,0.25)]',
+  accentDot: 'bg-[var(--accent)]',
   placeholder: 'Message…',
 };
 
 export function getChatRailTheme(activeRoom: string): ChatRailTheme {
   const map: Record<string, Partial<ChatRailTheme> & { agentRole: AgentRole }> = {
     dashboard: {
-      agentRole: 'chief_of_staff',
-      roleLabel: RESEARCH_STAFF.chief_of_staff.navTitle,
+      agentRole: 'dexo',
+      roleLabel: RESEARCH_STAFF.dexo.navTitle,
       subtitle: 'Overview.',
       emptyPrompt: 'Ask about this venture, priorities, or next steps.',
       placeholder: 'Message…',
     },
     reports: {
-      agentRole: 'chief_of_staff',
-      roleLabel: RESEARCH_STAFF.chief_of_staff.navTitle,
+      agentRole: 'dexo',
+      roleLabel: RESEARCH_STAFF.dexo.navTitle,
       subtitle: 'Intelligence vault.',
       emptyPrompt: 'Summarize what you need from reports, notes, or exports.',
       placeholder: 'Query the vault…',
     },
     calendar: {
-      agentRole: 'chief_of_staff',
-      roleLabel: RESEARCH_STAFF.chief_of_staff.navTitle,
+      agentRole: 'dexo',
+      roleLabel: RESEARCH_STAFF.dexo.navTitle,
       subtitle: 'Aligned with your timeline.',
       emptyPrompt: 'Plan moves, deadlines, or stakeholder touchpoints.',
       placeholder: 'Schedule or adjust…',
@@ -74,8 +74,8 @@ export function getChatRailTheme(activeRoom: string): ChatRailTheme {
       placeholder: 'Shape the message…',
     },
     org_structure: {
-      agentRole: 'chief_of_staff',
-      roleLabel: RESEARCH_STAFF.chief_of_staff.navTitle,
+      agentRole: 'dexo',
+      roleLabel: RESEARCH_STAFF.dexo.navTitle,
       subtitle: 'Org and roles in view.',
       emptyPrompt: 'Describe hiring, reporting, or structural changes.',
       placeholder: 'Shape the org…',
@@ -116,8 +116,8 @@ export function getChatRailTheme(activeRoom: string): ChatRailTheme {
       placeholder: 'Shape narrative or deck…',
     },
     wargame: {
-      agentRole: 'chief_of_staff',
-      roleLabel: RESEARCH_STAFF.chief_of_staff.navTitle,
+      agentRole: 'dexo',
+      roleLabel: RESEARCH_STAFF.dexo.navTitle,
       subtitle: 'Wargame — stress-test assumptions.',
       emptyPrompt: 'Explore scenarios, second-order effects, or who wins if plans shift.',
       placeholder: 'Frame a wargame question…',
@@ -130,22 +130,22 @@ export function getChatRailTheme(activeRoom: string): ChatRailTheme {
       placeholder: 'Ask across desks…',
     },
     founders_office: {
-      agentRole: 'chief_of_staff',
-      roleLabel: RESEARCH_STAFF.chief_of_staff.navTitle,
+      agentRole: 'dexo',
+      roleLabel: RESEARCH_STAFF.dexo.navTitle,
       subtitle: 'Founders office — alignment and priorities.',
       emptyPrompt: 'Align founders on focus, tradeoffs, or what to decide next.',
       placeholder: 'Steer the founders conversation…',
     },
     personal_assistant: {
-      agentRole: 'chief_of_staff',
-      roleLabel: RESEARCH_STAFF.chief_of_staff.navTitle,
+      agentRole: 'dexo',
+      roleLabel: RESEARCH_STAFF.dexo.navTitle,
       subtitle: 'Assistant — tasks and follow-ups.',
       emptyPrompt: 'Capture actions, briefings, or what to prep for.',
       placeholder: 'Ask your assistant…',
     },
     suite_intelligence: {
-      agentRole: 'chief_of_staff',
-      roleLabel: RESEARCH_STAFF.chief_of_staff.navTitle,
+      agentRole: 'dexo',
+      roleLabel: RESEARCH_STAFF.dexo.navTitle,
       subtitle: 'How the workspace fits together.',
       emptyPrompt: 'Ask how a desk, sync, or report fits into the bigger picture.',
       placeholder: 'Ask how this works…',
@@ -179,8 +179,8 @@ export interface WorkspaceShellTheme {
 
 const SHELL_DEFAULT: WorkspaceShellTheme = {
   wash: 'from-brand-bg to-brand-bg',
-  gridColor: 'rgba(255,255,255,0.06)',
-  gridOpacity: '0.035',
+  gridColor: 'rgba(255,255,255,0.05)',
+  gridOpacity: '0.02',
   /** No inner “card” frame — avoids a second panel overlaying each room */
   chrome: '',
   immersive: false,
@@ -190,7 +190,7 @@ export function getWorkspaceShellTheme(activeRoom: string): WorkspaceShellTheme 
   /** Dexo: near-black, no shell grid — particle wave canvas owns the bg */
   if (activeRoom === 'dexo') {
     return {
-      wash: 'from-[#07070f] to-[#07070f]',
+      wash: 'from-[#1e1e1e] to-[#212121]',
       gridColor: 'transparent',
       gridOpacity: '0',
       chrome: '',
@@ -201,9 +201,9 @@ export function getWorkspaceShellTheme(activeRoom: string): WorkspaceShellTheme 
   /** Long-form guide: calmer canvas, almost no grid so sections feel editorial */
   if (activeRoom === 'suite_intelligence') {
     return {
-      wash: 'from-[#131314] to-[#121213]',
-      gridColor: 'rgba(255,255,255,0.03)',
-      gridOpacity: '0.012',
+      wash: 'from-[#1e1e1e] to-[#242424]',
+      gridColor: 'rgba(255,255,255,0.04)',
+      gridOpacity: '0.01',
       chrome: '',
       immersive: false,
     };

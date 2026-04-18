@@ -44,6 +44,8 @@ import {
     DeskFocusToolbar,
 } from '@/components/workspaces/DeskBlockFocusUI';
 import { deskHeadline, deskHelpText, RESEARCH_STAFF } from '@/lib/researchStaffLabels';
+import { useTokens } from '@/lib/tokens/useTokens';
+import { TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 
 const MAX_PROMPT_CONTEXT = 7200;
 
@@ -444,6 +446,7 @@ const PEER_DESKS: {
 
 export function FinancialLedger() {
     const { activeProject, prepopulateChat, switchRoom, updateBudget, setDeskSectionFocus } = useOffice();
+    const { spend: spendTokens } = useTokens();
     const [selectedTopicId, setSelectedTopicId] = useState<TopicId>('liquidity');
     const [copiedTopic, setCopiedTopic] = useState<TopicId | null>(null);
     const [budgetDraft, setBudgetDraft] = useState('');
@@ -573,12 +576,25 @@ export function FinancialLedger() {
         (async () => {
             setAiFundingLoading(true);
             setAiFundingError(null);
+            const paid = spendTokens(TOKEN_COSTS.CHAT_MESSAGE, 'CFO funding suggest');
+            if (!paid.success) {
+                setAiFunding(null);
+                setAiFundingError(
+                    paid.message ??
+                        'Daily AI credits are used up. Upgrade to Pro for unlimited usage, or try again after the daily reset.',
+                );
+                setAiFundingLoading(false);
+                return;
+            }
             try {
                 const payload = buildCfoFundingPayload(activeProject);
-                const res = await fetch('/api/cfo-funding-suggest', {
+                const res = await fetch('/api/dexo', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ payload }),
+                    body: JSON.stringify({
+                        action: 'cfoFundingSuggest',
+                        payload: { payload },
+                    }),
                     signal: ac.signal,
                 });
                 const data = (await res.json()) as { ok?: boolean; error?: string; values?: Partial<Record<FundingValueKey, string>> };
@@ -602,7 +618,7 @@ export function FinancialLedger() {
             cancelled = true;
             ac.abort();
         };
-    }, [fundingSuggestKey]);
+    }, [fundingSuggestKey, spendTokens]);
 
     useEffect(() => {
         autoAppliedLedgerRef.current = null;

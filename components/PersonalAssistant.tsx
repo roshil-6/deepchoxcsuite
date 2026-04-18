@@ -21,7 +21,7 @@ function PersonalAssistantLayout() {
                 <button
                     type="button"
                     onClick={() => switchRoom('dashboard')}
-                    className="rounded-lg border border-white/[0.1] bg-white/[0.04] px-4 py-2 text-sm font-medium text-[var(--text)] transition-colors hover:bg-white/[0.07]"
+                    className="rounded-lg bg-white/[0.06] px-4 py-2 text-sm font-medium text-[var(--text)] transition-colors hover:bg-white/[0.1]"
                 >
                     Open overview
                 </button>
@@ -32,25 +32,23 @@ function PersonalAssistantLayout() {
     const modeTabs = (
         <>
             <DeskTabButton
+                chroming="ghost"
                 active={relayMode === 'chat'}
                 onClick={() => setRelayMode('chat')}
                 icon={<MessageCircle className="h-3.5 w-3.5" aria-hidden />}
                 className={
-                    relayMode === 'chat'
-                        ? '!border-white/[0.1] !bg-[var(--color-brand-card)] text-[var(--text)]'
-                        : ''
+                    relayMode === 'chat' ? '!bg-[var(--color-brand-card)] text-[var(--text)]' : ''
                 }
             >
                 Chat
             </DeskTabButton>
             <DeskTabButton
+                chroming="ghost"
                 active={relayMode === 'meeting'}
                 onClick={() => setRelayMode('meeting')}
                 icon={<Video className="h-3.5 w-3.5" aria-hidden />}
                 className={
-                    relayMode === 'meeting'
-                        ? '!border-white/[0.1] !bg-[var(--color-brand-card)] text-[var(--text)]'
-                        : ''
+                    relayMode === 'meeting' ? '!bg-[var(--color-brand-card)] text-[var(--text)]' : ''
                 }
             >
                 Meeting
@@ -60,13 +58,13 @@ function PersonalAssistantLayout() {
 
     return (
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[var(--color-brand-bg)]">
-            <header className="flex shrink-0 items-center justify-between gap-2 border-b border-white/[0.06] bg-white/[0.02] px-3 py-2 sm:px-4 sm:py-2.5">
+            <header className="flex shrink-0 items-center justify-between gap-2 bg-white/[0.02] px-3 py-2 sm:px-4 sm:py-2.5">
                 <p className="min-w-0 truncate text-[11px] text-[var(--muted)]">
                     <span className="font-medium text-[var(--text)]/90">{activeProject.name}</span>
                     <span className="mx-1.5 text-white/20" aria-hidden>
                         ·
                     </span>
-                    <span>Relay</span>
+                    <span>Dexo Cofounder</span>
                 </p>
                 <div className="flex shrink-0 flex-wrap justify-end gap-1">{modeTabs}</div>
             </header>

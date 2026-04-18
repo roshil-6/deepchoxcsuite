@@ -24,8 +24,20 @@ services:
         sync: false
       - key: ANTHROPIC_API_KEY
         sync: false
+      - key: TAVILY_API_KEY
+        sync: false
+      - key: CRON_SECRET
+        sync: false
       # Optional:
       # - key: GROQ_MODEL
       #   value: llama-3.3-70b-versatile
       # - key: NEXT_PUBLIC_LANDING_HERO_VIDEO_URL
       #   sync: false
+
+  - type: cron
+    name: deepchox-dexo-daily-cron
+    schedule: "0 12 * * *"
+    command: >
+      curl -sS -X POST
+      -H "x-cron-secret: $CRON_SECRET"
+      https://deepchox-c-suite.onrender.com/api/dexo/cron-daily

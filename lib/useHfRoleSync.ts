@@ -17,23 +17,32 @@ export function useHfRoleSync(companyContext: string = HF_DEFAULT_COMPANY_CONTEX
         async (role: HfDeskRole) => {
             setSyncing(true);
             try {
-                const res = await fetch('/api/sync', {
+                const rolePrompt = `Desk role: ${role.toUpperCase()}. Provide a concise sync update and one immediate move.`;
+                const res = await fetch('/api/dexo', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        role,
-                        companyContext,
+                        action: 'chat',
+                        payload: {
+                            messages: [
+                                { role: 'system', content: rolePrompt },
+                                { role: 'user', content: companyContext },
+                            ],
+                            model: 'llama3',
+                        },
                     }),
                 });
                 const data = await res.json();
-                if (data.loading) {
-                    setSyncResult('AI is warming up, please wait 20 seconds and try again.');
-                    setSyncModel(null);
-                } else if (data.error) {
+                if (data.error) {
                     setSyncResult(typeof data.error === 'string' ? data.error : 'Sync failed.');
                     setSyncModel(null);
                 } else {
-                    setSyncResult(data.result ?? '');
+                    const text =
+                        data.message?.content ??
+                        data.choices?.[0]?.message?.content ??
+                        data.result ??
+                        '';
+                    setSyncResult(text);
                     setSyncModel(typeof data.model === 'string' ? data.model : null);
                 }
             } catch {

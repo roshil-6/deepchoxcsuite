@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { Settings, Volume2, Gauge, Mic, Play, Square } from 'lucide-react';
+import { Settings, Gauge, Mic, Play, Square } from 'lucide-react';
 import { 
     type VoicePreset, 
     PRESETS, 
@@ -95,15 +95,16 @@ export function VoiceSettingsPanel({ isOpen, onClose }: VoiceSettingsPanelProps)
     
     const modalContent = (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="w-full max-w-md space-y-4 rounded-2xl border border-slate-700/50 bg-slate-900/95 p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="max-h-[90vh] w-full max-w-md space-y-4 overflow-y-auto rounded-2xl border border-[var(--border)] bg-[var(--surface-strong)] p-6 shadow-[var(--shadow-panel)]">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <Settings className="h-4 w-4 text-sky-400" />
-                        <h3 className="text-sm font-semibold text-slate-200">Voice Settings</h3>
+                        <Settings className="h-4 w-4 text-[var(--muted)]" strokeWidth={1.75} aria-hidden />
+                        <h3 className="text-sm font-semibold text-[var(--text)]">Voice Settings</h3>
                     </div>
-                    <button 
+                    <button
+                        type="button"
                         onClick={onClose}
-                        className="text-[11px] text-slate-500 hover:text-slate-300"
+                        className="text-[11px] text-[var(--muted)] transition hover:text-[var(--text)]"
                     >
                         Close
                     </button>
@@ -111,24 +112,27 @@ export function VoiceSettingsPanel({ isOpen, onClose }: VoiceSettingsPanelProps)
                 
                 {/* Preset Selection */}
                 <div className="space-y-2">
-                    <p className="text-[10px] uppercase tracking-wider text-slate-500">Voice Preset</p>
+                    <p className="text-[10px] uppercase tracking-wider text-[var(--muted)]">Voice Preset</p>
                     <div className="grid grid-cols-2 gap-2">
                         {(Object.keys(PRESETS) as VoicePreset[]).map((preset) => (
                             <button
                                 key={preset}
+                                type="button"
                                 onClick={() => handlePresetChange(preset)}
                                 className={`rounded-lg border px-3 py-2 text-left transition-all ${
                                     !useCustom && selectedPreset === preset
-                                        ? 'border-sky-500/50 bg-sky-950/30'
-                                        : 'border-slate-700/50 bg-slate-800/30 hover:border-slate-600'
+                                        ? 'border-[var(--border-strong)] bg-white/[0.08]'
+                                        : 'border-[var(--border)] bg-white/[0.03] hover:border-[var(--border-strong)] hover:bg-white/[0.05]'
                                 }`}
                             >
-                                <p className={`text-[11px] font-medium ${
-                                    !useCustom && selectedPreset === preset ? 'text-sky-300' : 'text-slate-300'
-                                }`}>
+                                <p
+                                    className={`text-[11px] font-medium ${
+                                        !useCustom && selectedPreset === preset ? 'text-[var(--text)]' : 'text-[var(--muted)]'
+                                    }`}
+                                >
                                     {presetDescriptions[preset].label}
                                 </p>
-                                <p className="text-[9px] text-slate-500 leading-tight mt-0.5">
+                                <p className="mt-0.5 text-[9px] leading-tight text-[var(--muted)]">
                                     {presetDescriptions[preset].desc}
                                 </p>
                             </button>
@@ -137,10 +141,11 @@ export function VoiceSettingsPanel({ isOpen, onClose }: VoiceSettingsPanelProps)
                 </div>
                 
                 {/* Custom Controls Toggle */}
-                <div className="flex items-center gap-2 py-2 border-t border-slate-800">
+                <div className="flex items-center gap-2 border-t border-[var(--border)] py-2">
                     <button
+                        type="button"
                         onClick={() => setUseCustom(!useCustom)}
-                        className={`text-[11px] ${useCustom ? 'text-sky-400' : 'text-slate-500'}`}
+                        className={`text-[11px] transition ${useCustom ? 'font-medium text-[var(--text)]' : 'text-[var(--muted)] hover:text-[var(--text)]'}`}
                     >
                         {useCustom ? '✓ Using custom settings' : 'Use custom settings'}
                     </button>
@@ -148,14 +153,14 @@ export function VoiceSettingsPanel({ isOpen, onClose }: VoiceSettingsPanelProps)
                 
                 {/* Custom Sliders */}
                 {useCustom && (
-                    <div className="space-y-3 rounded-lg bg-slate-800/30 p-3">
+                    <div className="space-y-3 rounded-lg border border-[var(--border)] bg-white/[0.03] p-3">
                         <div className="space-y-1">
                             <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
-                                    <Gauge className="h-3 w-3" />
+                                <div className="flex items-center gap-1.5 text-[10px] text-[var(--muted)]">
+                                    <Gauge className="h-3 w-3" aria-hidden />
                                     Speed
                                 </div>
-                                <span className="text-[10px] text-slate-500">{customRate.toFixed(2)}x</span>
+                                <span className="text-[10px] text-[var(--muted)]">{customRate.toFixed(2)}x</span>
                             </div>
                             <input
                                 type="range"
@@ -164,17 +169,17 @@ export function VoiceSettingsPanel({ isOpen, onClose }: VoiceSettingsPanelProps)
                                 step="0.05"
                                 value={customRate}
                                 onChange={(e) => setCustomRate(parseFloat(e.target.value))}
-                                className="w-full h-1 bg-slate-700 rounded-full appearance-none cursor-pointer accent-sky-500"
+                                className="h-1 w-full cursor-pointer appearance-none rounded-full bg-white/[0.08] accent-[var(--accent)]"
                             />
                         </div>
-                        
+
                         <div className="space-y-1">
                             <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
-                                    <Mic className="h-3 w-3" />
+                                <div className="flex items-center gap-1.5 text-[10px] text-[var(--muted)]">
+                                    <Mic className="h-3 w-3" aria-hidden />
                                     Pitch
                                 </div>
-                                <span className="text-[10px] text-slate-500">{customPitch.toFixed(2)}</span>
+                                <span className="text-[10px] text-[var(--muted)]">{customPitch.toFixed(2)}</span>
                             </div>
                             <input
                                 type="range"
@@ -183,28 +188,26 @@ export function VoiceSettingsPanel({ isOpen, onClose }: VoiceSettingsPanelProps)
                                 step="0.05"
                                 value={customPitch}
                                 onChange={(e) => setCustomPitch(parseFloat(e.target.value))}
-                                className="w-full h-1 bg-slate-700 rounded-full appearance-none cursor-pointer accent-sky-500"
+                                className="h-1 w-full cursor-pointer appearance-none rounded-full bg-white/[0.08] accent-[var(--accent)]"
                             />
                         </div>
                     </div>
                 )}
                 
                 {/* Available Voices Info */}
-                <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-2">
-                    <p className="text-[9px] text-slate-600 mb-1">
-                        {availableVoices.length} voices available
-                    </p>
+                <div className="rounded-lg border border-[var(--border)] bg-white/[0.02] p-2">
+                    <p className="mb-1 text-[9px] text-[var(--muted)]">{availableVoices.length} voices available</p>
                     <div className="flex flex-wrap gap-1">
                         {availableVoices.slice(0, 8).map((voice) => (
-                            <span 
+                            <span
                                 key={voice.name}
-                                className="text-[8px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-500"
+                                className="rounded bg-white/[0.06] px-1.5 py-0.5 text-[8px] text-[var(--muted)]"
                             >
                                 {voice.name.split(' ')[0]}
                             </span>
                         ))}
                         {availableVoices.length > 8 && (
-                            <span className="text-[8px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-500">
+                            <span className="rounded bg-white/[0.06] px-1.5 py-0.5 text-[8px] text-[var(--muted)]">
                                 +{availableVoices.length - 8} more
                             </span>
                         )}
@@ -213,11 +216,12 @@ export function VoiceSettingsPanel({ isOpen, onClose }: VoiceSettingsPanelProps)
                 
                 {/* Test Button */}
                 <button
+                    type="button"
                     onClick={testVoice}
-                    className={`w-full flex items-center justify-center gap-2 rounded-lg py-2.5 text-[12px] font-medium transition-all ${
+                    className={`flex w-full items-center justify-center gap-2 rounded-lg border py-2.5 text-[12px] font-medium transition-all ${
                         isTesting
-                            ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                            : 'bg-sky-500/20 text-sky-300 border border-sky-500/30 hover:bg-sky-500/30'
+                            ? 'border-[var(--border-strong)] bg-white/[0.08] text-[var(--text)]'
+                            : 'border-[var(--border)] bg-white/[0.06] text-[var(--text)] hover:bg-white/[0.1]'
                     }`}
                 >
                     {isTesting ? (

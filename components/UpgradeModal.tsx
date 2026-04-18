@@ -1,63 +1,20 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Check, Brain, Target, Network, ChevronDown, ChevronUp, Zap } from 'lucide-react';
+import { X, Check, Zap, Infinity } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
+import { FREE_DAILY_TOKENS, TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
+import {
+    BILLING_CONFIG,
+    formatRegionalDualLine,
+    formatRegionalPricePair,
+    getProBillingAmounts,
+    type BillingCycle,
+} from '@/lib/billingConfig';
+import { usePricingRegion } from '@/hooks/usePricingRegion';
 
-type BillingCycle = 'monthly' | 'yearly';
-
-const MONTHLY_INR = 300;
-const MONTHLY_USD = 4;
-const YEARLY_TOTAL_INR = 2999;
-const YEARLY_TOTAL_USD = 40;
-const YEARLY_MONTHLY_INR = 250;
-const YEARLY_MONTHLY_USD = 3.33;
-const YEARLY_SAVINGS_INR = MONTHLY_INR * 12 - YEARLY_TOTAL_INR;
-
-const FREE_ITEMS = [
-    { label: 'Strategy, Finance, Product, Market & Growth desks', detail: '5 AI teammates, each scoped to their role' },
-    { label: 'Personal Assistant', detail: 'Chat-first venture setup and cross-desk coordination' },
-    { label: 'AI Staff Sync', detail: 'All desks refresh research from the same venture snapshot' },
-    { label: 'VC Gauntlet', detail: 'Investor-style stress test — adversarial Q&A on your pitch' },
-    { label: 'Wargame Nexus', detail: 'Competitive strategy simulation — one round' },
-    { label: 'Pitch Forge', detail: 'Narrative builder and slide deck exporter' },
-    { label: 'Market Intelligence & Neural Diary', detail: 'Live signals, competitor tracking, and strategic notes' },
-    { label: 'Dashboard, Kanban, Calendar & Meeting Room', detail: 'Execution score, board, timeline, and guided walkthroughs' },
-    { label: 'Unlimited ventures', detail: 'No cap on projects or venture records' },
-];
-
-const PRO_FEATURES = [
-    {
-        icon: Brain,
-        label: 'Executive Briefing Autopilot',
-        tagline: 'A daily brief waiting for you — without asking.',
-        how: [
-            'Each morning DEEPCHOX scans your active ventures: overdue tasks, risks your CFO or CTO flagged, deals that went quiet, and milestones closing in.',
-            'Your PA and Strategy desks compress this into a tight 5-point brief — what needs action today, what can wait, and what is quietly going sideways.',
-            'Open the app and it is already there. Like a chief of staff who reviewed everything overnight and left a clear note before the day started.',
-        ],
-    },
-    {
-        icon: Target,
-        label: 'Wargame Multi-Round Simulation',
-        tagline: 'Not one stress test — the full campaign.',
-        how: [
-            'Free Wargame tests your strategy once. Multi-Round runs up to 5 back-and-forth rounds: your move, simulated competitor counter, your response — played out like a real competitive sequence.',
-            'The AI uses your actual market position, stated weaknesses, and real competitive patterns to make each counter-move feel like a genuine opponent.',
-            'You end with a board stress-test report: which scenario hurt most, which assumptions to defend, and which moves survived every round. Downloadable as PDF.',
-        ],
-    },
-    {
-        icon: Network,
-        label: 'Cross-Venture Intelligence',
-        tagline: 'One layer that sees across everything you are building.',
-        how: [
-            'Every desk knows only its own venture. Cross-Venture Intelligence reads across all of them at once — surfacing connections individual desks would never catch.',
-            'Spots things like two ventures targeting the same customer, a GTM budget that could serve both, or a risk building quietly in one that is already present in another.',
-            'Once a week it sends a synthesis note — not when you ask, but when it finds something worth flagging. Low noise, high signal.',
-        ],
-    },
-] as const;
+/** One line for Free tier — only metering differs from Pro. */
+const FREE_METERING_LINE = `${FREE_DAILY_TOKENS} Dexo tokens per day (resets midnight) · ${TOKEN_COSTS.ANALYSIS} per new analysis · ${TOKEN_COSTS.REANALYZE} per re-analyze · ${TOKEN_COSTS.CHAT_MESSAGE} per Dexo message`;
 
 interface UpgradeModalProps {
     open: boolean;
@@ -67,7 +24,8 @@ interface UpgradeModalProps {
 export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
     const { isPaidPro, isInTrial, hasUsedTrial, trialDaysLeft, trialHoursLeft, startTrial, activatePro, deactivatePro } = useSubscription();
     const [billing, setBilling] = useState<BillingCycle>('monthly');
-    const [expandedFeature, setExpandedFeature] = useState<number | null>(null);
+    const pricingRegion = usePricingRegion();
+    const PRO_BILLING = getProBillingAmounts();
 
     if (!open) return null;
 
@@ -89,7 +47,7 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                 <div className="flex shrink-0 items-center justify-between border-b border-zinc-800/80 px-5 py-4 sm:px-6">
                     <div>
                         <p className="text-sm font-semibold text-white">Co-Founder Pro</p>
-                        <p className="mt-0.5 text-xs text-zinc-500">Automated intelligence for your AI C-Suite</p>
+                        <p className="mt-0.5 text-xs text-zinc-500">Unlimited AI usage — same workspace as Founder, no token meter</p>
                     </div>
                     <button
                         type="button"
@@ -144,7 +102,9 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                                 </div>
                                 {isYearly && (
                                     <p className="text-[11px] text-zinc-500">
-                                        Save ₹{YEARLY_SAVINGS_INR} vs monthly
+                                        Save{' '}
+                                        {formatRegionalPricePair(PRO_BILLING.yearlySavingsInr, pricingRegion, { usdDecimals: 0 }).primary}{' '}
+                                        vs monthly
                                     </p>
                                 )}
                             </div>
@@ -163,16 +123,22 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
 
                                 <div className="my-4 h-px bg-zinc-800/80" />
 
-                                <ul className="flex-1 space-y-2.5">
-                                    {FREE_ITEMS.map((item) => (
-                                        <li key={item.label} className="flex items-start gap-2">
-                                            <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-600" aria-hidden />
-                                            <div>
-                                                <p className="text-xs font-medium text-zinc-300">{item.label}</p>
-                                                <p className="text-[11px] leading-snug text-zinc-600">{item.detail}</p>
-                                            </div>
-                                        </li>
-                                    ))}
+                                <ul className="flex-1 space-y-3">
+                                    <li className="flex items-start gap-2">
+                                        <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
+                                        <p className="text-xs leading-relaxed text-zinc-300">
+                                            <span className="font-medium text-zinc-200">Same product as Pro</span>
+                                            {' — '}research desks, Dexo, staff sync, dashboard, calendar, ventures, and the rest. Nothing is locked
+                                            behind the paywall.
+                                        </p>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
+                                        <div>
+                                            <p className="text-xs font-medium text-zinc-200">AI usage is metered</p>
+                                            <p className="mt-1 text-[11px] leading-snug text-zinc-500">{FREE_METERING_LINE}</p>
+                                        </div>
+                                    </li>
                                 </ul>
 
                                 {isPaidPro ? (
@@ -201,80 +167,48 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
 
                                 <div className="mt-3 flex items-end gap-1.5">
                                     <span className="text-3xl font-semibold leading-none tracking-tight text-white">
-                                        ${isYearly ? YEARLY_MONTHLY_USD : MONTHLY_USD}
+                                        {
+                                            formatRegionalPricePair(
+                                                isYearly ? PRO_BILLING.effectiveMonthlyInr : PRO_BILLING.monthlyInr,
+                                                pricingRegion,
+                                                { usdDecimals: 2, inrMaximumFractionDigits: isYearly ? 2 : 0 }
+                                            ).primary
+                                        }
                                     </span>
                                     <span className="mb-0.5 text-xs text-zinc-500">/mo</span>
                                     <span className="mb-0.5 text-xs text-zinc-600">
-                                        (₹{isYearly ? YEARLY_MONTHLY_INR : MONTHLY_INR})
+                                        (
+                                        {formatRegionalPricePair(
+                                            isYearly ? PRO_BILLING.effectiveMonthlyInr : PRO_BILLING.monthlyInr,
+                                            pricingRegion,
+                                            { usdDecimals: 2, inrMaximumFractionDigits: isYearly ? 2 : 0 }
+                                        ).secondary}
+                                        )
                                     </span>
                                 </div>
                                 <p className="mt-1 text-xs text-zinc-600">
                                     {isYearly
-                                        ? `$${YEARLY_TOTAL_USD}/yr (₹${YEARLY_TOTAL_INR}) · billed annually`
+                                        ? `${formatRegionalDualLine(PRO_BILLING.yearlyInr, pricingRegion, { usdDecimals: 2 })} /yr · billed annually`
                                         : 'billed monthly · cancel anytime'}
                                 </p>
 
                                 <div className="my-4 h-px bg-zinc-800/80" />
 
-                                <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-widest text-zinc-500">
-                                    Pro only
-                                </p>
                                 <div className="flex-1 space-y-3">
-                                    {PRO_FEATURES.map(({ icon: Icon, label, tagline }) => (
-                                        <div key={label} className="flex gap-2.5">
-                                            <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-400" aria-hidden />
-                                            <div>
-                                                <p className="text-xs font-semibold leading-snug text-zinc-200">{label}</p>
-                                                <p className="mt-0.5 text-[11px] leading-snug text-zinc-500">{tagline}</p>
-                                            </div>
+                                    <div className="flex items-start gap-2.5 rounded-lg border border-emerald-500/20 bg-emerald-500/[0.06] px-3 py-2.5">
+                                        <Infinity className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" aria-hidden />
+                                        <div>
+                                            <p className="text-xs font-semibold text-zinc-100">Unlimited AI usage</p>
+                                            <p className="mt-1 text-[11px] leading-snug text-zinc-400">
+                                                No daily Dexo token pool and no per-message / per-analysis deductions. Same features and workspaces as
+                                                Founder — only the meter goes away.
+                                            </p>
                                         </div>
-                                    ))}
-                                </div>
-
-                                <p className="mt-3 text-[11px] text-zinc-600">+ everything in Free</p>
-                            </div>
-                        </div>
-
-                        {/* How Pro features work */}
-                        <div className="mt-4">
-                            <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
-                                How Pro features work
-                            </p>
-                            <div className="divide-y divide-zinc-800/80 rounded-xl border border-zinc-800">
-                                {PRO_FEATURES.map(({ icon: Icon, label, tagline, how }, i) => (
-                                    <div key={label}>
-                                        <button
-                                            type="button"
-                                            onClick={() => setExpandedFeature((prev) => (prev === i ? null : i))}
-                                            className="flex w-full items-start gap-3 px-4 py-3 text-left transition hover:bg-white/[0.02]"
-                                            aria-expanded={expandedFeature === i}
-                                        >
-                                            <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
-                                            <div className="min-w-0 flex-1">
-                                                <p className="text-xs font-semibold text-zinc-200">{label}</p>
-                                                <p className="mt-0.5 text-[11px] text-zinc-500">{tagline}</p>
-                                            </div>
-                                            {expandedFeature === i
-                                                ? <ChevronUp className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-600" aria-hidden />
-                                                : <ChevronDown className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-600" aria-hidden />
-                                            }
-                                        </button>
-                                        {expandedFeature === i && (
-                                            <div className="border-t border-zinc-800/60 bg-zinc-900/40 px-4 py-3.5">
-                                                <ol className="space-y-3">
-                                                    {how.map((step, si) => (
-                                                        <li key={si} className="flex gap-3">
-                                                            <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-zinc-700 text-[9px] font-bold text-zinc-500">
-                                                                {si + 1}
-                                                            </span>
-                                                            <p className="text-[12px] leading-relaxed text-zinc-400">{step}</p>
-                                                        </li>
-                                                    ))}
-                                                </ol>
-                                            </div>
-                                        )}
                                     </div>
-                                ))}
+                                    <p className="text-[11px] leading-relaxed text-zinc-500">
+                                        Upgrade if you hit the free daily limit or want to run analyses and chat without counting tokens.
+                                    </p>
+                                </div>
                             </div>
                         </div>
 
@@ -290,7 +224,7 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                                     <button
                                         type="button"
                                         onClick={() => { activatePro(); onClose(); }}
-                                        className="w-full rounded-xl bg-white py-3 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-100 active:scale-[0.98]"
+                                        className="w-full rounded-xl bg-[var(--accent)] py-3 text-sm font-semibold text-white transition hover:brightness-110 active:scale-[0.98]"
                                     >
                                         Upgrade to Pro — keep full access
                                     </button>
@@ -303,12 +237,12 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                                     <button
                                         type="button"
                                         onClick={() => { startTrial(); onClose(); }}
-                                        className="w-full rounded-xl bg-white py-3 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-100 active:scale-[0.98]"
+                                        className="w-full rounded-xl bg-[var(--accent)] py-3 text-sm font-semibold text-white transition hover:brightness-110 active:scale-[0.98]"
                                     >
                                         Start 3-day free trial
                                     </button>
                                     <p className="text-center text-[11px] text-zinc-600">
-                                        No card required · full Pro access · expires after 3 days
+                                        No card required · full Pro access · expires after {BILLING_CONFIG.plans.pro.trialDays} days
                                     </p>
                                     <div className="flex items-center gap-3 py-1">
                                         <div className="h-px flex-1 bg-zinc-800" />
@@ -321,8 +255,8 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                                         className="w-full rounded-xl border border-zinc-700 py-2.5 text-xs font-medium text-zinc-400 transition hover:border-zinc-500 hover:text-white"
                                     >
                                         {isYearly
-                                            ? `Pay now — $${YEARLY_TOTAL_USD}/yr (₹${YEARLY_TOTAL_INR})`
-                                            : `Pay now — $${MONTHLY_USD}/mo (₹${MONTHLY_INR})`}
+                                            ? `Pay now — ${formatRegionalDualLine(PRO_BILLING.yearlyInr, pricingRegion, { usdDecimals: 2 })} /yr`
+                                            : `Pay now — ${formatRegionalDualLine(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 })} /mo`}
                                     </button>
                                 </>
                             ) : (
@@ -330,11 +264,11 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                                     <button
                                         type="button"
                                         onClick={() => { activatePro(); onClose(); }}
-                                        className="w-full rounded-xl bg-white py-3 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-100 active:scale-[0.98]"
+                                        className="w-full rounded-xl bg-[var(--accent)] py-3 text-sm font-semibold text-white transition hover:brightness-110 active:scale-[0.98]"
                                     >
                                         {isYearly
-                                            ? `Upgrade to Pro — $${YEARLY_TOTAL_USD}/yr (₹${YEARLY_TOTAL_INR})`
-                                            : `Upgrade to Pro — $${MONTHLY_USD}/mo (₹${MONTHLY_INR})`}
+                                            ? `Upgrade to Pro — ${formatRegionalDualLine(PRO_BILLING.yearlyInr, pricingRegion, { usdDecimals: 2 })} /yr`
+                                            : `Upgrade to Pro — ${formatRegionalDualLine(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 })} /mo`}
                                     </button>
                                     <p className="text-center text-[11px] text-zinc-600">
                                         Instant access · cancel anytime
