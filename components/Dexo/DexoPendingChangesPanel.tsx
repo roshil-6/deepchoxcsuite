@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronDown, ChevronUp, RefreshCw, ShieldCheck } from 'lucide-react';
+import { ChevronDown, ChevronUp, GripHorizontal, RefreshCw, ShieldCheck } from 'lucide-react';
 import type { Project } from '@/lib/db';
 import { useOffice } from '@/lib/OfficeContext';
 import type { DexoPatchContract } from '@/lib/dexoPatchSchema';
@@ -34,6 +34,39 @@ export function DexoPendingChangesFloating({ activeProject }: { activeProject: P
   const [busyId, setBusyId] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [mounted, setMounted] = useState(false);
+
+  // ── Drag state ──────────────────────────────────────────────────────────
+  const panelRef = useRef<HTMLDivElement>(null);
+  const dragState = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null); // null = use CSS default (bottom-right)
+  const [dragging, setDragging] = useState(false);
+
+  const onDragStart = useCallback((e: React.PointerEvent) => {
+    if (!panelRef.current) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const rect = panelRef.current.getBoundingClientRect();
+    dragState.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      origX: rect.left,
+      origY: rect.top,
+    };
+    setDragging(true);
+  }, []);
+
+  const onDragMove = useCallback((e: React.PointerEvent) => {
+    if (!dragState.current) return;
+    const dx = e.clientX - dragState.current.startX;
+    const dy = e.clientY - dragState.current.startY;
+    const newX = Math.max(0, Math.min(window.innerWidth - (panelRef.current?.offsetWidth ?? 420), dragState.current.origX + dx));
+    const newY = Math.max(0, Math.min(window.innerHeight - (panelRef.current?.offsetHeight ?? 80), dragState.current.origY + dy));
+    setPos({ x: newX, y: newY });
+  }, []);
+
+  const onDragEnd = useCallback(() => {
+    dragState.current = null;
+    setDragging(false);
+  }, []);
 
   const load = useCallback(async () => {
     if (!activeProject.id) return;
@@ -124,22 +157,40 @@ export function DexoPendingChangesFloating({ activeProject }: { activeProject: P
 
   const count = sorted.length;
 
+  // Compute inline position when dragged, otherwise fall back to CSS anchoring.
+  const posStyle: React.CSSProperties = pos
+    ? { position: 'fixed', left: pos.x, top: pos.y, bottom: 'auto', right: 'auto' }
+    : {};
+
   return createPortal(
     <div
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-[92] flex flex-col items-stretch px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 md:inset-x-auto md:bottom-6 md:right-5 md:items-end md:px-0 md:pb-6"
+      ref={panelRef}
+      style={posStyle}
+      className={`pointer-events-none z-[92] ${pos ? '' : 'fixed inset-x-0 bottom-0 flex flex-col items-stretch px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 md:inset-x-auto md:bottom-6 md:right-5 md:items-end md:px-0 md:pb-6'} ${dragging ? 'select-none' : ''}`}
       aria-live="polite"
     >
       <div className="pointer-events-auto flex w-full max-w-[420px] flex-col gap-2 self-center md:self-end">
         {!expanded ? (
-          <button
-            type="button"
-            onClick={() => setExpanded(true)}
-            className="group flex items-center justify-center gap-2 rounded-2xl border border-white/[0.12] bg-gradient-to-br from-[rgba(116,86,255,0.22)] via-[rgba(15,15,18,0.72)] to-[rgba(10,10,12,0.85)] px-4 py-3 text-left shadow-[0_12px_40px_rgba(0,0,0,0.45),0_0_0_1px_rgba(255,255,255,0.06)_inset] backdrop-blur-xl transition hover:border-violet-400/25 hover:shadow-[0_16px_48px_rgba(116,86,255,0.18)]"
-          >
+          /* ── Collapsed pill ── */
+          <div className="group flex items-center gap-2 rounded-2xl border border-white/[0.12] bg-gradient-to-br from-[rgba(116,86,255,0.22)] via-[rgba(15,15,18,0.72)] to-[rgba(10,10,12,0.85)] px-4 py-3 shadow-[0_12px_40px_rgba(0,0,0,0.45),0_0_0_1px_rgba(255,255,255,0.06)_inset] backdrop-blur-xl transition hover:border-violet-400/25 hover:shadow-[0_16px_48px_rgba(116,86,255,0.18)]">
+            <div
+              className="shrink-0 cursor-grab touch-none text-violet-300/40 hover:text-violet-300/80 active:cursor-grabbing"
+              onPointerDown={onDragStart}
+              onPointerMove={onDragMove}
+              onPointerUp={onDragEnd}
+              onPointerCancel={onDragEnd}
+              title="Drag to reposition"
+            >
+              <GripHorizontal className="h-4 w-4" />
+            </div>
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-violet-500/20 text-violet-200 ring-1 ring-violet-400/30">
               <ShieldCheck className="h-4 w-4" aria-hidden />
             </div>
-            <div className="min-w-0 flex-1">
+            <button
+              type="button"
+              onClick={() => setExpanded(true)}
+              className="min-w-0 flex-1 text-left"
+            >
               <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-violet-200/90">
                 Dexo suggested edits
               </p>
@@ -148,12 +199,24 @@ export function DexoPendingChangesFloating({ activeProject }: { activeProject: P
                   ? 'Nothing waiting — ask the orb or edit desks directly'
                   : `${count} change${count === 1 ? '' : 's'} need your OK`}
               </p>
-            </div>
+            </button>
             <ChevronUp className="h-4 w-4 shrink-0 text-[var(--text-tertiary)] opacity-70 group-hover:opacity-100" />
-          </button>
+          </div>
         ) : (
+          /* ── Expanded panel ── */
           <div className="max-h-[min(70vh,520px)] overflow-hidden rounded-2xl border border-white/[0.12] bg-gradient-to-b from-[rgba(22,20,28,0.92)] to-[rgba(8,8,10,0.94)] shadow-[0_20px_60px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.05)_inset] backdrop-blur-2xl">
             <div className="flex items-start gap-3 border-b border-white/[0.08] px-4 py-3">
+              {/* Drag handle for expanded state */}
+              <div
+                className="mt-2 shrink-0 cursor-grab touch-none text-violet-300/40 hover:text-violet-300/80 active:cursor-grabbing"
+                onPointerDown={onDragStart}
+                onPointerMove={onDragMove}
+                onPointerUp={onDragEnd}
+                onPointerCancel={onDragEnd}
+                title="Drag to reposition"
+              >
+                <GripHorizontal className="h-4 w-4" />
+              </div>
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-500/15 text-violet-200 ring-1 ring-violet-400/25">
                 <ShieldCheck className="h-5 w-5" aria-hidden />
               </div>
