@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
 import { Inter, Playfair_Display, JetBrains_Mono, Syne } from 'next/font/google';
+import { ClerkProvider } from '@clerk/nextjs';
 import './globals.css';
 import { OfficeProvider } from '@/lib/OfficeContext';
 import { GuideProvider } from '@/components/ui/ContextualGuide';
@@ -86,24 +87,26 @@ export default function RootLayout({
   const ld = siteJsonLd(metadataBaseUrl?.toString());
 
   return (
-    <html lang="en">
-      <body
-        className={`${inter.variable} ${playfair.variable} ${jetbrains.variable} ${syne.variable} font-sans bg-brand-bg text-brand-text antialiased overflow-x-hidden leading-normal tracking-normal`}
-      >
-        <Script
-          id="site-json-ld"
-          type="application/ld+json"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }}
-        />
-        <ErrorBoundary>
-          <OfficeProvider>
-            <GuideProvider>
-              {children}
-            </GuideProvider>
-          </OfficeProvider>
-        </ErrorBoundary>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body
+          className={`${inter.variable} ${playfair.variable} ${jetbrains.variable} ${syne.variable} font-sans bg-brand-bg text-brand-text antialiased overflow-x-hidden leading-normal tracking-normal`}
+        >
+          <Script
+            id="site-json-ld"
+            type="application/ld+json"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }}
+          />
+          <ErrorBoundary>
+            <OfficeProvider>
+              <GuideProvider>
+                {children}
+              </GuideProvider>
+            </OfficeProvider>
+          </ErrorBoundary>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
