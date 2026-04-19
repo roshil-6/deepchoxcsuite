@@ -8,7 +8,10 @@ import { formatRegionalPricePair, getProBillingAmounts } from '@/lib/billingConf
 import { usePricingRegion } from '@/hooks/usePricingRegion';
 import { SITE_HERO_H1, SITE_HERO_LEAD, SITE_PULL_QUOTE, SITE_TAGLINE_SHORT } from '@/lib/siteSeo';
 
-/** Default hero video — `public/landing-hero-demo.mp4`. Override with `NEXT_PUBLIC_LANDING_HERO_VIDEO_URL` (full URL). */
+/**
+ * Optional local hero file — add `public/landing-hero-demo.mp4` to the repo, or set
+ * `NEXT_PUBLIC_LANDING_HERO_VIDEO_URL` to a full HTTPS URL (Vercel env).
+ */
 export const LANDING_HERO_VIDEO_DEFAULT = '/landing-hero-demo.mp4';
 
 const LANDING_FREE_METERING = `${FREE_DAILY_TOKENS} Dexo tokens per day (resets midnight) · ${TOKEN_COSTS.ANALYSIS} per new analysis · ${TOKEN_COSTS.REANALYZE} per re-analyze · ${TOKEN_COSTS.CHAT_MESSAGE} per Dexo message`;
@@ -41,6 +44,8 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
     const [bgPointer, setBgPointer] = useState({ x: 50, y: 32 });
     /** Browsers allow autoplay only when muted — user can enable sound via control */
     const [heroVideoMuted, setHeroVideoMuted] = useState(true);
+    /** True when `<video>` fails (missing file, bad URL, CORS, or blocked host). */
+    const [heroVideoFailed, setHeroVideoFailed] = useState(false);
     const heroVideoRef = useRef<HTMLVideoElement>(null);
     const pricingRef = useRef<HTMLElement>(null);
     const [landingBilling, setLandingBilling] = useState<'monthly' | 'yearly'>('monthly');
@@ -57,12 +62,24 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
     }, []);
 
     useEffect(() => {
+        setHeroVideoFailed(false);
+    }, [resolvedHeroVideo]);
+
+    useEffect(() => {
         const v = heroVideoRef.current;
         if (!v) return;
         const sync = () => setHeroVideoMuted(v.muted);
         v.addEventListener('volumechange', sync);
         return () => v.removeEventListener('volumechange', sync);
     }, [resolvedHeroVideo]);
+
+    useEffect(() => {
+        const v = heroVideoRef.current;
+        if (!v || heroVideoFailed) return;
+        void v.play().catch(() => {
+            /* autoplay may be blocked until user gesture — controls still work */
+        });
+    }, [resolvedHeroVideo, heroVideoFailed]);
 
     useEffect(() => {
         if (!signupOpen) return;
@@ -227,33 +244,49 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                         {/* Centered preview box — capped width so the hero stays balanced on large screens */}
                         <div className="relative mx-auto mt-5 w-full max-w-[min(100%,36rem)] overflow-hidden rounded-2xl border border-zinc-800/90 bg-zinc-900/40 shadow-[0_20px_60px_-18px_rgba(0,0,0,0.75)] sm:mt-6 sm:max-w-[min(100%,42rem)] lg:max-w-[min(100%,48rem)]">
                             <div className="relative aspect-video w-full overflow-hidden bg-zinc-950">
-                                <video
-                                    ref={heroVideoRef}
-                                    className="absolute inset-0 h-full w-full object-cover object-center"
-                                    autoPlay
-                                    loop
-                                    muted={heroVideoMuted}
-                                    playsInline
-                                    preload="auto"
-                                    controls
-                                    src={resolvedHeroVideo}
-                                >
-                                    Your browser does not support the video tag.
-                                </video>
-                                <button
-                                    type="button"
-                                    onClick={() => setHeroVideoMuted((m) => !m)}
-                                    className="absolute right-2 top-2 z-10 inline-flex items-center gap-2 rounded-lg border border-zinc-600/90 bg-black/75 px-2.5 py-1.5 font-sans text-[11px] font-semibold text-zinc-100 shadow-lg backdrop-blur-sm transition hover:bg-black/90 hover:border-zinc-500 sm:right-3 sm:top-3 sm:px-3 sm:py-2 sm:text-xs"
-                                    aria-pressed={!heroVideoMuted}
-                                    aria-label={heroVideoMuted ? 'Turn sound on' : 'Mute video'}
-                                >
-                                    {heroVideoMuted ? (
-                                        <VolumeX className="h-4 w-4 shrink-0 text-zinc-400" aria-hidden />
-                                    ) : (
-                                        <Volume2 className="h-4 w-4 shrink-0 text-brand-teal" aria-hidden />
-                                    )}
-                                    <span className="hidden sm:inline">{heroVideoMuted ? 'Sound on' : 'Mute'}</span>
-                                </button>
+                                {heroVideoFailed ? (
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-4 text-center">
+                                        <p className="font-sans text-sm text-zinc-300">Hero video couldn’t load</p>
+                                        <p className="max-w-sm font-sans text-[11px] leading-relaxed text-zinc-500">
+                                            Add <code className="rounded bg-zinc-800 px-1 py-0.5 text-zinc-300">public/landing-hero-demo.mp4</code>{' '}
+                                            or set{' '}
+                                            <code className="rounded bg-zinc-800 px-1 py-0.5 text-zinc-300">NEXT_PUBLIC_LANDING_HERO_VIDEO_URL</code>{' '}
+                                            (full HTTPS URL to an MP4/WebM) in Vercel / Render env, then redeploy.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <video
+                                            key={resolvedHeroVideo}
+                                            ref={heroVideoRef}
+                                            className="absolute inset-0 h-full w-full object-cover object-center"
+                                            autoPlay
+                                            loop
+                                            muted={heroVideoMuted}
+                                            playsInline
+                                            preload="metadata"
+                                            controls
+                                            src={resolvedHeroVideo}
+                                            onError={() => setHeroVideoFailed(true)}
+                                        >
+                                            Your browser does not support the video tag.
+                                        </video>
+                                        <button
+                                            type="button"
+                                            onClick={() => setHeroVideoMuted((m) => !m)}
+                                            className="absolute right-2 top-2 z-10 inline-flex items-center gap-2 rounded-lg border border-zinc-600/90 bg-black/75 px-2.5 py-1.5 font-sans text-[11px] font-semibold text-zinc-100 shadow-lg backdrop-blur-sm transition hover:bg-black/90 hover:border-zinc-500 sm:right-3 sm:top-3 sm:px-3 sm:py-2 sm:text-xs"
+                                            aria-pressed={!heroVideoMuted}
+                                            aria-label={heroVideoMuted ? 'Turn sound on' : 'Mute video'}
+                                        >
+                                            {heroVideoMuted ? (
+                                                <VolumeX className="h-4 w-4 shrink-0 text-zinc-400" aria-hidden />
+                                            ) : (
+                                                <Volume2 className="h-4 w-4 shrink-0 text-brand-teal" aria-hidden />
+                                            )}
+                                            <span className="hidden sm:inline">{heroVideoMuted ? 'Sound on' : 'Mute'}</span>
+                                        </button>
+                                    </>
+                                )}
                             </div>
                             <p className="border-t border-zinc-800/80 px-3 py-2 text-center font-sans text-[10px] text-zinc-500">
                                 Plays automatically — tap Sound on for audio
