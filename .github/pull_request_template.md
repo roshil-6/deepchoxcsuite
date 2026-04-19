@@ -14,6 +14,8 @@
 
 - [ ] `npm run build` passes locally
 - [ ] Prisma: migrations run where needed (`npm run db:migrate` against the right `DATABASE_URL`)
+- [ ] **Vercel / Render:** `DATABASE_URL` is the **external** Postgres URL for Production + Preview (internal `dpg-*-a` hosts fail from Vercel)
+- [ ] **Clerk:** `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` + `CLERK_SECRET_KEY` set on each host; dashboard paths match `/sign-in` and `/sign-up`; custom domain verified if used
 - [ ] No secrets committed (`.env.local` stays local; only `.env.example` placeholders updated if needed)
 - [ ] UI checked on a narrow viewport if the change touches layout
 
