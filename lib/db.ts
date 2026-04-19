@@ -30,6 +30,29 @@ function apiHeaders(): HeadersInit {
   };
 }
 
+/**
+ * Parse JSON from ventures API. When the host returns HTML (common if `/api/*` is not routed to Next),
+ * avoids `Unexpected token '<'` and logs a single actionable warning.
+ */
+async function ventureResponseJson(res: Response): Promise<unknown> {
+  const text = await res.text();
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    const start = text.trimStart().slice(0, 64);
+    if (start.startsWith('<!') || start.toLowerCase().startsWith('<html')) {
+      console.warn(
+        '[db] /api/ventures* returned HTML, not JSON — this host is probably not running Next.js API routes. ' +
+          'Serve the full app (e.g. Vercel/Render Node) on this domain or proxy `/api` to it. Status:',
+        res.status,
+      );
+    } else {
+      console.warn('[db] ventures API returned non-JSON body', res.status, start);
+    }
+    return { ok: false, error: 'bad_response', status: res.status };
+  }
+}
+
 let migrateOnce: Promise<void> | null = null;
 async function ensureDexieMigrated(): Promise<void> {
   if (typeof window === 'undefined') return;
@@ -51,7 +74,7 @@ function convoFallbackKey(projectId: number): string {
 export async function getAllProjects(): Promise<Project[]> {
   await ensureDexieMigrated();
   const res = await fetch('/api/ventures', { headers: apiHeaders(), cache: 'no-store' });
-  const data = (await res.json()) as { ok?: boolean; projects?: Project[] };
+  const data = (await ventureResponseJson(res)) as { ok?: boolean; projects?: Project[] };
   if (!res.ok || !data.ok || !Array.isArray(data.projects)) {
     console.warn('[db] getAllProjects failed', res.status);
     return [];
@@ -62,7 +85,7 @@ export async function getAllProjects(): Promise<Project[]> {
 export async function getProject(id: number): Promise<Project | undefined> {
   await ensureDexieMigrated();
   const res = await fetch(`/api/ventures/${id}`, { headers: apiHeaders(), cache: 'no-store' });
-  const data = (await res.json()) as { ok?: boolean; project?: Project };
+  const data = (await ventureResponseJson(res)) as { ok?: boolean; project?: Project };
   if (!res.ok || !data.ok || !data.project) return undefined;
   return data.project;
 }
@@ -81,7 +104,7 @@ export async function saveProject(project: Project): Promise<number> {
       headers: apiHeaders(),
       body: JSON.stringify({ project: payload }),
     });
-    const data = await res.json();
+    const data = await ventureResponseJson(res);
     const parsed = data as { ok?: boolean; project?: Project };
     if (!res.ok || !parsed.ok || !parsed.project?.id) {
       throw new Error(ventureApiErrorMessage(data));
@@ -94,7 +117,7 @@ export async function saveProject(project: Project): Promise<number> {
     headers: apiHeaders(),
     body: JSON.stringify({ project: payload }),
   });
-  const data = await res.json();
+  const data = await ventureResponseJson(res);
   const parsed = data as { ok?: boolean; project?: Project };
   if (!res.ok || !parsed.ok || !parsed.project?.id) {
     throw new Error(ventureApiErrorMessage(data));
@@ -118,7 +141,7 @@ export async function updateProjectField(id: number, field: keyof Project, value
     body: JSON.stringify({ field, value }),
   });
   if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
+    const data = await ventureResponseJson(res);
     throw new Error(ventureApiErrorMessage(data));
   }
 }

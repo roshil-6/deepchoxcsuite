@@ -2,46 +2,35 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Check, Infinity, Mail, Lock, Sparkles, User, Shield, Volume2, VolumeX } from 'lucide-react';
+import { SignIn } from '@clerk/nextjs';
+import { Check, Infinity, Sparkles } from 'lucide-react';
 import { FREE_DAILY_TOKENS, TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 import { formatRegionalPricePair, getProBillingAmounts } from '@/lib/billingConfig';
 import { usePricingRegion } from '@/hooks/usePricingRegion';
 import { SITE_HERO_H1, SITE_HERO_LEAD, SITE_PULL_QUOTE, SITE_TAGLINE_SHORT } from '@/lib/siteSeo';
+import { clerkGreyAppearance } from '@/lib/clerkGreyAppearance';
 
-/** Default hero video — `public/landing-hero-demo.mp4`. Override with `NEXT_PUBLIC_LANDING_HERO_VIDEO_URL` (full URL). */
+/** @deprecated Hero is Clerk sign-in; kept for older imports / env docs. */
 export const LANDING_HERO_VIDEO_DEFAULT = '/landing-hero-demo.mp4';
 
 const LANDING_FREE_METERING = `${FREE_DAILY_TOKENS} Dexo tokens per day (resets midnight) · ${TOKEN_COSTS.ANALYSIS} per new analysis · ${TOKEN_COSTS.REANALYZE} per re-analyze · ${TOKEN_COSTS.CHAT_MESSAGE} per Dexo message`;
+
 interface LandingPageProps {
-    onStart: () => void;
-    /** MP4/WebM URL — overrides env and default file in `public/`. */
-    heroVideoSrc?: string | null;
+    /** Enter the app without signing in; creating a venture will prompt for login. */
+    onContinueGuest: () => void;
 }
 
-export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
+function scrollToHeroAuth() {
+    document.getElementById('landing-auth')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+export function LandingPage({ onContinueGuest }: LandingPageProps) {
     const pricingRegion = usePricingRegion();
     const PRO_BILLING = getProBillingAmounts();
-    /** Hero video only. Prop → env → `public/landing-hero-demo.mp4`. */
-    const resolvedHeroVideo = (() => {
-        const fromProp =
-            heroVideoSrc != null && String(heroVideoSrc).trim() !== '' ? String(heroVideoSrc).trim() : null;
-        if (fromProp) return fromProp;
-        const env = process.env.NEXT_PUBLIC_LANDING_HERO_VIDEO_URL;
-        if (typeof env === 'string' && env.trim() !== '') return env.trim();
-        return LANDING_HERO_VIDEO_DEFAULT;
-    })();
 
     const [isVisible, setIsVisible] = useState(false);
-    const [signupOpen, setSignupOpen] = useState(false);
-    const [signupEmail, setSignupEmail] = useState('');
-    const [signupUsername, setSignupUsername] = useState('');
-    const [signupPassword, setSignupPassword] = useState('');
-    const [signupSubmitted, setSignupSubmitted] = useState(false);
     /** Normalized pointer 0–100 for CSS-driven background parallax */
     const [bgPointer, setBgPointer] = useState({ x: 50, y: 32 });
-    /** Browsers allow autoplay only when muted — user can enable sound via control */
-    const [heroVideoMuted, setHeroVideoMuted] = useState(true);
-    const heroVideoRef = useRef<HTMLVideoElement>(null);
     const pricingRef = useRef<HTMLElement>(null);
     const [landingBilling, setLandingBilling] = useState<'monthly' | 'yearly'>('monthly');
 
@@ -56,32 +45,8 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
         setIsVisible(true);
     }, []);
 
-    useEffect(() => {
-        const v = heroVideoRef.current;
-        if (!v) return;
-        const sync = () => setHeroVideoMuted(v.muted);
-        v.addEventListener('volumechange', sync);
-        return () => v.removeEventListener('volumechange', sync);
-    }, [resolvedHeroVideo]);
-
-    useEffect(() => {
-        if (!signupOpen) return;
-        const onKey = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') setSignupOpen(false);
-        };
-        window.addEventListener('keydown', onKey);
-        return () => window.removeEventListener('keydown', onKey);
-    }, [signupOpen]);
-
-    const handleSignupSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!signupEmail.trim() || !signupUsername.trim() || !signupPassword.trim()) return;
-        setSignupSubmitted(true);
-    };
-
     const continueAsGuest = () => {
-        setSignupOpen(false);
-        onStart();
+        onContinueGuest();
     };
 
     const px = bgPointer.x - 50;
@@ -172,14 +137,17 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                             </button>
                             <button
                                 type="button"
-                                onClick={() => {
-                                    setSignupOpen(true);
-                                    setSignupSubmitted(false);
-                                }}
-                                className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3.5 font-sans text-[16px] font-bold leading-none text-zinc-950 shadow-[0_4px_24px_rgba(0,0,0,0.35)] transition hover:bg-zinc-100 active:scale-[0.98]"
+                                onClick={scrollToHeroAuth}
+                                className="rounded-md px-3 py-2.5 font-sans text-[16px] font-semibold leading-none text-zinc-300 transition-colors hover:text-white"
+                            >
+                                Sign in
+                            </button>
+                            <button
+                                type="button"
+                                onClick={scrollToHeroAuth}
+                                className="rounded-full bg-white px-6 py-3.5 font-sans text-[16px] font-bold leading-none text-zinc-950 shadow-[0_4px_24px_rgba(0,0,0,0.35)] transition hover:bg-zinc-100 active:scale-[0.98]"
                             >
                                 Get started
-                                <ArrowRight className="h-5 w-5 shrink-0" aria-hidden />
                             </button>
                         </nav>
                     </div>
@@ -224,40 +192,34 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                             </div>
                         </div>
 
-                        {/* Centered preview box — capped width so the hero stays balanced on large screens */}
-                        <div className="relative mx-auto mt-5 w-full max-w-[min(100%,36rem)] overflow-hidden rounded-2xl border border-zinc-800/90 bg-zinc-900/40 shadow-[0_20px_60px_-18px_rgba(0,0,0,0.75)] sm:mt-6 sm:max-w-[min(100%,42rem)] lg:max-w-[min(100%,48rem)]">
-                            <div className="relative aspect-video w-full overflow-hidden bg-zinc-950">
-                                <video
-                                    ref={heroVideoRef}
-                                    className="absolute inset-0 h-full w-full object-cover object-center"
-                                    autoPlay
-                                    loop
-                                    muted={heroVideoMuted}
-                                    playsInline
-                                    preload="auto"
-                                    controls
-                                    src={resolvedHeroVideo}
-                                >
-                                    Your browser does not support the video tag.
-                                </video>
+                        {/* Clerk sign-in / sign-up (Google, email, etc.) — replaces hero video */}
+                        <div
+                            id="landing-auth"
+                            className="relative z-20 mx-auto mt-5 w-full max-w-[min(100%,28rem)] scroll-mt-24 rounded-2xl border border-zinc-600/90 bg-zinc-900/95 px-3 py-4 shadow-[0_20px_60px_-18px_rgba(0,0,0,0.75)] backdrop-blur-sm sm:mt-6 sm:px-5 sm:py-5"
+                        >
+                            <p className="mb-3 text-center font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">
+                                Sign in or create an account
+                            </p>
+                            <SignIn
+                                withSignUp
+                                routing="hash"
+                                fallbackRedirectUrl="/"
+                                signUpFallbackRedirectUrl="/"
+                                oauthFlow="redirect"
+                                appearance={clerkGreyAppearance}
+                            />
+                            <div className="mt-4 border-t border-zinc-600/80 pt-4">
                                 <button
                                     type="button"
-                                    onClick={() => setHeroVideoMuted((m) => !m)}
-                                    className="absolute right-2 top-2 z-10 inline-flex items-center gap-2 rounded-lg border border-zinc-600/90 bg-black/75 px-2.5 py-1.5 font-sans text-[11px] font-semibold text-zinc-100 shadow-lg backdrop-blur-sm transition hover:bg-black/90 hover:border-zinc-500 sm:right-3 sm:top-3 sm:px-3 sm:py-2 sm:text-xs"
-                                    aria-pressed={!heroVideoMuted}
-                                    aria-label={heroVideoMuted ? 'Turn sound on' : 'Mute video'}
+                                    onClick={continueAsGuest}
+                                    className="w-full rounded-xl border border-zinc-600 bg-zinc-800 py-3 font-sans text-[14px] font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-700"
                                 >
-                                    {heroVideoMuted ? (
-                                        <VolumeX className="h-4 w-4 shrink-0 text-zinc-400" aria-hidden />
-                                    ) : (
-                                        <Volume2 className="h-4 w-4 shrink-0 text-brand-teal" aria-hidden />
-                                    )}
-                                    <span className="hidden sm:inline">{heroVideoMuted ? 'Sound on' : 'Mute'}</span>
+                                    Sign in later — explore the app
                                 </button>
+                                <p className="mt-2 text-center font-sans text-[11px] leading-snug text-zinc-500">
+                                    You can browse without an account. Adding a venture will ask you to sign in.
+                                </p>
                             </div>
-                            <p className="border-t border-zinc-800/80 px-3 py-2 text-center font-sans text-[10px] text-zinc-500">
-                                Plays automatically — tap Sound on for audio
-                            </p>
                         </div>
 
                         <h1 className="font-serif mx-auto mt-5 max-w-[24ch] text-balance text-[clamp(2.15rem,6vw,4.25rem)] font-semibold leading-[1.08] tracking-[0.015em] text-white sm:mt-6 sm:max-w-[28ch] [text-shadow:0_4px_40px_rgba(0,0,0,0.55)]">
@@ -493,7 +455,7 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
 
                                 <button
                                     type="button"
-                                    onClick={onStart}
+                                    onClick={scrollToHeroAuth}
                                     className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white py-3 font-sans text-[14px] font-bold text-zinc-900 shadow-[0_2px_24px_rgba(255,255,255,0.12)] transition hover:bg-zinc-100 active:scale-[0.98]"
                                 >
                                     <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
@@ -532,127 +494,6 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                 </footer>
             </div>
 
-            {/* Sign-up — only after Get started */}
-            {signupOpen && (
-                <div
-                    className="fixed inset-0 z-[200] flex items-center justify-center bg-black p-4 sm:p-6"
-                    role="dialog"
-                    aria-modal="true"
-                    aria-labelledby="signup-dialog-title"
-                >
-                    <button
-                        type="button"
-                        className="absolute inset-0 cursor-default"
-                        aria-label="Close"
-                        onClick={() => setSignupOpen(false)}
-                    />
-                    <div
-                        className="relative z-10 w-full max-w-md border border-zinc-800 bg-zinc-950 p-6 shadow-2xl sm:p-8"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="mb-6 flex items-start justify-between gap-4 border-b border-zinc-800 pb-5">
-                            <div className="min-w-0 text-left">
-                                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-zinc-500">Create account</p>
-                                <h2 id="signup-dialog-title" className="font-serif mt-2 text-xl font-semibold text-white">
-                                    Join Deepchox
-                                </h2>
-                                <p className="mt-2 text-[13px] leading-relaxed text-zinc-500">
-                                    Sign up is coming with Clerk. You can skip and continue as a guest anytime.
-                                </p>
-                            </div>
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center border border-zinc-800 bg-black" aria-hidden>
-                                <Shield className="h-5 w-5 text-zinc-600" strokeWidth={1.75} />
-                            </div>
-                        </div>
-
-                        <form onSubmit={handleSignupSubmit} className="space-y-4">
-                            <div>
-                                <label htmlFor="dc-email" className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-600">
-                                    Email
-                                </label>
-                                <div className="relative">
-                                    <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-600" aria-hidden />
-                                    <input
-                                        id="dc-email"
-                                        name="email"
-                                        type="email"
-                                        autoComplete="email"
-                                        value={signupEmail}
-                                        onChange={(e) => setSignupEmail(e.target.value)}
-                                        placeholder="you@company.com"
-                                        className="w-full border border-zinc-800 bg-black py-3 pl-10 pr-4 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none transition-colors focus:border-zinc-500"
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label htmlFor="dc-user" className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-600">
-                                    Username
-                                </label>
-                                <div className="relative">
-                                    <User className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-600" aria-hidden />
-                                    <input
-                                        id="dc-user"
-                                        name="username"
-                                        type="text"
-                                        autoComplete="username"
-                                        value={signupUsername}
-                                        onChange={(e) => setSignupUsername(e.target.value)}
-                                        placeholder="founder_handle"
-                                        className="w-full border border-zinc-800 bg-black py-3 pl-10 pr-4 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none transition-colors focus:border-zinc-500"
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label htmlFor="dc-pass" className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-600">
-                                    Password
-                                </label>
-                                <div className="relative">
-                                    <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-600" aria-hidden />
-                                    <input
-                                        id="dc-pass"
-                                        name="password"
-                                        type="password"
-                                        autoComplete="new-password"
-                                        value={signupPassword}
-                                        onChange={(e) => setSignupPassword(e.target.value)}
-                                        placeholder="••••••••"
-                                        className="w-full border border-zinc-800 bg-black py-3 pl-10 pr-4 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none transition-colors focus:border-zinc-500"
-                                    />
-                                </div>
-                            </div>
-                            <button
-                                type="submit"
-                                className="mt-2 flex w-full items-center justify-center gap-2 border border-zinc-600 bg-zinc-900 py-3.5 text-[12px] font-bold uppercase tracking-[0.1em] text-zinc-100 transition-colors hover:bg-zinc-800"
-                            >
-                                Sign up
-                                <ArrowRight className="h-4 w-4 text-zinc-500" aria-hidden />
-                            </button>
-                            {signupSubmitted && (
-                                <p className="border border-zinc-800 bg-zinc-900 px-3 py-3 text-center text-[12px] font-medium text-zinc-400">
-                                    Saved for Clerk integration. You can close and enter as guest, or finish onboarding later.
-                                </p>
-                            )}
-                        </form>
-
-                        <div className="mt-6 border-t border-zinc-800 pt-6">
-                            <button
-                                type="button"
-                                onClick={continueAsGuest}
-                                className="w-full border border-zinc-700 bg-black py-3 text-[13px] font-semibold text-zinc-300 transition-colors hover:border-zinc-600 hover:bg-zinc-950 hover:text-white"
-                            >
-                                Continue as guest
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setSignupOpen(false)}
-                                className="mt-3 w-full py-2 text-[12px] font-medium text-zinc-600 hover:text-zinc-400"
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
