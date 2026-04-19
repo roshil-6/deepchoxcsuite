@@ -1,3 +1,4 @@
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 /** Security headers applied to every response. */
@@ -10,11 +11,19 @@ const SECURITY_HEADERS: Record<string, string> = {
   'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
 };
 
+/** Routes that are always public (no Clerk auth required). */
+const isPublicRoute = createRouteMatcher([
+  '/',           // landing page
+  '/guide',      // public guide
+  '/sign-in(.*)',
+  '/sign-up(.*)',
+  '/api/health(.*)',
+]);
+
 /** Per-IP in-memory rate limit for expensive AI API routes. */
 interface RLEntry { count: number; windowStart: number }
 const rlStore = new Map<string, RLEntry>();
 
-// AI routes that are expensive and need middleware-level rate limiting.
 const AI_ROUTE_LIMITS: Array<{ prefix: string; limit: number; windowMs: number }> = [
   { prefix: '/api/chat', limit: 30, windowMs: 60_000 },
   { prefix: '/api/chat-stream', limit: 20, windowMs: 60_000 },
@@ -30,7 +39,6 @@ const AI_ROUTE_LIMITS: Array<{ prefix: string; limit: number; windowMs: number }
   { prefix: '/api/ventures', limit: 60, windowMs: 60_000 },
 ];
 
-// Prune stale entries every 5 min (edge-compatible setInterval where available).
 if (typeof setInterval !== 'undefined') {
   setInterval(() => {
     const now = Date.now();
@@ -48,55 +56,62 @@ function clientIp(req: NextRequest): string {
   );
 }
 
-function checkLimit(key: string, limit: number, windowMs: number): { ok: boolean; resetAt: number } {
-  const now = Date.now();
-  const entry = rlStore.get(key);
-  if (!entry || now - entry.windowStart > windowMs) {
-    rlStore.set(key, { count: 1, windowStart: now });
-    return { ok: true, resetAt: now + windowMs };
-  }
-  entry.count++;
-  return { ok: entry.count <= limit, resetAt: entry.windowStart + windowMs };
-}
-
-export function middleware(req: NextRequest) {
+function checkRateLimit(req: NextRequest): NextResponse | null {
   const { pathname } = req.nextUrl;
   const ip = clientIp(req);
-
-  // Rate limit AI / API routes.
   for (const rule of AI_ROUTE_LIMITS) {
     if (pathname.startsWith(rule.prefix)) {
       const key = `${rule.prefix}:${ip}`;
-      const result = checkLimit(key, rule.limit, rule.windowMs);
-      if (!result.ok) {
-        return new NextResponse(
-          JSON.stringify({ error: 'Too many requests. Please slow down and try again shortly.' }),
-          {
-            status: 429,
-            headers: {
-              'Content-Type': 'application/json',
-              'Retry-After': String(Math.ceil((result.resetAt - Date.now()) / 1000)),
-              'X-RateLimit-Reset': String(Math.ceil(result.resetAt / 1000)),
-              ...SECURITY_HEADERS,
-            },
-          }
-        );
+      const now = Date.now();
+      const entry = rlStore.get(key);
+      if (!entry || now - entry.windowStart > rule.windowMs) {
+        rlStore.set(key, { count: 1, windowStart: now });
+      } else {
+        entry.count++;
+        if (entry.count > rule.limit) {
+          const resetAt = entry.windowStart + rule.windowMs;
+          return new NextResponse(
+            JSON.stringify({ error: 'Too many requests. Please slow down and try again shortly.' }),
+            {
+              status: 429,
+              headers: {
+                'Content-Type': 'application/json',
+                'Retry-After': String(Math.ceil((resetAt - now) / 1000)),
+                'X-RateLimit-Reset': String(Math.ceil(resetAt / 1000)),
+                ...SECURITY_HEADERS,
+              },
+            }
+          );
+        }
       }
       break;
     }
   }
+  return null;
+}
 
-  // Apply security headers to every response.
-  const res = NextResponse.next();
-  for (const [header, value] of Object.entries(SECURITY_HEADERS)) {
-    res.headers.set(header, value);
-  }
+function addSecurityHeaders(res: NextResponse): NextResponse {
+  for (const [h, v] of Object.entries(SECURITY_HEADERS)) res.headers.set(h, v);
   return res;
 }
 
+export default clerkMiddleware(async (auth, req) => {
+  // Rate limit first (cheapest check).
+  const rateLimited = checkRateLimit(req);
+  if (rateLimited) return rateLimited;
+
+  // Protect all non-public routes.
+  if (!isPublicRoute(req)) {
+    await auth.protect();
+  }
+
+  return addSecurityHeaders(NextResponse.next());
+});
+
 export const config = {
   matcher: [
-    '/api/:path*',
-    '/((?!_next/static|_next/image|favicon.ico|deepchox-mark.svg).*)',
+    // Skip Next.js internals and static files.
+    '/((?!_next/static|_next/image|favicon.ico|deepchox-mark.svg|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/(api|trpc)(.*)',
   ],
 };
