@@ -8,27 +8,28 @@ import { formatRegionalPricePair, getProBillingAmounts } from '@/lib/billingConf
 import { usePricingRegion } from '@/hooks/usePricingRegion';
 import { SITE_HERO_H1, SITE_HERO_LEAD, SITE_PULL_QUOTE, SITE_TAGLINE_SHORT } from '@/lib/siteSeo';
 
-/** Default hero video — `public/landing-hero-demo.mp4`. Override with `NEXT_PUBLIC_LANDING_HERO_VIDEO_URL` (full URL). */
-export const LANDING_HERO_VIDEO_DEFAULT = '/landing-hero-demo.mp4';
-
+/**
+ * Hero video is optional and env-driven only: set `NEXT_PUBLIC_LANDING_HERO_VIDEO_URL` to a full HTTPS MP4/WebM URL
+ * (e.g. CDN). No default file in the repo — without that env, the landing shows a static preview instead.
+ */
 const LANDING_FREE_METERING = `${FREE_DAILY_TOKENS} Dexo tokens per day (resets midnight) · ${TOKEN_COSTS.ANALYSIS} per new analysis · ${TOKEN_COSTS.REANALYZE} per re-analyze · ${TOKEN_COSTS.CHAT_MESSAGE} per Dexo message`;
 interface LandingPageProps {
     onStart: () => void;
-    /** MP4/WebM URL — overrides env and default file in `public/`. */
+    /** MP4/WebM URL — overrides `NEXT_PUBLIC_LANDING_HERO_VIDEO_URL`. */
     heroVideoSrc?: string | null;
 }
 
 export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
     const pricingRegion = usePricingRegion();
     const PRO_BILLING = getProBillingAmounts();
-    /** Hero video only. Prop → env → `public/landing-hero-demo.mp4`. */
-    const resolvedHeroVideo = (() => {
+    /** Hero video URL only when prop or env is set — otherwise static preview (no missing-file 404). */
+    const resolvedHeroVideo: string | null = (() => {
         const fromProp =
             heroVideoSrc != null && String(heroVideoSrc).trim() !== '' ? String(heroVideoSrc).trim() : null;
         if (fromProp) return fromProp;
         const env = process.env.NEXT_PUBLIC_LANDING_HERO_VIDEO_URL;
         if (typeof env === 'string' && env.trim() !== '') return env.trim();
-        return LANDING_HERO_VIDEO_DEFAULT;
+        return null;
     })();
 
     const [isVisible, setIsVisible] = useState(false);
@@ -41,6 +42,7 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
     const [bgPointer, setBgPointer] = useState({ x: 50, y: 32 });
     /** Browsers allow autoplay only when muted — user can enable sound via control */
     const [heroVideoMuted, setHeroVideoMuted] = useState(true);
+    const [heroVideoFailed, setHeroVideoFailed] = useState(false);
     const heroVideoRef = useRef<HTMLVideoElement>(null);
     const pricingRef = useRef<HTMLElement>(null);
     const [landingBilling, setLandingBilling] = useState<'monthly' | 'yearly'>('monthly');
@@ -57,12 +59,24 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
     }, []);
 
     useEffect(() => {
+        setHeroVideoFailed(false);
+    }, [resolvedHeroVideo]);
+
+    useEffect(() => {
         const v = heroVideoRef.current;
-        if (!v) return;
+        if (!v || !resolvedHeroVideo) return;
         const sync = () => setHeroVideoMuted(v.muted);
         v.addEventListener('volumechange', sync);
         return () => v.removeEventListener('volumechange', sync);
     }, [resolvedHeroVideo]);
+
+    useEffect(() => {
+        const v = heroVideoRef.current;
+        if (!v || !resolvedHeroVideo || heroVideoFailed) return;
+        void v.play().catch(() => {
+            /* autoplay may require a gesture */
+        });
+    }, [resolvedHeroVideo, heroVideoFailed]);
 
     useEffect(() => {
         if (!signupOpen) return;
@@ -227,36 +241,65 @@ export function LandingPage({ onStart, heroVideoSrc }: LandingPageProps) {
                         {/* Centered preview box — capped width so the hero stays balanced on large screens */}
                         <div className="relative mx-auto mt-5 w-full max-w-[min(100%,36rem)] overflow-hidden rounded-2xl border border-zinc-800/90 bg-zinc-900/40 shadow-[0_20px_60px_-18px_rgba(0,0,0,0.75)] sm:mt-6 sm:max-w-[min(100%,42rem)] lg:max-w-[min(100%,48rem)]">
                             <div className="relative aspect-video w-full overflow-hidden bg-zinc-950">
-                                <video
-                                    ref={heroVideoRef}
-                                    className="absolute inset-0 h-full w-full object-cover object-center"
-                                    autoPlay
-                                    loop
-                                    muted={heroVideoMuted}
-                                    playsInline
-                                    preload="auto"
-                                    controls
-                                    src={resolvedHeroVideo}
-                                >
-                                    Your browser does not support the video tag.
-                                </video>
-                                <button
-                                    type="button"
-                                    onClick={() => setHeroVideoMuted((m) => !m)}
-                                    className="absolute right-2 top-2 z-10 inline-flex items-center gap-2 rounded-lg border border-zinc-600/90 bg-black/75 px-2.5 py-1.5 font-sans text-[11px] font-semibold text-zinc-100 shadow-lg backdrop-blur-sm transition hover:bg-black/90 hover:border-zinc-500 sm:right-3 sm:top-3 sm:px-3 sm:py-2 sm:text-xs"
-                                    aria-pressed={!heroVideoMuted}
-                                    aria-label={heroVideoMuted ? 'Turn sound on' : 'Mute video'}
-                                >
-                                    {heroVideoMuted ? (
-                                        <VolumeX className="h-4 w-4 shrink-0 text-zinc-400" aria-hidden />
-                                    ) : (
-                                        <Volume2 className="h-4 w-4 shrink-0 text-brand-teal" aria-hidden />
-                                    )}
-                                    <span className="hidden sm:inline">{heroVideoMuted ? 'Sound on' : 'Mute'}</span>
-                                </button>
+                                {!resolvedHeroVideo ? (
+                                    <div
+                                        className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-zinc-900 via-violet-950/35 to-zinc-950 px-6 text-center"
+                                        aria-hidden
+                                    >
+                                        <Sparkles className="h-10 w-10 text-violet-400/85" />
+                                        <p className="font-sans text-sm font-medium text-zinc-200">
+                                            Your venture command center
+                                        </p>
+                                        <p className="max-w-xs font-sans text-[11px] leading-relaxed text-zinc-500">
+                                            Research, desks, and Dexo — one workspace.
+                                        </p>
+                                    </div>
+                                ) : heroVideoFailed ? (
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-4 text-center">
+                                        <p className="font-sans text-sm text-zinc-300">Video couldn’t load</p>
+                                        <p className="max-w-sm font-sans text-[11px] text-zinc-500">
+                                            Check that <code className="rounded bg-zinc-800 px-1">NEXT_PUBLIC_LANDING_HERO_VIDEO_URL</code>{' '}
+                                            points to a reachable HTTPS MP4 or WebM.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <video
+                                            key={resolvedHeroVideo}
+                                            ref={heroVideoRef}
+                                            className="absolute inset-0 h-full w-full object-cover object-center"
+                                            autoPlay
+                                            loop
+                                            muted={heroVideoMuted}
+                                            playsInline
+                                            preload="metadata"
+                                            controls
+                                            src={resolvedHeroVideo}
+                                            onError={() => setHeroVideoFailed(true)}
+                                        >
+                                            Your browser does not support the video tag.
+                                        </video>
+                                        <button
+                                            type="button"
+                                            onClick={() => setHeroVideoMuted((m) => !m)}
+                                            className="absolute right-2 top-2 z-10 inline-flex items-center gap-2 rounded-lg border border-zinc-600/90 bg-black/75 px-2.5 py-1.5 font-sans text-[11px] font-semibold text-zinc-100 shadow-lg backdrop-blur-sm transition hover:bg-black/90 hover:border-zinc-500 sm:right-3 sm:top-3 sm:px-3 sm:py-2 sm:text-xs"
+                                            aria-pressed={!heroVideoMuted}
+                                            aria-label={heroVideoMuted ? 'Turn sound on' : 'Mute video'}
+                                        >
+                                            {heroVideoMuted ? (
+                                                <VolumeX className="h-4 w-4 shrink-0 text-zinc-400" aria-hidden />
+                                            ) : (
+                                                <Volume2 className="h-4 w-4 shrink-0 text-brand-teal" aria-hidden />
+                                            )}
+                                            <span className="hidden sm:inline">{heroVideoMuted ? 'Sound on' : 'Mute'}</span>
+                                        </button>
+                                    </>
+                                )}
                             </div>
                             <p className="border-t border-zinc-800/80 px-3 py-2 text-center font-sans text-[10px] text-zinc-500">
-                                Plays automatically — tap Sound on for audio
+                                {resolvedHeroVideo && !heroVideoFailed
+                                    ? 'Plays automatically — tap Sound on for audio'
+                                    : 'Preview — add a hosted hero video URL in deployment env if you want playback here'}
                             </p>
                         </div>
 
