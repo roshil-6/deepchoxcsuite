@@ -32,7 +32,8 @@ import {
 const VENTURE_AUTH_KEY = 'deepchox-after-auth-new-venture';
 
 export default function Home() {
-  const [hasStarted, setHasStarted] = useState(readPersistedWorkspaceStarted);
+  /** Must start false on server and first client paint — sessionStorage is read in an effect to avoid hydration mismatch (React #418). */
+  const [hasStarted, setHasStarted] = useState(false);
   const [nameVentureOpen, setNameVentureOpen] = useState(false);
   const [workspaceAuthOpen, setWorkspaceAuthOpen] = useState(false);
   const { isSignedIn, isLoaded } = useAuth();
@@ -56,6 +57,13 @@ export default function Home() {
       wasSignedInRef.current = null;
     }
   }, [hasStarted]);
+
+  /** Restore workspace flag from sessionStorage only after mount (matches server HTML). */
+  useEffect(() => {
+    if (readPersistedWorkspaceStarted()) {
+      setHasStarted(true);
+    }
+  }, []);
 
   /** Signed in on the landing hero (false → true): enter with name-venture flow. */
   useEffect(() => {

@@ -226,7 +226,7 @@ export function FoundersOffice() {
                                 role="img"
                                 aria-label="Demo chart: sample focus index as area and energy index as line, 0 to 100 by time of day"
                             >
-                                <ResponsiveContainer width="100%" height="100%">
+                                <ResponsiveContainer width="100%" height="100%" minHeight={280} minWidth={0}>
                                     <ComposedChart
                                         data={focusData}
                                         margin={{ top: 28, right: 12, left: 0, bottom: 8 }}

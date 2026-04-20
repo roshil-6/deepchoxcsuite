@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import Link from 'next/link';
-import { useAuth, useSignIn, useSignUp } from '@clerk/nextjs';
+import { useClerk } from '@clerk/nextjs';
 import { persistEnterWorkspace, type OauthReturnIntent } from '@/lib/workspacePersistence';
 
 function GoogleMark({ className }: { className?: string }) {
@@ -40,32 +40,36 @@ export interface LandingGoogleAuthProps {
 }
 
 export function LandingGoogleAuth({ afterOAuth, className, showOtherOptions }: LandingGoogleAuthProps) {
-  const { isLoaded: authLoaded } = useAuth();
-  const { signIn } = useSignIn();
-  const { signUp } = useSignUp();
+  const clerk = useClerk();
   const [busy, setBusy] = useState<'in' | 'up' | null>(null);
 
-  const ready = authLoaded && signIn && signUp;
+  const client = clerk.loaded ? clerk.client : undefined;
+  const ready = Boolean(client);
 
   const runRedirect = useCallback(
     async (mode: 'in' | 'up') => {
-      if (!ready || !signIn || !signUp) return;
+      const c = clerk.client;
+      if (!clerk.loaded || !c) return;
       const origin = window.location.origin;
       persistEnterWorkspace({ openNameVenture: afterOAuth.openNameVenture });
       setBusy(mode);
       try {
+        /** Use classic SignIn/SignUp resources so redirect URLs match `<AuthenticateWithRedirectCallback />` (avoids sign_ins 400 from `sso()` on some instances). */
         const params = {
           strategy: 'oauth_google' as const,
-          redirectUrl: `${origin}/`,
-          redirectCallbackUrl: `${origin}/sso-callback`,
+          redirectUrl: `${origin}/sso-callback`,
+          redirectUrlComplete: `${origin}/`,
         };
-        const { error } = mode === 'in' ? await signIn.sso(params) : await signUp.sso(params);
-        if (error) setBusy(null);
+        if (mode === 'in') {
+          await c.signIn.authenticateWithRedirect(params);
+        } else {
+          await c.signUp.authenticateWithRedirect(params);
+        }
       } catch {
         setBusy(null);
       }
     },
-    [afterOAuth, ready, signIn, signUp]
+    [afterOAuth, clerk.client, clerk.loaded]
   );
 
   return (

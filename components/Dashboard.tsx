@@ -387,8 +387,8 @@ function StatusBadge({
 
 function MiniBarChart({ data, color }: { data: { name: string; value: number }[]; color: string }) {
     return (
-        <div className="h-24 w-full">
-            <ResponsiveContainer width="100%" height="100%">
+        <div className="h-24 w-full min-h-[96px] min-w-0">
+            <ResponsiveContainer width="100%" height="100%" minHeight={96} minWidth={0}>
                 <BarChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                     <Bar dataKey="value" fill={color} radius={[4, 4, 0, 0]} maxBarSize={32}>
                         {data.map((_, i) => (
@@ -1852,8 +1852,8 @@ function PortfolioView({
                     <Card className="p-6">
                         <SectionHeader title="Portfolio Composition" />
                         {portfolioComposition.length > 0 ? (
-                            <div className="h-64">
-                                <ResponsiveContainer width="100%" height="100%">
+                            <div className="h-64 min-h-[256px] min-w-0">
+                                <ResponsiveContainer width="100%" height="100%" minHeight={256} minWidth={0}>
                                     <RePieChart>
                                         <Pie
                                             data={portfolioComposition}
@@ -2047,8 +2047,8 @@ function AnalyticsTab({
                         subtitle="Timeline distribution across phases"
                     />
                     {phasePieData.length > 0 ? (
-                        <div className="h-72">
-                            <ResponsiveContainer width="100%" height="100%">
+                        <div className="h-72 min-h-[288px] min-w-0">
+                            <ResponsiveContainer width="100%" height="100%" minHeight={288} minWidth={0}>
                                 <RePieChart>
                                     <Pie
                                         data={phasePieData}
@@ -2085,8 +2085,8 @@ function AnalyticsTab({
                         subtitle="Open vs completed priorities"
                     />
                     {priorityPieData.length > 0 ? (
-                        <div className="h-72">
-                            <ResponsiveContainer width="100%" height="100%">
+                        <div className="h-72 min-h-[288px] min-w-0">
+                            <ResponsiveContainer width="100%" height="100%" minHeight={288} minWidth={0}>
                                 <RePieChart>
                                     <Pie
                                         data={priorityPieData}
@@ -2218,8 +2218,8 @@ function ActivityTab({ systemLogs, chartUid }: any) {
             <Card className="p-6">
                 <SectionHeader title="Activity by Source" />
                 {activityBySource.length > 0 ? (
-                    <div className="h-80">
-                        <ResponsiveContainer width="100%" height="100%">
+                    <div className="h-80 min-h-[320px] min-w-0">
+                        <ResponsiveContainer width="100%" height="100%" minHeight={320} minWidth={0}>
                             <BarChart data={activityBySource} margin={{ top: 8, right: 8, left: 0, bottom: 24 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke={THEME.border.subtle} vertical={false} />
                                 <XAxis
