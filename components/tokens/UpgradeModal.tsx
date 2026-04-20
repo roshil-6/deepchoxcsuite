@@ -169,6 +169,7 @@ export function UpgradeModal({ isOpen, onClose, triggerReason }: UpgradeModalPro
                     <div className="space-y-2">
                         <FeatureRow icon="check" text={`Founder: ${FREE_DAILY_TOKENS} tokens/day with per-action pricing`} />
                         <FeatureRow icon="check" text="Pro: unlimited Dexo analyses & messages" />
+                        <FeatureRow icon="check" text="Pro: Dexo daily research reports (web briefs, history, Dashboard tab)" />
                         <FeatureRow icon="check" text="Voice, history, and venture context on both tiers" />
                         <FeatureRow icon="check" text="Aligns with main app Co-Founder Pro upgrade" />
                     </div>

@@ -1,10 +1,18 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { hasDailyBriefEntitlement } from '@/lib/dailyBriefEntitlement';
 
 /**
  * GET /api/dexo/daily-reports?ventureId=123&limit=30
  */
 export async function GET(req: Request) {
+  if (!(await hasDailyBriefEntitlement())) {
+    return NextResponse.json(
+      { ok: false, error: 'pro_required', upgrade: true, message: 'Dexo daily reports are a Co-Founder Pro feature.' },
+      { status: 403 },
+    );
+  }
+
   const url = new URL(req.url);
   const ventureId = Number(url.searchParams.get('ventureId'));
   if (!Number.isFinite(ventureId)) {

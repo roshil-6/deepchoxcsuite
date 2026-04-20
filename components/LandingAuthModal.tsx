@@ -3,6 +3,7 @@
 import { SignIn } from '@clerk/nextjs';
 import { X } from 'lucide-react';
 import { clerkGreyAppearance } from '@/lib/clerkGreyAppearance';
+import { clerkEmbeddedSignInProps } from '@/lib/clerkEmbeddedSignInProps';
 
 export interface LandingAuthModalProps {
   open: boolean;
@@ -15,38 +16,31 @@ export function LandingAuthModal({ open, onClose }: LandingAuthModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[240] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[240] flex items-center justify-center bg-[#0c0c0e] p-3 sm:p-6"
       role="dialog"
       aria-modal="true"
       aria-labelledby="landing-auth-title"
     >
       <button type="button" className="absolute inset-0 cursor-default" aria-label="Close" onClick={onClose} />
       <div
-        className="relative z-10 max-h-[min(100dvh-2rem,900px)] w-full max-w-md overflow-y-auto rounded-2xl border border-zinc-600 bg-zinc-900/95 shadow-2xl backdrop-blur-sm"
+        className="relative z-10 max-h-[min(92dvh,52rem)] w-full max-w-[24rem] overflow-y-auto rounded-xl border border-zinc-600 bg-zinc-950 shadow-[0_16px_48px_rgba(0,0,0,0.65)]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-zinc-600/80 px-4 py-3">
-          <h2 id="landing-auth-title" className="font-sans text-sm font-semibold text-zinc-100">
+        <div className="flex items-center justify-between border-b border-zinc-700 px-3 py-2.5 sm:px-4">
+          <h2 id="landing-auth-title" className="font-sans text-[13px] font-semibold text-zinc-100">
             Sign in or create account
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
+            className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
             aria-label="Close"
           >
-            <X className="h-5 w-5" aria-hidden />
+            <X className="h-4 w-4" aria-hidden />
           </button>
         </div>
-        <div className="px-2 py-4 sm:px-4">
-          <SignIn
-            withSignUp
-            routing="hash"
-            fallbackRedirectUrl="/"
-            signUpFallbackRedirectUrl="/"
-            oauthFlow="redirect"
-            appearance={clerkGreyAppearance}
-          />
+        <div className="bg-zinc-900 px-3 py-3 sm:px-4 sm:pb-4">
+          <SignIn {...clerkEmbeddedSignInProps} appearance={clerkGreyAppearance} />
         </div>
       </div>
     </div>

@@ -18,7 +18,8 @@ export interface Plan {
         vcGauntlet: boolean;
         wargameNexus: boolean;
         intelligenceSuite: boolean;
-        executiveBriefingAutopilot: boolean;
+        /** Dexo daily research briefs: web pass, saved reports, dashboard tab. */
+        dexoDailyBriefReports: boolean;
         wargameMultiRound: boolean;
         crossVentureIntelligence: boolean;
     };
@@ -39,7 +40,7 @@ const FREE_PLAN_BASE: Plan = {
         vcGauntlet: true,
         wargameNexus: true,
         intelligenceSuite: true,
-        executiveBriefingAutopilot: false,
+        dexoDailyBriefReports: false,
         wargameMultiRound: false,
         crossVentureIntelligence: false,
     },
@@ -65,7 +66,7 @@ export function getPlans(region: PricingRegion): Record<PlanId, Plan> {
                 vcGauntlet: true,
                 wargameNexus: true,
                 intelligenceSuite: true,
-                executiveBriefingAutopilot: true,
+                dexoDailyBriefReports: true,
                 wargameMultiRound: true,
                 crossVentureIntelligence: true,
             },
@@ -80,10 +81,10 @@ export const PRO_PLAN = PLANS.pro;
 
 export const PRO_INTELLIGENCE_FEATURES = [
     {
-        key: 'executiveBriefingAutopilot',
-        name: 'Executive Briefing Autopilot',
+        key: 'dexoDailyBriefReports',
+        name: 'Dexo daily research reports',
         description:
-            'Daily AI brief auto-delivered every morning — venture progress, risks flagged, priorities, and market intel without you asking.',
+            'Automated daily brief with live web research, dual-model synthesis, saved report history, and suggested venture updates — plus the Dashboard “Daily brief” tab.',
     },
     {
         key: 'wargameMultiRound',

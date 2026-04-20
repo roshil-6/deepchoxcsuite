@@ -3,12 +3,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { SignIn } from '@clerk/nextjs';
-import { Check, Infinity, Sparkles } from 'lucide-react';
+import { Check, Globe, Infinity, Sparkles } from 'lucide-react';
 import { FREE_DAILY_TOKENS, TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 import { formatRegionalPricePair, getProBillingAmounts } from '@/lib/billingConfig';
 import { usePricingRegion } from '@/hooks/usePricingRegion';
 import { SITE_HERO_H1, SITE_HERO_LEAD, SITE_PULL_QUOTE, SITE_TAGLINE_SHORT } from '@/lib/siteSeo';
 import { clerkGreyAppearance } from '@/lib/clerkGreyAppearance';
+import { clerkEmbeddedSignInProps } from '@/lib/clerkEmbeddedSignInProps';
 
 /** @deprecated Hero is Clerk sign-in; kept for older imports / env docs. */
 export const LANDING_HERO_VIDEO_DEFAULT = '/landing-hero-demo.mp4';
@@ -45,7 +46,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
         setIsVisible(true);
     }, []);
 
-    const continueAsGuest = () => {
+    const continueWithoutSigningIn = () => {
         onContinueGuest();
     };
 
@@ -100,12 +101,9 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
             >
                 {/* Top bar — minimal wordmark + actions; full brand lives in hero */}
                 <header className="sticky top-0 z-30 bg-transparent">
-                    <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-x-4 gap-y-3 px-5 py-3.5 sm:px-8 lg:px-12">
-                        <span className="font-sans text-[12px] font-semibold tracking-[0.12em] text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.85)]">
-                            {SITE_TAGLINE_SHORT}
-                        </span>
+                    <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-end gap-x-4 gap-y-3 px-5 py-3.5 sm:px-8 lg:px-12">
                         <nav
-                            className="flex flex-1 flex-wrap items-center justify-end gap-x-1 gap-y-2 sm:flex-initial sm:gap-x-2 md:gap-x-3 [text-shadow:0_2px_24px_rgba(0,0,0,0.85)]"
+                            className="flex flex-wrap items-center justify-end gap-x-1 gap-y-2 sm:gap-x-2 md:gap-x-3 [text-shadow:0_2px_24px_rgba(0,0,0,0.85)]"
                             aria-label="Primary"
                         >
                             <Link
@@ -130,10 +128,10 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                             <span className="hidden h-6 w-px bg-zinc-600/90 sm:block" aria-hidden />
                             <button
                                 type="button"
-                                onClick={continueAsGuest}
-                                className="rounded-md px-3 py-2.5 font-sans text-[16px] font-semibold leading-none text-zinc-300 transition-colors hover:text-white"
+                                onClick={continueWithoutSigningIn}
+                                className="rounded-md px-3 py-2.5 text-left font-sans text-[14px] font-semibold leading-snug text-zinc-300 transition-colors hover:text-white sm:text-[16px] sm:leading-none"
                             >
-                                Continue as guest
+                                Continue without signing in
                             </button>
                             <button
                                 type="button"
@@ -141,13 +139,6 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                                 className="rounded-md px-3 py-2.5 font-sans text-[16px] font-semibold leading-none text-zinc-300 transition-colors hover:text-white"
                             >
                                 Sign in
-                            </button>
-                            <button
-                                type="button"
-                                onClick={scrollToHeroAuth}
-                                className="rounded-full bg-white px-6 py-3.5 font-sans text-[16px] font-bold leading-none text-zinc-950 shadow-[0_4px_24px_rgba(0,0,0,0.35)] transition hover:bg-zinc-100 active:scale-[0.98]"
-                            >
-                                Get started
                             </button>
                         </nav>
                     </div>
@@ -192,32 +183,29 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                             </div>
                         </div>
 
-                        {/* Clerk sign-in / sign-up (Google, email, etc.) — replaces hero video */}
+                        {/* Auth panel — solid matte box, no glass / blur */}
                         <div
                             id="landing-auth"
-                            className="relative z-20 mx-auto mt-5 w-full max-w-[min(100%,28rem)] scroll-mt-24 rounded-2xl border border-zinc-600/90 bg-zinc-900/95 px-3 py-4 shadow-[0_20px_60px_-18px_rgba(0,0,0,0.75)] backdrop-blur-sm sm:mt-6 sm:px-5 sm:py-5"
+                            className="relative z-[35] isolate mx-auto mt-6 w-full max-w-[min(100%,28rem)] scroll-mt-28 rounded-2xl border border-zinc-500/90 bg-zinc-800/85 px-4 py-4 shadow-[0_16px_48px_rgba(0,0,0,0.5)] ring-1 ring-zinc-400/15 backdrop-blur-[2px] sm:mt-7 sm:max-w-[32rem] sm:px-6 sm:py-5"
                         >
-                            <p className="mb-3 text-center font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">
-                                Sign in or create an account
-                            </p>
-                            <SignIn
-                                withSignUp
-                                routing="hash"
-                                fallbackRedirectUrl="/"
-                                signUpFallbackRedirectUrl="/"
-                                oauthFlow="redirect"
-                                appearance={clerkGreyAppearance}
-                            />
-                            <div className="mt-4 border-t border-zinc-600/80 pt-4">
+                            <div className="mb-3.5 border-b border-zinc-600/90 pb-2.5">
+                                <p className="text-center font-sans text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-200">
+                                    Sign in or create an account
+                                </p>
+                            </div>
+                            <div className="min-h-0 rounded-xl border border-zinc-600/70 bg-zinc-900/90 p-3 sm:p-4">
+                                <SignIn {...clerkEmbeddedSignInProps} appearance={clerkGreyAppearance} />
+                            </div>
+                            <div className="mt-3.5 border-t border-zinc-600/90 pt-3.5">
                                 <button
                                     type="button"
-                                    onClick={continueAsGuest}
-                                    className="w-full rounded-xl border border-zinc-600 bg-zinc-800 py-3 font-sans text-[14px] font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-700"
+                                    onClick={continueWithoutSigningIn}
+                                    className="w-full rounded-lg border border-zinc-500/80 bg-zinc-700/90 py-2 font-sans text-[12px] font-medium leading-snug text-zinc-100 transition hover:border-zinc-400 hover:bg-zinc-600 hover:text-white sm:py-2.5 sm:text-[13px]"
                                 >
-                                    Sign in later — explore the app
+                                    Continue without signing in
                                 </button>
-                                <p className="mt-2 text-center font-sans text-[11px] leading-snug text-zinc-500">
-                                    You can browse without an account. Adding a venture will ask you to sign in.
+                                <p className="mt-2 text-center font-sans text-[11px] leading-snug text-zinc-300">
+                                    Browse the app first. You’ll be asked to sign in when you add a venture.
                                 </p>
                             </div>
                         </div>
@@ -356,8 +344,8 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                                 <li className="flex items-start gap-2.5 font-sans text-[13px] leading-relaxed text-zinc-400">
                                     <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
                                     <span>
-                                        <span className="font-semibold text-zinc-200">Full product</span> — all desks, Dexo,
-                                        sync, calendar, ventures, and tools. Nothing extra is paywalled.
+                                        <span className="font-semibold text-zinc-200">Full workspace</span> — all desks,
+                                        Dexo chat &amp; analysis, staff sync, calendar, ventures, and tools.
                                     </span>
                                 </li>
                                 <li className="flex items-start gap-2.5 font-sans text-[13px] leading-relaxed text-zinc-400">
@@ -366,10 +354,20 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                                         <span className="font-semibold text-zinc-200">Metered AI</span> — {LANDING_FREE_METERING}
                                     </span>
                                 </li>
+                                <li className="flex items-start gap-2.5 font-sans text-[13px] leading-relaxed text-zinc-500">
+                                    <span className="mt-0.5 shrink-0 font-sans text-[11px] font-bold text-zinc-600" aria-hidden>
+                                        —
+                                    </span>
+                                    <span>
+                                        <span className="font-semibold text-zinc-400">Dexo daily research reports</span>{' '}
+                                        (web-backed briefs, history, Dashboard tab) —{' '}
+                                        <span className="text-zinc-500">Co-Founder Pro</span> only.
+                                    </span>
+                                </li>
                             </ul>
                             <button
                                 type="button"
-                                onClick={continueAsGuest}
+                                onClick={continueWithoutSigningIn}
                                 className="mt-6 w-full rounded-xl border border-zinc-700 bg-zinc-900 py-3 font-sans text-[14px] font-semibold text-zinc-200 transition hover:border-zinc-600 hover:bg-zinc-800 hover:text-white"
                             >
                                 Get started free
@@ -448,8 +446,22 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                                             </p>
                                         </div>
                                     </div>
+                                    <div className="flex gap-3 rounded-xl border border-cyan-500/20 bg-cyan-500/[0.06] p-3.5">
+                                        <Globe className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300" aria-hidden />
+                                        <div>
+                                            <p className="font-sans text-[12px] font-semibold leading-snug text-zinc-100">
+                                                Dexo daily research reports
+                                            </p>
+                                            <p className="mt-1 font-sans text-[11px] leading-snug text-zinc-400">
+                                                Automated daily brief with live web research, dual-model synthesis, saved
+                                                history, optional venture updates — including the Dashboard &quot;Daily
+                                                brief&quot; tab.
+                                            </p>
+                                        </div>
+                                    </div>
                                     <p className="font-sans text-[12px] leading-relaxed text-zinc-500">
-                                        Everything else matches Founder: same desks, same data, same features.
+                                        Same desks, ventures, and data as Founder — plus unlimited AI and daily research
+                                        reports.
                                     </p>
                                 </div>
 

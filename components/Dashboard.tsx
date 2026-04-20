@@ -78,6 +78,8 @@ import { FocusBriefingPanel } from '@/components/FocusBriefingPanel';
 import { DexoDailyBriefPanel } from '@/components/Dexo/DexoDailyBriefPanel';
 import { DexoOpsPanel } from '@/components/Dexo/DexoOpsPanel';
 import { PortfolioDailyIntelSection } from '@/components/Dexo/PortfolioDailyIntelSection';
+import { useSubscription } from '@/hooks/useSubscription';
+import { PlanGate } from '@/components/PlanGate';
 
 // ============================================================================
 // MODERN DASHBOARD THEME - No Glow, Clean Depth
@@ -475,6 +477,9 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
         setDexoBootstrap,
     } = useOffice();
 
+    const { can } = useSubscription();
+    const hasDailyBriefPlan = can('dexoDailyBriefReports');
+
     const [dashboardExpanded, setDashboardExpanded] = useState(false);
     const [portfolioDashExpanded, setPortfolioDashExpanded] = useState(false);
     const [activeTab, setActiveTab] = useState<'overview' | 'analytics' | 'activity' | 'dexo_daily'>('overview');
@@ -499,7 +504,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     }, [activeRoom, activeProject?.id, refreshLivingOffice]);
 
     useEffect(() => {
-        if (activeRoom !== 'dashboard' || !activeProject?.id) return;
+        if (activeRoom !== 'dashboard' || !activeProject?.id || !hasDailyBriefPlan) return;
         const key = `deepchox-dexo-pulse:${activeProject.id}:${new Date().toISOString().slice(0, 10)}`;
         try {
             if (typeof window !== 'undefined' && localStorage.getItem(key)) return;
@@ -532,7 +537,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
             .catch(() => {
                 // non-blocking dashboard warmup
             });
-    }, [activeRoom, activeProject]);
+    }, [activeRoom, activeProject, hasDailyBriefPlan]);
 
     // Parse strategy data
     const strategyDoc = useMemo(() => parseStrategy(activeProject?.strategy || ''), [activeProject?.strategy]);
@@ -1733,10 +1738,12 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                 )}
 
                 {activeTab === 'dexo_daily' && (
-                    <div className="space-y-6">
-                        <DexoOpsPanel activeProject={activeProject} />
-                        <DexoDailyBriefPanel activeProject={activeProject} autoRunPulse />
-                    </div>
+                    <PlanGate feature="dexoDailyBriefReports">
+                        <div className="space-y-6">
+                            <DexoOpsPanel activeProject={activeProject} />
+                            <DexoDailyBriefPanel activeProject={activeProject} autoRunPulse />
+                        </div>
+                    </PlanGate>
                 )}
             </main>
 
@@ -1766,6 +1773,7 @@ function PortfolioView({
     chartUid,
     switchRoom,
 }: any) {
+    const { can } = useSubscription();
     const ventureCount = allProjects.length;
     const withStrategy = allProjects.filter((p: any) => p.strategy?.trim()).length;
     const draft = Math.max(0, allProjects.length - withStrategy);
@@ -1949,7 +1957,28 @@ function PortfolioView({
                     </Card>
                 </div>
 
-                <PortfolioDailyIntelSection allProjects={allProjects} onOpenVenture={setActiveProject} />
+                {can('dexoDailyBriefReports') ? (
+                    <PortfolioDailyIntelSection allProjects={allProjects} onOpenVenture={setActiveProject} />
+                ) : (
+                    <section className="mt-10 rounded-2xl border border-white/[0.08] bg-white/[0.02] px-6 py-10 text-center">
+                        <div className="mx-auto flex max-w-lg flex-col items-center gap-3">
+                            <div
+                                className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.04]"
+                                aria-hidden
+                            >
+                                <Globe className="h-5 w-5" style={{ color: THEME.text.tertiary }} />
+                            </div>
+                            <h2 className="text-base font-semibold tracking-tight" style={{ color: THEME.text.primary }}>
+                                Live intel by venture
+                            </h2>
+                            <p className="text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
+                                Dexo daily research reports (web-backed briefs and source links for each venture) are part of{' '}
+                                <span className="font-medium text-[var(--text-primary)]">Co-Founder Pro</span>. Upgrade from the
+                                workspace sidebar to unlock portfolio intel.
+                            </p>
+                        </div>
+                    </section>
+                )}
 
                 {/* VENTURE LIST */}
                 <div className="mt-8">

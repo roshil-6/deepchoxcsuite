@@ -127,9 +127,12 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                                     <li className="flex items-start gap-2">
                                         <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
                                         <p className="text-xs leading-relaxed text-zinc-300">
-                                            <span className="font-medium text-zinc-200">Same product as Pro</span>
-                                            {' — '}research desks, Dexo, staff sync, dashboard, calendar, ventures, and the rest. Nothing is locked
-                                            behind the paywall.
+                                            <span className="font-medium text-zinc-200">Almost everything Pro has</span>
+                                            {' — '}research desks, Dexo chat &amp; analysis, staff sync, dashboard, calendar,
+                                            ventures, and tools.{' '}
+                                            <span className="text-zinc-500">
+                                                Dexo daily research reports (web briefs + Daily brief tab) require Pro.
+                                            </span>
                                         </p>
                                     </li>
                                     <li className="flex items-start gap-2">
@@ -200,8 +203,9 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                                         <div>
                                             <p className="text-xs font-semibold text-zinc-100">Unlimited AI usage</p>
                                             <p className="mt-1 text-[11px] leading-snug text-zinc-400">
-                                                No daily Dexo token pool and no per-message / per-analysis deductions. Same features and workspaces as
-                                                Founder — only the meter goes away.
+                                                No daily Dexo token pool and no per-message / per-analysis deductions. Includes
+                                                Dexo daily research reports and the Dashboard Daily brief tab — Founder keeps
+                                                metered AI without automated daily web briefs.
                                             </p>
                                         </div>
                                     </div>

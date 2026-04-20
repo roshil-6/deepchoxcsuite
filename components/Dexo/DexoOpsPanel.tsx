@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Project } from '@/lib/db';
 import { parseStrategy } from '@/lib/strategyDoc';
+import { useSubscription } from '@/hooks/useSubscription';
 
 type DailyRow = {
   reportDay: string;
@@ -15,11 +16,13 @@ function sourceCount(raw: unknown): number {
 }
 
 export function DexoOpsPanel({ activeProject }: { activeProject: Project }) {
+  const { can } = useSubscription();
+  const dailyBriefEnabled = can('dexoDailyBriefReports');
   const [daily, setDaily] = useState<DailyRow[]>([]);
   const [loading, setLoading] = useState(false);
 
   const load = useCallback(async () => {
-    if (!activeProject.id) return;
+    if (!activeProject.id || !dailyBriefEnabled) return;
     setLoading(true);
     try {
       const dRes = await fetch('/api/dexo', {
@@ -35,7 +38,7 @@ export function DexoOpsPanel({ activeProject }: { activeProject: Project }) {
     } finally {
       setLoading(false);
     }
-  }, [activeProject.id]);
+  }, [activeProject.id, dailyBriefEnabled]);
 
   useEffect(() => {
     void load();
@@ -92,7 +95,9 @@ export function DexoOpsPanel({ activeProject }: { activeProject: Project }) {
           <p className="text-xs font-semibold text-[var(--text-primary)]">Daily research rhythm</p>
           <p className="mt-1 text-[11px] text-[var(--text-tertiary)]">Source-backed daily brief cadence.</p>
           <ul className="mt-2 space-y-1 text-xs text-[var(--text-secondary)]">
-            {daily.length === 0 ? (
+            {!dailyBriefEnabled ? (
+              <li className="text-[var(--text-tertiary)]">Co-Founder Pro — unlock Dexo daily research reports.</li>
+            ) : daily.length === 0 ? (
               <li>No daily brief rows yet</li>
             ) : (
               daily.slice(0, 5).map((r) => (

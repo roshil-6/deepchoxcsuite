@@ -1,11 +1,19 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { hasDailyBriefEntitlement } from '@/lib/dailyBriefEntitlement';
 
 /**
  * POST /api/dexo/venture-registry
  * Upsert a venture context snapshot so server-side cron can run daily pulses while app is closed.
  */
 export async function POST(req: Request) {
+  if (!(await hasDailyBriefEntitlement())) {
+    return NextResponse.json(
+      { ok: false, error: 'pro_required', upgrade: true, message: 'Venture registry (for automated daily briefs) requires Co-Founder Pro.' },
+      { status: 403 },
+    );
+  }
+
   let body: {
     ventureId?: unknown;
     ventureName?: unknown;
