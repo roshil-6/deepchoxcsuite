@@ -20,7 +20,20 @@ import { TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 import { useUpgradeModal } from '@/components/tokens/UpgradeModal';
 import { DexoParticleCanvas } from '@/components/Dexo/DexoParticleSphere';
 import { submitDexoVenturePatch } from '@/lib/dexoProposalClient';
-import { Mic, Send, X, Maximize2, Volume2, Square, MessageSquare, MessageSquarePlus } from 'lucide-react';
+import { speechFriendlyText } from '@/lib/speechFriendly';
+import { pickEnglishPlaybackVoice, resumeSpeechSynthIfNeeded } from '@/lib/voiceEngine';
+import {
+    Mic,
+    Send,
+    X,
+    Maximize2,
+    Volume2,
+    Square,
+    MessageSquare,
+    MessageSquarePlus,
+    AudioWaveform,
+    PhoneOff,
+} from 'lucide-react';
 
 const STORAGE_KEY = 'deepchox-dexo-orb-offset';
 const DRAG_THRESHOLD = 6;
@@ -60,14 +73,67 @@ if (typeof document !== 'undefined') {
     }
 }
 
+function speakUtteranceLine(line: string, signal: AbortSignal): Promise<void> {
+    return new Promise((resolve) => {
+        if (typeof window === 'undefined' || signal.aborted) {
+            resolve();
+            return;
+        }
+        resumeSpeechSynthIfNeeded();
+        const t = speechFriendlyText(line);
+        if (!t) {
+            resolve();
+            return;
+        }
+        const u = new SpeechSynthesisUtterance(t);
+        const v = pickEnglishPlaybackVoice();
+        if (v) u.voice = v;
+        u.rate = 1;
+        const onAbort = () => {
+            try {
+                window.speechSynthesis.cancel();
+            } catch {
+                /* noop */
+            }
+            resolve();
+        };
+        signal.addEventListener('abort', onAbort);
+        u.onend = () => {
+            signal.removeEventListener('abort', onAbort);
+            resolve();
+        };
+        u.onerror = () => {
+            signal.removeEventListener('abort', onAbort);
+            resolve();
+        };
+        window.speechSynthesis.speak(u);
+    });
+}
+
+/** Spoken Dexo replies in live voice mode — strips markdown noise. */
+async function speakDexoResponseAloud(text: string, signal: AbortSignal): Promise<void> {
+    if (typeof window === 'undefined') return;
+    const stripped = text.replace(/[*_`#[\]]/g, ' ').replace(/\s+/g, ' ').trim();
+    const chunks = speechFriendlyText(stripped)
+        .split(/(?<=[.!?])\s+/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+    for (const c of chunks) {
+        if (signal.aborted) break;
+        await speakUtteranceLine(c, signal);
+    }
+}
+
 // ─── Floating Chat Panel ────────────────────────────────────────────────────
 
 function FloatingChat({
     onClose,
     onExpand,
+    variant,
 }: {
     onClose: () => void;
     onExpand: () => void;
+    variant: 'chat' | 'talk';
 }) {
     const { activeProject, updateProjectField } = useOffice();
     const tokens = useTokens();
@@ -118,6 +184,15 @@ function FloatingChat({
         projectContext: activeProject ? { name: activeProject.name, strategy: activeProject.strategy } : undefined,
     });
 
+    const talkLiveRef = useRef(variant === 'talk');
+    const speechAborterRef = useRef<AbortController | null>(null);
+    const startListeningRef = useRef(startListening);
+    startListeningRef.current = startListening;
+
+    useEffect(() => {
+        talkLiveRef.current = variant === 'talk';
+    }, [variant]);
+
     useEffect(() => {
         const p = activeProjectRef.current;
         const vid = p?.id;
@@ -135,6 +210,9 @@ function FloatingChat({
             }
             setMessages([]);
             msgId.current = 0;
+        }
+        if (variant === 'talk') {
+            return;
         }
         if (!p?.id) return;
 
@@ -155,7 +233,46 @@ function FloatingChat({
         return () => {
             cancelled = true;
         };
-    }, [dexoWelcomeRefreshKey]);
+    }, [dexoWelcomeRefreshKey, variant]);
+
+    /** Live voice: welcome + spoken greeting, then open the mic. */
+    useEffect(() => {
+        if (variant !== 'talk') return;
+        talkLiveRef.current = true;
+        speechAborterRef.current?.abort();
+        const ac = new AbortController();
+        speechAborterRef.current = ac;
+        const sig = ac.signal;
+        const p = activeProjectRef.current;
+        const vn = p?.name?.trim();
+        const greet = vn
+            ? `Hi! I'm Dexo — welcome to your live voice session for ${vn}. I'm listening. Ask me to update any part of this venture, run research, or refine your strategy, and I'll work through it with you in real time. When you're done, tap End session or say end session.`
+            : `Hi! I'm Dexo — welcome to your live voice session. Select a venture if you haven't yet, or tell me what you'd like to work on. I'm listening live. When you're finished, tap End session or say end session.`;
+
+        skipPersistRef.current = true;
+        setMessages([{ role: 'dexo', text: greet, id: ++msgId.current }]);
+        requestAnimationFrame(() => {
+            skipPersistRef.current = false;
+        });
+
+        void (async () => {
+            await speakDexoResponseAloud(greet, sig);
+            if (!sig.aborted && talkLiveRef.current) {
+                window.setTimeout(() => {
+                    if (talkLiveRef.current) startListeningRef.current();
+                }, 400);
+            }
+        })();
+
+        return () => {
+            ac.abort();
+            try {
+                window.speechSynthesis.cancel();
+            } catch {
+                /* noop */
+            }
+        };
+    }, [variant, dexoWelcomeRefreshKey]);
 
     useEffect(() => {
         if (skipPersistRef.current) return;
@@ -188,15 +305,53 @@ function FloatingChat({
         });
     }, [activeProject]);
 
+    const endTalkSession = useCallback(() => {
+        talkLiveRef.current = false;
+        speechAborterRef.current?.abort();
+        try {
+            window.speechSynthesis.cancel();
+        } catch {
+            /* noop */
+        }
+        stopListening();
+    }, [stopListening]);
+
     const handleSend = async (override?: string) => {
         const text = (override || inputText).trim();
         if (!text || loading) return;
+
+        if (
+            variant === 'talk' &&
+            /^(end(\s+session)?|stop(\s+session)?|that\'?s?\s+all|i\'?m\s+done|goodbye)\.?$/i.test(text)
+        ) {
+            setInputText('');
+            setMessages((prev) => [
+                ...prev,
+                { role: 'user', text, id: ++msgId.current },
+                {
+                    role: 'dexo',
+                    text: 'Live session ended. Open the orb anytime for chat or another voice session.',
+                    id: ++msgId.current,
+                },
+            ]);
+            endTalkSession();
+            return;
+        }
+
         const project = activeProjectRef.current;
         if (!project?.id) {
             setMessages((prev) => [
                 ...prev,
                 { role: 'dexo', text: 'Select or create a venture first.', id: ++msgId.current },
             ]);
+            if (variant === 'talk') {
+                speechAborterRef.current?.abort();
+                speechAborterRef.current = new AbortController();
+                const sig = speechAborterRef.current.signal;
+                void speakDexoResponseAloud('Select or create a venture first, then we can continue.', sig).then(() => {
+                    if (talkLiveRef.current) startListeningRef.current();
+                });
+            }
             return;
         }
 
@@ -213,6 +368,8 @@ function FloatingChat({
 
         setMessages((prev) => [...prev, { role: 'user', text, id: uid }]);
         setLoading(true);
+
+        let dexoReply = '';
 
         try {
             const context = buildDexoJarvisVentureContext(project);
@@ -232,10 +389,8 @@ function FloatingChat({
             });
             const data = (await res.json()) as { ok: boolean; report?: JarvisReport; error?: string };
             if (!data.ok || !data.report) {
-                setMessages((prev) => [
-                    ...prev,
-                    { role: 'dexo', text: data.error ?? 'Dexo could not complete that turn.', id: ++msgId.current },
-                ]);
+                dexoReply = data.error ?? 'Dexo could not complete that turn.';
+                setMessages((prev) => [...prev, { role: 'dexo', text: dexoReply, id: ++msgId.current }]);
                 return;
             }
 
@@ -258,14 +413,26 @@ function FloatingChat({
                       : `\n\n_Pending your approval: ${pending.join(' · ')}._`;
             }
 
+            dexoReply = reply;
             setMessages((prev) => [...prev, { role: 'dexo', text: reply, id: ++msgId.current }]);
         } catch {
-            setMessages((prev) => [
-                ...prev,
-                { role: 'dexo', text: 'Connection issue. Try again.', id: ++msgId.current },
-            ]);
+            dexoReply = 'Connection issue. Try again.';
+            setMessages((prev) => [...prev, { role: 'dexo', text: dexoReply, id: ++msgId.current }]);
         } finally {
             setLoading(false);
+            if (variant === 'talk' && talkLiveRef.current && dexoReply) {
+                speechAborterRef.current?.abort();
+                speechAborterRef.current = new AbortController();
+                const sig = speechAborterRef.current.signal;
+                void (async () => {
+                    await speakDexoResponseAloud(dexoReply, sig);
+                    if (talkLiveRef.current && !sig.aborted) {
+                        window.setTimeout(() => {
+                            if (talkLiveRef.current) startListeningRef.current();
+                        }, 400);
+                    }
+                })();
+            }
         }
     };
 
@@ -276,51 +443,95 @@ function FloatingChat({
         }
     };
 
+    const requestClose = useCallback(() => {
+        if (variant === 'talk') endTalkSession();
+        onClose();
+    }, [variant, endTalkSession, onClose]);
+
+    const statusLine =
+        variant === 'talk'
+            ? isListening
+                ? 'Live · listening'
+                : loading
+                  ? DEXO_LOADING_TAGLINES[loadingTick]
+                  : 'Live · ready'
+            : isListening
+              ? 'Listening'
+              : isSpeaking
+                ? 'Speaking'
+                : loading
+                  ? DEXO_LOADING_TAGLINES[loadingTick]
+                  : 'Idle';
+
     return (
         <div
-            className="flex max-h-[520px] w-[372px] flex-col overflow-hidden rounded-lg border border-zinc-800/90"
-            style={{
-                backgroundColor: '#0f0f10',
-                boxShadow: '0 20px 50px rgba(0,0,0,0.55)',
-            }}
+            className="flex max-h-[520px] w-[372px] flex-col overflow-hidden rounded-xl border border-zinc-300/90 bg-zinc-50 shadow-[0_20px_50px_rgba(15,23,42,0.18)]"
         >
-            <div
-                className="flex shrink-0 items-center justify-between border-b border-zinc-800/80 px-3.5 py-3"
-                style={{ backgroundColor: '#141415' }}
-            >
+            <div className="flex shrink-0 items-center justify-between border-b border-zinc-200/90 bg-gradient-to-b from-white to-zinc-100/95 px-3.5 py-3">
                 <div className="flex min-w-0 items-center gap-2.5">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-zinc-700/80 bg-zinc-900/90">
-                        <MessageSquare className="h-3.5 w-3.5 text-zinc-400" strokeWidth={1.75} />
+                    <div
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${
+                            variant === 'talk'
+                                ? 'border-teal-300/80 bg-teal-50 text-teal-700'
+                                : 'border-zinc-300/90 bg-white text-zinc-600'
+                        }`}
+                    >
+                        {variant === 'talk' ? (
+                            <AudioWaveform className="h-3.5 w-3.5" strokeWidth={1.75} />
+                        ) : (
+                            <MessageSquare className="h-3.5 w-3.5" strokeWidth={1.75} />
+                        )}
                     </div>
                     <div className="min-w-0">
-                        <p className="truncate text-[13px] font-medium tracking-tight text-zinc-200">Dexo</p>
-                        <p className="truncate text-[10px] text-zinc-600">NorthROSC Labs · DeepChox AI</p>
-                        <p className="mt-0.5 truncate text-[10px] text-zinc-500 tabular-nums">
-                            {isListening ? 'Listening' : isSpeaking ? 'Speaking' : loading ? DEXO_LOADING_TAGLINES[loadingTick] : 'Idle'}
+                        <p className="truncate text-[13px] font-semibold tracking-tight text-zinc-900">
+                            Dexo {variant === 'talk' ? '· Live voice' : ''}
                         </p>
+                        <p className="truncate text-[10px] text-zinc-500">NorthROSC Labs · DeepChox AI</p>
+                        <p className="mt-0.5 truncate text-[10px] font-medium tabular-nums text-teal-700/90">{statusLine}</p>
                     </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-0.5">
-                    <button
-                        type="button"
-                        onClick={resetConversation}
-                        className="rounded-md p-1.5 text-zinc-500 transition hover:bg-zinc-800/80 hover:text-zinc-300"
-                        title="Start a new chat"
-                    >
-                        <MessageSquarePlus className="h-3.5 w-3.5" strokeWidth={1.75} />
-                    </button>
+                    {variant === 'talk' ? (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                endTalkSession();
+                                setMessages((prev) => [
+                                    ...prev,
+                                    {
+                                        role: 'dexo',
+                                        text: 'Live session ended. Open the orb anytime to start again.',
+                                        id: ++msgId.current,
+                                    },
+                                ]);
+                            }}
+                            className="mr-0.5 flex items-center gap-1 rounded-md border border-rose-200 bg-rose-50 px-2 py-1 text-[11px] font-semibold text-rose-800 transition hover:bg-rose-100"
+                        >
+                            <PhoneOff className="h-3 w-3" strokeWidth={2} />
+                            End
+                        </button>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={resetConversation}
+                            className="rounded-md p-1.5 text-zinc-500 transition hover:bg-zinc-200/80 hover:text-zinc-800"
+                            title="Start a new chat"
+                        >
+                            <MessageSquarePlus className="h-3.5 w-3.5" strokeWidth={1.75} />
+                        </button>
+                    )}
                     <button
                         type="button"
                         onClick={onExpand}
-                        className="rounded-md p-1.5 text-zinc-500 transition hover:bg-zinc-800/80 hover:text-zinc-300"
+                        className="rounded-md p-1.5 text-zinc-500 transition hover:bg-zinc-200/80 hover:text-zinc-800"
                         title="Open full workspace"
                     >
                         <Maximize2 className="h-3.5 w-3.5" strokeWidth={1.75} />
                     </button>
                     <button
                         type="button"
-                        onClick={onClose}
-                        className="rounded-md p-1.5 text-zinc-500 transition hover:bg-zinc-800/80 hover:text-zinc-300"
+                        onClick={requestClose}
+                        className="rounded-md p-1.5 text-zinc-500 transition hover:bg-zinc-200/80 hover:text-zinc-800"
                         aria-label="Close"
                     >
                         <X className="h-3.5 w-3.5" strokeWidth={1.75} />
@@ -328,34 +539,22 @@ function FloatingChat({
                 </div>
             </div>
 
-            <div
-                className="custom-scrollbar min-h-[200px] max-h-[340px] flex-1 space-y-2.5 overflow-y-auto px-3.5 py-3"
-                style={{ backgroundColor: '#0c0c0d' }}
-            >
-                {messages.length === 0 && (
+            <div className="custom-scrollbar min-h-[200px] max-h-[340px] flex-1 space-y-2.5 overflow-y-auto bg-zinc-50/90 px-3.5 py-3">
+                {messages.length === 0 && variant === 'chat' && (
                     <div className="flex h-full flex-col items-center justify-center px-2 py-12">
                         <p className="max-w-[248px] text-center text-[12px] leading-relaxed text-zinc-500">
                             Messages stay in context for this venture. Ask for updates, decisions, or a concise read on where things stand.
                         </p>
                     </div>
                 )}
-                {messages.map(msg => (
+                {messages.map((msg) => (
                     <div key={msg.id} className={`flex gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
                         <div
                             className={`max-w-[88%] px-3 py-2 text-[13px] leading-[1.45] ${
-                                msg.role === 'user' ? 'rounded-md rounded-br-sm text-zinc-100' : 'rounded-md rounded-bl-sm text-zinc-300'
-                            }`}
-                            style={
                                 msg.role === 'user'
-                                    ? {
-                                          backgroundColor: '#27272a',
-                                          border: '1px solid rgba(255,255,255,0.06)',
-                                      }
-                                    : {
-                                          backgroundColor: '#18181b',
-                                          border: '1px solid rgba(255,255,255,0.05)',
-                                      }
-                            }
+                                    ? 'rounded-lg rounded-br-sm border border-zinc-200 bg-white text-zinc-900 shadow-sm'
+                                    : 'rounded-lg rounded-bl-sm border border-zinc-200/80 bg-zinc-100/90 text-zinc-800'
+                            }`}
                         >
                             {msg.text}
                         </div>
@@ -363,15 +562,13 @@ function FloatingChat({
                 ))}
                 {loading && (
                     <div className="flex gap-2">
-                        <div
-                            className="rounded-md border border-zinc-800/90 bg-zinc-900/50 px-3 py-2.5"
-                        >
+                        <div className="rounded-lg border border-zinc-200 bg-white px-3 py-2.5 shadow-sm">
                             <div className="flex items-center gap-2.5">
-                                <div className="rounded-full border border-zinc-800/80 bg-[#111115] p-1">
+                                <div className="rounded-full border border-zinc-200 bg-zinc-50 p-1">
                                     <DexoParticleCanvas mode="room" size={28} state="loading" />
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="text-[11px] font-medium text-zinc-200">{DEXO_LOADING_TAGLINES[loadingTick]}</p>
+                                    <p className="text-[11px] font-medium text-zinc-800">{DEXO_LOADING_TAGLINES[loadingTick]}</p>
                                     <p className="text-[10px] text-zinc-500">Generating reply…</p>
                                 </div>
                             </div>
@@ -382,33 +579,41 @@ function FloatingChat({
             </div>
 
             {interimTranscript && (
-                <div className="shrink-0 border-t border-zinc-800/60 px-3.5 py-1.5" style={{ backgroundColor: '#0f0f10' }}>
+                <div className="shrink-0 border-t border-zinc-200 bg-white px-3.5 py-1.5">
                     <p className="truncate text-[11px] text-zinc-500">{interimTranscript}</p>
                 </div>
             )}
 
-            <div className="shrink-0 border-t border-zinc-800/80 px-3 py-2.5" style={{ backgroundColor: '#141415' }}>
+            <div className="shrink-0 border-t border-zinc-200 bg-white px-3 py-2.5">
+                {variant === 'talk' && (
+                    <p className="mb-2 text-[10px] leading-snug text-zinc-500">
+                        Live mode: Dexo speaks each reply, then listens again. Say <span className="font-semibold text-zinc-700">end session</span> or tap{' '}
+                        <span className="font-semibold text-zinc-700">End</span> to stop.
+                    </p>
+                )}
                 <div
-                    className={`flex items-end gap-2 rounded-md border px-2 py-1.5 transition-colors ${
-                        isListening ? 'border-zinc-600 bg-zinc-900/40' : 'border-zinc-800 bg-[#0c0c0d] focus-within:border-zinc-600'
+                    className={`flex items-end gap-2 rounded-lg border px-2 py-1.5 transition-colors ${
+                        isListening
+                            ? 'border-teal-300 bg-teal-50/60'
+                            : 'border-zinc-200 bg-zinc-50 focus-within:border-teal-400/80'
                     }`}
                 >
                     <button
                         type="button"
                         onClick={() => (isListening ? stopListening() : isSpeaking ? stopSpeaking() : startListening())}
-                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded transition-colors ${
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-colors ${
                             isListening
-                                ? 'bg-zinc-700 text-zinc-100'
+                                ? 'bg-teal-600 text-white'
                                 : isSpeaking
-                                    ? 'bg-zinc-800 text-zinc-400'
-                                    : 'text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300'
+                                  ? 'bg-zinc-200 text-zinc-600'
+                                  : 'text-zinc-500 hover:bg-zinc-200 hover:text-zinc-800'
                         }`}
                     >
                         {isListening ? (
                             <span className="flex gap-0.5">
-                                <span className="h-2 w-0.5 rounded-sm bg-zinc-300" />
-                                <span className="h-3 w-0.5 rounded-sm bg-zinc-300" />
-                                <span className="h-1.5 w-0.5 rounded-sm bg-zinc-300" />
+                                <span className="h-2 w-0.5 rounded-sm bg-white" />
+                                <span className="h-3 w-0.5 rounded-sm bg-white" />
+                                <span className="h-1.5 w-0.5 rounded-sm bg-white" />
                             </span>
                         ) : isSpeaking ? (
                             <Volume2 className="h-3.5 w-3.5" strokeWidth={1.75} />
@@ -423,8 +628,14 @@ function FloatingChat({
                         onChange={(e) => setInputText(e.target.value)}
                         onKeyDown={onKey}
                         rows={1}
-                        placeholder={isListening ? 'Listening…' : 'Type or use the mic — same thread as Dexo room'}
-                        className="min-h-[32px] min-w-0 flex-1 resize-none border-none bg-transparent px-0.5 py-1.5 text-[13px] text-zinc-200 placeholder:text-zinc-600 focus:outline-none"
+                        placeholder={
+                            isListening
+                                ? 'Listening…'
+                                : variant === 'talk'
+                                  ? 'Or type a command — same live thread'
+                                  : 'Type or use the mic — same thread as Dexo room'
+                        }
+                        className="min-h-[32px] min-w-0 flex-1 resize-none border-none bg-transparent px-0.5 py-1.5 text-[13px] text-zinc-900 placeholder:text-zinc-400 focus:outline-none"
                         style={{ maxHeight: '80px', overflowY: 'auto' }}
                     />
 
@@ -432,7 +643,7 @@ function FloatingChat({
                         <button
                             type="button"
                             onClick={stopSpeaking}
-                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded text-zinc-500 transition hover:bg-zinc-800 hover:text-zinc-300"
+                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-200 hover:text-zinc-800"
                         >
                             <Square className="h-3 w-3.5 fill-current" />
                         </button>
@@ -441,7 +652,7 @@ function FloatingChat({
                             type="button"
                             onClick={() => handleSend()}
                             disabled={!inputText.trim() || loading}
-                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded border border-zinc-700 bg-zinc-800/80 text-zinc-200 transition hover:border-zinc-600 hover:bg-zinc-800 disabled:opacity-30"
+                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-zinc-300 bg-white text-zinc-800 shadow-sm transition hover:border-teal-400 hover:bg-teal-50 disabled:opacity-30"
                         >
                             <Send className="h-3.5 w-3.5" strokeWidth={1.75} />
                         </button>
@@ -456,12 +667,14 @@ function FloatingChat({
 
 // ─── Main Component ─────────────────────────────────────────────────────────
 
+type DexoFabPanel = 'none' | 'menu' | 'chat' | 'talk';
+
 export function FloatingDexoOrb() {
     const { activeProject, activeRoom, switchRoom } = useOffice();
     const [mounted, setMounted] = useState(false);
     const [offset, setOffset] = useState({ x: 0, y: 0 });
     const [hovered, setHovered] = useState(false);
-    const [chatOpen, setChatOpen] = useState(false);
+    const [fabPanel, setFabPanel] = useState<DexoFabPanel>('none');
 
     const dragRef = useRef<{
         px: number; py: number; ox: number; oy: number; dragged: boolean;
@@ -469,24 +682,24 @@ export function FloatingDexoOrb() {
 
     useEffect(() => { setMounted(true); setOffset(readOffset()); }, []);
 
-    // Close chat on outside click
+    // Close menu / panels on outside click
     useEffect(() => {
-        if (!chatOpen) return;
+        if (fabPanel === 'none') return;
         const handler = (e: MouseEvent) => {
             const target = e.target as HTMLElement;
             if (!target.closest('[data-dexo-fab]')) {
-                setChatOpen(false);
+                setFabPanel('none');
             }
         };
         document.addEventListener('mousedown', handler);
         return () => document.removeEventListener('mousedown', handler);
-    }, [chatOpen]);
+    }, [fabPanel]);
 
     const onPointerDown = useCallback((e: React.PointerEvent) => {
-        if (chatOpen) return;
+        if (fabPanel === 'chat' || fabPanel === 'talk') return;
         e.currentTarget.setPointerCapture(e.pointerId);
         dragRef.current = { px: e.clientX, py: e.clientY, ox: offset.x, oy: offset.y, dragged: false };
-    }, [offset, chatOpen]);
+    }, [offset, fabPanel]);
 
     const onPointerMove = useCallback((e: React.PointerEvent) => {
         const d = dragRef.current;
@@ -506,7 +719,7 @@ export function FloatingDexoOrb() {
         } catch { /* noop */ }
         setOffset((cur) => { saveOffset(cur); return cur; });
         if (d && !d.dragged) {
-            setChatOpen(prev => !prev);
+            setFabPanel((prev) => (prev === 'none' ? 'menu' : 'none'));
         }
     }, []);
 
@@ -521,7 +734,7 @@ export function FloatingDexoOrb() {
     }, []);
 
     const expandToFull = useCallback(() => {
-        setChatOpen(false);
+        setFabPanel('none');
         switchRoom('dexo');
     }, [switchRoom]);
 
@@ -535,37 +748,76 @@ export function FloatingDexoOrb() {
 
     return createPortal(
         <div className="fixed z-[10049]" style={anchorStyle} data-dexo-fab>
-            {/* Expandable Chat Panel */}
-            {chatOpen && (
+            {/* Mode picker */}
+            {fabPanel === 'menu' && (
+                <div
+                    className="absolute bottom-[calc(100%+12px)] right-0 w-[min(calc(100vw-1.5rem),17.5rem)] rounded-xl border border-zinc-200 bg-gradient-to-b from-white to-zinc-50 p-3 shadow-[0_20px_40px_rgba(15,23,42,0.15)]"
+                    style={{ animation: 'dexo-chat-enter 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards' }}
+                >
+                    <p className="text-[12px] font-semibold text-zinc-900">How should Dexo help?</p>
+                    <p className="mt-0.5 text-[10px] leading-snug text-zinc-500">Choose chat or live voice — both use your current venture.</p>
+                    <div className="mt-3 flex flex-col gap-2">
+                        <button
+                            type="button"
+                            onClick={() => setFabPanel('chat')}
+                            className="flex w-full items-center gap-2.5 rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-left text-[13px] font-medium text-zinc-900 shadow-sm transition hover:border-teal-300 hover:bg-teal-50/50"
+                        >
+                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 text-zinc-700">
+                                <MessageSquare className="h-4 w-4" strokeWidth={1.75} />
+                            </span>
+                            <span>
+                                <span className="block">Execute by Chat</span>
+                                <span className="text-[10px] font-normal text-zinc-500">Type or tap mic in the thread</span>
+                            </span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setFabPanel('talk')}
+                            className="flex w-full items-center gap-2.5 rounded-lg border border-teal-200/90 bg-teal-50/40 px-3 py-2.5 text-left text-[13px] font-medium text-zinc-900 shadow-sm transition hover:border-teal-400 hover:bg-teal-50/80"
+                        >
+                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-teal-200 bg-white text-teal-700">
+                                <AudioWaveform className="h-4 w-4" strokeWidth={1.75} />
+                            </span>
+                            <span>
+                                <span className="block">Execute by Talking</span>
+                                <span className="text-[10px] font-normal text-zinc-600">Greeting, then live voice until you End</span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {(fabPanel === 'chat' || fabPanel === 'talk') && (
                 <div
                     className="absolute bottom-[calc(100%+12px)] right-0"
                     style={{ animation: 'dexo-chat-enter 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards' }}
                 >
                     <FloatingChat
-                        onClose={() => setChatOpen(false)}
+                        variant={fabPanel}
+                        onClose={() => setFabPanel('none')}
                         onExpand={expandToFull}
                     />
                 </div>
             )}
 
-            {hovered && !chatOpen && (
+            {hovered && fabPanel === 'none' && (
                 <div
-                    className="pointer-events-none absolute bottom-[calc(100%+10px)] right-0 w-[min(calc(100vw-1.5rem),15rem)] rounded-xl border border-zinc-700/80 px-3 py-2.5 text-left shadow-xl"
+                    className="pointer-events-none absolute bottom-[calc(100%+10px)] right-0 w-[min(calc(100vw-1.5rem),15rem)] rounded-xl border border-zinc-200/90 px-3 py-2.5 text-left shadow-lg"
                     style={{
-                        backgroundColor: 'rgba(18,18,20,0.96)',
-                        boxShadow: '0 12px 32px rgba(0,0,0,0.5)',
+                        backgroundColor: 'rgba(255,255,255,0.97)',
+                        boxShadow: '0 12px 32px rgba(15,23,42,0.12)',
                         animation: 'dexo-chat-enter 0.2s ease-out forwards',
                     }}
                 >
-                    <p className="text-[12px] font-semibold tracking-tight text-zinc-100">Dexo</p>
+                    <p className="text-[12px] font-semibold tracking-tight text-zinc-900">Dexo</p>
                     <p className="mt-0.5 text-[10px] leading-snug text-zinc-500">AI co-founder · venture context</p>
                     {activeProject?.name ? (
-                        <p className="mt-1.5 truncate text-[11px] text-zinc-400" title={activeProject.name}>
+                        <p className="mt-1.5 truncate text-[11px] text-zinc-600" title={activeProject.name}>
                             {activeProject.name}
                         </p>
                     ) : null}
-                    <p className="mt-2 border-t border-zinc-800/80 pt-2 text-[10px] text-zinc-600">
-                        Tap to chat · drag orb to reposition
+                    <p className="mt-2 border-t border-zinc-200 pt-2 text-[10px] text-zinc-500">
+                        Tap for chat or live voice · drag orb to move
                     </p>
                 </div>
             )}
@@ -581,15 +833,15 @@ export function FloatingDexoOrb() {
                     style={{
                         inset: 0,
                         boxShadow:
-                            'inset 0 0 0 1px rgba(255,255,255,0.09), 0 0 0 1px rgba(0,0,0,0.65), 0 10px 28px rgba(0,0,0,0.45)',
+                            'inset 0 0 0 1px rgba(255,255,255,0.45), 0 0 0 1px rgba(15,118,110,0.25), 0 10px 28px rgba(15,23,42,0.18)',
                     }}
                 />
                 <button
                     type="button"
-                    title={chatOpen ? 'Close Dexo' : 'Open Dexo'}
+                    title={fabPanel !== 'none' ? 'Close Dexo' : 'Open Dexo'}
                     aria-haspopup="dialog"
-                    aria-expanded={chatOpen}
-                    aria-label={chatOpen ? 'Close Dexo chat' : 'Open Dexo chat'}
+                    aria-expanded={fabPanel !== 'none'}
+                    aria-label={fabPanel !== 'none' ? 'Close Dexo' : 'Open Dexo'}
                     onPointerDown={onPointerDown}
                     onPointerMove={onPointerMove}
                     onPointerUp={onPointerUp}
@@ -611,20 +863,21 @@ export function FloatingDexoOrb() {
                             justifyContent: 'center',
                             transition: 'transform 0.2s ease, box-shadow 0.2s ease',
                             transform:
-                                hovered ? 'scale(1.02)' : chatOpen ? 'scale(0.99)' : 'scale(1)',
-                            background: chatOpen
-                                ? 'radial-gradient(circle at 35% 28%, rgba(72,72,78,0.95) 0%, rgba(36,36,40,0.99) 48%, rgba(22,22,24,1) 100%)'
-                                : hovered
-                                    ? 'radial-gradient(circle at 35% 28%, rgba(66,66,72,0.92) 0%, rgba(34,34,38,0.98) 50%, rgba(20,20,22,1) 100%)'
-                                    : 'radial-gradient(circle at 35% 28%, rgba(58,58,64,0.9) 0%, rgba(32,32,36,0.97) 50%, rgba(18,18,20,1) 100%)',
+                                hovered ? 'scale(1.02)' : fabPanel !== 'none' ? 'scale(0.99)' : 'scale(1)',
+                            background:
+                                fabPanel !== 'none'
+                                    ? 'radial-gradient(circle at 35% 28%, rgba(224,242,241,0.98) 0%, rgba(204,251,241,0.92) 42%, rgba(167,243,208,0.88) 100%)'
+                                    : hovered
+                                      ? 'radial-gradient(circle at 35% 28%, rgba(244,244,245,0.98) 0%, rgba(228,228,231,0.96) 48%, rgba(212,212,216,0.94) 100%)'
+                                      : 'radial-gradient(circle at 35% 28%, rgba(250,250,250,0.99) 0%, rgba(235,235,238,0.97) 50%, rgba(220,220,224,0.95) 100%)',
                             boxShadow:
-                                'inset 0 1px 0 rgba(255,255,255,0.07), inset 0 -1px 0 rgba(0,0,0,0.35)',
+                                'inset 0 1px 0 rgba(255,255,255,0.75), inset 0 -1px 0 rgba(15,23,42,0.06)',
                         }}
                     >
                         <DexoParticleCanvas
                             mode="floating"
                             size={ORB_SIZE - 4}
-                            active={hovered || chatOpen}
+                            active={hovered || fabPanel !== 'none'}
                         />
                     </span>
                 </button>
