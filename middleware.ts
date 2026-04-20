@@ -17,6 +17,8 @@ const isPublicRoute = createRouteMatcher([
   '/guide',      // public guide
   '/sign-in(.*)',
   '/sign-up(.*)',
+  '/sitemap.xml(.*)',
+  '/robots.txt(.*)',
   '/api/health(.*)',
 ]);
 
@@ -110,8 +112,8 @@ export default clerkMiddleware(async (auth, req) => {
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and static files.
-    '/((?!_next/static|_next/image|favicon.ico|deepchox-mark.svg|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    // Skip Next.js internals, static files, and SEO routes (must not run Clerk — else crawlers get HTML sign-in).
+    '/((?!_next/static|_next/image|favicon.ico|deepchox-mark.svg|sitemap\\.xml|robots\\.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
     '/(api|trpc)(.*)',
   ],
 };
