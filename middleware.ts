@@ -17,8 +17,12 @@ const isPublicRoute = createRouteMatcher([
   '/guide',      // public guide
   '/sign-in(.*)',
   '/sign-up(.*)',
+  '/sso-callback(.*)',
   '/sitemap.xml(.*)',
   '/robots.txt(.*)',
+  /** Next.js metadata routes for favicons (must not return Clerk HTML to Googlebot). */
+  '/icon(.*)',
+  '/apple-icon(.*)',
   '/api/health(.*)',
 ]);
 

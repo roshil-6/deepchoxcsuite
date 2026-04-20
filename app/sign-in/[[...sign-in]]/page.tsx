@@ -1,11 +1,11 @@
 import { SignIn } from '@clerk/nextjs';
-import { clerkGreyAppearance } from '@/lib/clerkGreyAppearance';
+import { clerkLightAppearance } from '@/lib/clerkLightAppearance';
 
 /** Path-based routing + redirect OAuth avoids broken return URLs and silent popup failures. */
 export default function SignInPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-950 px-4 py-10">
-      <div className="w-full max-w-md rounded-2xl border border-zinc-600/80 bg-zinc-900/95 p-6 shadow-2xl backdrop-blur-sm">
+    <div className="flex min-h-screen items-center justify-center bg-white px-4 py-10">
+      <div className="w-full max-w-md rounded-2xl border border-zinc-200/90 bg-white p-6 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.12)]">
         <SignIn
           routing="path"
           path="/sign-in"
@@ -13,7 +13,7 @@ export default function SignInPage() {
           fallbackRedirectUrl="/"
           signUpFallbackRedirectUrl="/"
           oauthFlow="redirect"
-          appearance={clerkGreyAppearance}
+          appearance={clerkLightAppearance}
         />
       </div>
     </div>

@@ -21,12 +21,18 @@ import { FloatingDexoOrb } from '@/components/Dexo/FloatingDexoOrb';
 import { DexoKnowledgePromptModal } from '@/components/DexoKnowledgePromptModal';
 import { DeskChatThreadSlotProvider } from '@/components/DeskChatThreadSlotContext';
 import { SectionGuideProvider } from '@/components/SectionGuideCoach';
+import {
+  clearWorkspacePersistence,
+  consumePendingNameVenture,
+  persistEnterWorkspace,
+  readPersistedWorkspaceStarted,
+} from '@/lib/workspacePersistence';
 
 /** After workspace auth modal: open “name venture” once signed in. */
 const VENTURE_AUTH_KEY = 'deepchox-after-auth-new-venture';
 
 export default function Home() {
-  const [hasStarted, setHasStarted] = useState(false);
+  const [hasStarted, setHasStarted] = useState(readPersistedWorkspaceStarted);
   const [nameVentureOpen, setNameVentureOpen] = useState(false);
   const [workspaceAuthOpen, setWorkspaceAuthOpen] = useState(false);
   const { isSignedIn, isLoaded } = useAuth();
@@ -34,11 +40,13 @@ export default function Home() {
   const { setActiveProject, setAllProjects, switchRoom, activeRoom, resetSystem } = useOffice();
 
   const enterWorkspaceWithVenturePrompt = useCallback(() => {
+    persistEnterWorkspace();
     setHasStarted(true);
     setNameVentureOpen(true);
   }, []);
 
   const enterWorkspaceGuest = useCallback(() => {
+    persistEnterWorkspace();
     setHasStarted(true);
     setNameVentureOpen(false);
   }, []);
@@ -61,6 +69,12 @@ export default function Home() {
     }
     wasSignedInRef.current = isSignedIn;
   }, [isLoaded, isSignedIn, hasStarted, enterWorkspaceWithVenturePrompt]);
+
+  /** After OAuth redirect or refresh: open name-venture modal if flagged in sessionStorage. */
+  useEffect(() => {
+    if (!hasStarted) return;
+    if (consumePendingNameVenture()) setNameVentureOpen(true);
+  }, [hasStarted]);
 
   /** Guest asked for a venture → signed in in modal → open name venture. */
   useEffect(() => {
@@ -153,6 +167,7 @@ export default function Home() {
           <AppShell
             onLogout={() => {
               void resetSystem();
+              clearWorkspacePersistence();
               setHasStarted(false);
               setNameVentureOpen(false);
             }}

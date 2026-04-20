@@ -71,8 +71,11 @@ export const metadata: Metadata = {
     description: SITE_OG_DESCRIPTION,
   },
   icons: {
-    icon: [{ url: '/deepchox-mark.svg', type: 'image/svg+xml' }],
-    apple: '/deepchox-mark.svg',
+    icon: [
+      { url: '/deepchox-mark.svg', type: 'image/svg+xml', sizes: 'any' },
+    ],
+    shortcut: '/deepchox-mark.svg',
+    apple: [{ url: '/deepchox-mark.svg', type: 'image/svg+xml', sizes: '180x180' }],
   },
   alternates: metadataBaseUrl
     ? { canonical: metadataBaseUrl.toString() }

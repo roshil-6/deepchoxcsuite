@@ -1,9 +1,7 @@
 'use client';
 
-import { SignIn } from '@clerk/nextjs';
 import { X } from 'lucide-react';
-import { clerkGreyAppearance } from '@/lib/clerkGreyAppearance';
-import { clerkEmbeddedSignInProps } from '@/lib/clerkEmbeddedSignInProps';
+import { LandingGoogleAuth } from '@/components/LandingGoogleAuth';
 
 export interface LandingAuthModalProps {
   open: boolean;
@@ -28,7 +26,7 @@ export function LandingAuthModal({ open, onClose }: LandingAuthModalProps) {
       >
         <div className="flex items-center justify-between border-b border-zinc-700 px-3 py-2.5 sm:px-4">
           <h2 id="landing-auth-title" className="font-sans text-[13px] font-semibold text-zinc-100">
-            Sign in or create account
+            Log in or sign up
           </h2>
           <button
             type="button"
@@ -40,7 +38,7 @@ export function LandingAuthModal({ open, onClose }: LandingAuthModalProps) {
           </button>
         </div>
         <div className="bg-zinc-900 px-3 py-3 sm:px-4 sm:pb-4">
-          <SignIn {...clerkEmbeddedSignInProps} appearance={clerkGreyAppearance} />
+          <LandingGoogleAuth afterOAuth={{ openNameVenture: true }} showOtherOptions />
         </div>
       </div>
     </div>

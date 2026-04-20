@@ -2,14 +2,12 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { SignIn } from '@clerk/nextjs';
 import { Check, Globe, Infinity, Sparkles } from 'lucide-react';
 import { FREE_DAILY_TOKENS, TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 import { formatRegionalPricePair, getProBillingAmounts } from '@/lib/billingConfig';
 import { usePricingRegion } from '@/hooks/usePricingRegion';
 import { SITE_HERO_H1, SITE_HERO_LEAD, SITE_PULL_QUOTE, SITE_TAGLINE_SHORT } from '@/lib/siteSeo';
-import { clerkGreyAppearance } from '@/lib/clerkGreyAppearance';
-import { clerkEmbeddedSignInProps } from '@/lib/clerkEmbeddedSignInProps';
+import { LandingGoogleAuth } from '@/components/LandingGoogleAuth';
 
 /** @deprecated Hero is Clerk sign-in; kept for older imports / env docs. */
 export const LANDING_HERO_VIDEO_DEFAULT = '/landing-hero-demo.mp4';
@@ -138,7 +136,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                                 onClick={scrollToHeroAuth}
                                 className="rounded-md px-3 py-2.5 font-sans text-[16px] font-semibold leading-none text-zinc-300 transition-colors hover:text-white"
                             >
-                                Sign in
+                                Log in
                             </button>
                         </nav>
                     </div>
@@ -183,29 +181,25 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                             </div>
                         </div>
 
-                        {/* Auth panel — solid matte box, no glass / blur */}
+                        {/* Auth — compact Google actions + guest path (no embedded Clerk card) */}
                         <div
                             id="landing-auth"
-                            className="relative z-[35] isolate mx-auto mt-6 w-full max-w-[min(100%,28rem)] scroll-mt-28 rounded-2xl border border-zinc-500/90 bg-zinc-800/85 px-4 py-4 shadow-[0_16px_48px_rgba(0,0,0,0.5)] ring-1 ring-zinc-400/15 backdrop-blur-[2px] sm:mt-7 sm:max-w-[32rem] sm:px-6 sm:py-5"
+                            className="relative z-[35] mx-auto mt-6 w-full max-w-lg scroll-mt-28 sm:mt-7"
                         >
-                            <div className="mb-3.5 border-b border-zinc-600/90 pb-2.5">
-                                <p className="text-center font-sans text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-200">
-                                    Sign in or create an account
-                                </p>
-                            </div>
-                            <div className="min-h-0 rounded-xl border border-zinc-600/70 bg-zinc-900/90 p-3 sm:p-4">
-                                <SignIn {...clerkEmbeddedSignInProps} appearance={clerkGreyAppearance} />
-                            </div>
-                            <div className="mt-3.5 border-t border-zinc-600/90 pt-3.5">
+                            <LandingGoogleAuth
+                                afterOAuth={{ openNameVenture: true }}
+                                showOtherOptions
+                            />
+                            <div className="mt-4 flex flex-col items-center gap-2">
                                 <button
                                     type="button"
                                     onClick={continueWithoutSigningIn}
-                                    className="w-full rounded-lg border border-zinc-500/80 bg-zinc-700/90 py-2 font-sans text-[12px] font-medium leading-snug text-zinc-100 transition hover:border-zinc-400 hover:bg-zinc-600 hover:text-white sm:py-2.5 sm:text-[13px]"
+                                    className="rounded-full border border-zinc-500/55 bg-zinc-900/40 px-4 py-2 font-sans text-[12px] font-semibold text-zinc-200 transition hover:border-zinc-400/80 hover:bg-zinc-800/60 hover:text-white sm:text-[13px]"
                                 >
                                     Continue without signing in
                                 </button>
-                                <p className="mt-2 text-center font-sans text-[11px] leading-snug text-zinc-300">
-                                    Browse the app first. You’ll be asked to sign in when you add a venture.
+                                <p className="max-w-sm text-center font-sans text-[11px] leading-snug text-zinc-500">
+                                    Browse first. You’ll be asked to sign in when you add a venture.
                                 </p>
                             </div>
                         </div>
