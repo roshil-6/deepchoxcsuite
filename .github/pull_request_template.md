@@ -19,6 +19,7 @@
 - [ ] **Clerk:** `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` + `CLERK_SECRET_KEY` set on each host; dashboard paths match `/sign-in` and `/sign-up`; custom domain verified if used
 - [ ] No secrets committed (`.env.local` stays local; only `.env.example` placeholders updated if needed)
 - [ ] UI checked on a narrow viewport if the change touches layout
+- [ ] If landing or workspace entry changed: guests can still use **Sign in** / **Create account** in the left rail (open **Desks** menu on mobile)
 
 ## Screenshots / notes
 
