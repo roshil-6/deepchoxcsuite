@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { ChatAssistant } from '@/components/ChatAssistant';
 import { WorkspaceStage } from '@/components/WorkspaceStage';
@@ -37,7 +37,6 @@ export default function Home() {
   const [nameVentureOpen, setNameVentureOpen] = useState(false);
   const [workspaceAuthOpen, setWorkspaceAuthOpen] = useState(false);
   const { isSignedIn, isLoaded } = useAuth();
-  const wasSignedInRef = useRef<boolean | null>(null);
   const { setActiveProject, setAllProjects, switchRoom, activeRoom, resetSystem } = useOffice();
 
   const enterWorkspaceWithVenturePrompt = useCallback(() => {
@@ -52,31 +51,39 @@ export default function Home() {
     setNameVentureOpen(false);
   }, []);
 
-  useEffect(() => {
-    if (!hasStarted) {
-      wasSignedInRef.current = null;
-    }
-  }, [hasStarted]);
-
-  /** Restore workspace flag from sessionStorage only after mount (matches server HTML). */
+  /**
+   * After mount: restore guest workspace from sessionStorage, or if Clerk already has a session and
+   * the user has not entered as a guest, skip the landing and open the app (name-venture prompt only
+   * when they have no ventures yet).
+   */
   useEffect(() => {
     if (readPersistedWorkspaceStarted()) {
       setHasStarted(true);
-    }
-  }, []);
-
-  /** Signed in on the landing hero (false → true): enter with name-venture flow. */
-  useEffect(() => {
-    if (!isLoaded) return;
-    if (wasSignedInRef.current === null) {
-      wasSignedInRef.current = isSignedIn;
       return;
     }
-    if (isSignedIn && !wasSignedInRef.current && !hasStarted) {
-      enterWorkspaceWithVenturePrompt();
-    }
-    wasSignedInRef.current = isSignedIn;
-  }, [isLoaded, isSignedIn, hasStarted, enterWorkspaceWithVenturePrompt]);
+    if (!isLoaded || !isSignedIn) return;
+
+    let cancelled = false;
+    void (async () => {
+      try {
+        const projects = await getAllProjects();
+        if (cancelled) return;
+        if (projects.length === 0) {
+          enterWorkspaceWithVenturePrompt();
+        } else {
+          persistEnterWorkspace();
+          setHasStarted(true);
+          setNameVentureOpen(false);
+        }
+      } catch {
+        if (!cancelled) enterWorkspaceWithVenturePrompt();
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoaded, isSignedIn, enterWorkspaceWithVenturePrompt]);
 
   /** After OAuth redirect or refresh: open name-venture modal if flagged in sessionStorage. */
   useEffect(() => {
