@@ -181,7 +181,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                             </div>
                         </div>
 
-                        {/* Auth — Clerk default sign-in / sign-up (hash routing on `/`) */}
+                        {/* Auth — links to `/sign-in` & `/sign-up` (path routing; OAuth works reliably there) */}
                         <div
                             id="landing-auth"
                             className="relative z-[35] mx-auto mt-6 w-full max-w-md scroll-mt-28 sm:mt-7"

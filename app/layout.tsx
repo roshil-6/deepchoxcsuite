@@ -90,19 +90,11 @@ export default function RootLayout({
   const ld = siteJsonLd(metadataBaseUrl?.toString());
 
   return (
-    <ClerkProvider>
+    <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up">
       <html lang="en">
         <body
           className={`${inter.variable} ${playfair.variable} ${jetbrains.variable} ${syne.variable} font-sans bg-brand-bg text-brand-text antialiased overflow-x-hidden leading-normal tracking-normal`}
         >
-          {/*
-            Clerk may run Turnstile / sign-up checks from clerk-js on your origin (not only on Account Portal).
-            Without #clerk-captcha, bot protection can 400 on /v1/client/sign_ups.
-          */}
-          <div
-            id="clerk-captcha"
-            className="pointer-events-auto fixed bottom-20 left-1/2 z-[10050] flex w-[min(100vw-2rem,24rem)] min-h-[2.5rem] -translate-x-1/2 justify-center px-2 max-sm:bottom-24"
-          />
           <Script
             id="site-json-ld"
             type="application/ld+json"
