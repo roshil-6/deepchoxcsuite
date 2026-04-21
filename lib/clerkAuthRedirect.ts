@@ -13,13 +13,6 @@ export function getAppOriginForClerkRedirect(): string {
   return 'http://127.0.0.1:5555';
 }
 
-export function absolutizeAppPath(pathOrUrl: string): string {
-  if (pathOrUrl.startsWith('http://') || pathOrUrl.startsWith('https://')) return pathOrUrl;
-  const origin = getAppOriginForClerkRedirect();
-  const p = pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`;
-  return `${origin}${p}`;
-}
-
 function alignRedirectHostWithSiteUrl(absoluteUrl: string): string {
   const base = getAppOriginForClerkRedirect();
   try {
@@ -45,15 +38,35 @@ function firstSearchParam(v: string | string[] | undefined): string | undefined 
   return s && s.length > 0 ? s : undefined;
 }
 
-/** Absolute URL to send users after sign-in or sign-up when using embedded Clerk on your domain. */
-export function clerkEmbeddedFallbackRedirect(
+/**
+ * Same-origin path (or `/`) for Clerk `fallbackRedirectUrl` / `forceRedirectUrl`.
+ * Relative paths avoid brittle allowlist mismatches (trailing slash, www vs apex).
+ */
+export function clerkPostAuthRedirectPath(
   incoming: Record<string, string | string[] | undefined>
 ): string {
   const raw = firstSearchParam(incoming.redirect_url);
   const pathOrUrl = raw ?? '/';
-  let absolute =
-    pathOrUrl.startsWith('http://') || pathOrUrl.startsWith('https://')
-      ? pathOrUrl
-      : absolutizeAppPath(pathOrUrl);
-  return alignRedirectHostWithSiteUrl(absolute);
+  const origin = getAppOriginForClerkRedirect();
+  let baseOrigin: string;
+  try {
+    baseOrigin = new URL(origin).origin;
+  } catch {
+    return pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`;
+  }
+
+  if (pathOrUrl.startsWith('http://') || pathOrUrl.startsWith('https://')) {
+    try {
+      const aligned = alignRedirectHostWithSiteUrl(pathOrUrl);
+      const u = new URL(aligned);
+      if (u.origin === baseOrigin) {
+        const p = `${u.pathname}${u.search}${u.hash}`;
+        return p.length > 0 ? p : '/';
+      }
+    } catch {
+      /* noop */
+    }
+    return '/';
+  }
+  return pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`;
 }

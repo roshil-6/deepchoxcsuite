@@ -25,6 +25,7 @@ const isPublicRoute = createRouteMatcher([
   '/icon(.*)',
   '/apple-icon(.*)',
   '/api/health(.*)',
+  '/api/clerk-health(.*)',
 ]);
 
 /** Per-IP in-memory rate limit for expensive AI API routes. */

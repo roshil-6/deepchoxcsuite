@@ -1,5 +1,5 @@
 import { SignIn } from '@clerk/nextjs';
-import { clerkEmbeddedFallbackRedirect } from '@/lib/clerkAuthRedirect';
+import { clerkPostAuthRedirectPath } from '@/lib/clerkAuthRedirect';
 import { clerkLightAppearance } from '@/lib/clerkLightAppearance';
 
 const appearance = {
@@ -14,7 +14,7 @@ export default async function SignInPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const sp = await searchParams;
-  const afterAuth = clerkEmbeddedFallbackRedirect(sp);
+  const afterAuth = clerkPostAuthRedirectPath(sp);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-white px-4 py-10">
@@ -28,6 +28,10 @@ export default async function SignInPage({
           oauthFlow="redirect"
           appearance={appearance}
         />
+        {/*
+          Mount next to the form — a global fixed #clerk-captcha sat at z-[10050] and could block Clerk’s UI / CAPTCHA.
+        */}
+        <div id="clerk-captcha" className="mt-4 flex min-h-[2.5rem] justify-center" />
       </div>
     </div>
   );
