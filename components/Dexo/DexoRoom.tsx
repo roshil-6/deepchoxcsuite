@@ -316,6 +316,31 @@ function AnalyzingBanner({ name }: { name?: string | null }) {
     );
 }
 
+/** Inline “typing” row in the conversation list while Jarvis converse is in flight. */
+function DexoConverseLoadingBubble() {
+    const [tick, setTick] = useState(0);
+    useEffect(() => {
+        const t = window.setInterval(() => {
+            setTick((n) => (n + 1) % DEXO_LOADING_TAGLINES.length);
+        }, 900);
+        return () => window.clearInterval(t);
+    }, []);
+    const line = DEXO_LOADING_TAGLINES[tick];
+    return (
+        <div className="flex items-end gap-2 justify-start">
+            <div className="mb-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--bg-elevated)]">
+                <Sparkles className="h-3.5 w-3.5 text-[var(--muted)]" />
+            </div>
+            <div className="max-w-[88%] rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.22)]">
+                <div className="flex items-center gap-2.5">
+                    <Loader2 className="h-4 w-4 shrink-0 animate-spin text-[var(--accent)]" aria-hidden />
+                    <p className="text-[13px] leading-snug text-[var(--muted)]">{line}</p>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 function truncateSetupDetail(s: string, max = 320): string {
@@ -332,6 +357,8 @@ export function DexoRoom() {
     /** Current/latest report - the most recent analysis */
     const [currentReport, setCurrentReport] = useState<JarvisReport | null>(null);
     const [loading, setLoading]   = useState(false);
+    /** Top banner vs inline thread loading — converse replies show under Conversation only. */
+    const [loadingKind, setLoadingKind] = useState<'analyze' | 'converse' | null>(null);
     const [error, setError]       = useState<string | null>(null);
     const [isMuted, setIsMuted]   = useState(false);
     const [inputText, setInputText] = useState('');
@@ -584,6 +611,7 @@ export function DexoRoom() {
             return;
         }
         
+        setLoadingKind(mode);
         setLoading(true); setError(null);
         // Stop speaking before making a new request
         if (isSpeaking) stopSpeaking();
@@ -674,6 +702,7 @@ export function DexoRoom() {
             setError(e instanceof Error ? e.message : 'Request failed');
         } finally {
             setLoading(false);
+            setLoadingKind(null);
         }
     }, [activeProject, buildCtx, currentReport, analysisHistory, convo, isMuted, isListening, isSpeaking, speakJarvis, tokens, upgradeModal]);
 
@@ -710,6 +739,16 @@ export function DexoRoom() {
 
     // Sync isMuted into the hook
     useEffect(() => { setMuted(isMuted); }, [isMuted, setMuted]);
+
+    /** Keep the inline converse loading bubble in view. */
+    useEffect(() => {
+        if (!loading || loadingKind !== 'converse') return;
+        const t = window.setTimeout(
+            () => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }),
+            100,
+        );
+        return () => window.clearTimeout(t);
+    }, [loading, loadingKind, convo.length]);
 
     const handleSend = async () => {
         const t = inputText.trim();
@@ -760,7 +799,8 @@ export function DexoRoom() {
         return () => window.removeEventListener('keydown', onKeyDown);
     }, [isSpeaking, isListening, stopSpeaking, startListening]);
 
-    const orbState: ConvoVoiceState | 'loading' = loading && !currentReport ? 'loading' : voiceState;
+    const orbState: ConvoVoiceState | 'loading' =
+        loading && loadingKind === 'analyze' && !currentReport ? 'loading' : voiceState;
 
     // Determine which report to display
     const displayedReport = activeAnalysisIndex !== null 
@@ -774,7 +814,7 @@ export function DexoRoom() {
             <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]">
                 <div className="mx-auto max-w-[660px] px-5 pb-32 pt-8">
 
-                    {loading && <AnalyzingBanner name={activeProject?.name} />}
+                    {loading && loadingKind === 'analyze' && <AnalyzingBanner name={activeProject?.name} />}
 
                     {/* Error */}
                     {error && !loading && (
@@ -1136,7 +1176,7 @@ export function DexoRoom() {
                         </div>
                     )}
 
-                    {convo.length > 0 && (
+                    {(convo.length > 0 || (loading && loadingKind === 'converse')) && (
                         <div className="mt-8 pb-28">
                             <div className="mb-4 flex items-center justify-between">
                                 <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
@@ -1180,6 +1220,7 @@ export function DexoRoom() {
                                         </div>
                                     );
                                 })}
+                                {loading && loadingKind === 'converse' ? <DexoConverseLoadingBubble /> : null}
                                 <div ref={chatEndRef} />
                             </div>
                         </div>

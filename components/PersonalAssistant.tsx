@@ -20,10 +20,10 @@ function PersonalAssistantLayout() {
                 <p className="max-w-md text-sm text-[var(--muted)]">Choose a venture first.</p>
                 <button
                     type="button"
-                    onClick={() => switchRoom('dashboard')}
+                    onClick={() => switchRoom('dexo')}
                     className="rounded-lg bg-white/[0.06] px-4 py-2 text-sm font-medium text-[var(--text)] transition-colors hover:bg-white/[0.1]"
                 >
-                    Open overview
+                    Open Dexo
                 </button>
             </div>
         );

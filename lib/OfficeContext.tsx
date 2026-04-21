@@ -243,7 +243,7 @@ const OfficeContext = createContext<OfficeContextType | undefined>(undefined);
 export function OfficeProvider({ children }: { children: ReactNode }) {
   const [activeRoom, setActiveRoom] = useState<
     AgentRole | 'dashboard' | 'calendar' | 'reports' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence'
-  >('dashboard');
+  >('dexo');
   const [agentSyncRunning, setAgentSyncRunning] = useState(false);
   const [syncToastMessage, setSyncToastMessage] = useState<string | null>(null);
   const [lastAiSyncTrace, setLastAiSyncTrace] = useState<AiSyncTraceStep[] | null>(null);
@@ -560,9 +560,9 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
    */
   const setActiveProject = (project: Project | null) => {
     setActiveProjectState(project);
-    // If we select a project, default to CEO room if we were in dashboard
+    // From overview-style rooms, selecting a venture opens Dexo (workspace hub).
     if (project && (activeRoom === 'dashboard' || activeRoom === 'calendar')) {
-      setActiveRoom('ceo');
+      setActiveRoom('dexo');
     }
   };
 
@@ -872,7 +872,7 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
     setSuiteIntelOpenDesk(null);
     setLivingOffice(null);
     setDexoBootstrap(null);
-    setActiveRoom('dashboard');
+    setActiveRoom('dexo');
     setSystemState(prev => ({ ...prev, alertLevel: 'stable', isDeepWork: false }));
   };
 

@@ -223,7 +223,7 @@ export function LeftRail({
                                     type="button"
                                     onClick={() => {
                                         setActiveProject(p);
-                                        switchRoom('dashboard');
+                                        switchRoom('dexo');
                                         onNavigate?.();
                                     }}
                                     className={`group flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors ${
