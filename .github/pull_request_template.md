@@ -12,6 +12,7 @@
 
 ## Checklist
 
+- [ ] Branch is up to date with `main` (`git fetch origin && git merge origin/main` or rebase)
 - [ ] `npm run build` passes locally
 - [ ] Prisma: migrations run where needed (`npm run db:migrate` against the right `DATABASE_URL`)
 - [ ] **Vercel / Render:** `DATABASE_URL` is the **external** Postgres URL for Production + Preview (internal `dpg-*-a` hosts fail from Vercel)
