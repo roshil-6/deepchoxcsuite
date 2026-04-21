@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Plus, LogOut, Sparkles, PanelRight } from 'lucide-react';
+import Link from 'next/link';
+import { Plus, LogOut, Sparkles, PanelRight, LogIn, UserPlus, Home } from 'lucide-react';
+import { useAuth } from '@clerk/nextjs';
 import { useOffice } from '@/lib/OfficeContext';
 import { getAllProjects } from '@/lib/db';
 import { StaffNotificationCenter } from '@/components/StaffNotificationCenter';
@@ -77,6 +79,7 @@ export function LeftRail({
 }: Props) {
     const { activeRoom, switchRoom, activeProject, setActiveProject, setAllProjects, allProjects } = useOffice();
     const { isPro } = useSubscription();
+    const { isSignedIn, isLoaded } = useAuth();
     const isFlush = variant === 'flush';
 
     useEffect(() => {
@@ -257,14 +260,43 @@ export function LeftRail({
                         Upgrade to Pro
                     </button>
                 )}
-                <button
-                    type="button"
-                    onClick={onLogout}
-                    className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl text-[12px] text-[var(--text-muted)] transition hover:bg-[rgba(255,255,255,0.06)] hover:text-[var(--text-primary)]"
-                >
-                    <LogOut className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
-                    Sign out
-                </button>
+                {!isLoaded ? (
+                    <div className="h-9" aria-hidden />
+                ) : !isSignedIn ? (
+                    <div className="flex flex-col gap-2">
+                        <Link
+                            href="/sign-in"
+                            className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border border-[rgba(116,86,255,0.22)] bg-[var(--accent-soft)] text-[12px] font-medium text-[var(--accent)] transition hover:bg-[rgba(116,86,255,0.18)]"
+                        >
+                            <LogIn className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
+                            Sign in
+                        </Link>
+                        <Link
+                            href="/sign-up"
+                            className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-[12px] font-medium text-[var(--text-secondary)] transition hover:bg-[rgba(255,255,255,0.06)] hover:text-[var(--text-primary)]"
+                        >
+                            <UserPlus className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
+                            Create account
+                        </Link>
+                        <button
+                            type="button"
+                            onClick={onLogout}
+                            className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl text-[12px] text-[var(--text-muted)] transition hover:bg-[rgba(255,255,255,0.06)] hover:text-[var(--text-primary)]"
+                        >
+                            <Home className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
+                            Back to welcome
+                        </button>
+                    </div>
+                ) : (
+                    <button
+                        type="button"
+                        onClick={onLogout}
+                        className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl text-[12px] text-[var(--text-muted)] transition hover:bg-[rgba(255,255,255,0.06)] hover:text-[var(--text-primary)]"
+                    >
+                        <LogOut className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
+                        Sign out
+                    </button>
+                )}
             </div>
             </div>
         </div>
