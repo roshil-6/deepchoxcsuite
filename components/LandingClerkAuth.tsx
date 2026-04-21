@@ -1,5 +1,7 @@
 'use client';
 
+import { GoogleIcon } from '@/components/auth/GoogleIcon';
+
 export interface LandingClerkAuthProps {
   className?: string;
 }
@@ -16,16 +18,15 @@ function authHref(path: '/sign-in' | '/sign-up') {
 export const LANDING_SIGN_IN_HREF = authHref('/sign-in');
 export const LANDING_SIGN_UP_HREF = authHref('/sign-up');
 
-const btnPrimary =
-  'inline-flex min-h-[2.75rem] w-full items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 font-sans text-[15px] font-semibold text-zinc-900 shadow-sm transition hover:bg-zinc-50';
-const btnSecondary =
-  'inline-flex min-h-[2.75rem] w-full items-center justify-center rounded-xl border border-violet-600/90 bg-violet-600 px-4 font-sans text-[15px] font-semibold text-white shadow-sm transition hover:bg-violet-500';
+const googleBtn =
+  'inline-flex min-h-[3rem] w-full items-center justify-center gap-3 rounded-xl border border-zinc-200 bg-white px-4 font-sans text-[15px] font-semibold text-zinc-800 shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition hover:border-zinc-300 hover:bg-zinc-50 hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)]';
+
+const emailSecondary =
+  'inline-flex min-h-[2.75rem] w-full items-center justify-center rounded-xl border border-violet-600/90 bg-violet-600 px-4 font-sans text-[14px] font-semibold text-white shadow-sm transition hover:bg-violet-500';
 
 /**
- * Plain `<a href>` (not `next/link`) forces a real browser navigation off the `/` client shell.
- * In Next 16 App Router, `Link` soft navigation from the home `page.tsx` client tree can fail to
- * change routes and look like a pointless reload.
- * `/sign-in` and `/sign-up` use Clerk path routing — OAuth lives there.
+ * Plain `<a href>` forces a real browser navigation off the `/` client shell.
+ * Primary row matches common “Continue with Google” affordance; Clerk on `/sign-in` runs the real OAuth.
  */
 export function LandingClerkAuth({ className }: LandingClerkAuthProps) {
   const signInUrl = LANDING_SIGN_IN_HREF;
@@ -34,23 +35,38 @@ export function LandingClerkAuth({ className }: LandingClerkAuthProps) {
   return (
     <div className={className}>
       <p className="mb-3 text-center font-sans text-[13px] leading-snug text-zinc-600">
-        Sign in with Google or email on the next screen — everything your project has enabled in Clerk appears
-        there.
+        Choose how you want to continue — Google, other providers, or email on the secure sign-in page.
       </p>
       <div className="flex flex-col gap-2.5">
-        <a href={signInUrl} className={btnPrimary}>
-          Sign in
+        <a href={signInUrl} className={googleBtn}>
+          <GoogleIcon className="h-5 w-5" />
+          <span>Continue with Google</span>
         </a>
-        <a href={signUpUrl} className={btnSecondary}>
+        <div className="relative py-1">
+          <div className="absolute inset-0 flex items-center" aria-hidden>
+            <div className="w-full border-t border-zinc-200" />
+          </div>
+          <div className="relative flex justify-center">
+            <span className="bg-white px-2 font-sans text-[11px] font-medium uppercase tracking-wider text-zinc-400">
+              or
+            </span>
+          </div>
+        </div>
+        <a href={signInUrl} className={emailSecondary}>
+          Sign in with email
+        </a>
+        <a
+          href={signUpUrl}
+          className="inline-flex min-h-[2.5rem] w-full items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50 px-4 font-sans text-[13px] font-semibold text-zinc-700 transition hover:bg-zinc-100"
+        >
           Create account
         </a>
       </div>
       <p className="mt-3 text-center font-sans text-[11px] leading-snug text-zinc-500">
-        Trouble loading buttons? Open{' '}
+        Prefer a direct link?{' '}
         <a href={signInUrl} className="font-semibold text-violet-700 underline-offset-2 hover:underline">
-          /sign-in
-        </a>{' '}
-        directly.
+          Open sign-in
+        </a>
       </p>
     </div>
   );

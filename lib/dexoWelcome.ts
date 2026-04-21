@@ -8,6 +8,23 @@ export const SPARSE_WELCOME_PREFIX = "Welcome — I'm Dexo, your AI co-founder i
 /** First line of the non-sparse seed (must match `buildInitialDexoMessages`). */
 export const RICH_WELCOME_PREFIX = "Welcome — I'm Dexo.";
 
+/** Onboarding copy when the user has not saved a venture yet (Dexo desk + orb). */
+export const NO_VENTURE_WELCOME_PREFIX = "Hey — I'm Dexo. Let's create your venture together.";
+
+export function buildNoVentureDexoMessages(): DexoConvoMessage[] {
+  const text = `${NO_VENTURE_WELCOME_PREFIX}\n\nTell me what you're exploring — an idea, a market you're curious about, or the problem you want to solve. I'll help you sharpen it step by step.\n\nWhen you're ready, use **New venture** in the sidebar to save a name and full workspace. Type below or use the mic.`;
+  return [{ role: 'dexo', text, id: 1 }];
+}
+
+export function shouldReplaceNoVentureSeedMessage(messages: DexoConvoMessage[]): boolean {
+  if (messages.some((m) => m.role === 'user' && m.text.trim().length > 0)) return false;
+  const canonical = buildNoVentureDexoMessages()[0].text.trim();
+  const dexoMsgs = messages.filter((m) => m.role === 'dexo');
+  if (dexoMsgs.length === 0) return true;
+  if (dexoMsgs.length > 1) return true;
+  return dexoMsgs[0].text.trim() !== canonical;
+}
+
 /** First messages when Dexo storage is empty — co-founder onboarding vs light re-open. */
 export function buildInitialDexoMessages(project: Project): DexoConvoMessage[] {
     const sparse = isVentureFoundationSparse(project);

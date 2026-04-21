@@ -9,11 +9,16 @@ import { createPortal } from 'react-dom';
 import { useOffice } from '@/lib/OfficeContext';
 import { useDexoConversationalVoice } from '@/lib/useDexoConversationalVoice';
 import { clearDexoConvo, loadDexoConvo, saveDexoConvo, nextConvoId, type DexoConvoMessage } from '@/lib/dexoConvoStorage';
-import { buildInitialDexoMessages, shouldReplaceDexoSeedMessage } from '@/lib/dexoWelcome';
+import {
+    buildInitialDexoMessages,
+    shouldReplaceDexoSeedMessage,
+    buildNoVentureDexoMessages,
+    shouldReplaceNoVentureSeedMessage,
+} from '@/lib/dexoWelcome';
 import { DEXO_LOADING_TAGLINES } from '@/lib/dexoLoading';
 import { isVentureFoundationSparse } from '@/lib/ventureFoundation';
 import { dexoAutoSaveHintLines, dexoFullVenturePatchFromJarvis } from '@/lib/dexoApplyJarvisProductPatch';
-import { buildDexoJarvisVentureContext } from '@/lib/dexoJarvisContext';
+import { buildDexoJarvisVentureContext, DEXO_PRE_VENTURE_CONTEXT } from '@/lib/dexoJarvisContext';
 import type { JarvisReport } from '@/app/api/jarvis/route';
 import { useTokens } from '@/lib/tokens/useTokens';
 import { TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
@@ -151,11 +156,20 @@ function FloatingChat({
     messagesRef.current = messages;
 
     const voiceInterimCbRef = useRef<((t: string) => void) | undefined>(undefined);
+    const talkLiveModeRef = useRef(variant === 'talk');
+    const suspendAutoMicRestartRef = useRef(false);
     const activeProjectRef = useRef(activeProject);
     activeProjectRef.current = activeProject;
 
+    useEffect(() => {
+        talkLiveModeRef.current = variant === 'talk';
+        if (variant !== 'talk') suspendAutoMicRestartRef.current = false;
+    }, [variant]);
+
+    const speechAborterRef = useRef<AbortController | null>(null);
+
     const dexoWelcomeRefreshKey = useMemo(() => {
-        if (!activeProject?.id) return '';
+        if (!activeProject?.id) return 'no-venture';
         const sparse = isVentureFoundationSparse(activeProject);
         return `${activeProject.id}:${sparse ? 'sparse' : 'rich'}:${(activeProject.name ?? '').trim()}`;
     }, [
@@ -175,17 +189,29 @@ function FloatingChat({
         startListening,
         stopListening,
         stopSpeaking,
+        interrupt,
+        markAssistantSpeaking,
     } = useDexoConversationalVoice({
         onTranscript: (text) => {
+            if (variant === 'talk') suspendAutoMicRestartRef.current = true;
             setInputText(text);
-            setTimeout(() => handleSend(text), 100);
+            setTimeout(() => void handleSend(text), 100);
+        },
+        onInterrupt: () => {
+            speechAborterRef.current?.abort();
+            try {
+                window.speechSynthesis.cancel();
+            } catch {
+                /* noop */
+            }
         },
         onInterimRef: voiceInterimCbRef,
         projectContext: activeProject ? { name: activeProject.name, strategy: activeProject.strategy } : undefined,
+        talkLiveModeRef,
+        suspendAutoMicRestartRef,
     });
 
     const talkLiveRef = useRef(variant === 'talk');
-    const speechAborterRef = useRef<AbortController | null>(null);
     const startListeningRef = useRef(startListening);
     startListeningRef.current = startListening;
 
@@ -200,21 +226,34 @@ function FloatingChat({
         if (ventureChanged) {
             prevDexoVentureIdRef.current = vid;
             skipPersistRef.current = true;
-            if (!vid) {
-                setMessages([]);
-                msgId.current = 0;
-                requestAnimationFrame(() => {
-                    skipPersistRef.current = false;
-                });
-                return;
-            }
             setMessages([]);
             msgId.current = 0;
         }
         if (variant === 'talk') {
+            requestAnimationFrame(() => {
+                skipPersistRef.current = false;
+            });
             return;
         }
-        if (!p?.id) return;
+        if (!p?.id) {
+            let cancelled = false;
+            skipPersistRef.current = true;
+            void loadDexoConvo(null).then((stored) => {
+                if (cancelled) return;
+                const initial =
+                    stored.length === 0 || shouldReplaceNoVentureSeedMessage(stored)
+                        ? buildNoVentureDexoMessages()
+                        : stored;
+                setMessages(initial);
+                msgId.current = nextConvoId(initial);
+                requestAnimationFrame(() => {
+                    skipPersistRef.current = false;
+                });
+            });
+            return () => {
+                cancelled = true;
+            };
+        }
 
         let cancelled = false;
         skipPersistRef.current = true;
@@ -247,7 +286,7 @@ function FloatingChat({
         const vn = p?.name?.trim();
         const greet = vn
             ? `Hi! I'm Dexo — welcome to your live voice session for ${vn}. I'm listening. Ask me to update any part of this venture, run research, or refine your strategy, and I'll work through it with you in real time. When you're done, tap End session or say end session.`
-            : `Hi! I'm Dexo — welcome to your live voice session. Select a venture if you haven't yet, or tell me what you'd like to work on. I'm listening live. When you're finished, tap End session or say end session.`;
+            : `Hi! I'm Dexo. Let's create your venture together — tell me what you're exploring or the problem you care about. When you're ready, use New venture in the sidebar to save a workspace. I'm listening live. When you're finished, tap End session or say end session.`;
 
         skipPersistRef.current = true;
         setMessages([{ role: 'dexo', text: greet, id: ++msgId.current }]);
@@ -256,7 +295,17 @@ function FloatingChat({
         });
 
         void (async () => {
-            await speakDexoResponseAloud(greet, sig);
+            if (!sig.aborted && talkLiveRef.current) {
+                window.setTimeout(() => {
+                    if (talkLiveRef.current) startListeningRef.current();
+                }, 380);
+            }
+            try {
+                markAssistantSpeaking(true);
+                await speakDexoResponseAloud(greet, sig);
+            } finally {
+                markAssistantSpeaking(false);
+            }
             if (!sig.aborted && talkLiveRef.current) {
                 window.setTimeout(() => {
                     if (talkLiveRef.current) startListeningRef.current();
@@ -272,7 +321,7 @@ function FloatingChat({
                 /* noop */
             }
         };
-    }, [variant, dexoWelcomeRefreshKey]);
+    }, [variant, dexoWelcomeRefreshKey, markAssistantSpeaking]);
 
     useEffect(() => {
         if (skipPersistRef.current) return;
@@ -292,11 +341,21 @@ function FloatingChat({
     }, [loading]);
 
     const resetConversation = useCallback(() => {
-        if (!activeProject?.id) return;
+        skipPersistRef.current = true;
+        if (!activeProject?.id) {
+            const seed = buildNoVentureDexoMessages();
+            void clearDexoConvo(null);
+            setMessages(seed);
+            msgId.current = nextConvoId(seed);
+            requestAnimationFrame(() => {
+                skipPersistRef.current = false;
+                void saveDexoConvo(null, seed);
+            });
+            return;
+        }
         const projectId = activeProject.id;
         const seed = buildInitialDexoMessages(activeProject);
         void clearDexoConvo(projectId);
-        skipPersistRef.current = true;
         setMessages(seed);
         msgId.current = nextConvoId(seed);
         requestAnimationFrame(() => {
@@ -313,8 +372,14 @@ function FloatingChat({
         } catch {
             /* noop */
         }
+        interrupt();
         stopListening();
-    }, [stopListening]);
+    }, [interrupt, stopListening]);
+
+    const stopVoiceOutput = useCallback(() => {
+        speechAborterRef.current?.abort();
+        stopSpeaking();
+    }, [stopSpeaking]);
 
     const handleSend = async (override?: string) => {
         const text = (override || inputText).trim();
@@ -334,29 +399,16 @@ function FloatingChat({
                     id: ++msgId.current,
                 },
             ]);
+            suspendAutoMicRestartRef.current = false;
             endTalkSession();
             return;
         }
 
         const project = activeProjectRef.current;
-        if (!project?.id) {
-            setMessages((prev) => [
-                ...prev,
-                { role: 'dexo', text: 'Select or create a venture first.', id: ++msgId.current },
-            ]);
-            if (variant === 'talk') {
-                speechAborterRef.current?.abort();
-                speechAborterRef.current = new AbortController();
-                const sig = speechAborterRef.current.signal;
-                void speakDexoResponseAloud('Select or create a venture first, then we can continue.', sig).then(() => {
-                    if (talkLiveRef.current) startListeningRef.current();
-                });
-            }
-            return;
-        }
 
         const tokenResult = tokens.spend(TOKEN_COSTS.CHAT_MESSAGE, 'Chat Message');
         if (!tokenResult.success) {
+            suspendAutoMicRestartRef.current = false;
             upgradeModal.open(tokenResult.message);
             return;
         }
@@ -367,12 +419,15 @@ function FloatingChat({
         const prior = messagesRef.current;
 
         setMessages((prev) => [...prev, { role: 'user', text, id: uid }]);
+        if (variant === 'talk') suspendAutoMicRestartRef.current = true;
         setLoading(true);
 
         let dexoReply = '';
 
         try {
-            const context = buildDexoJarvisVentureContext(project);
+            const context = project?.id
+                ? buildDexoJarvisVentureContext(project)
+                : DEXO_PRE_VENTURE_CONTEXT;
             const res = await fetch('/api/dexo', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -381,7 +436,7 @@ function FloatingChat({
                     payload: {
                         mode: 'converse',
                         context,
-                        sparseContext: isVentureFoundationSparse(project),
+                        sparseContext: project ? isVentureFoundationSparse(project) : false,
                         userMessage: text,
                         conversationHistory: prior.slice(-10).map((c) => ({ role: c.role, text: c.text })),
                     },
@@ -391,48 +446,60 @@ function FloatingChat({
             if (!data.ok || !data.report) {
                 dexoReply = data.error ?? 'Dexo could not complete that turn.';
                 setMessages((prev) => [...prev, { role: 'dexo', text: dexoReply, id: ++msgId.current }]);
-                return;
-            }
+            } else {
+                let reply = data.report.voiceResponse;
+                if (project?.id) {
+                    const patch = dexoFullVenturePatchFromJarvis(project, data.report.proposedUpdates);
+                    const pending = dexoAutoSaveHintLines(patch);
+                    if (pending.length > 0) {
+                    const out = await submitDexoVenturePatch({
+                        ventureId: project.id,
+                        source: 'dexo_orb',
+                        model: 'Dexo',
+                        summary: `Dexo suggests: ${pending.join(' · ')}`,
+                        patch,
+                        updateProjectField,
+                    });
+                    reply += !out.ok
+                        ? `\n\n_Could not store or apply proposal (${out.error})._`
+                        : out.applied
+                          ? `\n\n_Applied to your venture: ${pending.join(' · ')} (${out.mode} mode)._`
+                          : `\n\n_Pending your approval: ${pending.join(' · ')}._`;
+                    }
+                }
 
-            let reply = data.report.voiceResponse;
-            const patch = dexoFullVenturePatchFromJarvis(project, data.report.proposedUpdates);
-            const pending = dexoAutoSaveHintLines(patch);
-            if (pending.length > 0 && project.id) {
-                const out = await submitDexoVenturePatch({
-                    ventureId: project.id,
-                    source: 'dexo_orb',
-                    model: 'Dexo',
-                    summary: `Dexo suggests: ${pending.join(' · ')}`,
-                    patch,
-                    updateProjectField,
-                });
-                reply += !out.ok
-                    ? `\n\n_Could not store or apply proposal (${out.error})._`
-                    : out.applied
-                      ? `\n\n_Applied to your venture: ${pending.join(' · ')} (${out.mode} mode)._`
-                      : `\n\n_Pending your approval: ${pending.join(' · ')}._`;
+                dexoReply = reply;
+                setMessages((prev) => [...prev, { role: 'dexo', text: reply, id: ++msgId.current }]);
             }
-
-            dexoReply = reply;
-            setMessages((prev) => [...prev, { role: 'dexo', text: reply, id: ++msgId.current }]);
         } catch {
             dexoReply = 'Connection issue. Try again.';
             setMessages((prev) => [...prev, { role: 'dexo', text: dexoReply, id: ++msgId.current }]);
         } finally {
             setLoading(false);
-            if (variant === 'talk' && talkLiveRef.current && dexoReply) {
-                speechAborterRef.current?.abort();
-                speechAborterRef.current = new AbortController();
-                const sig = speechAborterRef.current.signal;
-                void (async () => {
+        }
+
+        if (variant === 'talk') suspendAutoMicRestartRef.current = false;
+
+        if (variant === 'talk' && talkLiveRef.current && dexoReply) {
+            speechAborterRef.current?.abort();
+            speechAborterRef.current = new AbortController();
+            const sig = speechAborterRef.current.signal;
+            window.setTimeout(() => {
+                if (talkLiveRef.current && !sig.aborted) startListeningRef.current();
+            }, 380);
+            void (async () => {
+                try {
+                    markAssistantSpeaking(true);
                     await speakDexoResponseAloud(dexoReply, sig);
-                    if (talkLiveRef.current && !sig.aborted) {
-                        window.setTimeout(() => {
-                            if (talkLiveRef.current) startListeningRef.current();
-                        }, 400);
-                    }
-                })();
-            }
+                } finally {
+                    markAssistantSpeaking(false);
+                }
+                if (talkLiveRef.current && !sig.aborted) {
+                    window.setTimeout(() => {
+                        if (talkLiveRef.current) startListeningRef.current();
+                    }, 400);
+                }
+            })();
         }
     };
 
@@ -451,10 +518,12 @@ function FloatingChat({
     const statusLine =
         variant === 'talk'
             ? isListening
-                ? 'Live · listening'
-                : loading
-                  ? DEXO_LOADING_TAGLINES[loadingTick]
-                  : 'Live · ready'
+                ? 'Live · listening — speak anytime; interrupts Dexo'
+                : isSpeaking
+                  ? 'Live · Dexo speaking — speak to interrupt'
+                  : loading
+                    ? DEXO_LOADING_TAGLINES[loadingTick]
+                    : 'Live · ready'
             : isListening
               ? 'Listening'
               : isSpeaking
@@ -543,7 +612,9 @@ function FloatingChat({
                 {messages.length === 0 && variant === 'chat' && (
                     <div className="flex h-full flex-col items-center justify-center px-2 py-12">
                         <p className="max-w-[248px] text-center text-[12px] leading-relaxed text-zinc-500">
-                            Messages stay in context for this venture. Ask for updates, decisions, or a concise read on where things stand.
+                            {activeProject?.id
+                                ? 'Messages stay in context for this venture. Ask for updates, decisions, or a concise read on where things stand.'
+                                : 'Exploring without a saved venture — Dexo helps you clarify ideas. Use New venture when you want a named workspace and full analysis.'}
                         </p>
                     </div>
                 )}
@@ -587,8 +658,9 @@ function FloatingChat({
             <div className="shrink-0 border-t border-zinc-200 bg-white px-3 py-2.5">
                 {variant === 'talk' && (
                     <p className="mb-2 text-[10px] leading-snug text-zinc-500">
-                        Live mode: Dexo speaks each reply, then listens again. Say <span className="font-semibold text-zinc-700">end session</span> or tap{' '}
-                        <span className="font-semibold text-zinc-700">End</span> to stop.
+                        Mic stays active in the background: you can <span className="font-semibold text-zinc-700">interrupt</span> Dexo while it speaks. Use
+                        headphones to reduce echo. Say <span className="font-semibold text-zinc-700">end session</span> or tap{' '}
+                        <span className="font-semibold text-zinc-700">End</span> when finished.
                     </p>
                 )}
                 <div
@@ -600,7 +672,9 @@ function FloatingChat({
                 >
                     <button
                         type="button"
-                        onClick={() => (isListening ? stopListening() : isSpeaking ? stopSpeaking() : startListening())}
+                        onClick={() =>
+                            isListening ? stopListening() : isSpeaking ? stopVoiceOutput() : startListening()
+                        }
                         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-colors ${
                             isListening
                                 ? 'bg-teal-600 text-white'
@@ -642,7 +716,7 @@ function FloatingChat({
                     {isSpeaking ? (
                         <button
                             type="button"
-                            onClick={stopSpeaking}
+                            onClick={stopVoiceOutput}
                             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-200 hover:text-zinc-800"
                         >
                             <Square className="h-3 w-3.5 fill-current" />
@@ -755,7 +829,9 @@ export function FloatingDexoOrb() {
                     style={{ animation: 'dexo-chat-enter 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards' }}
                 >
                     <p className="text-[12px] font-semibold text-zinc-900">How should Dexo help?</p>
-                    <p className="mt-0.5 text-[10px] leading-snug text-zinc-500">Choose chat or live voice — both use your current venture.</p>
+                    <p className="mt-0.5 text-[10px] leading-snug text-zinc-500">
+                        Chat or live voice — uses your saved venture when you have one, or helps you explore before you name it.
+                    </p>
                     <div className="mt-3 flex flex-col gap-2">
                         <button
                             type="button"

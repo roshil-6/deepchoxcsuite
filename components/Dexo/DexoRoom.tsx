@@ -39,11 +39,16 @@ import { TokenDisplay, TokenConfirmButton, TokenInlineCost } from '@/components/
 import { TokenWarningBanner, TokenInlineWarning, TokenCostPill } from '@/components/tokens/TokenWarning';
 import { useUpgradeModal } from '@/components/tokens/UpgradeModal';
 import { clearDexoConvo, loadDexoConvo, saveDexoConvo, nextConvoId, type DexoConvoMessage } from '@/lib/dexoConvoStorage';
-import { buildInitialDexoMessages, shouldReplaceDexoSeedMessage } from '@/lib/dexoWelcome';
+import {
+    buildInitialDexoMessages,
+    shouldReplaceDexoSeedMessage,
+    buildNoVentureDexoMessages,
+    shouldReplaceNoVentureSeedMessage,
+} from '@/lib/dexoWelcome';
 import { DEXO_LOADING_TAGLINES } from '@/lib/dexoLoading';
 import { isVentureFoundationSparse } from '@/lib/ventureFoundation';
 import { dexoAutoSaveHintLines, dexoFullVenturePatchFromJarvis } from '@/lib/dexoApplyJarvisProductPatch';
-import { buildDexoJarvisVentureContext } from '@/lib/dexoJarvisContext';
+import { buildDexoJarvisVentureContext, DEXO_PRE_VENTURE_CONTEXT } from '@/lib/dexoJarvisContext';
 import { TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 import type { DexoBootstrapPayload } from '@/lib/dexoBootstrap';
 import { DexoParticleCanvas } from '@/components/Dexo/DexoParticleSphere';
@@ -264,7 +269,7 @@ function DeskRow({ section, onRead }: { section: JarvisSection; onRead: (t: stri
 
 // ─── Inline analyzing banner (non-blocking) ────────────────────────────────────
 
-function AnalyzingBanner({ name }: { name: string }) {
+function AnalyzingBanner({ name }: { name?: string | null }) {
     const desks = ['Strategy', 'Finance', 'Product', 'Market', 'GTM'];
     const [tick, setTick] = useState(0);
     useEffect(() => {
@@ -288,7 +293,8 @@ function AnalyzingBanner({ name }: { name: string }) {
                     <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
                 </div>
                 <p className="text-[11px] text-[var(--muted)]">
-                    Reading <span className="text-[var(--text)]">{name}</span> through <span className="text-[var(--text)]">{activeDesk}</span>
+                    Reading <span className="text-[var(--text)]">{name?.trim() || 'your workspace'}</span> through{' '}
+                    <span className="text-[var(--text)]">{activeDesk}</span>
                 </p>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-1.5">
@@ -364,7 +370,7 @@ export function DexoRoom() {
 
     /** Re-seed welcome when venture name or sparse/rich tier changes (not on every keystroke). */
     const dexoWelcomeRefreshKey = useMemo(() => {
-        if (!activeProject?.id) return '';
+        if (!activeProject?.id) return 'no-venture';
         const sparse = isVentureFoundationSparse(activeProject);
         return `${activeProject.id}:${sparse ? 'sparse' : 'rich'}:${(activeProject.name ?? '').trim()}`;
     }, [
@@ -432,21 +438,31 @@ export function DexoRoom() {
         if (ventureChanged) {
             prevDexoVentureIdRef.current = vid;
             skipConvoPersistRef.current = true;
-            if (!vid) {
-                setConvo([]);
-                convoId.current = 0;
-                requestAnimationFrame(() => {
-                    skipConvoPersistRef.current = false;
-                });
-                return;
-            }
             setConvo([]);
             convoId.current = 0;
         }
-        if (!p?.id) return;
 
         let cancelled = false;
         skipConvoPersistRef.current = true;
+
+        if (!p?.id) {
+            void loadDexoConvo(null).then((stored) => {
+                if (cancelled) return;
+                const initial =
+                    stored.length === 0 || shouldReplaceNoVentureSeedMessage(stored)
+                        ? buildNoVentureDexoMessages()
+                        : stored;
+                setConvo(initial);
+                convoId.current = nextConvoId(initial);
+                requestAnimationFrame(() => {
+                    skipConvoPersistRef.current = false;
+                });
+            });
+            return () => {
+                cancelled = true;
+            };
+        }
+
         void loadDexoConvo(p.id).then((stored) => {
             if (cancelled) return;
             const initial =
@@ -490,9 +506,8 @@ export function DexoRoom() {
     }, [setupCacheKey, setupMission]);
 
     useEffect(() => {
-        if (!activeProject?.id) return;
         if (skipConvoPersistRef.current) return;
-        void saveDexoConvo(activeProject.id, convo);
+        void saveDexoConvo(activeProject?.id ?? null, convo);
     }, [convo, activeProject?.id]);
 
     // Legacy speak function for reading analysis reports (not streaming)
@@ -511,16 +526,31 @@ export function DexoRoom() {
     }, []);
 
     const buildCtx = useCallback((): string => {
-        if (!activeProject) return '';
+        if (!activeProject) return DEXO_PRE_VENTURE_CONTEXT;
         return buildDexoJarvisVentureContext(activeProject);
     }, [activeProject]);
 
     const resetConversation = useCallback(() => {
-        if (!activeProject?.id) return;
+        skipConvoPersistRef.current = true;
+        if (!activeProject?.id) {
+            const seed = buildNoVentureDexoMessages();
+            void clearDexoConvo(null);
+            setConvo(seed);
+            convoId.current = nextConvoId(seed);
+            setCurrentReport(null);
+            setAnalysisHistory([]);
+            setActiveAnalysisIndex(null);
+            setError(null);
+            setSetupMission(null);
+            requestAnimationFrame(() => {
+                skipConvoPersistRef.current = false;
+                void saveDexoConvo(null, seed);
+            });
+            return;
+        }
         const projectId = activeProject.id;
         const seed = buildInitialDexoMessages(activeProject);
         void clearDexoConvo(projectId);
-        skipConvoPersistRef.current = true;
         setConvo(seed);
         convoId.current = nextConvoId(seed);
         setCurrentReport(null);
@@ -535,8 +565,12 @@ export function DexoRoom() {
     }, [activeProject]);
 
     const run = useCallback(async (mode: 'analyze' | 'converse', userMsg?: string) => {
-        if (!activeProject?.id) return;
-        
+        if (mode === 'analyze' && !activeProject?.id) {
+            setError('Save a named venture first to run a structured brief.');
+            return;
+        }
+        if (mode === 'converse' && !(userMsg && userMsg.trim())) return;
+
         // Check and spend tokens
         const cost = mode === 'analyze' 
             ? (currentReport ? TOKEN_COSTS.REANALYZE : TOKEN_COSTS.ANALYSIS)
@@ -575,7 +609,7 @@ export function DexoRoom() {
                     payload: {
                         mode,
                         context,
-                        sparseContext: isVentureFoundationSparse(activeProject),
+                        sparseContext: activeProject ? isVentureFoundationSparse(activeProject) : false,
                         userMessage: userMsg,
                         previousHeadline: currentReport?.headline,
                         conversationHistory: convo.slice(-10).map(c => ({ role: c.role, text: c.text })),
@@ -586,10 +620,10 @@ export function DexoRoom() {
             if (!data.ok || !data.report) { setError(data.error ?? 'Analysis failed'); return; }
 
             /** After a real chat turn, persist proposed venture updates (Jarvis schema) to the DB. */
-            if (mode === 'converse' && userMsg && activeProject) {
+            if (mode === 'converse' && userMsg && activeProject?.id) {
                 const patch = dexoFullVenturePatchFromJarvis(activeProject, data.report.proposedUpdates);
                 const pending = dexoAutoSaveHintLines(patch);
-                if (pending.length > 0 && activeProject.id) {
+                if (pending.length > 0) {
                     const out = await submitDexoVenturePatch({
                         ventureId: activeProject.id,
                         source: 'dexo_room',
@@ -711,7 +745,6 @@ export function DexoRoom() {
 
     /** Ctrl+Shift+D while focus is inside Dexo: open mic (or interrupt and listen). */
     useEffect(() => {
-        if (!activeProject?.id) return;
         const onKeyDown = (e: KeyboardEvent) => {
             if (e.code !== 'KeyD' || !e.ctrlKey || !e.shiftKey) return;
             const shell = document.querySelector('[data-dexo-room]');
@@ -725,27 +758,9 @@ export function DexoRoom() {
         };
         window.addEventListener('keydown', onKeyDown);
         return () => window.removeEventListener('keydown', onKeyDown);
-    }, [activeProject?.id, isSpeaking, isListening, stopSpeaking, startListening]);
+    }, [isSpeaking, isListening, stopSpeaking, startListening]);
 
     const orbState: ConvoVoiceState | 'loading' = loading && !currentReport ? 'loading' : voiceState;
-
-    // ── Empty state ──
-    if (!activeProject?.id) {
-        return (
-            <div className="flex min-h-0 flex-1 items-center justify-center bg-[var(--bg)] px-4 py-8 sm:px-6">
-                <div className="max-w-sm shrink-0 space-y-5 text-center">
-                    <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full ring-1 ring-[var(--border-strong)] shadow-[var(--shadow-soft)]">
-                        <DexoParticleCanvas mode="room" size={40} state="idle" />
-                    </div>
-                    <p className="text-[15px] font-medium tracking-tight text-[var(--text)]">Create a venture first</p>
-                    <p className="text-[13px] leading-relaxed text-[var(--muted)]">
-                        Name your venture from the left rail or overview, then come back—Dexo needs a saved workspace
-                        before it can analyze.
-                    </p>
-                </div>
-            </div>
-        );
-    }
 
     // Determine which report to display
     const displayedReport = activeAnalysisIndex !== null 
@@ -759,14 +774,22 @@ export function DexoRoom() {
             <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]">
                 <div className="mx-auto max-w-[660px] px-5 pb-32 pt-8">
 
-                    {loading && <AnalyzingBanner name={activeProject.name} />}
+                    {loading && <AnalyzingBanner name={activeProject?.name} />}
 
                     {/* Error */}
                     {error && !loading && (
                         <div className="mb-5 flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] px-4 py-3 shadow-[0_1px_2px_rgba(34,29,24,0.04)]">
                             <AlertTriangle className="h-4 w-4 shrink-0 text-[var(--muted)]" />
                             <p className="flex-1 text-[12px] text-[var(--muted)]">{error}</p>
-                            <button type="button" onClick={() => run('analyze')} className="text-[11px] text-[var(--text)] underline underline-offset-2 hover:opacity-90">Retry</button>
+                            {activeProject?.id ? (
+                                <button
+                                    type="button"
+                                    onClick={() => run('analyze')}
+                                    className="text-[11px] text-[var(--text)] underline underline-offset-2 hover:opacity-90"
+                                >
+                                    Retry
+                                </button>
+                            ) : null}
                         </div>
                     )}
                     
@@ -837,7 +860,7 @@ export function DexoRoom() {
                             <button
                                 type="button"
                                 onClick={resetConversation}
-                                disabled={loading || !activeProject?.id}
+                                disabled={loading}
                                 className="executive-toolbar-button inline-flex items-center gap-2 px-4 py-2 text-[12px] text-[var(--muted)] disabled:opacity-40"
                             >
                                 <MessageSquarePlus className="h-3.5 w-3.5" />
@@ -846,13 +869,13 @@ export function DexoRoom() {
                             <button
                                 type="button"
                                 onClick={() => run('analyze')}
-                                disabled={loading}
+                                disabled={loading || !activeProject?.id}
                                 className="executive-toolbar-button executive-toolbar-button-accent inline-flex items-center gap-2 px-4 py-2 text-[12px] disabled:opacity-40"
                             >
                                 <Zap className="h-3.5 w-3.5" />
                                 {loading ? 'Analyzing…' : 'Analyze latest'}
                             </button>
-                            {activeAnalysisIndex === null ? (
+                            {activeAnalysisIndex === null && activeProject?.id ? (
                                 <TokenCostPill cost={currentReport ? TOKEN_COSTS.REANALYZE : TOKEN_COSTS.ANALYSIS} />
                             ) : null}
                         </div>
@@ -927,9 +950,13 @@ export function DexoRoom() {
                                 else if (!isMuted) {
                                     if (displayedReport) {
                                         speakJarvis(`${displayedReport.headline}. ${displayedReport.summary}`);
-                                    } else {
+                                    } else if (activeProject?.name) {
                                         speakJarvis(
                                             `I'm Dexo. We're in ${activeProject.name}. Tell me what you want help with first, or use Analyze latest if you want a structured brief.`,
+                                        );
+                                    } else {
+                                        speakJarvis(
+                                            `Hey, I'm Dexo. Let's create your venture together. Tell me what you're exploring, and when you're ready, use New venture in the sidebar to save a workspace and unlock structured briefs.`,
                                         );
                                     }
                                 }
@@ -948,12 +975,24 @@ export function DexoRoom() {
                             ) : (
                                 <>
                                     <h1 className="text-[22px] font-semibold leading-tight tracking-[-0.02em] text-[var(--text)]">
-                                        Dexo · {activeProject.name}
+                                        {activeProject?.name ? `Dexo · ${activeProject.name}` : 'Dexo'}
                                     </h1>
                                     <p className="mx-auto max-w-lg text-[13.5px] leading-[1.75] text-[var(--muted)]">
-                                        Start with chat. Tell Dexo what you want help with, the idea in your head, or the problem you
-                                        keep coming back to. Use <span className="text-[var(--text)]">Analyze latest</span> only when
-                                        you want a structured brief.
+                                        {activeProject?.id ? (
+                                            <>
+                                                Start with chat. Tell Dexo what you want help with, the idea in your head, or the
+                                                problem you keep coming back to. Use{' '}
+                                                <span className="text-[var(--text)]">Analyze latest</span> only when you want a
+                                                structured brief.
+                                            </>
+                                        ) : (
+                                            <>
+                                                Chat without a saved venture to shape your idea. When you&apos;re ready, use{' '}
+                                                <span className="text-[var(--text)]">New venture</span> in the sidebar to name a
+                                                workspace — then <span className="text-[var(--text)]">Analyze latest</span> unlocks a
+                                                full brief.
+                                            </>
+                                        )}
                                     </p>
                                 </>
                             )}

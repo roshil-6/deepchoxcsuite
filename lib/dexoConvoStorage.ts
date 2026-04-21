@@ -55,6 +55,15 @@ function clearLegacyLocalStorage(projectId: string | number | null): void {
   }
 }
 
+function saveLegacyLocalStorage(projectId: string | number | null, messages: DexoConvoMessage[]): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(storageKey(projectId), JSON.stringify(messages.slice(-MAX_MESSAGES)));
+  } catch {
+    /* noop */
+  }
+}
+
 function mapDexieRowsToMessages(
   rows: Awaited<ReturnType<typeof getDexoConvoMessagesForProject>>
 ): DexoConvoMessage[] {
@@ -166,6 +175,9 @@ async function deleteDexoFromPostgres(ventureId: number): Promise<void> {
  */
 export async function loadDexoConvo(projectId: string | number | null): Promise<DexoConvoMessage[]> {
   if (typeof window === 'undefined') return [];
+  if (projectId == null) {
+    return loadLegacyLocalStorage(null);
+  }
   const id = Number(projectId);
   if (!Number.isFinite(id)) return [];
 
@@ -191,8 +203,12 @@ export async function loadDexoConvo(projectId: string | number | null): Promise<
   return loadDexoConvoFromDexieOnly(id, projectId);
 }
 
-/** Save to Postgres when available; otherwise Dexie. */
+/** Save to Postgres when available; otherwise Dexie. Pre-venture thread uses localStorage only. */
 export async function saveDexoConvo(projectId: string | number | null, messages: DexoConvoMessage[]): Promise<void> {
+  if (projectId == null) {
+    saveLegacyLocalStorage(null, messages);
+    return;
+  }
   const id = Number(projectId);
   if (!Number.isFinite(id)) return;
   const trimmed = messages.slice(-MAX_MESSAGES);
@@ -210,6 +226,10 @@ export async function saveDexoConvo(projectId: string | number | null, messages:
 
 /** Clear remote + local copies. */
 export async function clearDexoConvo(projectId: string | number | null): Promise<void> {
+  if (projectId == null) {
+    clearLegacyLocalStorage(null);
+    return;
+  }
   const id = Number(projectId);
   if (Number.isFinite(id)) {
     await deleteDexoFromPostgres(id);
