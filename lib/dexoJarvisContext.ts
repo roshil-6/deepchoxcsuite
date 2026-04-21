@@ -1,5 +1,15 @@
 import type { Project } from '@/lib/db';
 
+/**
+ * When no venture is saved yet — Dexo still converses to help shape ideas before “New venture”.
+ * Sent as `context` for jarvis `converse` (not for full `analyze`).
+ */
+export const DEXO_PRE_VENTURE_CONTEXT = `No named venture workspace is saved in this browser session yet. The user may be a guest or signed in but still exploring.
+
+Your job: help them clarify what they want to build, who it’s for, and what problem they care about. Be concise and practical. Suggest they click **New venture** in the sidebar when they want to save a named venture and unlock structured analysis.
+
+Do not invent a company name or metrics they did not provide. voiceResponse should be 2–5 short sentences, warm and direct.`;
+
 /** Venture snapshot sent with Dexo `/api/jarvis` requests (room + floating orb). */
 export function buildDexoJarvisVentureContext(project: Project): string {
     const p: string[] = [`Venture: ${project.name}`];

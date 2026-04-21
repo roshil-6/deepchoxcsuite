@@ -9,6 +9,7 @@
  * - Pause simulation for natural speech
  */
 
+import type { MutableRefObject } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { speechFriendlyText } from '@/lib/speechFriendly';
 import {
@@ -108,8 +109,12 @@ class ConversationMemoryManager {
 interface UseDexoConversationalVoiceOptions {
   onTranscript: (text: string) => void;
   onInterrupt?: () => void;
-  onInterimRef?: React.MutableRefObject<((text: string) => void) | undefined>;
+  onInterimRef?: MutableRefObject<((text: string) => void) | undefined>;
   projectContext?: { name: string; strategy?: string };
+  /** When true, Dexo “live talk” mode: recover mic after no-speech / accidental end where safe. */
+  talkLiveModeRef?: MutableRefObject<boolean>;
+  /** While true, do not auto-restart recognition (e.g. during API round-trip). */
+  suspendAutoMicRestartRef?: MutableRefObject<boolean>;
 }
 
 export function useDexoConversationalVoice({
@@ -117,6 +122,8 @@ export function useDexoConversationalVoice({
   onInterrupt,
   onInterimRef,
   projectContext,
+  talkLiveModeRef,
+  suspendAutoMicRestartRef,
 }: UseDexoConversationalVoiceOptions) {
   const [voiceState, setVoiceState] = useState<VoiceState>('idle');
   const [voiceError, setVoiceError] = useState<string | null>(null);
@@ -126,6 +133,7 @@ export function useDexoConversationalVoice({
   const memoryManager = useRef(new ConversationMemoryManager());
   const abortControllerRef = useRef<AbortController | null>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const userPausedMicRef = useRef(false);
   const isSpeakingRef = useRef(false);
   const ttsQueueRef = useRef<TtsChunk[]>([]);
   const streamingContentRef = useRef('');
@@ -204,6 +212,16 @@ export function useDexoConversationalVoice({
     didStreamSpeakRef.current = false;
     onInterrupt?.();
   }, [onInterrupt]);
+
+  /** Dexo orb uses browser TTS outside this hook — keep barge-in / UI in sync. */
+  const markAssistantSpeaking = useCallback((speaking: boolean) => {
+    isSpeakingRef.current = speaking;
+    setVoiceState((prev) => {
+      if (speaking) return 'speaking';
+      if (prev === 'speaking' || prev === 'interrupted') return 'idle';
+      return prev;
+    });
+  }, []);
 
   // Process user input with streaming
   const processInput = useCallback(async (input: string) => {
@@ -373,27 +391,72 @@ export function useDexoConversationalVoice({
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       const err = event.error;
-      if (err === 'no-speech' || err === 'aborted') {
-        setVoiceState('idle');
+      if (err === 'aborted') {
+        return;
+      }
+      if (err === 'no-speech') {
+        if (
+          !userPausedMicRef.current &&
+          talkLiveModeRef?.current &&
+          !suspendAutoMicRestartRef?.current
+        ) {
+          window.setTimeout(() => {
+            try {
+              if (
+                !userPausedMicRef.current &&
+                talkLiveModeRef?.current &&
+                !suspendAutoMicRestartRef?.current &&
+                recognitionRef.current
+              ) {
+                recognitionRef.current.start();
+              }
+            } catch {
+              /* already running */
+            }
+          }, 200);
+        } else {
+          setVoiceState((s) => (s === 'listening' ? 'idle' : s));
+        }
         return;
       }
       if (err === 'not-allowed') {
         setVoiceError('Microphone permission denied');
       }
-      setVoiceState('idle');
+      setVoiceState((s) => (s === 'listening' ? 'idle' : s));
     };
 
     recognition.onend = () => {
-      setVoiceState(s => s === 'listening' ? 'idle' : s);
+      setVoiceState((s) => (s === 'listening' ? 'idle' : s));
+      if (userPausedMicRef.current) return;
+      if (
+        talkLiveModeRef?.current &&
+        !suspendAutoMicRestartRef?.current
+      ) {
+        window.setTimeout(() => {
+          try {
+            if (
+              !userPausedMicRef.current &&
+              talkLiveModeRef?.current &&
+              !suspendAutoMicRestartRef?.current &&
+              recognitionRef.current
+            ) {
+              recognitionRef.current.start();
+            }
+          } catch {
+            /* already running */
+          }
+        }, 140);
+      }
     };
 
     recognitionRef.current = recognition;
     
     return () => recognition.stop();
-  }, [onTranscript, onInterimRef, interrupt]);
+  }, [onTranscript, onInterimRef, interrupt, talkLiveModeRef, suspendAutoMicRestartRef]);
 
   // Controls
   const startListening = useCallback(() => {
+    userPausedMicRef.current = false;
     setVoiceState('listening');
     try {
       recognitionRef.current?.start();
@@ -401,10 +464,14 @@ export function useDexoConversationalVoice({
   }, []);
 
   const stopListening = useCallback(() => {
+    userPausedMicRef.current = true;
     try {
       recognitionRef.current?.stop();
     } catch {}
     setVoiceState('idle');
+    window.setTimeout(() => {
+      userPausedMicRef.current = false;
+    }, 600);
   }, []);
 
   const stopSpeaking = useCallback(() => {
@@ -438,6 +505,7 @@ export function useDexoConversationalVoice({
     stopSpeaking,
     setMuted,
     interrupt,
+    markAssistantSpeaking,
     getMemory: () => memoryManager.current.getAll(),
   };
 }

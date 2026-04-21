@@ -31,11 +31,25 @@ import {
 /** After workspace auth modal: open “name venture” once signed in. */
 const VENTURE_AUTH_KEY = 'deepchox-after-auth-new-venture';
 
+function SessionGateOverlay({ title, subtitle }: { title: string; subtitle: string }) {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#030304] px-6">
+      <div
+        className="h-10 w-10 animate-spin rounded-full border-2 border-teal-500/25 border-t-teal-400"
+        aria-hidden
+      />
+      <p className="mt-5 text-center text-[15px] font-semibold tracking-tight text-zinc-100">{title}</p>
+      <p className="mt-1.5 text-center text-[13px] text-zinc-500">{subtitle}</p>
+    </div>
+  );
+}
+
 export default function Home() {
   /** Must start false on server and first client paint — sessionStorage is read in an effect to avoid hydration mismatch (React #418). */
   const [hasStarted, setHasStarted] = useState(false);
   const [nameVentureOpen, setNameVentureOpen] = useState(false);
   const [workspaceAuthOpen, setWorkspaceAuthOpen] = useState(false);
+  const [sessionResolving, setSessionResolving] = useState(false);
   const { isSignedIn, isLoaded } = useAuth();
   const { setActiveProject, setAllProjects, switchRoom, activeRoom, resetSystem } = useOffice();
 
@@ -43,13 +57,15 @@ export default function Home() {
     persistEnterWorkspace();
     setHasStarted(true);
     setNameVentureOpen(true);
-  }, []);
+    switchRoom('dexo');
+  }, [switchRoom]);
 
   const enterWorkspaceGuest = useCallback(() => {
     persistEnterWorkspace();
     setHasStarted(true);
     setNameVentureOpen(false);
-  }, []);
+    switchRoom('dexo');
+  }, [switchRoom]);
 
   /**
    * After mount: restore guest workspace from sessionStorage, or if Clerk already has a session and
@@ -59,10 +75,15 @@ export default function Home() {
   useEffect(() => {
     if (readPersistedWorkspaceStarted()) {
       setHasStarted(true);
+      setSessionResolving(false);
       return;
     }
-    if (!isLoaded || !isSignedIn) return;
+    if (!isLoaded || !isSignedIn) {
+      setSessionResolving(false);
+      return;
+    }
 
+    setSessionResolving(true);
     let cancelled = false;
     void (async () => {
       try {
@@ -77,11 +98,14 @@ export default function Home() {
         }
       } catch {
         if (!cancelled) enterWorkspaceWithVenturePrompt();
+      } finally {
+        if (!cancelled) setSessionResolving(false);
       }
     })();
 
     return () => {
       cancelled = true;
+      setSessionResolving(false);
     };
   }, [isLoaded, isSignedIn, enterWorkspaceWithVenturePrompt]);
 
@@ -161,17 +185,28 @@ export default function Home() {
     }
   };
 
-  // Show landing page
+  if (!isLoaded) {
+    return <SessionGateOverlay title="Checking sign-in status…" subtitle="One moment." />;
+  }
+
+  if (sessionResolving) {
+    return (
+      <SessionGateOverlay title="Signed in — opening your workspace…" subtitle="Loading your local ventures." />
+    );
+  }
+
   if (!hasStarted) {
     return <LandingPage onContinueGuest={enterWorkspaceGuest} />;
   }
 
-  // Show main workspace
   return (
     <div className="flex h-screen w-full overflow-hidden bg-[var(--bg)] animate-in fade-in duration-500">
       <NameVentureModal
         open={nameVentureOpen}
-        onClose={() => setNameVentureOpen(false)}
+        onClose={() => {
+          setNameVentureOpen(false);
+          switchRoom('dexo');
+        }}
         onConfirm={(name) => void createVentureWithName(name)}
       />
       <LandingAuthModal open={workspaceAuthOpen} onClose={closeWorkspaceAuth} />
