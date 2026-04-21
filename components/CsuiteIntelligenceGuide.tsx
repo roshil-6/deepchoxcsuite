@@ -269,10 +269,10 @@ export function CsuiteIntelligenceGuide() {
                 </div>
                 <button
                     type="button"
-                    onClick={() => switchRoom('dashboard')}
+                    onClick={() => switchRoom('dexo')}
                     className="rounded-lg border border-white/[0.06] bg-white/[0.04] px-4 py-2 text-[11px] font-medium text-[#FAFAFA] transition-colors hover:bg-white/[0.06]"
                 >
-                    Go to Executive Overview
+                    Go to Dexo
                 </button>
             </div>
         );

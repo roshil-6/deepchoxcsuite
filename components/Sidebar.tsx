@@ -43,7 +43,7 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
 
   const handleSelectProject = (project: Project) => {
     setActiveProject(project);
-    switchRoom('dashboard');
+    switchRoom('dexo');
   };
 
   return (
@@ -137,7 +137,7 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
           <button
             type="button"
             onClick={() => {
-              switchRoom('dashboard');
+              switchRoom('dexo');
               onNewVenture();
             }}
             className="mb-2 flex h-8 w-full items-center gap-2 px-2 text-xs font-medium text-brand-muted transition-colors hover:text-brand-text"

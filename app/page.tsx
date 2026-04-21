@@ -76,6 +76,7 @@ export default function Home() {
     if (readPersistedWorkspaceStarted()) {
       setHasStarted(true);
       setSessionResolving(false);
+      switchRoom('dexo');
       return;
     }
     if (!isLoaded || !isSignedIn) {
@@ -95,6 +96,7 @@ export default function Home() {
           persistEnterWorkspace();
           setHasStarted(true);
           setNameVentureOpen(false);
+          switchRoom('dexo');
         }
       } catch {
         if (!cancelled) enterWorkspaceWithVenturePrompt();
@@ -107,13 +109,16 @@ export default function Home() {
       cancelled = true;
       setSessionResolving(false);
     };
-  }, [isLoaded, isSignedIn, enterWorkspaceWithVenturePrompt]);
+  }, [isLoaded, isSignedIn, enterWorkspaceWithVenturePrompt, switchRoom]);
 
   /** After OAuth redirect or refresh: open name-venture modal if flagged in sessionStorage. */
   useEffect(() => {
     if (!hasStarted) return;
-    if (consumePendingNameVenture()) setNameVentureOpen(true);
-  }, [hasStarted]);
+    if (consumePendingNameVenture()) {
+      setNameVentureOpen(true);
+      switchRoom('dexo');
+    }
+  }, [hasStarted, switchRoom]);
 
   /** Guest asked for a venture → signed in in modal → open name venture. */
   useEffect(() => {
@@ -132,7 +137,8 @@ export default function Home() {
     }
     setWorkspaceAuthOpen(false);
     setNameVentureOpen(true);
-  }, [isLoaded, isSignedIn, hasStarted]);
+    switchRoom('dexo');
+  }, [isLoaded, isSignedIn, hasStarted, switchRoom]);
 
   /** Create a shell venture (optional name) and open Personal Assistant for chat-first setup. */
   const createVentureWithName = async (name: string) => {
