@@ -317,7 +317,13 @@ function AnalyzingBanner({ name }: { name?: string | null }) {
 }
 
 /** Inline “typing” row in the conversation list while Jarvis converse is in flight. */
-function DexoConverseLoadingBubble() {
+function DexoConverseLoadingBubble({
+    isMuted,
+    onToggleMute,
+}: {
+    isMuted: boolean;
+    onToggleMute: () => void;
+}) {
     const [tick, setTick] = useState(0);
     useEffect(() => {
         const t = window.setInterval(() => {
@@ -331,10 +337,19 @@ function DexoConverseLoadingBubble() {
             <div className="mb-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--bg-elevated)]">
                 <Sparkles className="h-3.5 w-3.5 text-[var(--muted)]" />
             </div>
-            <div className="max-w-[88%] rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.22)]">
+            <div className="max-w-[88%] min-w-0 flex-1 rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.22)]">
                 <div className="flex items-center gap-2.5">
                     <Loader2 className="h-4 w-4 shrink-0 animate-spin text-[var(--accent)]" aria-hidden />
-                    <p className="text-[13px] leading-snug text-[var(--muted)]">{line}</p>
+                    <p className="min-w-0 flex-1 text-[13px] leading-snug text-[var(--muted)]">{line}</p>
+                    <button
+                        type="button"
+                        onClick={onToggleMute}
+                        title={isMuted ? 'Unmute Dexo voice' : 'Mute Dexo voice'}
+                        aria-label={isMuted ? 'Unmute Dexo voice' : 'Mute Dexo voice'}
+                        className="shrink-0 rounded-lg p-1.5 text-[var(--muted)] transition hover:bg-white/[0.06] hover:text-[var(--text)]"
+                    >
+                        {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                    </button>
                 </div>
             </div>
         </div>
@@ -1220,7 +1235,12 @@ export function DexoRoom() {
                                         </div>
                                     );
                                 })}
-                                {loading && loadingKind === 'converse' ? <DexoConverseLoadingBubble /> : null}
+                                {loading && loadingKind === 'converse' ? (
+                                    <DexoConverseLoadingBubble
+                                        isMuted={isMuted}
+                                        onToggleMute={() => setIsMuted((m) => !m)}
+                                    />
+                                ) : null}
                                 <div ref={chatEndRef} />
                             </div>
                         </div>
