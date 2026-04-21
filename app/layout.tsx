@@ -96,13 +96,12 @@ export default function RootLayout({
           className={`${inter.variable} ${playfair.variable} ${jetbrains.variable} ${syne.variable} font-sans bg-brand-bg text-brand-text antialiased overflow-x-hidden leading-normal tracking-normal`}
         >
           {/*
-            Single mount for Clerk Smart CAPTCHA (Turnstile) when bot protection is enabled.
-            Required on `/` (Google sign-up/in) as well as /sign-in and /sign-up — one id per document.
-            Placed bottom-left so it does not cover the Dexo FAB (bottom-right).
+            Clerk may run Turnstile / sign-up checks from clerk-js on your origin (not only on Account Portal).
+            Without #clerk-captcha, bot protection can 400 on /v1/client/sign_ups.
           */}
           <div
             id="clerk-captcha"
-            className="fixed bottom-20 left-1/2 z-[10050] flex w-[min(100vw-2rem,24rem)] min-h-[2.5rem] -translate-x-1/2 justify-center px-2 max-sm:bottom-24"
+            className="pointer-events-auto fixed bottom-20 left-1/2 z-[10050] flex w-[min(100vw-2rem,24rem)] min-h-[2.5rem] -translate-x-1/2 justify-center px-2 max-sm:bottom-24"
           />
           <Script
             id="site-json-ld"

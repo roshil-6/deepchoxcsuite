@@ -1,29 +1,23 @@
-'use client';
-
+import { redirect } from 'next/navigation';
 import { SignUp } from '@clerk/nextjs';
-import { LandingPage } from '@/components/LandingPage';
+import { clerkHostedAuthRedirect } from '@/lib/clerkAccountPortal';
+import { clerkForceEmbeddedAuth } from '@/lib/clerkEmbeddedAuth';
 import { clerkLightAppearance } from '@/lib/clerkLightAppearance';
 
-/**
- * Sign-up floats above a non-interactive preview of the landing / app shell
- * so the interface stays visible behind a light frosted overlay.
- */
-export default function SignUpPage() {
-  return (
-    <div className="relative min-h-screen overflow-hidden bg-white">
-      {/* App / marketing surface (dimmed, no pointer events) */}
-      <div
-        className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
-        aria-hidden
-      >
-        <div className="h-full w-full origin-top scale-[0.96] opacity-[0.42] saturate-[0.85]">
-          <LandingPage onContinueGuest={() => {}} />
-        </div>
-      </div>
+const clerkCaptchaAppearance = {
+  ...clerkLightAppearance,
+  captcha: { theme: 'auto' as const, size: 'flexible' as const },
+};
 
-      {/* Frosted layer + floating auth card */}
-      <div className="relative z-10 flex min-h-screen items-center justify-center bg-white/55 px-4 py-10 backdrop-blur-[10px]">
-        <div className="w-full max-w-md rounded-2xl border border-zinc-200/95 bg-white/98 p-6 shadow-[0_28px_56px_-16px_rgba(0,0,0,0.18),0_0_0_1px_rgba(0,0,0,0.04)]">
+export default async function SignUpPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  if (clerkForceEmbeddedAuth()) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white px-4 py-10">
+        <div className="w-full max-w-md rounded-2xl border border-zinc-200/90 bg-white p-6 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.12)]">
           <SignUp
             routing="path"
             path="/sign-up"
@@ -31,10 +25,35 @@ export default function SignUpPage() {
             fallbackRedirectUrl="/"
             signInFallbackRedirectUrl="/"
             oauthFlow="redirect"
-            appearance={clerkLightAppearance}
+            appearance={clerkCaptchaAppearance}
           />
         </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  const sp = await searchParams;
+  const url = clerkHostedAuthRedirect('/sign-up', sp);
+  if (!url) {
+    return (
+      <div className="mx-auto max-w-lg px-6 py-16 font-sans text-sm text-zinc-700">
+        <h1 className="text-lg font-semibold text-zinc-900">Sign-up is not configured</h1>
+        <p className="mt-3 leading-relaxed">
+          Set{' '}
+          <code className="rounded bg-zinc-100 px-1.5 py-0.5 text-[13px]">
+            NEXT_PUBLIC_CLERK_ACCOUNT_PORTAL_ORIGIN
+          </code>{' '}
+          to your Clerk Frontend API URL (see Clerk Dashboard → API Keys).
+        </p>
+        <p className="mt-4 text-zinc-600">
+          Or set{' '}
+          <code className="rounded bg-zinc-100 px-1.5 py-0.5 text-[13px]">
+            NEXT_PUBLIC_CLERK_FORCE_EMBEDDED_AUTH=1
+          </code>{' '}
+          to sign up on this domain instead of Account Portal.
+        </p>
+      </div>
+    );
+  }
+  redirect(url);
 }

@@ -7,7 +7,8 @@ const SECURITY_HEADERS: Record<string, string> = {
   'X-Frame-Options': 'DENY',
   'X-XSS-Protection': '1; mode=block',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
-  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+  // Turnstile / Clerk probes may request xr-spatial-tracking; allow * to avoid console policy violations.
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), xr-spatial-tracking=*',
   'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
 };
 

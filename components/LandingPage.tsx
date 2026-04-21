@@ -7,7 +7,7 @@ import { FREE_DAILY_TOKENS, TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 import { formatRegionalPricePair, getProBillingAmounts } from '@/lib/billingConfig';
 import { usePricingRegion } from '@/hooks/usePricingRegion';
 import { SITE_HERO_H1, SITE_HERO_LEAD, SITE_PULL_QUOTE, SITE_TAGLINE_SHORT } from '@/lib/siteSeo';
-import { LandingGoogleAuth } from '@/components/LandingGoogleAuth';
+import { LandingClerkAuth } from '@/components/LandingClerkAuth';
 
 /** @deprecated Hero is Clerk sign-in; kept for older imports / env docs. */
 export const LANDING_HERO_VIDEO_DEFAULT = '/landing-hero-demo.mp4';
@@ -181,15 +181,14 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                             </div>
                         </div>
 
-                        {/* Auth — compact Google actions + guest path (no embedded Clerk card) */}
+                        {/* Auth — Clerk default sign-in / sign-up (hash routing on `/`) */}
                         <div
                             id="landing-auth"
-                            className="relative z-[35] mx-auto mt-6 w-full max-w-lg scroll-mt-28 sm:mt-7"
+                            className="relative z-[35] mx-auto mt-6 w-full max-w-md scroll-mt-28 sm:mt-7"
                         >
-                            <LandingGoogleAuth
-                                afterOAuth={{ openNameVenture: true }}
-                                showOtherOptions
-                            />
+                            <div className="rounded-2xl border border-white/15 bg-white p-4 shadow-[0_24px_48px_rgba(0,0,0,0.35)] sm:p-5">
+                                <LandingClerkAuth />
+                            </div>
                             <div className="mt-4 flex flex-col items-center gap-2">
                                 <button
                                     type="button"
