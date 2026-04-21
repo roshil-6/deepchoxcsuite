@@ -376,18 +376,36 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
   };
 
   /**
-   * Switch between different agent rooms or views
+   * Switch between different agent rooms or views.
+   * Must stay referentially stable — `app/page.tsx` and other callers depend on it in effect deps;
+   * a new function every render would re-fire those effects and force `switchRoom('dexo')` repeatedly.
    */
-  const switchRoom = (
-    room: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence'
-  ) => {
-    setDeskSectionFocus(null);
-    setSuiteIntelOpenDesk(null);
-    if (room !== 'dexo' && room !== 'personal_assistant') {
-      setDexoBootstrap(null);
-    }
-    setActiveRoom(room);
-  };
+  const switchRoom = useCallback(
+    (
+      room:
+        | AgentRole
+        | 'dashboard'
+        | 'calendar'
+        | 'reports'
+        | 'founders_office'
+        | 'dexo'
+        | 'forge'
+        | 'wargame'
+        | 'vc_gauntlet'
+        | 'org_structure'
+        | 'intelligence_diary'
+        | 'personal_assistant'
+        | 'suite_intelligence'
+    ) => {
+      setDeskSectionFocus(null);
+      setSuiteIntelOpenDesk(null);
+      if (room !== 'dexo' && room !== 'personal_assistant') {
+        setDexoBootstrap(null);
+      }
+      setActiveRoom(room);
+    },
+    []
+  );
 
   const runAgentStaffSync = async (): Promise<{ ok: boolean; error?: string }> => {
     if (!activeProject?.id) {
