@@ -452,19 +452,17 @@ function FloatingChat({
                     const patch = dexoFullVenturePatchFromJarvis(project, data.report.proposedUpdates);
                     const pending = dexoAutoSaveHintLines(patch);
                     if (pending.length > 0) {
-                    const out = await submitDexoVenturePatch({
-                        ventureId: project.id,
-                        source: 'dexo_orb',
-                        model: 'Dexo',
-                        summary: `Dexo suggests: ${pending.join(' · ')}`,
-                        patch,
-                        updateProjectField,
-                    });
-                    reply += !out.ok
-                        ? `\n\n_Could not store or apply proposal (${out.error})._`
-                        : out.applied
-                          ? `\n\n_Applied to your venture: ${pending.join(' · ')} (${out.mode} mode)._`
-                          : `\n\n_Pending your approval: ${pending.join(' · ')}._`;
+                        const out = await submitDexoVenturePatch({
+                            ventureId: project.id,
+                            source: 'dexo_orb',
+                            model: 'Dexo',
+                            summary: `Dexo suggests: ${pending.join(' · ')}`,
+                            patch,
+                            updateProjectField,
+                        });
+                        if (!out.ok) {
+                            reply += `\n\n_Could not save suggestion (${out.error}). Try again._`;
+                        }
                     }
                 }
 
