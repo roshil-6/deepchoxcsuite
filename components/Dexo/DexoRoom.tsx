@@ -317,7 +317,13 @@ function AnalyzingBanner({ name }: { name?: string | null }) {
 }
 
 /** Inline “typing” row in the conversation list while Jarvis converse is in flight. */
-function DexoConverseLoadingBubble() {
+function DexoConverseLoadingBubble({
+    isMuted,
+    onToggleMute,
+}: {
+    isMuted: boolean;
+    onToggleMute: () => void;
+}) {
     const [tick, setTick] = useState(0);
     useEffect(() => {
         const t = window.setInterval(() => {
@@ -331,10 +337,19 @@ function DexoConverseLoadingBubble() {
             <div className="mb-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--bg-elevated)]">
                 <Sparkles className="h-3.5 w-3.5 text-[var(--muted)]" />
             </div>
-            <div className="max-w-[88%] rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.22)]">
+            <div className="max-w-[88%] min-w-0 flex-1 rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.22)]">
                 <div className="flex items-center gap-2.5">
                     <Loader2 className="h-4 w-4 shrink-0 animate-spin text-[var(--accent)]" aria-hidden />
-                    <p className="text-[13px] leading-snug text-[var(--muted)]">{line}</p>
+                    <p className="min-w-0 flex-1 text-[13px] leading-snug text-[var(--muted)]">{line}</p>
+                    <button
+                        type="button"
+                        onClick={onToggleMute}
+                        title={isMuted ? 'Unmute Dexo voice' : 'Mute Dexo voice'}
+                        aria-label={isMuted ? 'Unmute Dexo voice' : 'Mute Dexo voice'}
+                        className="shrink-0 rounded-lg p-1.5 text-[var(--muted)] transition hover:bg-white/[0.06] hover:text-[var(--text)]"
+                    >
+                        {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                    </button>
                 </div>
             </div>
         </div>
@@ -895,49 +910,65 @@ export function DexoRoom() {
                         </div>
                     ) : null}
                     
-                    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                        <div className="flex flex-wrap items-center gap-2">
-                            <button
-                                type="button"
-                                onClick={resetConversation}
-                                disabled={loading}
-                                className="executive-toolbar-button inline-flex items-center gap-2 px-4 py-2 text-[12px] text-[var(--muted)] disabled:opacity-40"
-                            >
-                                <MessageSquarePlus className="h-3.5 w-3.5" />
-                                New chat
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => run('analyze')}
-                                disabled={loading || !activeProject?.id}
-                                className="executive-toolbar-button executive-toolbar-button-accent inline-flex items-center gap-2 px-4 py-2 text-[12px] disabled:opacity-40"
-                            >
-                                <Zap className="h-3.5 w-3.5" />
-                                {loading ? 'Analyzing…' : 'Analyze latest'}
-                            </button>
-                            {activeAnalysisIndex === null && activeProject?.id ? (
-                                <TokenCostPill cost={currentReport ? TOKEN_COSTS.REANALYZE : TOKEN_COSTS.ANALYSIS} />
-                            ) : null}
+                    <div className="mb-5 rounded-2xl border border-[var(--border)] bg-[var(--bg-card)]/60 px-3 py-3 shadow-[0_1px_0_rgba(255,255,255,0.04)_inset] sm:px-4">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch sm:justify-between sm:gap-4">
+                            <div className="min-w-0 flex-1">
+                                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
+                                    Chat &amp; analysis
+                                </p>
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={resetConversation}
+                                        disabled={loading}
+                                        className="inline-flex h-9 min-w-0 shrink-0 items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-3 text-[12px] font-medium text-[var(--text)] transition hover:bg-white/[0.06] disabled:opacity-40"
+                                    >
+                                        <MessageSquarePlus className="h-3.5 w-3.5 shrink-0" />
+                                        New chat
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => run('analyze')}
+                                        disabled={loading || !activeProject?.id}
+                                        className="inline-flex h-9 min-w-0 shrink-0 items-center justify-center gap-2 rounded-xl border border-[rgba(116,86,255,0.35)] bg-[var(--accent-soft)] px-3 text-[12px] font-medium text-[var(--text)] transition hover:border-[rgba(116,86,255,0.5)] disabled:opacity-40"
+                                    >
+                                        <Zap className="h-3.5 w-3.5 shrink-0 text-[var(--accent)]" />
+                                        {loading ? 'Analyzing…' : 'Analyze latest'}
+                                    </button>
+                                    {activeAnalysisIndex === null && activeProject?.id ? (
+                                        <span className="inline-flex h-9 items-center">
+                                            <TokenCostPill cost={currentReport ? TOKEN_COSTS.REANALYZE : TOKEN_COSTS.ANALYSIS} />
+                                        </span>
+                                    ) : null}
+                                </div>
+                            </div>
+                            <div className="flex shrink-0 flex-col justify-center border-t border-[var(--border)] pt-3 sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0">
+                                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)] sm:text-right">
+                                    Balance
+                                </p>
+                                <div className="flex justify-start sm:justify-end">
+                                    <TokenDisplay compact={false} showCosts={true} />
+                                </div>
+                            </div>
                         </div>
-                        <TokenDisplay compact={false} showCosts={true} />
                     </div>
 
                     {/* ── Analysis History Timeline ── */}
                     {analysisHistory.length > 0 && (
-                        <div className="mb-6">
-                            <div className="flex items-center justify-between mb-2">
-                                <p className="text-[11px] uppercase tracking-wider text-[var(--muted)]">Analysis History</p>
-                                <span className="text-[10px] text-[var(--muted)]/80">{analysisHistory.length} saved</span>
+                        <div className="mb-6 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)]/30 px-3 py-3">
+                            <div className="mb-2.5 flex items-center justify-between gap-2">
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">Analysis history</p>
+                                <span className="tabular-nums text-[10px] text-[var(--muted)]">{analysisHistory.length} saved</span>
                             </div>
-                            <div className="flex flex-wrap gap-2">
+                            <div className="-mx-0.5 flex flex-wrap gap-2 overflow-x-auto px-0.5 pb-1 [scrollbar-width:thin] sm:flex-nowrap">
                                 {/* Current/Active button */}
                                 <button
                                     onClick={() => setActiveAnalysisIndex(null)}
                                     type="button"
-                                    className={`rounded-lg border px-3 py-1.5 text-[11px] transition-all ${
+                                    className={`h-8 shrink-0 rounded-lg border px-3 text-[11px] font-medium transition-all ${
                                         activeAnalysisIndex === null
                                             ? 'border-[rgba(116,86,255,0.22)] bg-[var(--accent-soft)] text-[var(--text)]'
-                                            : 'border-transparent text-[var(--muted)] hover:bg-[var(--accent-soft)] hover:text-[var(--text)]'
+                                            : 'border-[var(--border)] bg-[var(--bg-card)] text-[var(--muted)] hover:bg-[var(--accent-soft)] hover:text-[var(--text)]'
                                     }`}
                                 >
                                     {currentReport ? 'Current' : 'Latest'}
@@ -951,10 +982,10 @@ export function DexoRoom() {
                                             key={actualIndex}
                                             type="button"
                                             onClick={() => setActiveAnalysisIndex(actualIndex)}
-                                            className={`max-w-[150px] truncate rounded-lg border px-3 py-1.5 text-[11px] transition-all ${
+                                            className={`h-8 max-w-[160px] shrink-0 truncate rounded-lg border px-3 text-left text-[11px] font-medium transition-all ${
                                                 isActive
                                                     ? 'border-[rgba(116,86,255,0.22)] bg-[var(--accent-soft)] text-[var(--text)]'
-                                                    : 'border-transparent text-[var(--muted)] hover:bg-[var(--accent-soft)] hover:text-[var(--text)]'
+                                                    : 'border-[var(--border)] bg-[var(--bg-card)] text-[var(--muted)] hover:bg-[var(--accent-soft)] hover:text-[var(--text)]'
                                             }`}
                                             title={r.headline}
                                         >
@@ -1061,48 +1092,64 @@ export function DexoRoom() {
                             </div>
                         )}
 
-                        <div className="flex flex-wrap items-center justify-center gap-2">
-                            <button
-                                type="button"
-                                onClick={() => setHandsFree((h) => !h)}
-                                title="After Dexo speaks, mic opens automatically"
-                                className={`executive-pill px-3 py-1.5 text-[11px] ${
-                                    handsFree
-                                        ? 'border-[rgba(116,86,255,0.22)] bg-[var(--accent-soft)] text-[var(--text)]'
-                                        : 'text-[var(--muted)]'
+                        <div className="w-full max-w-lg rounded-2xl border border-[var(--border)] bg-[var(--bg-card)]/50 px-3 py-3">
+                            <p className="mb-2.5 text-center text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
+                                Voice &amp; playback
+                            </p>
+                            <div
+                                className={`grid grid-cols-2 gap-2 ${
+                                    displayedReport && !isMuted && !isSpeaking
+                                        ? 'sm:grid-cols-4'
+                                        : 'sm:grid-cols-3'
                                 }`}
                             >
-                                <AudioLines className="h-3.5 w-3.5" />
-                                {handsFree ? 'Conversation on' : 'Conversation'}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setIsMuted((m) => !m)}
-                                className="executive-pill px-3 py-1.5 text-[11px] text-[var(--muted)]"
-                            >
-                                {isMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
-                                {isMuted ? 'Unmute' : 'Mute'}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setShowVoiceSettings(true)}
-                                className="executive-pill border border-[var(--border)] bg-[var(--bg-card)] px-3 py-1.5 text-[11px] text-[var(--text)] hover:bg-[rgba(255,255,255,0.08)]"
-                                title={`Voice: ${voicePreset} (click to change)`}
-                            >
-                                <Settings2 className="h-3.5 w-3.5" />
-                                Voice
-                            </button>
-                            {displayedReport && !isMuted && !isSpeaking && (
                                 <button
                                     type="button"
-                                    onClick={() =>
-                                        speakJarvis(`${displayedReport.headline}. ${displayedReport.summary}`)
-                                    }
-                                    className="executive-pill px-3 py-1.5 text-[11px] text-[var(--muted)]"
+                                    onClick={() => setHandsFree((h) => !h)}
+                                    title="After Dexo speaks, mic opens automatically"
+                                    className={`flex min-h-[2.5rem] flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2 text-center text-[10px] font-medium leading-tight transition sm:text-[11px] ${
+                                        handsFree
+                                            ? 'border-[rgba(116,86,255,0.28)] bg-[var(--accent-soft)] text-[var(--text)]'
+                                            : 'border-[var(--border)] bg-[var(--bg-elevated)] text-[var(--muted)] hover:bg-white/[0.04]'
+                                    }`}
                                 >
-                                    <Volume2 className="h-3.5 w-3.5" /> Read brief
+                                    <AudioLines className="h-3.5 w-3.5 shrink-0 opacity-90" />
+                                    <span>{handsFree ? 'Hands-free on' : 'Hands-free'}</span>
                                 </button>
-                            )}
+                                <button
+                                    type="button"
+                                    onClick={() => setIsMuted((m) => !m)}
+                                    className={`flex min-h-[2.5rem] flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2 text-center text-[10px] font-medium leading-tight transition sm:text-[11px] ${
+                                        isMuted
+                                            ? 'border-rose-500/30 bg-rose-500/10 text-rose-200'
+                                            : 'border-[var(--border)] bg-[var(--bg-elevated)] text-[var(--muted)] hover:bg-white/[0.04]'
+                                    }`}
+                                >
+                                    {isMuted ? <VolumeX className="h-3.5 w-3.5 shrink-0" /> : <Volume2 className="h-3.5 w-3.5 shrink-0" />}
+                                    <span>{isMuted ? 'Unmute' : 'Mute'}</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowVoiceSettings(true)}
+                                    className="flex min-h-[2.5rem] flex-col items-center justify-center gap-1 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-2 py-2 text-center text-[10px] font-medium leading-tight text-[var(--text)] transition hover:bg-white/[0.04] sm:text-[11px]"
+                                    title={`Voice: ${voicePreset} (click to change)`}
+                                >
+                                    <Settings2 className="h-3.5 w-3.5 shrink-0" />
+                                    <span>Voice</span>
+                                </button>
+                                {displayedReport && !isMuted && !isSpeaking ? (
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            speakJarvis(`${displayedReport.headline}. ${displayedReport.summary}`)
+                                        }
+                                        className="flex min-h-[2.5rem] flex-col items-center justify-center gap-1 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-2 py-2 text-center text-[10px] font-medium leading-tight text-[var(--muted)] transition hover:bg-white/[0.04] sm:text-[11px]"
+                                    >
+                                        <Volume2 className="h-3.5 w-3.5 shrink-0" />
+                                        <span>Read brief</span>
+                                    </button>
+                                ) : null}
+                            </div>
                         </div>
                     </div>
 
@@ -1159,18 +1206,23 @@ export function DexoRoom() {
                             )}
 
                             {displayedReport.followUp.length > 0 && activeAnalysisIndex === null && (
-                                <div className="flex flex-wrap gap-2 pb-2">
-                                    {displayedReport.followUp.map((q, i) => (
-                                        <button
-                                            key={`fu-${i}`}
-                                            type="button"
-                                            onClick={() => run('converse', q)}
-                                            disabled={loading}
-                                            className="executive-pill px-4 py-2 text-[12px] text-[var(--muted)] disabled:opacity-40"
-                                        >
-                                            {q}
-                                        </button>
-                                    ))}
+                                <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)]/25 px-3 py-3">
+                                    <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">
+                                        Suggested prompts
+                                    </p>
+                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                        {displayedReport.followUp.map((q, i) => (
+                                            <button
+                                                key={`fu-${i}`}
+                                                type="button"
+                                                onClick={() => run('converse', q)}
+                                                disabled={loading}
+                                                className="min-h-[2.75rem] rounded-xl border border-[var(--border)] bg-[var(--bg-card)] px-3 py-2.5 text-left text-[12px] leading-snug text-[var(--text)] transition hover:border-[rgba(116,86,255,0.25)] hover:bg-[var(--accent-soft)] disabled:opacity-40"
+                                            >
+                                                {q}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -1178,14 +1230,14 @@ export function DexoRoom() {
 
                     {(convo.length > 0 || (loading && loadingKind === 'converse')) && (
                         <div className="mt-8 pb-28">
-                            <div className="mb-4 flex items-center justify-between">
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
+                            <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] pb-3">
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
                                     Conversation
                                 </p>
-                                <span className="text-[10px] text-[var(--muted)]">{convo.length} messages</span>
+                                <span className="tabular-nums text-[10px] text-[var(--muted)]">{convo.length} messages</span>
                             </div>
 
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                                 {convo.map((msg) => {
                                     const isUser = msg.role === 'user';
                                     const isInterrupted = msg.text === '— interrupted —';
@@ -1220,7 +1272,12 @@ export function DexoRoom() {
                                         </div>
                                     );
                                 })}
-                                {loading && loadingKind === 'converse' ? <DexoConverseLoadingBubble /> : null}
+                                {loading && loadingKind === 'converse' ? (
+                                    <DexoConverseLoadingBubble
+                                        isMuted={isMuted}
+                                        onToggleMute={() => setIsMuted((m) => !m)}
+                                    />
+                                ) : null}
                                 <div ref={chatEndRef} />
                             </div>
                         </div>
@@ -1231,6 +1288,9 @@ export function DexoRoom() {
             {/* ── Input strip — match room bg (gradient + black tint read as a slab under the bar) ── */}
             <div className="shrink-0 border-t border-[var(--border)] bg-[var(--bg)] px-4 py-3">
                 <div className="mx-auto max-w-[660px] space-y-2">
+                    <p className="px-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
+                        Message Dexo
+                    </p>
                     {/* Listening indicator bar */}
                     {isListening && (
                         <div className="flex items-center gap-2 px-2">
