@@ -660,15 +660,15 @@ export function DexoRoom() {
                         patch,
                         updateProjectField,
                     });
-                    const hint = !out.ok
-                        ? `\n\n_Could not store or apply proposal (${out.error})._`
-                        : out.applied
-                          ? `\n\n_Applied to your venture: ${pending.join(' · ')} (${out.mode} mode)._`
-                          : `\n\n_Pending your approval: ${pending.join(' · ')}._`;
-                    data.report = {
-                        ...data.report,
-                        voiceResponse: data.report.voiceResponse + hint,
-                    };
+                    // Success / pending-approval copy lives in the floating suggestions card only — not in chat.
+                    if (!out.ok) {
+                        data.report = {
+                            ...data.report,
+                            voiceResponse:
+                                data.report.voiceResponse +
+                                `\n\n_Could not save suggestion (${out.error}). Try again or edit the venture manually._`,
+                        };
+                    }
                 }
             }
             
