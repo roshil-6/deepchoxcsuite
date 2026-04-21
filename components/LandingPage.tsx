@@ -7,7 +7,7 @@ import { FREE_DAILY_TOKENS, TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 import { formatRegionalPricePair, getProBillingAmounts } from '@/lib/billingConfig';
 import { usePricingRegion } from '@/hooks/usePricingRegion';
 import { SITE_HERO_H1, SITE_HERO_LEAD, SITE_PULL_QUOTE, SITE_TAGLINE_SHORT } from '@/lib/siteSeo';
-import { LandingClerkAuth } from '@/components/LandingClerkAuth';
+import { LandingClerkAuth, LANDING_SIGN_IN_HREF, LANDING_SIGN_UP_HREF } from '@/components/LandingClerkAuth';
 
 /** @deprecated Hero is Clerk sign-in; kept for older imports / env docs. */
 export const LANDING_HERO_VIDEO_DEFAULT = '/landing-hero-demo.mp4';
@@ -17,10 +17,6 @@ const LANDING_FREE_METERING = `${FREE_DAILY_TOKENS} Dexo tokens per day (resets 
 interface LandingPageProps {
     /** Enter the app without signing in; creating a venture will prompt for login. */
     onContinueGuest: () => void;
-}
-
-function scrollToHeroAuth() {
-    document.getElementById('landing-auth')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 export function LandingPage({ onContinueGuest }: LandingPageProps) {
@@ -131,13 +127,12 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                             >
                                 Continue without signing in
                             </button>
-                            <button
-                                type="button"
-                                onClick={scrollToHeroAuth}
+                            <a
+                                href={LANDING_SIGN_IN_HREF}
                                 className="rounded-md px-3 py-2.5 font-sans text-[16px] font-semibold leading-none text-zinc-300 transition-colors hover:text-white"
                             >
                                 Log in
-                            </button>
+                            </a>
                         </nav>
                     </div>
                 </header>
@@ -458,16 +453,15 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                                     </p>
                                 </div>
 
-                                <button
-                                    type="button"
-                                    onClick={scrollToHeroAuth}
+                                <a
+                                    href={LANDING_SIGN_UP_HREF}
                                     className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white py-3 font-sans text-[14px] font-bold text-zinc-900 shadow-[0_2px_24px_rgba(255,255,255,0.12)] transition hover:bg-zinc-100 active:scale-[0.98]"
                                 >
                                     <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
                                     {landingBilling === 'monthly'
                                         ? `Get Pro - ${formatRegionalPricePair(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 }).primary}/mo`
                                         : `Get Pro - ${formatRegionalPricePair(PRO_BILLING.yearlyInr, pricingRegion, { usdDecimals: 2 }).primary}/yr`}
-                                </button>
+                                </a>
                                 <p className="mt-2 text-center font-sans text-[10px] text-zinc-600">
                                     Instant access &middot; cancel anytime &middot; no questions asked
                                 </p>
