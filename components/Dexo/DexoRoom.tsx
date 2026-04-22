@@ -755,6 +755,15 @@ export function DexoRoom() {
     // Sync isMuted into the hook
     useEffect(() => { setMuted(isMuted); }, [isMuted, setMuted]);
 
+    /** Mute/unmute from conversation rows or loading bubble; stop playback when muting. */
+    const toggleDexoMute = useCallback(() => {
+        setIsMuted((m) => {
+            const next = !m;
+            if (next) stopSpeaking();
+            return next;
+        });
+    }, [stopSpeaking]);
+
     /** Keep the inline converse loading bubble in view. */
     useEffect(() => {
         if (!loading || loadingKind !== 'converse') return;
@@ -1118,7 +1127,7 @@ export function DexoRoom() {
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => setIsMuted((m) => !m)}
+                                    onClick={toggleDexoMute}
                                     className={`flex min-h-[2.5rem] flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2 text-center text-[10px] font-medium leading-tight transition sm:text-[11px] ${
                                         isMuted
                                             ? 'border-rose-500/30 bg-rose-500/10 text-rose-200'
@@ -1261,7 +1270,22 @@ export function DexoRoom() {
                                                           : 'border-[var(--border)] bg-[var(--bg-elevated)] text-[var(--text)]'
                                                 }`}
                                             >
-                                                <p className="whitespace-pre-wrap">{msg.text}</p>
+                                                {!isUser && !isInterrupted ? (
+                                                    <div className="flex items-start gap-2">
+                                                        <p className="min-w-0 flex-1 whitespace-pre-wrap">{msg.text}</p>
+                                                        <button
+                                                            type="button"
+                                                            onClick={toggleDexoMute}
+                                                            title={isMuted ? 'Unmute Dexo voice' : 'Mute Dexo voice'}
+                                                            aria-label={isMuted ? 'Unmute Dexo voice' : 'Mute Dexo voice'}
+                                                            className="shrink-0 rounded-lg p-1 text-[var(--muted)] transition hover:bg-white/[0.06] hover:text-[var(--text)]"
+                                                        >
+                                                            {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <p className="whitespace-pre-wrap">{msg.text}</p>
+                                                )}
                                             </div>
 
                                             {isUser && (
@@ -1275,7 +1299,7 @@ export function DexoRoom() {
                                 {loading && loadingKind === 'converse' ? (
                                     <DexoConverseLoadingBubble
                                         isMuted={isMuted}
-                                        onToggleMute={() => setIsMuted((m) => !m)}
+                                        onToggleMute={toggleDexoMute}
                                     />
                                 ) : null}
                                 <div ref={chatEndRef} />
