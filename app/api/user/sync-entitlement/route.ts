@@ -2,15 +2,19 @@ import { NextResponse } from 'next/server';
 import { auth, clerkClient } from '@clerk/nextjs/server';
 import { TRIAL_DURATION_MS } from '@/lib/subscriptionLocal';
 
+/**
+ * Only trial lifecycle (start / clear) may be managed client-side.
+ * Plan tier (free → pro) MUST only be set by a verified payment-provider webhook —
+ * never accepted from the client, to prevent free-to-pro privilege escalation.
+ */
 type Body = {
-    plan?: 'pro' | 'free';
     startTrial?: boolean;
     clearTrial?: boolean;
 };
 
 /**
- * Mirrors subscription UI (localStorage) into Clerk `publicMetadata` so server routes
- * (daily brief, venture registry) can enforce Pro / trial consistently.
+ * Mirrors trial state into Clerk `publicMetadata` so server routes can enforce
+ * trial windows consistently. Plan tier changes are intentionally NOT accepted here.
  */
 export async function POST(req: Request) {
     const { userId } = await auth();
@@ -37,12 +41,10 @@ export async function POST(req: Request) {
         if (body.clearTrial) {
             next.deepchoxTrialEndsAt = null;
         }
-        if (body.plan === 'pro' || body.plan === 'free') {
-            next.deepchoxPlan = body.plan;
-            if (body.plan === 'pro') {
-                next.deepchoxTrialEndsAt = null;
-            }
-        }
+
+        // NOTE: `deepchoxPlan` is intentionally NOT writable from this endpoint.
+        // Plan upgrades must go through a payment-provider webhook that verifies
+        // the purchase before writing `deepchoxPlan: 'pro'` to Clerk metadata.
 
         await client.users.updateUser(userId, { publicMetadata: next });
         return NextResponse.json({ ok: true });
