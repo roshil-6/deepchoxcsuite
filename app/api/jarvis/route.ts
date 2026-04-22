@@ -13,7 +13,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { chatWithOpenAI, chatWithClaude, hasAiKey } from '@/lib/ai/chatProviders';
+import { chatWithOpenAI, chatWithClaude, chatWithGroq, hasAiKey } from '@/lib/ai/chatProviders';
 
 const MAX_CONTEXT = 16_000;
 
@@ -365,6 +365,38 @@ export function mergeReports(primary: Record<string, unknown>, secondary: Record
   };
 }
 
+/** Converse: one fast completion (Groq 8B → OpenAI → Claude) instead of dual-agent + merge. */
+async function runConverseSingleAgent(
+  messages: { role: string; content: string }[],
+  opts: { responseJsonObject: boolean; temperature: number }
+): Promise<{ content: string; ok: boolean; agentsUsed: { gpt: boolean; claude: boolean } }> {
+  if (process.env.GROQ_API_KEY?.trim()) {
+    try {
+      const r = await chatWithGroq(messages, 'llama3.2', opts);
+      return { content: r.message.content, ok: true, agentsUsed: { gpt: true, claude: false } };
+    } catch {
+      /* try next */
+    }
+  }
+  if (process.env.OPENAI_API_KEY?.trim()) {
+    try {
+      const r = await chatWithOpenAI(messages, 'llama3', opts);
+      return { content: r.message.content, ok: true, agentsUsed: { gpt: true, claude: false } };
+    } catch {
+      /* try next */
+    }
+  }
+  if (process.env.ANTHROPIC_API_KEY?.trim()) {
+    try {
+      const r = await chatWithClaude(messages, opts);
+      return { content: r.message.content, ok: true, agentsUsed: { gpt: false, claude: true } };
+    } catch {
+      /* fail */
+    }
+  }
+  return { content: '{}', ok: false, agentsUsed: { gpt: false, claude: false } };
+}
+
 // ─── Route ───────────────────────────────────────────────────────────────────
 
 type RequestBody = {
@@ -477,46 +509,70 @@ The founder is talking directly to you. Reply like a thoughtful cofounder.
 
     const opts = { responseJsonObject: true, temperature: 0.4 };
 
-    // Run GPT and Claude in parallel
-    const [gptRaw, claudeRaw] = await Promise.all([
-      process.env.OPENAI_API_KEY?.trim()
-        ? chatWithOpenAI(messages, 'llama3', opts)
-            .then((r) => ({ content: r.message.content, ok: true }))
-            .catch(() => ({ content: '{}', ok: false }))
-        : Promise.resolve({ content: '{}', ok: false }),
+    let report: JarvisReport;
 
-      process.env.ANTHROPIC_API_KEY?.trim()
-        ? chatWithClaude(messages, opts)
-            .then((r) => ({ content: r.message.content, ok: true }))
-            .catch(() => ({ content: '{}', ok: false }))
-        : Promise.resolve({ content: '{}', ok: false }),
-    ]);
+    if (mode === 'converse') {
+      const single = await runConverseSingleAgent(messages, opts);
+      let parsed: Record<string, unknown> = {};
+      if (single.ok) {
+        try {
+          parsed = JSON.parse(stripJsonFence(single.content));
+        } catch {
+          /* ignore */
+        }
+      }
+      const agentsUsed = {
+        gpt: single.agentsUsed.gpt && !!parsed.headline,
+        claude: single.agentsUsed.claude && !!parsed.headline,
+      };
+      if (!agentsUsed.gpt && !agentsUsed.claude) {
+        return NextResponse.json(
+          { ok: false, error: 'Dexo could not produce a reply. Check AI API keys and try again.' },
+          { status: 502 },
+        );
+      }
+      report = normalizeReport(parsed, agentsUsed);
+    } else {
+      // Analyze: dual-agent in parallel, then merge
+      const [gptRaw, claudeRaw] = await Promise.all([
+        process.env.OPENAI_API_KEY?.trim()
+          ? chatWithOpenAI(messages, 'llama3', opts)
+              .then((r) => ({ content: r.message.content, ok: true }))
+              .catch(() => ({ content: '{}', ok: false }))
+          : Promise.resolve({ content: '{}', ok: false }),
 
-    let gptParsed: Record<string, unknown> = {};
-    let claudeParsed: Record<string, unknown> = {};
+        process.env.ANTHROPIC_API_KEY?.trim()
+          ? chatWithClaude(messages, opts)
+              .then((r) => ({ content: r.message.content, ok: true }))
+              .catch(() => ({ content: '{}', ok: false }))
+          : Promise.resolve({ content: '{}', ok: false }),
+      ]);
 
-    if (gptRaw.ok) {
-      try { gptParsed = JSON.parse(stripJsonFence(gptRaw.content)); } catch { /* ignore */ }
+      let gptParsed: Record<string, unknown> = {};
+      let claudeParsed: Record<string, unknown> = {};
+
+      if (gptRaw.ok) {
+        try { gptParsed = JSON.parse(stripJsonFence(gptRaw.content)); } catch { /* ignore */ }
+      }
+      if (claudeRaw.ok) {
+        try { claudeParsed = JSON.parse(stripJsonFence(claudeRaw.content)); } catch { /* ignore */ }
+      }
+
+      const agentsUsed = { gpt: gptRaw.ok && !!gptParsed.headline, claude: claudeRaw.ok && !!claudeParsed.headline };
+
+      if (!agentsUsed.gpt && !agentsUsed.claude) {
+        return NextResponse.json({ ok: false, error: 'Both agents failed to produce a valid report. Check API keys.' }, { status: 502 });
+      }
+
+      const merged =
+        agentsUsed.gpt && agentsUsed.claude
+          ? mergeReports(gptParsed, claudeParsed)
+          : agentsUsed.gpt
+            ? gptParsed
+            : claudeParsed;
+
+      report = normalizeReport(merged, agentsUsed);
     }
-    if (claudeRaw.ok) {
-      try { claudeParsed = JSON.parse(stripJsonFence(claudeRaw.content)); } catch { /* ignore */ }
-    }
-
-    const agentsUsed = { gpt: gptRaw.ok && !!gptParsed.headline, claude: claudeRaw.ok && !!claudeParsed.headline };
-
-    if (!agentsUsed.gpt && !agentsUsed.claude) {
-      return NextResponse.json({ ok: false, error: 'Both agents failed to produce a valid report. Check API keys.' }, { status: 502 });
-    }
-
-    // Merge both analyses
-    const merged =
-      agentsUsed.gpt && agentsUsed.claude
-        ? mergeReports(gptParsed, claudeParsed)
-        : agentsUsed.gpt
-          ? gptParsed
-          : claudeParsed;
-
-    const report = normalizeReport(merged, agentsUsed);
     const reportOut = isSparseContext ? { ...report, confidence: 'low' as const } : report;
 
     return NextResponse.json({ ok: true, report: reportOut });
