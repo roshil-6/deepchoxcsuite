@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { assertVentureOwnership, sessionFrom } from '@/lib/ventureApiHelpers';
 
 const MAX_MESSAGES = 120;
 
@@ -13,10 +14,17 @@ function parseVentureId(req: Request): number | null {
  * GET /api/dexo-convo?ventureId=123
  */
 export async function GET(req: Request) {
+    const sessionId = sessionFrom(req);
+    if (!sessionId) return NextResponse.json({ ok: false, error: 'missing_session' }, { status: 401 });
+
     const ventureId = parseVentureId(req);
     if (ventureId === null) {
         return NextResponse.json({ ok: false, error: 'Invalid ventureId' }, { status: 400 });
     }
+
+    const ownershipError = await assertVentureOwnership(ventureId, sessionId);
+    if (ownershipError) return ownershipError;
+
     try {
         const rows = await prisma.dexoConversationMessage.findMany({
             where: { ventureId },
@@ -40,6 +48,9 @@ type IncomingMsg = { id?: unknown; role?: unknown; text?: unknown };
  * POST /api/dexo-convo — replace full thread (same semantics as client Dexie replace).
  */
 export async function POST(req: Request) {
+    const sessionId = sessionFrom(req);
+    if (!sessionId) return NextResponse.json({ ok: false, error: 'missing_session' }, { status: 401 });
+
     let body: { ventureId?: unknown; messages?: unknown };
     try {
         body = (await req.json()) as { ventureId?: unknown; messages?: unknown };
@@ -50,6 +61,9 @@ export async function POST(req: Request) {
     if (!Number.isFinite(ventureId)) {
         return NextResponse.json({ ok: false, error: 'Invalid ventureId' }, { status: 400 });
     }
+
+    const ownershipError = await assertVentureOwnership(ventureId, sessionId);
+    if (ownershipError) return ownershipError;
     if (!Array.isArray(body.messages)) {
         return NextResponse.json({ ok: false, error: 'messages must be an array' }, { status: 400 });
     }
@@ -78,10 +92,17 @@ export async function POST(req: Request) {
  * DELETE /api/dexo-convo?ventureId=123
  */
 export async function DELETE(req: Request) {
+    const sessionId = sessionFrom(req);
+    if (!sessionId) return NextResponse.json({ ok: false, error: 'missing_session' }, { status: 401 });
+
     const ventureId = parseVentureId(req);
     if (ventureId === null) {
         return NextResponse.json({ ok: false, error: 'Invalid ventureId' }, { status: 400 });
     }
+
+    const ownershipError = await assertVentureOwnership(ventureId, sessionId);
+    if (ownershipError) return ownershipError;
+
     try {
         await prisma.dexoConversationMessage.deleteMany({ where: { ventureId } });
         return NextResponse.json({ ok: true });

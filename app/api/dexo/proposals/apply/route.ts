@@ -2,12 +2,16 @@ import { NextResponse } from 'next/server';
 import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { sanitizeDexoPatch } from '@/lib/dexoPatchSchema';
+import { assertVentureOwnership, sessionFrom } from '@/lib/ventureApiHelpers';
 
 /**
  * POST /api/dexo/proposals/apply
  * Marks proposal as applied after client applied patch to local venture data.
  */
 export async function POST(req: Request) {
+  const sessionId = sessionFrom(req);
+  if (!sessionId) return NextResponse.json({ ok: false, error: 'missing_session' }, { status: 401 });
+
   let body: { proposalId?: unknown; ventureId?: unknown; appliedPatch?: unknown; actor?: unknown; note?: unknown };
   try {
     body = (await req.json()) as typeof body;
@@ -19,6 +23,9 @@ export async function POST(req: Request) {
   if (!proposalId || !Number.isFinite(ventureId)) {
     return NextResponse.json({ ok: false, error: 'proposalId and ventureId required' }, { status: 400 });
   }
+
+  const ownershipError = await assertVentureOwnership(ventureId, sessionId);
+  if (ownershipError) return ownershipError;
 
   const sanitized = sanitizeDexoPatch(body.appliedPatch);
   if (!sanitized.ok) {

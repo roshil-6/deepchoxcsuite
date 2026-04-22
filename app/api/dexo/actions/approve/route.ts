@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { assertVentureOwnership, sessionFrom } from '@/lib/ventureApiHelpers';
 
 /**
  * POST /api/dexo/actions/approve
  */
 export async function POST(req: Request) {
+  const sessionId = sessionFrom(req);
+  if (!sessionId) return NextResponse.json({ ok: false, error: 'missing_session' }, { status: 401 });
+
   let body: { queueId?: unknown; ventureId?: unknown; actor?: unknown };
   try {
     body = (await req.json()) as typeof body;
@@ -16,6 +20,9 @@ export async function POST(req: Request) {
   if (!queueId || !Number.isFinite(ventureId)) {
     return NextResponse.json({ ok: false, error: 'queueId and ventureId required' }, { status: 400 });
   }
+
+  const ownershipError = await assertVentureOwnership(ventureId, sessionId);
+  if (ownershipError) return ownershipError;
   const actor = typeof body.actor === 'string' && body.actor.trim() ? body.actor.trim().slice(0, 64) : 'founder';
 
   try {
