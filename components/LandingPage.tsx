@@ -191,7 +191,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                                     Continue without signing in
                                 </button>
                                 <p className="max-w-sm text-center font-sans text-[11px] leading-snug text-zinc-500">
-                                    Browse first. You’ll be asked to sign in when you add a venture.
+                                    Browse first. You'll be asked to sign in when you add a venture.
                                 </p>
                             </div>
                         </div>
