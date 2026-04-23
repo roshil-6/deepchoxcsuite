@@ -771,11 +771,11 @@ export function DexoRoom() {
 
             {/* Ambient background — subtle violet radial + dot grid */}
             <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-                <div className="absolute inset-0" style={{ background: ‘radial-gradient(ellipse 80% 50% at 50% 0%, rgba(116,86,255,0.06) 0%, transparent 65%)’ }} />
-                <div className="absolute inset-0 opacity-[0.28]" style={{ backgroundImage: ‘radial-gradient(circle at center, #3f3f46 1px, transparent 1px)’, backgroundSize: ‘28px 28px’ }} />
+                <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(116,86,255,0.06) 0%, transparent 65%)' }} />
+                <div className="absolute inset-0 opacity-[0.28]" style={{ backgroundImage: 'radial-gradient(circle at center, #3f3f46 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
             </div>
 
-            {/* ── Scrollable body (min-h-0 required or flex won’t shrink below content → no scroll on mobile) ── */}
+            {/* ── Scrollable body (min-h-0 required or flex won't shrink below content → no scroll on mobile) ── */}
             <div className="custom-scrollbar relative z-10 min-h-0 flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]">
                 <div className="mx-auto max-w-[660px] px-5 pb-32 pt-8">
 
