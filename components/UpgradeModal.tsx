@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { X, Check, Zap, Infinity } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useUser } from '@clerk/nextjs';
 import { FREE_DAILY_TOKENS, TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 import {
     BILLING_CONFIG,
@@ -24,6 +25,7 @@ interface UpgradeModalProps {
 
 export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
     const { isPaidPro, isInTrial, hasUsedTrial, trialDaysLeft, trialHoursLeft, startTrial, deactivatePro } = useSubscription();
+    const { user } = useUser();
     const [billing, setBilling] = useState<BillingCycle>('monthly');
     const pricingRegion = usePricingRegion();
     const PRO_BILLING = getProBillingAmounts();
@@ -35,7 +37,8 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
 
     const payOnRazorpay = () => {
         const cycle = isYearly ? 'yearly' : 'monthly';
-        const opened = openRazorpayPaymentPage(cycle);
+        // Pass userId so Razorpay embeds it in payment notes → webhook reads it back.
+        const opened = openRazorpayPaymentPage(cycle, user?.id);
         if (opened) {
             onClose();
             return;

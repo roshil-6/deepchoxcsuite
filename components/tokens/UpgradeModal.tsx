@@ -22,6 +22,7 @@ import {
 } from '@/lib/billingConfig';
 import { getRazorpayPaymentLinkUrl, openRazorpayPaymentPage } from '@/lib/razorpayPaymentLink';
 import { usePricingRegion } from '@/hooks/usePricingRegion';
+import { useUser } from '@clerk/nextjs';
 
 interface UpgradeModalProps {
     isOpen: boolean;
@@ -31,6 +32,7 @@ interface UpgradeModalProps {
 
 export function UpgradeModal({ isOpen, onClose, triggerReason }: UpgradeModalProps) {
     const tokens = useTokens();
+    const { user } = useUser();
     const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
     const pricingRegion = usePricingRegion();
     const proBilling = getProBillingAmounts();
@@ -215,7 +217,7 @@ export function UpgradeModal({ isOpen, onClose, triggerReason }: UpgradeModalPro
                 <div className="space-y-2">
                     <button
                         onClick={() => {
-                            if (openRazorpayPaymentPage(selectedPlan)) {
+                            if (openRazorpayPaymentPage(selectedPlan, user?.id)) {
                                 onClose();
                                 return;
                             }
