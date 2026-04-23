@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Check, Globe, Infinity, Sparkles } from 'lucide-react';
+import { Check, Globe, Infinity, Sparkles, Quote, Search, Wand2, Users } from 'lucide-react';
 import { FREE_DAILY_TOKENS, TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 import { formatRegionalPricePair, getProBillingAmounts } from '@/lib/billingConfig';
 import { usePricingRegion } from '@/hooks/usePricingRegion';
@@ -150,9 +150,13 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                             <div className="flex w-full max-w-xl flex-col items-center text-center sm:max-w-2xl lg:max-w-3xl">
                                 {/* Company branding */}
                                 <div className="flex flex-col items-center">
-                                    <div className="flex items-baseline gap-4 sm:gap-5">
-                                        <span className="font-sans text-[clamp(2.75rem,9vw,5rem)] font-black tracking-[0.05em] text-white">
-                                            north<span className="text-brand-teal">ROSC</span>
+                                    <div className="relative flex items-baseline gap-4 sm:gap-5">
+                                        <span
+                                            className="absolute inset-0 -z-10 rounded-full bg-brand-teal/15 blur-[80px]"
+                                            aria-hidden
+                                        />
+                                        <span className="font-sans text-[clamp(2.75rem,9vw,5rem)] font-black tracking-[0.05em] text-white [text-shadow:0_2px_40px_rgba(116,86,255,0.35)]">
+                                            north<span className="bg-gradient-to-br from-brand-teal via-[#9d88ff] to-brand-teal bg-clip-text text-transparent">ROSC</span>
                                         </span>
                                         <span className="font-sans text-[clamp(1.5rem,5vw,2.5rem)] font-bold tracking-[0.25em] text-zinc-400">
                                             LABS
@@ -194,7 +198,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                                 <button
                                     type="button"
                                     onClick={continueWithoutSigningIn}
-                                    className="rounded-full border border-zinc-500/55 bg-zinc-900/40 px-4 py-2 font-sans text-[12px] font-semibold text-zinc-200 transition hover:border-zinc-400/80 hover:bg-zinc-800/60 hover:text-white sm:text-[13px]"
+                                    className="rounded-full border border-zinc-500/55 bg-zinc-900/40 px-4 py-2 font-sans text-[12px] font-semibold text-zinc-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-sm transition-all hover:-translate-y-px hover:border-brand-teal/50 hover:bg-zinc-800/60 hover:text-white hover:shadow-[0_4px_20px_-8px_rgba(116,86,255,0.35)] sm:text-[13px]"
                                 >
                                     Continue without signing in
                                 </button>
@@ -214,41 +218,62 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                     <div className="mx-auto h-px w-32 bg-gradient-to-r from-transparent via-zinc-500 to-transparent sm:w-40" aria-hidden />
 
                     <div className="mt-12 grid gap-10 text-left lg:mt-14 lg:grid-cols-2 lg:gap-x-16 lg:gap-y-0">
-                            <p className="font-serif text-[clamp(1.35rem,2.8vw,1.85rem)] font-normal italic leading-[1.55] text-zinc-200 lg:leading-[1.5] [text-shadow:0_2px_20px_rgba(0,0,0,0.5)]">
-                                {SITE_PULL_QUOTE}
-                            </p>
+                            <div className="relative">
+                                <Quote
+                                    className="absolute -left-2 -top-4 h-8 w-8 text-brand-teal/30 sm:-left-4 sm:-top-5 sm:h-10 sm:w-10"
+                                    aria-hidden
+                                    strokeWidth={1.5}
+                                />
+                                <p className="relative pl-6 font-serif text-[clamp(1.35rem,2.8vw,1.85rem)] font-normal italic leading-[1.55] text-zinc-200 lg:leading-[1.5] [text-shadow:0_2px_20px_rgba(0,0,0,0.5)] sm:pl-8">
+                                    {SITE_PULL_QUOTE}
+                                </p>
+                            </div>
                             <p className="font-sans text-[clamp(1.05rem,2.1vw,1.25rem)] font-normal leading-[1.75] text-zinc-300 lg:text-[1.35rem] lg:leading-[1.8]">
                                 {SITE_HERO_LEAD}
                             </p>
                         </div>
 
                         <div
-                            className="mt-16 grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-5 lg:mt-20"
+                            className="mt-16 grid grid-cols-1 gap-5 sm:grid-cols-3 lg:mt-20"
                             role="list"
                         >
                             {[
                                 {
                                     t: 'Research',
                                     d: 'Live web research so you build from real markets and sources, not guesswork.',
+                                    Icon: Search,
                                 },
                                 {
                                     t: 'Actions',
                                     d: 'Concrete suggestions for your venture — not only chat, but changes you can apply.',
+                                    Icon: Wand2,
                                 },
                                 {
                                     t: 'A full team',
                                     d: 'Strategy, product, finance, GTM, and intel — one workspace, like a co-founding team.',
+                                    Icon: Users,
                                 },
-                            ].map(({ t, d }) => (
-                                <span
+                            ].map(({ t, d, Icon }) => (
+                                <div
                                     key={t}
                                     role="listitem"
-                                    className="flex flex-col gap-2 border-l-2 border-zinc-600 bg-black/25 px-6 py-5 text-left backdrop-blur-[2px] sm:min-h-[140px]"
+                                    className="group relative flex flex-col gap-3 overflow-hidden rounded-2xl border border-zinc-800/80 bg-gradient-to-b from-zinc-900/50 to-black/40 p-6 text-left backdrop-blur-[3px] transition-all duration-300 hover:-translate-y-1 hover:border-brand-teal/40 hover:shadow-[0_20px_50px_-20px_rgba(116,86,255,0.35)] sm:min-h-[170px]"
                                 >
-                                    <span className="font-sans text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">Capability</span>
-                                    <span className="font-sans text-[17px] font-bold leading-tight text-zinc-50">{t}</span>
-                                    <span className="font-sans text-[15px] font-normal leading-snug text-zinc-400">{d}</span>
-                                </span>
+                                    <span
+                                        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-teal/60 to-transparent opacity-60 transition-opacity duration-300 group-hover:opacity-100"
+                                        aria-hidden
+                                    />
+                                    <span
+                                        className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-brand-teal/10 blur-3xl opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                                        aria-hidden
+                                    />
+                                    <span className="relative inline-flex h-10 w-10 items-center justify-center rounded-xl border border-brand-teal/25 bg-brand-teal/10 text-brand-teal shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-transform duration-300 group-hover:scale-105">
+                                        <Icon className="h-[18px] w-[18px]" aria-hidden strokeWidth={2.2} />
+                                    </span>
+                                    <span className="relative font-sans text-[11px] font-bold uppercase tracking-[0.22em] text-brand-teal/80">Capability</span>
+                                    <span className="relative font-sans text-[18px] font-bold leading-tight text-zinc-50">{t}</span>
+                                    <span className="relative font-sans text-[15px] font-normal leading-relaxed text-zinc-400">{d}</span>
+                                </div>
                             ))}
                         </div>
 
@@ -290,13 +315,13 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
 
                     {/* Billing toggle */}
                     <div className="mb-8 flex justify-center">
-                        <div className="inline-flex items-center rounded-full border border-zinc-700/60 bg-black/40 p-1 backdrop-blur-sm">
+                        <div className="inline-flex items-center rounded-full border border-zinc-700/60 bg-black/50 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_30px_-12px_rgba(0,0,0,0.6)] backdrop-blur-md">
                             <button
                                 type="button"
                                 onClick={() => setLandingBilling('monthly')}
-                                className={`rounded-full px-5 py-2 font-sans text-[13px] font-semibold transition ${
+                                className={`rounded-full px-5 py-2 font-sans text-[13px] font-semibold transition-all duration-200 ${
                                     landingBilling === 'monthly'
-                                        ? 'bg-zinc-800 text-zinc-100 shadow-sm'
+                                        ? 'bg-gradient-to-b from-zinc-700 to-zinc-800 text-white shadow-[0_2px_12px_-2px_rgba(116,86,255,0.25)]'
                                         : 'text-zinc-500 hover:text-zinc-300'
                                 }`}
                             >
@@ -305,14 +330,14 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                             <button
                                 type="button"
                                 onClick={() => setLandingBilling('yearly')}
-                                className={`flex items-center gap-2 rounded-full px-5 py-2 font-sans text-[13px] font-semibold transition ${
+                                className={`flex items-center gap-2 rounded-full px-5 py-2 font-sans text-[13px] font-semibold transition-all duration-200 ${
                                     landingBilling === 'yearly'
-                                        ? 'bg-zinc-800 text-zinc-100 shadow-sm'
+                                        ? 'bg-gradient-to-b from-zinc-700 to-zinc-800 text-white shadow-[0_2px_12px_-2px_rgba(116,86,255,0.25)]'
                                         : 'text-zinc-500 hover:text-zinc-300'
                                 }`}
                             >
                                 Yearly
-                                <span className="rounded-full bg-amber-400/20 px-2 py-0.5 font-sans text-[10px] font-bold uppercase text-amber-400">
+                                <span className="rounded-full bg-gradient-to-r from-amber-400/25 to-amber-300/25 px-2 py-0.5 font-sans text-[10px] font-bold uppercase tracking-wider text-amber-300 ring-1 ring-inset ring-amber-400/20">
                                     Save 17%
                                 </span>
                             </button>
@@ -323,7 +348,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                     <div className="mx-auto grid max-w-3xl gap-4 sm:grid-cols-2">
 
                         {/* Free card */}
-                        <div className="flex flex-col rounded-2xl border border-zinc-800 bg-zinc-950 p-6 shadow-[0_12px_32px_-24px_rgba(0,0,0,0.8)]">
+                        <div className="group flex flex-col rounded-2xl border border-zinc-800 bg-gradient-to-b from-zinc-950 to-black p-6 shadow-[0_12px_32px_-24px_rgba(0,0,0,0.8)] transition-all duration-300 hover:-translate-y-0.5 hover:border-zinc-700 hover:shadow-[0_20px_40px_-24px_rgba(0,0,0,0.9)]">
                             <p className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">
                                 Founder
                             </p>
@@ -362,18 +387,34 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                             <button
                                 type="button"
                                 onClick={continueWithoutSigningIn}
-                                className="mt-6 w-full rounded-xl border border-zinc-700 bg-zinc-900 py-3 font-sans text-[14px] font-semibold text-zinc-200 transition hover:border-zinc-600 hover:bg-zinc-800 hover:text-white"
+                                className="group/free mt-6 w-full rounded-xl border border-zinc-700 bg-gradient-to-b from-zinc-900 to-zinc-950 py-3 font-sans text-[14px] font-semibold text-zinc-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-all hover:-translate-y-px hover:border-zinc-600 hover:bg-gradient-to-b hover:from-zinc-800 hover:to-zinc-900 hover:text-white hover:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.8)]"
                             >
                                 Get started free
                             </button>
                         </div>
 
                         {/* Pro card */}
-                        <div className="relative flex flex-col overflow-hidden rounded-2xl border border-zinc-700 bg-zinc-950/80 p-6 shadow-[0_16px_40px_-24px_rgba(0,0,0,0.8)]">
-                            <div className="relative flex flex-1 flex-col">
+                        <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-brand-teal/35 bg-gradient-to-b from-zinc-900/90 via-zinc-950 to-black p-6 shadow-[0_24px_60px_-28px_rgba(116,86,255,0.45),0_16px_40px_-24px_rgba(0,0,0,0.8)] transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-teal/55 hover:shadow-[0_28px_70px_-24px_rgba(116,86,255,0.55)]">
+                            {/* Recommended badge */}
+                            <div className="absolute -top-px left-1/2 -translate-x-1/2">
+                                <span className="inline-flex items-center gap-1.5 rounded-b-full border border-t-0 border-brand-teal/40 bg-gradient-to-b from-brand-teal/25 to-brand-teal/10 px-3 py-1 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-white backdrop-blur-sm">
+                                    <Sparkles className="h-3 w-3 text-brand-teal" aria-hidden />
+                                    Recommended
+                                </span>
+                            </div>
+                            {/* Ambient glow */}
+                            <span
+                                className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-brand-teal/15 blur-3xl"
+                                aria-hidden
+                            />
+                            <span
+                                className="pointer-events-none absolute -bottom-24 -left-16 h-56 w-56 rounded-full bg-[#8b74ff]/10 blur-3xl"
+                                aria-hidden
+                            />
+                            <div className="relative flex flex-1 flex-col pt-3">
                                 <div className="flex items-center gap-2">
-                                    <Sparkles className="h-3.5 w-3.5 text-zinc-300" aria-hidden />
-                                    <p className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-300">
+                                    <Sparkles className="h-3.5 w-3.5 text-brand-teal" aria-hidden />
+                                    <p className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-200">
                                         Co-Founder Pro
                                     </p>
                                 </div>
@@ -462,12 +503,18 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                                 <button
                                     type="button"
                                     onClick={scrollToHeroAuth}
-                                    className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white py-3 font-sans text-[14px] font-bold text-zinc-900 shadow-[0_2px_24px_rgba(255,255,255,0.12)] transition hover:bg-zinc-100 active:scale-[0.98]"
+                                    className="group/btn relative mt-5 inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-b from-white to-zinc-100 py-3 font-sans text-[14px] font-bold text-zinc-900 shadow-[0_4px_28px_rgba(116,86,255,0.35),inset_0_1px_0_rgba(255,255,255,0.8)] transition-all hover:from-white hover:to-white hover:shadow-[0_6px_32px_rgba(116,86,255,0.5)] active:scale-[0.98]"
                                 >
-                                    <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
-                                    {landingBilling === 'monthly'
-                                        ? `Get Pro - ${formatRegionalPricePair(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 }).primary}/mo`
-                                        : `Get Pro - ${formatRegionalPricePair(PRO_BILLING.yearlyInr, pricingRegion, { usdDecimals: 2 }).primary}/yr`}
+                                    <span
+                                        className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-brand-teal/20 to-transparent transition-transform duration-700 group-hover/btn:translate-x-full"
+                                        aria-hidden
+                                    />
+                                    <Sparkles className="relative h-4 w-4 shrink-0" aria-hidden />
+                                    <span className="relative">
+                                        {landingBilling === 'monthly'
+                                            ? `Get Pro - ${formatRegionalPricePair(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 }).primary}/mo`
+                                            : `Get Pro - ${formatRegionalPricePair(PRO_BILLING.yearlyInr, pricingRegion, { usdDecimals: 2 }).primary}/yr`}
+                                    </span>
                                 </button>
                                 <p className="mt-2 text-center font-sans text-[10px] text-zinc-600">
                                     Instant access &middot; cancel anytime &middot; no questions asked
