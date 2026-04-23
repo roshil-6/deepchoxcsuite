@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Coins, Crown, AlertTriangle, Sparkles, Zap } from 'lucide-react';
 import { useTokens } from '@/lib/tokens/useTokens';
 import { formatTokens, TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
+import { openRazorpayPaymentPageWithFallback } from '@/lib/razorpayPaymentLink';
 
 interface TokenDisplayProps {
     compact?: boolean;
@@ -79,7 +80,7 @@ export function TokenDisplay({ compact = false, showCosts = false, onRequestUpgr
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     if (onRequestUpgrade) onRequestUpgrade();
-                                    else tokens.upgradeToPro();
+                                    else if (!openRazorpayPaymentPageWithFallback()) tokens.upgradeToPro();
                                 }}
                                 className="rounded bg-white/[0.08] px-2 py-0.5 text-[10px] text-[var(--text)] transition-colors hover:bg-white/[0.12]"
                             >
@@ -178,7 +179,9 @@ export function TokenConfirmButton({
     if (!canAfford) {
         return (
             <button
-                onClick={() => tokens.upgradeToPro()}
+                onClick={() => {
+                    if (!openRazorpayPaymentPageWithFallback()) tokens.upgradeToPro();
+                }}
                 className={`${className} opacity-60`}
             >
                 <span className="flex items-center gap-1.5">

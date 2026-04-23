@@ -143,11 +143,11 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                             <div className="flex w-full max-w-xl flex-col items-center text-center sm:max-w-2xl lg:max-w-3xl">
                                 {/* Company branding */}
                                 <div className="flex flex-col items-center">
-                                    <div className="flex items-baseline gap-4 sm:gap-5">
-                                        <span className="font-sans text-[clamp(2.75rem,9vw,5rem)] font-black tracking-[0.05em] text-white">
-                                            north<span className="text-brand-teal">ROSC</span>
+                                    <div className="flex items-baseline gap-4 sm:gap-6">
+                                        <span className="font-sans text-[clamp(3.75rem,13vw,8rem)] font-black tracking-[-0.01em] text-white [text-shadow:0_0_60px_rgba(255,255,255,0.08)]">
+                                            north<span className="text-brand-teal [text-shadow:0_0_48px_rgba(116,86,255,0.45)]">ROSC</span>
                                         </span>
-                                        <span className="font-sans text-[clamp(1.5rem,5vw,2.5rem)] font-bold tracking-[0.25em] text-zinc-400">
+                                        <span className="font-sans text-[clamp(1.75rem,5.5vw,3.25rem)] font-black tracking-[0.28em] text-zinc-400">
                                             LABS
                                         </span>
                                     </div>
@@ -436,11 +436,11 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
 
                 <footer className="mt-auto flex flex-col items-center gap-6 border-t border-zinc-800/80 px-5 py-12 text-center sm:flex-row sm:justify-between sm:px-12 sm:text-left">
                     <div className="[text-shadow:0_2px_20px_rgba(0,0,0,0.6)]">
-                        <div className="flex items-baseline gap-2">
-                            <span className="font-sans text-[20px] font-black tracking-tighter text-white">
+                        <div className="flex items-baseline gap-2.5">
+                            <span className="font-sans text-[30px] font-black tracking-[-0.01em] text-white">
                                 north<span className="text-brand-teal">ROSC</span>
                             </span>
-                            <span className="font-sans text-[13px] font-bold tracking-[0.15em] text-zinc-400">
+                            <span className="font-sans text-[17px] font-black tracking-[0.22em] text-zinc-400">
                                 LABS
                             </span>
                         </div>

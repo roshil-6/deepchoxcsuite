@@ -40,7 +40,12 @@ interface DexoAvatarProps {
  * Dexo's human-feel illustrated avatar.
  * Drop in anywhere — it reacts to the current AI state with a colored ring and ambient glow.
  *
- * Requires public/dexo-avatar.png — copy the avatar file there once.
+ * Requires public/dexo-avatar.jpg
+ *
+ * xs / sm  → tight circle (chat bubbles, header dots)
+ * md / lg / xl → rounded-2xl card so the full illustration is visible naturally.
+ *
+ * mix-blend-mode: multiply makes the white JPG background disappear on the dark UI.
  */
 export function DexoAvatar({
     state = 'idle',
@@ -53,6 +58,11 @@ export function DexoAvatar({
     const glow = STATE_GLOW[state];
     const shouldPulse = pulse && (state === 'listening' || state === 'thinking');
 
+    // Small sizes clip to a circle (for chat bubble slots).
+    // Larger sizes use a soft rounded-2xl card to show the full illustration.
+    const isSmall = size === 'xs' || size === 'sm';
+    const frameRadius = isSmall ? 'rounded-full' : 'rounded-2xl';
+
     return (
         <div className={`relative shrink-0 ${cls} ${className}`}>
             {/* Soft ambient halo behind the image */}
@@ -60,17 +70,17 @@ export function DexoAvatar({
                 className={`pointer-events-none absolute -inset-2 rounded-full blur-xl opacity-70 transition-colors duration-500 ${glow} ${shouldPulse ? 'animate-pulse' : ''}`}
                 aria-hidden
             />
-            {/* Avatar ring */}
+            {/* Avatar frame */}
             <div
-                className={`relative overflow-hidden rounded-full ring-2 transition-all duration-500 ${ring}`}
+                className={`relative overflow-hidden ring-2 transition-all duration-500 ${frameRadius} ${ring}`}
                 style={{ width: px, height: px }}
             >
                 <Image
-                    src="/dexo-avatar.png"
+                    src="/dexo-avatar.jpg"
                     alt="Dexo — your AI co-founder"
                     width={px}
                     height={px}
-                    className="h-full w-full object-cover object-top"
+                    className="h-full w-full object-cover object-top [mix-blend-mode:multiply]"
                     priority
                 />
             </div>
