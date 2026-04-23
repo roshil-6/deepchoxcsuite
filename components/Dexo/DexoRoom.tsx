@@ -337,7 +337,7 @@ export function DexoRoom() {
     const voicePreset = useVoicePreset();
     /** Track which analysis is being viewed in detail */
     const [activeAnalysisIndex, setActiveAnalysisIndex] = useState<number | null>(null);
-    /** Shown after “Set up in Dexo” so the room feels scoped to that task */
+    /** Shown after "Set up in Dexo" so the room feels scoped to that task */
     const [setupMission, setSetupMission] = useState<DexoBootstrapPayload | null>(null);
     const convoId = useRef(0);
     const skipConvoPersistRef = useRef(true);
@@ -647,7 +647,7 @@ export function DexoRoom() {
     // Keep runRef current for the pending-transcript effect
     runRef.current = run;
 
-    // Staff attention / “Set up now” — show mission banner + seed first Dexo converse turn
+    // Staff attention / "Set up now" — show mission banner + seed first Dexo converse turn
     useEffect(() => {
         if (!dexoBootstrap || !activeProject?.id) return;
         const payload = dexoBootstrap;
@@ -940,9 +940,9 @@ export function DexoRoom() {
                     )}
 
                     {/* ── Co-founder presence — avatar + particle orb side by side ── */}
-                    <div className=”mb-8”>
+                    <div className="mb-8">
                         {/* Identity row */}
-                        <div className=”mb-5 flex items-center gap-4”>
+                        <div className="mb-5 flex items-center gap-4">
                             <DexoAvatar
                                 state={
                                     orbState === 'loading'    ? 'thinking'  :
@@ -950,33 +950,33 @@ export function DexoRoom() {
                                     orbState === 'speaking'   ? 'speaking'  :
                                     orbState === 'thinking'   ? 'thinking'  : 'idle'
                                 }
-                                size=”lg”
+                                size="lg"
                                 pulse
                             />
-                            <div className=”min-w-0 flex-1”>
-                                <div className=”flex items-center gap-2”>
-                                    <span className=”font-sans text-[10px] font-bold uppercase tracking-[0.22em] text-[#7456ff]”>Dexo</span>
-                                    <span className=”rounded-full border border-[rgba(116,86,255,0.2)] bg-[rgba(116,86,255,0.08)] px-2 py-0.5 font-sans text-[9px] font-semibold uppercase tracking-widest text-[#9d88ff]”>
+                            <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2">
+                                    <span className="font-sans text-[10px] font-bold uppercase tracking-[0.22em] text-[#7456ff]">Dexo</span>
+                                    <span className="rounded-full border border-[rgba(116,86,255,0.2)] bg-[rgba(116,86,255,0.08)] px-2 py-0.5 font-sans text-[9px] font-semibold uppercase tracking-widest text-[#9d88ff]">
                                         AI Co-Founder
                                     </span>
                                 </div>
-                                <div className=”mt-1.5”>
+                                <div className="mt-1.5">
                                     {displayedReport ? (
-                                        <h1 className=”font-sans text-[18px] font-semibold leading-snug tracking-tight text-white”>
+                                        <h1 className="font-sans text-[18px] font-semibold leading-snug tracking-tight text-white">
                                             {displayedReport.headline}
                                         </h1>
                                     ) : (
-                                        <h1 className=”font-sans text-[17px] font-semibold leading-snug tracking-tight text-white”>
+                                        <h1 className="font-sans text-[17px] font-semibold leading-snug tracking-tight text-white">
                                             {activeProject.name}
                                         </h1>
                                     )}
                                     {displayedReport ? (
-                                        <p className=”mt-1 font-sans text-[13px] leading-relaxed text-zinc-500”>
+                                        <p className="mt-1 font-sans text-[13px] leading-relaxed text-zinc-500">
                                             {displayedReport.summary.slice(0, 120)}{displayedReport.summary.length > 120 ? '…' : ''}
                                         </p>
                                     ) : (
-                                        <p className=”mt-1 font-sans text-[13px] leading-relaxed text-zinc-500”>
-                                            I'm here. Tell me what's on your mind — or use <span className=”text-zinc-400”>Analyze</span> for a structured brief.
+                                        <p className="mt-1 font-sans text-[13px] leading-relaxed text-zinc-500">
+                                            I'm here. Tell me what's on your mind — or use <span className="text-zinc-400">Analyze</span> for a structured brief.
                                         </p>
                                     )}
                                 </div>
@@ -989,11 +989,11 @@ export function DexoRoom() {
                                         <WaveBars active />
                                         <span>{isListening ? 'Listening…' : 'Speaking…'}</span>
                                         <button
-                                            type=”button”
+                                            type="button"
                                             onClick={isSpeaking ? stopSpeaking : stopListening}
-                                            className=”ml-0.5 opacity-60 hover:opacity-100”
+                                            className="ml-0.5 opacity-60 hover:opacity-100"
                                         >
-                                            <Square className=”h-2 w-2” />
+                                            <Square className="h-2 w-2" />
                                         </button>
                                     </div>
                                 )}
@@ -1001,7 +1001,7 @@ export function DexoRoom() {
 
                             {/* Particle orb — kept alongside avatar */}
                             <button
-                                type=”button”
+                                type="button"
                                 onClick={() => {
                                     if (isSpeaking) stopSpeaking();
                                     else if (!isMuted) {
@@ -1012,59 +1012,59 @@ export function DexoRoom() {
                                         }
                                     }
                                 }}
-                                className=”shrink-0 opacity-80 transition hover:opacity-100”
-                                title=”Click to hear Dexo speak”
+                                className="shrink-0 opacity-80 transition hover:opacity-100"
+                                title="Click to hear Dexo speak"
                             >
                                 <VoiceOrb state={orbState} />
                             </button>
                         </div>
 
                         {voiceError && (
-                            <div className=”flex items-center gap-2 rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] px-3 py-2 font-sans text-[11px] text-zinc-500”>
-                                <AlertTriangle className=”h-3 w-3 shrink-0” />
+                            <div className="flex items-center gap-2 rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] px-3 py-2 font-sans text-[11px] text-zinc-500">
+                                <AlertTriangle className="h-3 w-3 shrink-0" />
                                 {voiceError}
                             </div>
                         )}
 
                         {/* Voice control pills */}
-                        <div className=”flex flex-wrap items-center gap-1.5”>
+                        <div className="flex flex-wrap items-center gap-1.5">
                             <button
-                                type=”button”
+                                type="button"
                                 onClick={() => setHandsFree((h) => !h)}
-                                title=”After Dexo speaks, mic opens automatically”
+                                title="After Dexo speaks, mic opens automatically"
                                 className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-sans text-[11px] font-medium transition-all ${
                                     handsFree
                                         ? 'bg-[rgba(116,86,255,0.15)] text-[#c4b5fd] ring-1 ring-[rgba(116,86,255,0.3)]'
                                         : 'text-zinc-600 hover:bg-[rgba(255,255,255,0.05)] hover:text-zinc-400'
                                 }`}
                             >
-                                <AudioLines className=”h-3 w-3” />
+                                <AudioLines className="h-3 w-3" />
                                 {handsFree ? 'Conversation on' : 'Conversation'}
                             </button>
                             <button
-                                type=”button”
+                                type="button"
                                 onClick={() => setIsMuted((m) => !m)}
-                                className=”inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-sans text-[11px] font-medium text-zinc-600 transition hover:bg-[rgba(255,255,255,0.05)] hover:text-zinc-400”
+                                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-sans text-[11px] font-medium text-zinc-600 transition hover:bg-[rgba(255,255,255,0.05)] hover:text-zinc-400"
                             >
-                                {isMuted ? <VolumeX className=”h-3 w-3” /> : <Volume2 className=”h-3 w-3” />}
+                                {isMuted ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
                                 {isMuted ? 'Unmute' : 'Mute'}
                             </button>
                             <button
-                                type=”button”
+                                type="button"
                                 onClick={() => setShowVoiceSettings(true)}
-                                className=”inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-sans text-[11px] font-medium text-zinc-600 transition hover:bg-[rgba(255,255,255,0.05)] hover:text-zinc-400”
+                                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-sans text-[11px] font-medium text-zinc-600 transition hover:bg-[rgba(255,255,255,0.05)] hover:text-zinc-400"
                                 title={`Voice: ${voicePreset}`}
                             >
-                                <Settings2 className=”h-3 w-3” />
+                                <Settings2 className="h-3 w-3" />
                                 Voice
                             </button>
                             {displayedReport && !isMuted && !isSpeaking && (
                                 <button
-                                    type=”button”
+                                    type="button"
                                     onClick={() => speakJarvis(`${displayedReport.headline}. ${displayedReport.summary}`)}
-                                    className=”inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-sans text-[11px] font-medium text-zinc-600 transition hover:bg-[rgba(255,255,255,0.05)] hover:text-zinc-400”
+                                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-sans text-[11px] font-medium text-zinc-600 transition hover:bg-[rgba(255,255,255,0.05)] hover:text-zinc-400"
                                 >
-                                    <Volume2 className=”h-3 w-3” /> Read brief
+                                    <Volume2 className="h-3 w-3" /> Read brief
                                 </button>
                             )}
                         </div>
