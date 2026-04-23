@@ -1,7 +1,7 @@
 import { SignUp } from '@clerk/nextjs';
 import { clerkPostAuthRedirectPath } from '@/lib/clerkAuthRedirect';
 import { clerkLightAppearance } from '@/lib/clerkLightAppearance';
-import { GoogleIcon } from '@/components/auth/GoogleIcon';
+import { AuthPageBackground } from '@/components/auth/AuthPageBackground';
 
 const appearance = {
   ...clerkLightAppearance,
@@ -18,37 +18,62 @@ export default async function SignUpPage({
   const afterAuth = clerkPostAuthRedirectPath(sp);
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#0c0c0e] px-4 py-10">
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.35]"
-        aria-hidden
-        style={{
-          background:
-            'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(45,212,191,0.12), transparent), radial-gradient(ellipse 60% 40% at 100% 100%, rgba(124,58,237,0.08), transparent)',
-        }}
-      />
-      <div className="relative w-full max-w-md">
-        <div className="mb-6 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 shadow-lg backdrop-blur-sm">
-            <GoogleIcon className="h-7 w-7" />
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#030304] px-4 py-10">
+      <AuthPageBackground />
+
+      <div className="relative z-10 w-full max-w-md">
+        {/* Header */}
+        <div className="mb-7 text-center">
+          <div className="mb-5 flex flex-col items-center gap-1">
+            <span className="font-sans text-[22px] font-black tracking-[0.04em] text-white [text-shadow:0_2px_30px_rgba(116,86,255,0.4)]">
+              north<span className="bg-gradient-to-br from-[#7456ff] via-[#9d88ff] to-[#7456ff] bg-clip-text text-transparent">ROSC</span>
+            </span>
+            <span className="font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-zinc-500">
+              Deepchox
+            </span>
           </div>
-          <h1 className="mt-4 font-sans text-xl font-bold tracking-tight text-white">Create your account</h1>
-          <p className="mt-1.5 font-sans text-[14px] text-zinc-400">
-            Continue with Google or email — same secure flow as sign-in.
+
+          <h1 className="font-sans text-[1.35rem] font-bold tracking-tight text-white">
+            Create your account
+          </h1>
+          <p className="mt-2 font-sans text-[13.5px] leading-relaxed text-zinc-400">
+            Join free — Google or email, no card required.
           </p>
         </div>
-        <div className="rounded-2xl border border-zinc-700/60 bg-white p-6 shadow-[0_24px_64px_rgba(0,0,0,0.45)]">
-          <SignUp
-            routing="path"
-            path="/sign-up"
-            signInUrl="/sign-in"
-            fallbackRedirectUrl={afterAuth}
-            signInFallbackRedirectUrl="/"
-            oauthFlow="redirect"
-            appearance={appearance}
+
+        {/* Card */}
+        <div className="relative">
+          <div
+            className="pointer-events-none absolute -inset-px rounded-[18px] opacity-60"
+            style={{
+              background: 'linear-gradient(135deg, rgba(116,86,255,0.45) 0%, transparent 50%, rgba(139,116,255,0.3) 100%)',
+            }}
+            aria-hidden
           />
-          <div id="clerk-captcha" className="mt-4 flex min-h-[2.5rem] justify-center" />
+          <div className="relative overflow-hidden rounded-2xl border border-zinc-700/70 bg-zinc-950/90 p-6 shadow-[0_32px_80px_rgba(0,0,0,0.7),0_0_0_1px_rgba(116,86,255,0.08)] backdrop-blur-xl">
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#7456ff]/70 to-transparent" aria-hidden />
+
+            <div className="overflow-hidden rounded-xl bg-white p-1 shadow-[0_4px_24px_rgba(0,0,0,0.35)]">
+              <SignUp
+                routing="path"
+                path="/sign-up"
+                signInUrl="/sign-in"
+                fallbackRedirectUrl={afterAuth}
+                signInFallbackRedirectUrl="/"
+                oauthFlow="redirect"
+                appearance={appearance}
+              />
+            </div>
+            <div id="clerk-captcha" className="mt-3 flex min-h-[2.5rem] justify-center" />
+          </div>
         </div>
+
+        <p className="mt-5 text-center font-sans text-[12px] text-zinc-600">
+          Already have an account?{' '}
+          <a href="/sign-in" className="font-semibold text-[#9d88ff] transition hover:text-white">
+            Sign in
+          </a>
+        </p>
       </div>
     </div>
   );
