@@ -412,6 +412,44 @@
     }
   }
 
+  /* ── Auth page animations ── */
+  @keyframes auth-scan {
+    0%   { top: -2px; opacity: 0; }
+    4%   { opacity: 1; }
+    92%  { opacity: 0.65; }
+    100% { top: 100%; opacity: 0; }
+  }
+
+  @keyframes auth-particle {
+    0%, 100% { transform: translateY(0px) scale(1);    opacity: 0.22; }
+    50%       { transform: translateY(-16px) scale(1.18); opacity: 0.55; }
+  }
+
+  @keyframes auth-glow {
+    0%, 100% { opacity: 0.12; transform: scale(1); }
+    50%       { opacity: 0.24; transform: scale(1.07); }
+  }
+
+  @keyframes auth-step-in {
+    0%   { opacity: 0; transform: translateX(-10px); }
+    100% { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes auth-check {
+    0%   { stroke-dashoffset: 22; opacity: 0; }
+    60%  { opacity: 1; }
+    100% { stroke-dashoffset: 0; opacity: 1; }
+  }
+
+  @keyframes auth-spin-ring {
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes auth-beacon {
+    0%, 100% { transform: scale(1);   opacity: 0.7; }
+    50%       { transform: scale(1.5); opacity: 0; }
+  }
+
   .nav-item {
     border-radius: 0.75rem;
     transition: all 0.2s ease;
