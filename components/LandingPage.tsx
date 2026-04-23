@@ -26,7 +26,6 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
     /** Normalized pointer 0–100 for CSS-driven background parallax */
     const [bgPointer, setBgPointer] = useState({ x: 50, y: 32 });
     const pricingRef = useRef<HTMLElement>(null);
-    const [landingBilling, setLandingBilling] = useState<'monthly' | 'yearly'>('monthly');
 
     const handleBgPointer = (e: React.PointerEvent<HTMLDivElement>) => {
         const rect = e.currentTarget.getBoundingClientRect();
@@ -281,36 +280,6 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                         </p>
                     </div>
 
-                    {/* Billing toggle */}
-                    <div className="mb-8 flex justify-center">
-                        <div className="inline-flex items-center rounded-full border border-zinc-700/60 bg-black/50 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-md">
-                            <button
-                                type="button"
-                                onClick={() => setLandingBilling('monthly')}
-                                className={`rounded-full px-5 py-2 font-sans text-[13px] font-semibold transition-all duration-200 ${
-                                    landingBilling === 'monthly'
-                                        ? 'bg-gradient-to-b from-zinc-700 to-zinc-800 text-white shadow-sm'
-                                        : 'text-zinc-500 hover:text-zinc-300'
-                                }`}
-                            >
-                                Monthly
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setLandingBilling('yearly')}
-                                className={`flex items-center gap-2 rounded-full px-5 py-2 font-sans text-[13px] font-semibold transition-all duration-200 ${
-                                    landingBilling === 'yearly'
-                                        ? 'bg-gradient-to-b from-zinc-700 to-zinc-800 text-white shadow-sm'
-                                        : 'text-zinc-500 hover:text-zinc-300'
-                                }`}
-                            >
-                                Yearly
-                                <span className="rounded-full bg-amber-400/15 px-2 py-0.5 font-sans text-[10px] font-bold uppercase tracking-wide text-amber-300 ring-1 ring-inset ring-amber-400/25">
-                                    −17%
-                                </span>
-                            </button>
-                        </div>
-                    </div>
 
                     {/* Plan cards */}
                     <div className="mx-auto grid max-w-3xl gap-4 sm:grid-cols-2">
@@ -402,31 +371,15 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                                 </div>
 
                                 {/* Price */}
-                                {landingBilling === 'monthly' ? (
-                                    <>
-                                        <div className="mt-3 flex items-end gap-2">
-                                            <p className="font-sans text-[38px] font-black leading-none tracking-tight text-white">
-                                                {formatRegionalPricePair(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 }).primary}
-                                            </p>
-                                            <span className="mb-1.5 font-sans text-[15px] text-zinc-500">/mo</span>
-                                        </div>
-                                        <p className="mt-1 font-sans text-[12px] text-zinc-600">
-                                            {formatRegionalPricePair(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 }).secondary} &middot; billed monthly &middot; cancel anytime
-                                        </p>
-                                    </>
-                                ) : (
-                                    <>
-                                        <div className="mt-3 flex items-end gap-2">
-                                            <p className="font-sans text-[38px] font-black leading-none tracking-tight text-white">
-                                                {formatRegionalPricePair(PRO_BILLING.effectiveMonthlyInr, pricingRegion, { usdDecimals: 2, inrMaximumFractionDigits: 2 }).primary}
-                                            </p>
-                                            <span className="mb-1.5 font-sans text-[15px] text-zinc-500">/mo</span>
-                                        </div>
-                                        <p className="mt-1 font-sans text-[12px] text-zinc-600">
-                                            {formatRegionalPricePair(PRO_BILLING.yearlyInr, pricingRegion, { usdDecimals: 2 }).primary}/yr &middot; billed annually &middot; cancel anytime
-                                        </p>
-                                    </>
-                                )}
+                                <div className="mt-3 flex items-end gap-2">
+                                    <p className="font-sans text-[38px] font-black leading-none tracking-tight text-white">
+                                        {formatRegionalPricePair(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 }).primary}
+                                    </p>
+                                    <span className="mb-1.5 font-sans text-[15px] text-zinc-500">/mo</span>
+                                </div>
+                                <p className="mt-1 font-sans text-[12px] text-zinc-600">
+                                    {formatRegionalPricePair(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 }).secondary} &middot; billed monthly &middot; cancel anytime
+                                </p>
 
                                 <div className="my-5 h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
 
@@ -470,9 +423,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                                     />
                                     <Sparkles className="relative h-4 w-4 shrink-0" aria-hidden />
                                     <span className="relative">
-                                        {landingBilling === 'monthly'
-                                            ? `Upgrade to Pro — ${formatRegionalPricePair(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 }).primary}/mo`
-                                            : `Upgrade to Pro — ${formatRegionalPricePair(PRO_BILLING.yearlyInr, pricingRegion, { usdDecimals: 2 }).primary}/yr`}
+                                        {`Upgrade to Pro — ${formatRegionalPricePair(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 }).primary}/mo`}
                                     </span>
                                 </a>
                                 <p className="mt-2.5 text-center font-sans text-[10.5px] text-zinc-600">
