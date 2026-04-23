@@ -940,7 +940,7 @@ export function DexoRoom() {
                                         </h1>
                                     ) : (
                                         <h1 className="font-sans text-[17px] font-semibold leading-snug tracking-tight text-white">
-                                            {activeProject.name}
+                                            {activeProject?.name ?? 'Dexo'}
                                         </h1>
                                     )}
                                     {displayedReport ? (
@@ -981,7 +981,7 @@ export function DexoRoom() {
                                         if (displayedReport) {
                                             speakJarvis(`${displayedReport.headline}. ${displayedReport.summary}`);
                                         } else {
-                                            speakJarvis(`I'm Dexo. We're in ${activeProject.name}. Tell me what you want help with first.`);
+                                            speakJarvis(activeProject?.name ? `I'm Dexo. We're in ${activeProject.name}. Tell me what you want help with first.` : `I'm Dexo, your AI co-founder. Create a venture in the sidebar and let's build together.`);
                                         }
                                     }
                                 }}
