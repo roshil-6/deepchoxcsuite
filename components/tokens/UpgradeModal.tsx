@@ -19,8 +19,8 @@ import {
     BILLING_CONFIG,
     formatRegionalDualLine,
     getProBillingAmounts,
-    getPaymentGatewayPlanMeta,
 } from '@/lib/billingConfig';
+import { getRazorpayPaymentLinkUrl, openRazorpayPaymentPage } from '@/lib/razorpayPaymentLink';
 import { usePricingRegion } from '@/hooks/usePricingRegion';
 
 interface UpgradeModalProps {
@@ -34,7 +34,8 @@ export function UpgradeModal({ isOpen, onClose, triggerReason }: UpgradeModalPro
     const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
     const pricingRegion = usePricingRegion();
     const proBilling = getProBillingAmounts();
-    
+    const hasRazorpay = getRazorpayPaymentLinkUrl(selectedPlan) !== null;
+
     if (!isOpen || typeof window === 'undefined') return null;
     
     // Close if user is already pro
@@ -214,16 +215,25 @@ export function UpgradeModal({ isOpen, onClose, triggerReason }: UpgradeModalPro
                 <div className="space-y-2">
                     <button
                         onClick={() => {
-                            const _gatewayMeta = getPaymentGatewayPlanMeta(selectedPlan);
-                            tokens.upgradeToPro();
-                            onClose();
+                            if (openRazorpayPaymentPage(selectedPlan)) {
+                                onClose();
+                                return;
+                            }
+                            // Payment link not configured — do not grant Pro for free.
+                            alert('Payment is not configured yet. Contact support to upgrade.');
                         }}
                         className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-900 font-medium text-[13px] hover:opacity-90 transition-opacity"
                     >
                         <Crown className="h-4 w-4" />
-                        Upgrade to Pro
+                        {hasRazorpay ? 'Pay with Razorpay' : 'Upgrade to Pro'}
                         <ArrowRight className="h-4 w-4" />
                     </button>
+                    {hasRazorpay && (
+                        <p className="text-center text-[10px] text-slate-500">
+                            Checkout opens in a new tab. Pro unlocks in the app after your server confirms payment (e.g.
+                            Razorpay webhook).
+                        </p>
+                    )}
                     
                     <button
                         onClick={onClose}

@@ -102,7 +102,9 @@ export function useSubscription(): SubscriptionState {
             localStorage.setItem(PLAN_STORAGE_KEY, 'pro');
             changed = true;
         }
-        if (meta.deepchoxPlan === 'free' && readPlan() !== 'free') {
+        // If Clerk is the source of truth and does NOT say 'pro', enforce free.
+        // This prevents any localStorage-based bypass (e.g. from old activatePro() calls).
+        if (meta.deepchoxPlan !== 'pro' && readPlan() === 'pro') {
             localStorage.setItem(PLAN_STORAGE_KEY, 'free');
             changed = true;
         }
