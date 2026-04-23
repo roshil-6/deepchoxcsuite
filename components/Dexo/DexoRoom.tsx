@@ -752,7 +752,7 @@ export function DexoRoom() {
             <div className="custom-scrollbar relative z-10 min-h-0 flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]">
                 <div className="mx-auto max-w-[660px] px-5 pb-32 pt-8">
 
-                    {loading && <AnalyzingBanner name={activeProject.name} />}
+                    {loading && <AnalyzingBanner name={activeProject?.name} />}
 
                     {/* Error */}
                     {error && !loading && (
