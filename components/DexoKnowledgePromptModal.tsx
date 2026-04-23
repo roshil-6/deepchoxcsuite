@@ -2,7 +2,8 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Bot, X } from 'lucide-react';
+import { X } from 'lucide-react';
+import { DexoAvatar } from '@/components/Dexo/DexoAvatar';
 import { useOffice } from '@/lib/OfficeContext';
 import { VoiceInput } from '@/components/ui/VoiceInput';
 import {
@@ -128,53 +129,64 @@ export function DexoKnowledgePromptModal() {
 
     const portal = (
         <div
-            className="fixed inset-0 z-[10060] flex items-center justify-center p-4"
-            style={{ background: 'rgba(5,8,14,0.52)' }}
+            className="fixed inset-0 z-[10060] flex items-end justify-center p-4 sm:items-center"
+            style={{ background: ‘rgba(3,3,4,0.7)’, backdropFilter: ‘blur(4px)’ }}
             role="dialog"
             aria-modal="true"
             aria-labelledby="dexo-gap-title"
         >
             <div
-                className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-white/[0.16] shadow-2xl"
+                className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-[rgba(116,86,255,0.18)]"
                 style={{
-                    background: 'linear-gradient(165deg, rgba(38,38,46,0.97), rgba(24,24,31,0.96))',
-                    boxShadow: '0 24px 64px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.04)',
+                    background: ‘linear-gradient(160deg, #0d0b1a 0%, #09090f 100%)’,
+                    boxShadow: ‘0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(116,86,255,0.08), inset 0 1px 0 rgba(255,255,255,0.04)’,
                 }}
             >
-                <div className="flex items-start justify-between gap-3 border-b border-white/[0.1] px-5 py-4">
-                    <div className="flex min-w-0 items-start gap-3">
-                        <div
-                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-                            style={{ background: 'rgba(16,185,129,0.16)' }}
-                        >
-                            <Bot className="h-5 w-5 text-[#34D399]" aria-hidden />
+                {/* Top accent line */}
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#7456ff]/60 to-transparent" aria-hidden />
+
+                {/* Avatar + question — speech-bubble layout */}
+                <div className="flex gap-4 px-5 pt-5">
+                    <DexoAvatar size="md" state="idle" pulse={false} className="mt-1 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                            <div>
+                                <span className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#7456ff]">Dexo</span>
+                                <span className="ml-2 font-sans text-[9px] font-semibold uppercase tracking-widest text-zinc-600">Co-Founder</span>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className="shrink-0 rounded-lg p-1.5 text-zinc-600 transition hover:bg-white/[0.06] hover:text-zinc-300"
+                                aria-label="Close"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
                         </div>
-                        <div className="min-w-0">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500">Dexo · Co-founder</p>
-                            <h2 id="dexo-gap-title" className="mt-0.5 text-[15px] font-semibold leading-snug text-zinc-100">
+                        {/* Speech bubble */}
+                        <div className="mt-2 rounded-2xl rounded-tl-sm border border-[rgba(116,86,255,0.12)] bg-[rgba(116,86,255,0.06)] px-4 py-3">
+                            <h2 id="dexo-gap-title" className="font-sans text-[15px] font-semibold leading-snug text-white">
                                 {currentGap.title}
                             </h2>
-                            <p className="mt-1 text-[12px] leading-relaxed text-zinc-400">
+                            <p className="mt-1.5 font-sans text-[13px] leading-relaxed text-zinc-400">
                                 {currentGap.prompt}
                             </p>
+                            {gaps.length > 1 && (
+                                <p className="mt-2 font-sans text-[11px] text-zinc-600">
+                                    {gaps.length - 1} more question{gaps.length === 2 ? ‘’ : ‘s’} after this one.
+                                </p>
+                            )}
                         </div>
                     </div>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="shrink-0 rounded-lg p-1.5 text-zinc-500 transition hover:bg-white/[0.06] hover:text-zinc-200"
-                        aria-label="Close"
-                    >
-                        <X className="h-4 w-4" />
-                    </button>
                 </div>
 
-                <div className="space-y-3 px-5 py-4">
+                {/* Answer input */}
+                <div className="space-y-3 px-5 pb-5 pt-4">
                     <label className="block">
-                        <div className="flex items-center justify-between gap-3">
-                            <span className="text-[11px] font-medium text-zinc-400">Your answer</span>
+                        <div className="mb-1.5 flex items-center justify-between gap-2">
+                            <span className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">Your answer</span>
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] text-zinc-500">Type or speak</span>
+                                <span className="font-sans text-[10px] text-zinc-600">Type or speak</span>
                                 <VoiceInput
                                     onTranscript={(text) => {
                                         const chunk = text.trim();
@@ -187,37 +199,27 @@ export function DexoKnowledgePromptModal() {
                         <textarea
                             value={reply}
                             onChange={(e) => setReply(e.target.value)}
-                            rows={5}
-                            placeholder="Type here or use the mic — we’ll save it to this venture’s record."
-                            className="mt-1.5 w-full resize-y rounded-2xl border border-white/[0.12] bg-white/[0.03] px-3 py-2.5 text-[13px] leading-relaxed text-zinc-100 placeholder:text-zinc-500 focus:border-emerald-400/45 focus:outline-none focus:ring-1 focus:ring-emerald-400/25"
+                            rows={4}
+                            placeholder="Share what you know — Dexo will save it to your venture record."
+                            className="w-full resize-y rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] px-4 py-3 font-sans text-[13px] leading-relaxed text-zinc-100 placeholder:text-zinc-600 focus:border-[rgba(116,86,255,0.35)] focus:outline-none focus:ring-1 focus:ring-[rgba(116,86,255,0.15)]"
                         />
                     </label>
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                        <p className="text-[11px] text-zinc-400">
-                            {gaps.length > 1 ? (
-                                <span>After this save, {gaps.length - 1} more question{gaps.length === 2 ? '' : 's'} may follow.</span>
-                            ) : (
-                                <span>Answering fills a missing piece for the whole suite.</span>
-                            )}
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                            <button
-                                type="button"
-                                onClick={onRemindLater}
-                                className="rounded-xl border border-white/[0.12] bg-white/[0.02] px-3 py-2 text-[12px] font-medium text-zinc-300 transition hover:bg-white/[0.06] hover:text-zinc-100"
-                            >
-                                Remind me later
-                            </button>
-                            <button
-                                type="button"
-                                disabled={saving || !reply.trim()}
-                                onClick={() => void onSubmit()}
-                                className="rounded-xl px-4 py-2 text-[12px] font-semibold text-zinc-950 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
-                                style={{ background: 'linear-gradient(135deg, rgba(116,86,255,0.95), rgba(137,111,255,0.92))', color: '#f8f8ff' }}
-                            >
-                                {saving ? 'Saving…' : 'Save to venture'}
-                            </button>
-                        </div>
+                    <div className="flex flex-wrap items-center justify-end gap-2 pt-1">
+                        <button
+                            type="button"
+                            onClick={onRemindLater}
+                            className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] px-4 py-2 font-sans text-[12px] font-medium text-zinc-400 transition hover:bg-[rgba(255,255,255,0.06)] hover:text-zinc-200"
+                        >
+                            Later
+                        </button>
+                        <button
+                            type="button"
+                            disabled={saving || !reply.trim()}
+                            onClick={() => void onSubmit()}
+                            className="rounded-xl bg-[#7456ff] px-5 py-2 font-sans text-[12px] font-semibold text-white shadow-[0_0_20px_rgba(116,86,255,0.35)] transition hover:bg-[#8a6fff] hover:shadow-[0_0_28px_rgba(116,86,255,0.5)] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
+                        >
+                            {saving ? ‘Saving…’ : ‘Save answer’}
+                        </button>
                     </div>
                 </div>
             </div>
