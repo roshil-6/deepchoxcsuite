@@ -517,7 +517,10 @@ export function DexoRoom() {
     }, [activeProject]);
 
     const resetConversation = useCallback(() => {
-        if (!activeProject?.id) return;
+        if (!activeProject?.id) {
+            setConvo([]);
+            return;
+        }
         const projectId = activeProject.id;
         const seed = buildInitialDexoMessages(activeProject);
         void clearDexoConvo(projectId);
@@ -536,7 +539,8 @@ export function DexoRoom() {
     }, [activeProject]);
 
     const run = useCallback(async (mode: 'analyze' | 'converse', userMsg?: string) => {
-        if (!activeProject?.id) return;
+        // Analyze requires a venture; free-chat works without one
+        if (mode === 'analyze' && !activeProject?.id) return;
         
         // Check and spend tokens
         const cost = mode === 'analyze' 
@@ -730,37 +734,6 @@ export function DexoRoom() {
 
     const orbState: ConvoVoiceState | 'loading' = loading && !currentReport ? 'loading' : voiceState;
 
-    // ── Empty state ──
-    if (!activeProject?.id) {
-        return (
-            <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-[#030304] px-4 py-8 sm:px-6">
-                {/* Ambient background */}
-                <div className="pointer-events-none absolute inset-0">
-                    <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 70% 55% at 50% 40%, rgba(116,86,255,0.07) 0%, transparent 70%)' }} />
-                    <div className="absolute inset-0 opacity-[0.35]" style={{ backgroundImage: 'radial-gradient(circle at center, #52525b 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
-                </div>
-                <div className="relative z-10 max-w-sm shrink-0 space-y-6 text-center">
-                    {/* Orb */}
-                    <div className="relative mx-auto flex h-24 w-24 items-center justify-center">
-                        <div className="absolute inset-0 rounded-full bg-[rgba(116,86,255,0.08)] blur-xl" />
-                        <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-[rgba(116,86,255,0.18)] bg-[rgba(116,86,255,0.06)] shadow-[0_0_40px_rgba(116,86,255,0.12),inset_0_1px_0_rgba(255,255,255,0.04)]">
-                            <DexoParticleCanvas mode="room" size={52} state="idle" />
-                        </div>
-                    </div>
-                    {/* Text */}
-                    <div className="space-y-3">
-                        <h2 className="font-sans text-[18px] font-semibold tracking-tight text-white">
-                            No venture selected
-                        </h2>
-                        <p className="font-sans text-[13px] leading-relaxed text-zinc-500">
-                            Open a venture from the sidebar or create one — Dexo needs a workspace before it can start analyzing and chatting.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
     // Determine which report to display
     const displayedReport = activeAnalysisIndex !== null 
         ? analysisHistory[activeAnalysisIndex] 
@@ -779,7 +752,7 @@ export function DexoRoom() {
             <div className="custom-scrollbar relative z-10 min-h-0 flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]">
                 <div className="mx-auto max-w-[660px] px-5 pb-32 pt-8">
 
-                    {loading && <AnalyzingBanner name={activeProject.name} />}
+                    {loading && <AnalyzingBanner name={activeProject?.name ?? ''} />}
 
                     {/* Error */}
                     {error && !loading && (
@@ -967,7 +940,7 @@ export function DexoRoom() {
                                         </h1>
                                     ) : (
                                         <h1 className="font-sans text-[17px] font-semibold leading-snug tracking-tight text-white">
-                                            {activeProject.name}
+                                            {activeProject?.name ?? 'Dexo'}
                                         </h1>
                                     )}
                                     {displayedReport ? (
@@ -1008,7 +981,7 @@ export function DexoRoom() {
                                         if (displayedReport) {
                                             speakJarvis(`${displayedReport.headline}. ${displayedReport.summary}`);
                                         } else {
-                                            speakJarvis(`I'm Dexo. We're in ${activeProject.name}. Tell me what you want help with first.`);
+                                            speakJarvis(activeProject?.name ? `I'm Dexo. We're in ${activeProject.name}. Tell me what you want help with first.` : `I'm Dexo, your AI co-founder. Create a venture in the sidebar and let's build together.`);
                                         }
                                     }
                                 }}
