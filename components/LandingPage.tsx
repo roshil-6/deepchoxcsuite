@@ -12,7 +12,6 @@ import { LandingClerkAuth, LANDING_SIGN_IN_HREF, LANDING_SIGN_UP_HREF } from '@/
 /** @deprecated Hero is Clerk sign-in; kept for older imports / env docs. */
 export const LANDING_HERO_VIDEO_DEFAULT = '/landing-hero-demo.mp4';
 
-const LANDING_FREE_METERING = `${FREE_DAILY_TOKENS} Dexo tokens per day (resets midnight) · ${TOKEN_COSTS.ANALYSIS} per new analysis · ${TOKEN_COSTS.REANALYZE} per re-analyze · ${TOKEN_COSTS.CHAT_MESSAGE} per Dexo message`;
 
 interface LandingPageProps {
     /** Enter the app without signing in; creating a venture will prompt for login. */
@@ -274,23 +273,23 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                             Pricing
                         </p>
                         <h2 className="font-[family-name:var(--font-brand-display)] mx-auto mt-3 max-w-[22ch] text-balance text-[clamp(1.6rem,4vw,2.75rem)] font-semibold leading-tight tracking-[-0.01em] text-white">
-                            Start free. Upgrade when you need the edge.
+                            Your co-founding team. One flat price.
                         </h2>
-                        <p className="mx-auto mt-3 max-w-xl font-sans text-[15px] leading-relaxed text-zinc-400">
-                            The full workspace is free. The only difference is how much AI you can run: Founder uses a daily
-                            token pool; Co-Founder Pro is unlimited.
+                        <p className="mx-auto mt-3 max-w-lg font-sans text-[15px] leading-relaxed text-zinc-400">
+                            Start with everything — no card, no trial. Upgrade only when you want
+                            to remove the daily AI limit and unlock research reports.
                         </p>
                     </div>
 
                     {/* Billing toggle */}
                     <div className="mb-8 flex justify-center">
-                        <div className="inline-flex items-center rounded-full border border-zinc-700/60 bg-black/40 p-1 backdrop-blur-sm">
+                        <div className="inline-flex items-center rounded-full border border-zinc-700/60 bg-black/50 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-md">
                             <button
                                 type="button"
                                 onClick={() => setLandingBilling('monthly')}
-                                className={`rounded-full px-5 py-2 font-sans text-[13px] font-semibold transition ${
+                                className={`rounded-full px-5 py-2 font-sans text-[13px] font-semibold transition-all duration-200 ${
                                     landingBilling === 'monthly'
-                                        ? 'bg-zinc-800 text-zinc-100 shadow-sm'
+                                        ? 'bg-gradient-to-b from-zinc-700 to-zinc-800 text-white shadow-sm'
                                         : 'text-zinc-500 hover:text-zinc-300'
                                 }`}
                             >
@@ -299,15 +298,15 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                             <button
                                 type="button"
                                 onClick={() => setLandingBilling('yearly')}
-                                className={`flex items-center gap-2 rounded-full px-5 py-2 font-sans text-[13px] font-semibold transition ${
+                                className={`flex items-center gap-2 rounded-full px-5 py-2 font-sans text-[13px] font-semibold transition-all duration-200 ${
                                     landingBilling === 'yearly'
-                                        ? 'bg-zinc-800 text-zinc-100 shadow-sm'
+                                        ? 'bg-gradient-to-b from-zinc-700 to-zinc-800 text-white shadow-sm'
                                         : 'text-zinc-500 hover:text-zinc-300'
                                 }`}
                             >
                                 Yearly
-                                <span className="rounded-full bg-amber-400/20 px-2 py-0.5 font-sans text-[10px] font-bold uppercase text-amber-400">
-                                    Save 17%
+                                <span className="rounded-full bg-amber-400/15 px-2 py-0.5 font-sans text-[10px] font-bold uppercase tracking-wide text-amber-300 ring-1 ring-inset ring-amber-400/25">
+                                    −17%
                                 </span>
                             </button>
                         </div>
@@ -317,57 +316,87 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                     <div className="mx-auto grid max-w-3xl gap-4 sm:grid-cols-2">
 
                         {/* Free card */}
-                        <div className="flex flex-col rounded-2xl border border-zinc-800 bg-zinc-950 p-6 shadow-[0_12px_32px_-24px_rgba(0,0,0,0.8)]">
-                            <p className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">
+                        <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-zinc-800/80 bg-gradient-to-b from-zinc-900/60 to-zinc-950 p-6 shadow-[0_12px_40px_-20px_rgba(0,0,0,0.7)] transition-all duration-300 hover:-translate-y-0.5 hover:border-zinc-700 hover:shadow-[0_20px_48px_-20px_rgba(0,0,0,0.8)]">
+                            {/* Top accent */}
+                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-600/60 to-transparent" aria-hidden />
+
+                            {/* Tier + price */}
+                            <p className="font-sans text-[10px] font-bold uppercase tracking-[0.24em] text-zinc-500">
                                 Founder
                             </p>
-                            <p className="mt-3 font-sans text-[34px] font-bold leading-none text-zinc-200">
-                                Free
+                            <div className="mt-3 flex items-end gap-2">
+                                <p className="font-sans text-[38px] font-black leading-none tracking-tight text-white">
+                                    Free
+                                </p>
+                            </div>
+                            <p className="mt-1.5 font-sans text-[12px] text-zinc-600">
+                                Forever — no credit card, no catch
                             </p>
-                            <p className="mt-1 font-sans text-[13px] text-zinc-600">
-                                forever, no card required
-                            </p>
-                            <div className="my-5 h-px bg-zinc-800/80" />
-                            <ul className="flex-1 space-y-3">
-                                <li className="flex items-start gap-2.5 font-sans text-[13px] leading-relaxed text-zinc-400">
-                                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
-                                    <span>
-                                        <span className="font-semibold text-zinc-200">Full workspace</span> — all desks,
-                                        Dexo chat &amp; analysis, staff sync, calendar, ventures, and tools.
+
+                            <div className="my-5 h-px bg-zinc-800/60" />
+
+                            {/* Features */}
+                            <ul className="flex-1 space-y-3.5">
+                                <li className="flex items-start gap-3">
+                                    <span className="mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full bg-zinc-800">
+                                        <Check className="h-2.5 w-2.5 text-zinc-400" aria-hidden />
+                                    </span>
+                                    <span className="font-sans text-[13px] leading-relaxed text-zinc-400">
+                                        <span className="font-semibold text-zinc-200">Full workspace</span> — every desk, Dexo chat &amp; analysis, staff sync, calendar, ventures, and tools
                                     </span>
                                 </li>
-                                <li className="flex items-start gap-2.5 font-sans text-[13px] leading-relaxed text-zinc-400">
-                                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
-                                    <span>
-                                        <span className="font-semibold text-zinc-200">Metered AI</span> — {LANDING_FREE_METERING}
+                                <li className="flex items-start gap-3">
+                                    <span className="mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full bg-zinc-800">
+                                        <Check className="h-2.5 w-2.5 text-zinc-400" aria-hidden />
+                                    </span>
+                                    <span className="font-sans text-[13px] leading-relaxed text-zinc-400">
+                                        <span className="font-semibold text-zinc-200">Daily AI tokens</span> — {FREE_DAILY_TOKENS} tokens/day · {TOKEN_COSTS.ANALYSIS} per analysis · {TOKEN_COSTS.CHAT_MESSAGE} per message
                                     </span>
                                 </li>
-                                <li className="flex items-start gap-2.5 font-sans text-[13px] leading-relaxed text-zinc-500">
-                                    <span className="mt-0.5 shrink-0 font-sans text-[11px] font-bold text-zinc-600" aria-hidden>
-                                        —
+                                <li className="flex items-start gap-3 opacity-50">
+                                    <span className="mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full bg-zinc-800/50">
+                                        <span className="h-1.5 w-1.5 rounded-full bg-zinc-600" />
                                     </span>
-                                    <span>
-                                        <span className="font-semibold text-zinc-400">Dexo daily research reports</span>{' '}
-                                        (web-backed briefs, history, Dashboard tab) —{' '}
-                                        <span className="text-zinc-500">Co-Founder Pro</span> only.
+                                    <span className="font-sans text-[13px] leading-relaxed text-zinc-500">
+                                        Daily research reports — Pro only
                                     </span>
                                 </li>
                             </ul>
+
                             <button
                                 type="button"
                                 onClick={continueWithoutSigningIn}
-                                className="mt-6 w-full rounded-xl border border-zinc-700 bg-zinc-900 py-3 font-sans text-[14px] font-semibold text-zinc-200 transition hover:border-zinc-600 hover:bg-zinc-800 hover:text-white"
+                                className="mt-6 w-full rounded-xl border border-zinc-700/80 bg-zinc-900 py-3 font-sans text-[14px] font-semibold text-zinc-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-all duration-200 hover:border-zinc-600 hover:bg-zinc-800 hover:text-white hover:shadow-[0_4px_20px_-8px_rgba(0,0,0,0.6)]"
                             >
-                                Get started free
+                                Start building — free
                             </button>
+                            <p className="mt-2.5 text-center font-sans text-[11px] text-zinc-600">
+                                No sign-up required to explore
+                            </p>
                         </div>
 
                         {/* Pro card */}
-                        <div className="relative flex flex-col overflow-hidden rounded-2xl border border-zinc-700 bg-zinc-950/80 p-6 shadow-[0_16px_40px_-24px_rgba(0,0,0,0.8)]">
-                            <div className="relative flex flex-1 flex-col">
+                        <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-brand-teal/30 bg-gradient-to-b from-[#0d0b1a] via-zinc-950 to-black p-6 shadow-[0_0_0_1px_rgba(116,86,255,0.06),0_24px_60px_-20px_rgba(116,86,255,0.35)] transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-teal/50 hover:shadow-[0_0_0_1px_rgba(116,86,255,0.1),0_28px_70px_-18px_rgba(116,86,255,0.45)]">
+                            {/* Ambient glow blobs */}
+                            <span className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-brand-teal/12 blur-3xl" aria-hidden />
+                            <span className="pointer-events-none absolute -bottom-20 -left-12 h-44 w-44 rounded-full bg-[#8b74ff]/10 blur-3xl" aria-hidden />
+
+                            {/* Top gradient accent */}
+                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-teal/70 to-transparent" aria-hidden />
+
+                            {/* Recommended badge */}
+                            <div className="absolute -top-px left-1/2 -translate-x-1/2">
+                                <span className="inline-flex items-center gap-1.5 rounded-b-full border border-t-0 border-brand-teal/35 bg-gradient-to-b from-brand-teal/20 to-brand-teal/8 px-3.5 py-1 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-white/90 backdrop-blur-sm">
+                                    <Sparkles className="h-2.5 w-2.5 text-brand-teal" aria-hidden />
+                                    Recommended
+                                </span>
+                            </div>
+
+                            <div className="relative flex flex-1 flex-col pt-3">
+                                {/* Tier label */}
                                 <div className="flex items-center gap-2">
-                                    <Sparkles className="h-3.5 w-3.5 text-zinc-300" aria-hidden />
-                                    <p className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-300">
+                                    <Sparkles className="h-3.5 w-3.5 text-brand-teal/80" aria-hidden />
+                                    <p className="font-sans text-[10px] font-bold uppercase tracking-[0.24em] text-brand-teal/80">
                                         Co-Founder Pro
                                     </p>
                                 </div>
@@ -376,93 +405,77 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                                 {landingBilling === 'monthly' ? (
                                     <>
                                         <div className="mt-3 flex items-end gap-2">
-                                            <p className="font-sans text-[34px] font-bold leading-none text-zinc-100">
+                                            <p className="font-sans text-[38px] font-black leading-none tracking-tight text-white">
                                                 {formatRegionalPricePair(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 }).primary}
                                             </p>
-                                            <span className="mb-1 font-sans text-[15px] text-zinc-500">/mo</span>
-                                            <span className="mb-1 font-sans text-[13px] text-zinc-600">
-                                                ({formatRegionalPricePair(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 }).secondary})
-                                            </span>
+                                            <span className="mb-1.5 font-sans text-[15px] text-zinc-500">/mo</span>
                                         </div>
-                                        <p className="mt-1 font-sans text-[13px] text-zinc-600">
-                                            billed monthly &middot; cancel anytime
+                                        <p className="mt-1 font-sans text-[12px] text-zinc-600">
+                                            {formatRegionalPricePair(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 }).secondary} &middot; billed monthly &middot; cancel anytime
                                         </p>
                                     </>
                                 ) : (
                                     <>
                                         <div className="mt-3 flex items-end gap-2">
-                                            <p className="font-sans text-[34px] font-bold leading-none text-zinc-100">
-                                                {
-                                                    formatRegionalPricePair(PRO_BILLING.effectiveMonthlyInr, pricingRegion, {
-                                                        usdDecimals: 2,
-                                                        inrMaximumFractionDigits: 2,
-                                                    }).primary
-                                                }
+                                            <p className="font-sans text-[38px] font-black leading-none tracking-tight text-white">
+                                                {formatRegionalPricePair(PRO_BILLING.effectiveMonthlyInr, pricingRegion, { usdDecimals: 2, inrMaximumFractionDigits: 2 }).primary}
                                             </p>
-                                            <span className="mb-1 font-sans text-[15px] text-zinc-500">/mo</span>
-                                            <span className="mb-1 font-sans text-[13px] text-zinc-600">
-                                                (
-                                                {
-                                                    formatRegionalPricePair(PRO_BILLING.effectiveMonthlyInr, pricingRegion, {
-                                                        usdDecimals: 2,
-                                                        inrMaximumFractionDigits: 2,
-                                                    }).secondary
-                                                }
-                                                )
-                                            </span>
+                                            <span className="mb-1.5 font-sans text-[15px] text-zinc-500">/mo</span>
                                         </div>
-                                        <p className="mt-1 font-sans text-[13px] text-zinc-600">
-                                            {formatRegionalPricePair(PRO_BILLING.yearlyInr, pricingRegion, { usdDecimals: 2 }).primary}/yr (
-                                            {formatRegionalPricePair(PRO_BILLING.yearlyInr, pricingRegion, { usdDecimals: 2 }).secondary}) &middot;
-                                            billed annually
+                                        <p className="mt-1 font-sans text-[12px] text-zinc-600">
+                                            {formatRegionalPricePair(PRO_BILLING.yearlyInr, pricingRegion, { usdDecimals: 2 }).primary}/yr &middot; billed annually &middot; cancel anytime
                                         </p>
                                     </>
                                 )}
 
-                                <div className="my-5 h-px bg-zinc-800" />
+                                <div className="my-5 h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
 
+                                {/* Feature highlight blocks */}
                                 <div className="flex flex-1 flex-col gap-3">
-                                    <div className="flex gap-3 rounded-xl border border-emerald-500/25 bg-emerald-500/[0.07] p-3.5">
-                                        <Infinity className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" aria-hidden />
+                                    <div className="flex gap-3 rounded-xl border border-brand-teal/20 bg-brand-teal/[0.06] p-3.5 transition-colors duration-200 group-hover:border-brand-teal/30 group-hover:bg-brand-teal/[0.09]">
+                                        <Infinity className="mt-0.5 h-4 w-4 shrink-0 text-brand-teal" aria-hidden />
                                         <div>
                                             <p className="font-sans text-[12px] font-semibold leading-snug text-zinc-100">
-                                                Unlimited AI usage
+                                                Unlimited AI — no daily cap
                                             </p>
                                             <p className="mt-1 font-sans text-[11px] leading-snug text-zinc-400">
-                                                No daily token cap — Dexo, analyses, and chat run without the Founder tier
-                                                meter. Same app; you only remove limits.
+                                                Dexo, analyses, and chat run freely. Same workspace as Founder — just no meter watching you.
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="flex gap-3 rounded-xl border border-cyan-500/20 bg-cyan-500/[0.06] p-3.5">
-                                        <Globe className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300" aria-hidden />
+                                    <div className="flex gap-3 rounded-xl border border-[#8b74ff]/20 bg-[#8b74ff]/[0.05] p-3.5 transition-colors duration-200 group-hover:border-[#8b74ff]/30 group-hover:bg-[#8b74ff]/[0.09]">
+                                        <Globe className="mt-0.5 h-4 w-4 shrink-0 text-[#9d88ff]" aria-hidden />
                                         <div>
                                             <p className="font-sans text-[12px] font-semibold leading-snug text-zinc-100">
-                                                Dexo daily research reports
+                                                Daily research reports
                                             </p>
                                             <p className="mt-1 font-sans text-[11px] leading-snug text-zinc-400">
-                                                Automated daily brief with live web research, dual-model synthesis, saved
-                                                history, optional venture updates — including the Dashboard &quot;Daily
-                                                brief&quot; tab.
+                                                Automated live-web brief every morning — dual-model synthesis, saved history, venture updates, Dashboard tab.
                                             </p>
                                         </div>
                                     </div>
-                                    <p className="font-sans text-[12px] leading-relaxed text-zinc-500">
-                                        Same desks, ventures, and data as Founder — plus unlimited AI and daily research
-                                        reports.
+                                    <p className="font-sans text-[11.5px] leading-relaxed text-zinc-500">
+                                        Every desk, venture, and tool from Founder — Pro just removes the ceiling.
                                     </p>
                                 </div>
 
+                                {/* CTA */}
                                 <a
                                     href={LANDING_SIGN_UP_HREF}
-                                    className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white py-3 font-sans text-[14px] font-bold text-zinc-900 shadow-[0_2px_24px_rgba(255,255,255,0.12)] transition hover:bg-zinc-100 active:scale-[0.98]"
+                                    className="group/btn relative mt-5 inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-b from-white to-zinc-100 py-3.5 font-sans text-[14px] font-bold text-zinc-900 shadow-[0_4px_28px_rgba(116,86,255,0.3),inset_0_1px_0_rgba(255,255,255,0.9)] transition-all duration-200 hover:shadow-[0_6px_32px_rgba(116,86,255,0.48)] active:scale-[0.98]"
                                 >
-                                    <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
-                                    {landingBilling === 'monthly'
-                                        ? `Get Pro - ${formatRegionalPricePair(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 }).primary}/mo`
-                                        : `Get Pro - ${formatRegionalPricePair(PRO_BILLING.yearlyInr, pricingRegion, { usdDecimals: 2 }).primary}/yr`}
+                                    <span
+                                        className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-brand-teal/15 to-transparent transition-transform duration-700 group-hover/btn:translate-x-full"
+                                        aria-hidden
+                                    />
+                                    <Sparkles className="relative h-4 w-4 shrink-0" aria-hidden />
+                                    <span className="relative">
+                                        {landingBilling === 'monthly'
+                                            ? `Upgrade to Pro — ${formatRegionalPricePair(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 }).primary}/mo`
+                                            : `Upgrade to Pro — ${formatRegionalPricePair(PRO_BILLING.yearlyInr, pricingRegion, { usdDecimals: 2 }).primary}/yr`}
+                                    </span>
                                 </a>
-                                <p className="mt-2 text-center font-sans text-[10px] text-zinc-600">
+                                <p className="mt-2.5 text-center font-sans text-[10.5px] text-zinc-600">
                                     Instant access &middot; cancel anytime &middot; no questions asked
                                 </p>
                             </div>
