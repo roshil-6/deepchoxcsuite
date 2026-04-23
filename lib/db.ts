@@ -15,7 +15,7 @@ import type {
   SystemLog,
 } from './projectTypes';
 import { DEXO_CONVERSATION_AGENT } from './projectTypes';
-import { getDeviceSessionId } from './deviceSession';
+import { getEffectiveSessionId } from './deviceSession';
 
 function ventureApiErrorMessage(data: unknown): string {
   const d = data as { error?: string; hint?: string };
@@ -26,7 +26,7 @@ function ventureApiErrorMessage(data: unknown): string {
 function apiHeaders(): HeadersInit {
   return {
     'Content-Type': 'application/json',
-    'x-deepchox-session': getDeviceSessionId(),
+    'x-deepchox-session': getEffectiveSessionId(),
   };
 }
 
