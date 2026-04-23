@@ -130,7 +130,7 @@ export function DexoKnowledgePromptModal() {
     const portal = (
         <div
             className="fixed inset-0 z-[10060] flex items-end justify-center p-4 sm:items-center"
-            style={{ background: ‘rgba(3,3,4,0.7)’, backdropFilter: ‘blur(4px)’ }}
+            style={{ background: 'rgba(3,3,4,0.7)', backdropFilter: 'blur(4px)' }}
             role="dialog"
             aria-modal="true"
             aria-labelledby="dexo-gap-title"
@@ -138,8 +138,8 @@ export function DexoKnowledgePromptModal() {
             <div
                 className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-[rgba(116,86,255,0.18)]"
                 style={{
-                    background: ‘linear-gradient(160deg, #0d0b1a 0%, #09090f 100%)’,
-                    boxShadow: ‘0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(116,86,255,0.08), inset 0 1px 0 rgba(255,255,255,0.04)’,
+                    background: 'linear-gradient(160deg, #0d0b1a 0%, #09090f 100%)',
+                    boxShadow: '0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(116,86,255,0.08), inset 0 1px 0 rgba(255,255,255,0.04)',
                 }}
             >
                 {/* Top accent line */}
@@ -173,7 +173,7 @@ export function DexoKnowledgePromptModal() {
                             </p>
                             {gaps.length > 1 && (
                                 <p className="mt-2 font-sans text-[11px] text-zinc-600">
-                                    {gaps.length - 1} more question{gaps.length === 2 ? ‘’ : ‘s’} after this one.
+                                    {gaps.length - 1} more question{gaps.length === 2 ? '' : 's'} after this one.
                                 </p>
                             )}
                         </div>
@@ -218,7 +218,7 @@ export function DexoKnowledgePromptModal() {
                             onClick={() => void onSubmit()}
                             className="rounded-xl bg-[#7456ff] px-5 py-2 font-sans text-[12px] font-semibold text-white shadow-[0_0_20px_rgba(116,86,255,0.35)] transition hover:bg-[#8a6fff] hover:shadow-[0_0_28px_rgba(116,86,255,0.5)] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
                         >
-                            {saving ? ‘Saving…’ : ‘Save answer’}
+                            {saving ? 'Saving…' : 'Save answer'}
                         </button>
                     </div>
                 </div>
