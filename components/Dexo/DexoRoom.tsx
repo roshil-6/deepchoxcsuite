@@ -39,19 +39,15 @@ import { TokenDisplay, TokenConfirmButton, TokenInlineCost } from '@/components/
 import { TokenWarningBanner, TokenInlineWarning, TokenCostPill } from '@/components/tokens/TokenWarning';
 import { useUpgradeModal } from '@/components/tokens/UpgradeModal';
 import { clearDexoConvo, loadDexoConvo, saveDexoConvo, nextConvoId, type DexoConvoMessage } from '@/lib/dexoConvoStorage';
-import {
-    buildInitialDexoMessages,
-    shouldReplaceDexoSeedMessage,
-    buildNoVentureDexoMessages,
-    shouldReplaceNoVentureSeedMessage,
-} from '@/lib/dexoWelcome';
+import { buildInitialDexoMessages, shouldReplaceDexoSeedMessage } from '@/lib/dexoWelcome';
 import { DEXO_LOADING_TAGLINES } from '@/lib/dexoLoading';
 import { isVentureFoundationSparse } from '@/lib/ventureFoundation';
 import { dexoAutoSaveHintLines, dexoFullVenturePatchFromJarvis } from '@/lib/dexoApplyJarvisProductPatch';
-import { buildDexoJarvisVentureContext, DEXO_PRE_VENTURE_CONTEXT } from '@/lib/dexoJarvisContext';
+import { buildDexoJarvisVentureContext } from '@/lib/dexoJarvisContext';
 import { TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 import type { DexoBootstrapPayload } from '@/lib/dexoBootstrap';
 import { DexoParticleCanvas } from '@/components/Dexo/DexoParticleSphere';
+import { DexoAvatar } from '@/components/Dexo/DexoAvatar';
 import { submitDexoVenturePatch } from '@/lib/dexoProposalClient';
 
 // ─── Global CSS ──────────────────────────────────────────────────────────────
@@ -269,7 +265,7 @@ function DeskRow({ section, onRead }: { section: JarvisSection; onRead: (t: stri
 
 // ─── Inline analyzing banner (non-blocking) ────────────────────────────────────
 
-function AnalyzingBanner({ name }: { name?: string | null }) {
+function AnalyzingBanner({ name }: { name: string }) {
     const desks = ['Strategy', 'Finance', 'Product', 'Market', 'GTM'];
     const [tick, setTick] = useState(0);
     useEffect(() => {
@@ -293,8 +289,7 @@ function AnalyzingBanner({ name }: { name?: string | null }) {
                     <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
                 </div>
                 <p className="text-[11px] text-[var(--muted)]">
-                    Reading <span className="text-[var(--text)]">{name?.trim() || 'your workspace'}</span> through{' '}
-                    <span className="text-[var(--text)]">{activeDesk}</span>
+                    Reading <span className="text-[var(--text)]">{name}</span> through <span className="text-[var(--text)]">{activeDesk}</span>
                 </p>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-1.5">
@@ -316,46 +311,6 @@ function AnalyzingBanner({ name }: { name?: string | null }) {
     );
 }
 
-/** Inline “typing” row in the conversation list while Jarvis converse is in flight. */
-function DexoConverseLoadingBubble({
-    isMuted,
-    onToggleMute,
-}: {
-    isMuted: boolean;
-    onToggleMute: () => void;
-}) {
-    const [tick, setTick] = useState(0);
-    useEffect(() => {
-        const t = window.setInterval(() => {
-            setTick((n) => (n + 1) % DEXO_LOADING_TAGLINES.length);
-        }, 900);
-        return () => window.clearInterval(t);
-    }, []);
-    const line = DEXO_LOADING_TAGLINES[tick];
-    return (
-        <div className="flex items-end gap-2 justify-start">
-            <div className="mb-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--bg-elevated)]">
-                <Sparkles className="h-3.5 w-3.5 text-[var(--muted)]" />
-            </div>
-            <div className="max-w-[88%] min-w-0 flex-1 rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.22)]">
-                <div className="flex items-center gap-2.5">
-                    <Loader2 className="h-4 w-4 shrink-0 animate-spin text-[var(--accent)]" aria-hidden />
-                    <p className="min-w-0 flex-1 text-[13px] leading-snug text-[var(--muted)]">{line}</p>
-                    <button
-                        type="button"
-                        onClick={onToggleMute}
-                        title={isMuted ? 'Unmute Dexo voice' : 'Mute Dexo voice'}
-                        aria-label={isMuted ? 'Unmute Dexo voice' : 'Mute Dexo voice'}
-                        className="shrink-0 rounded-lg p-1.5 text-[var(--muted)] transition hover:bg-white/[0.06] hover:text-[var(--text)]"
-                    >
-                        {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
 // ─── Main component ───────────────────────────────────────────────────────────
 
 function truncateSetupDetail(s: string, max = 320): string {
@@ -372,8 +327,6 @@ export function DexoRoom() {
     /** Current/latest report - the most recent analysis */
     const [currentReport, setCurrentReport] = useState<JarvisReport | null>(null);
     const [loading, setLoading]   = useState(false);
-    /** Top banner vs inline thread loading — converse replies show under Conversation only. */
-    const [loadingKind, setLoadingKind] = useState<'analyze' | 'converse' | null>(null);
     const [error, setError]       = useState<string | null>(null);
     const [isMuted, setIsMuted]   = useState(false);
     const [inputText, setInputText] = useState('');
@@ -412,7 +365,7 @@ export function DexoRoom() {
 
     /** Re-seed welcome when venture name or sparse/rich tier changes (not on every keystroke). */
     const dexoWelcomeRefreshKey = useMemo(() => {
-        if (!activeProject?.id) return 'no-venture';
+        if (!activeProject?.id) return '';
         const sparse = isVentureFoundationSparse(activeProject);
         return `${activeProject.id}:${sparse ? 'sparse' : 'rich'}:${(activeProject.name ?? '').trim()}`;
     }, [
@@ -480,31 +433,21 @@ export function DexoRoom() {
         if (ventureChanged) {
             prevDexoVentureIdRef.current = vid;
             skipConvoPersistRef.current = true;
-            setConvo([]);
-            convoId.current = 0;
-        }
-
-        let cancelled = false;
-        skipConvoPersistRef.current = true;
-
-        if (!p?.id) {
-            void loadDexoConvo(null).then((stored) => {
-                if (cancelled) return;
-                const initial =
-                    stored.length === 0 || shouldReplaceNoVentureSeedMessage(stored)
-                        ? buildNoVentureDexoMessages()
-                        : stored;
-                setConvo(initial);
-                convoId.current = nextConvoId(initial);
+            if (!vid) {
+                setConvo([]);
+                convoId.current = 0;
                 requestAnimationFrame(() => {
                     skipConvoPersistRef.current = false;
                 });
-            });
-            return () => {
-                cancelled = true;
-            };
+                return;
+            }
+            setConvo([]);
+            convoId.current = 0;
         }
+        if (!p?.id) return;
 
+        let cancelled = false;
+        skipConvoPersistRef.current = true;
         void loadDexoConvo(p.id).then((stored) => {
             if (cancelled) return;
             const initial =
@@ -548,8 +491,9 @@ export function DexoRoom() {
     }, [setupCacheKey, setupMission]);
 
     useEffect(() => {
+        if (!activeProject?.id) return;
         if (skipConvoPersistRef.current) return;
-        void saveDexoConvo(activeProject?.id ?? null, convo);
+        void saveDexoConvo(activeProject.id, convo);
     }, [convo, activeProject?.id]);
 
     // Legacy speak function for reading analysis reports (not streaming)
@@ -568,31 +512,16 @@ export function DexoRoom() {
     }, []);
 
     const buildCtx = useCallback((): string => {
-        if (!activeProject) return DEXO_PRE_VENTURE_CONTEXT;
+        if (!activeProject) return '';
         return buildDexoJarvisVentureContext(activeProject);
     }, [activeProject]);
 
     const resetConversation = useCallback(() => {
-        skipConvoPersistRef.current = true;
-        if (!activeProject?.id) {
-            const seed = buildNoVentureDexoMessages();
-            void clearDexoConvo(null);
-            setConvo(seed);
-            convoId.current = nextConvoId(seed);
-            setCurrentReport(null);
-            setAnalysisHistory([]);
-            setActiveAnalysisIndex(null);
-            setError(null);
-            setSetupMission(null);
-            requestAnimationFrame(() => {
-                skipConvoPersistRef.current = false;
-                void saveDexoConvo(null, seed);
-            });
-            return;
-        }
+        if (!activeProject?.id) return;
         const projectId = activeProject.id;
         const seed = buildInitialDexoMessages(activeProject);
         void clearDexoConvo(projectId);
+        skipConvoPersistRef.current = true;
         setConvo(seed);
         convoId.current = nextConvoId(seed);
         setCurrentReport(null);
@@ -607,12 +536,8 @@ export function DexoRoom() {
     }, [activeProject]);
 
     const run = useCallback(async (mode: 'analyze' | 'converse', userMsg?: string) => {
-        if (mode === 'analyze' && !activeProject?.id) {
-            setError('Save a named venture first to run a structured brief.');
-            return;
-        }
-        if (mode === 'converse' && !(userMsg && userMsg.trim())) return;
-
+        if (!activeProject?.id) return;
+        
         // Check and spend tokens
         const cost = mode === 'analyze' 
             ? (currentReport ? TOKEN_COSTS.REANALYZE : TOKEN_COSTS.ANALYSIS)
@@ -626,7 +551,6 @@ export function DexoRoom() {
             return;
         }
         
-        setLoadingKind(mode);
         setLoading(true); setError(null);
         // Stop speaking before making a new request
         if (isSpeaking) stopSpeaking();
@@ -652,7 +576,7 @@ export function DexoRoom() {
                     payload: {
                         mode,
                         context,
-                        sparseContext: activeProject ? isVentureFoundationSparse(activeProject) : false,
+                        sparseContext: isVentureFoundationSparse(activeProject),
                         userMessage: userMsg,
                         previousHeadline: currentReport?.headline,
                         conversationHistory: convo.slice(-10).map(c => ({ role: c.role, text: c.text })),
@@ -663,10 +587,10 @@ export function DexoRoom() {
             if (!data.ok || !data.report) { setError(data.error ?? 'Analysis failed'); return; }
 
             /** After a real chat turn, persist proposed venture updates (Jarvis schema) to the DB. */
-            if (mode === 'converse' && userMsg && activeProject?.id) {
+            if (mode === 'converse' && userMsg && activeProject) {
                 const patch = dexoFullVenturePatchFromJarvis(activeProject, data.report.proposedUpdates);
                 const pending = dexoAutoSaveHintLines(patch);
-                if (pending.length > 0) {
+                if (pending.length > 0 && activeProject.id) {
                     const out = await submitDexoVenturePatch({
                         ventureId: activeProject.id,
                         source: 'dexo_room',
@@ -675,15 +599,15 @@ export function DexoRoom() {
                         patch,
                         updateProjectField,
                     });
-                    // Success / pending-approval copy lives in the floating suggestions card only — not in chat.
-                    if (!out.ok) {
-                        data.report = {
-                            ...data.report,
-                            voiceResponse:
-                                data.report.voiceResponse +
-                                `\n\n_Could not save suggestion (${out.error}). Try again or edit the venture manually._`,
-                        };
-                    }
+                    const hint = !out.ok
+                        ? `\n\n_Could not store or apply proposal (${out.error})._`
+                        : out.applied
+                          ? `\n\n_Applied to your venture: ${pending.join(' · ')} (${out.mode} mode)._`
+                          : `\n\n_Pending your approval: ${pending.join(' · ')}._`;
+                    data.report = {
+                        ...data.report,
+                        voiceResponse: data.report.voiceResponse + hint,
+                    };
                 }
             }
             
@@ -717,7 +641,6 @@ export function DexoRoom() {
             setError(e instanceof Error ? e.message : 'Request failed');
         } finally {
             setLoading(false);
-            setLoadingKind(null);
         }
     }, [activeProject, buildCtx, currentReport, analysisHistory, convo, isMuted, isListening, isSpeaking, speakJarvis, tokens, upgradeModal]);
 
@@ -755,25 +678,6 @@ export function DexoRoom() {
     // Sync isMuted into the hook
     useEffect(() => { setMuted(isMuted); }, [isMuted, setMuted]);
 
-    /** Mute/unmute from conversation rows or loading bubble; stop playback when muting. */
-    const toggleDexoMute = useCallback(() => {
-        setIsMuted((m) => {
-            const next = !m;
-            if (next) stopSpeaking();
-            return next;
-        });
-    }, [stopSpeaking]);
-
-    /** Keep the inline converse loading bubble in view. */
-    useEffect(() => {
-        if (!loading || loadingKind !== 'converse') return;
-        const t = window.setTimeout(
-            () => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }),
-            100,
-        );
-        return () => window.clearTimeout(t);
-    }, [loading, loadingKind, convo.length]);
-
     const handleSend = async () => {
         const t = inputText.trim();
         if (!t || loading) return;
@@ -808,6 +712,7 @@ export function DexoRoom() {
 
     /** Ctrl+Shift+D while focus is inside Dexo: open mic (or interrupt and listen). */
     useEffect(() => {
+        if (!activeProject?.id) return;
         const onKeyDown = (e: KeyboardEvent) => {
             if (e.code !== 'KeyD' || !e.ctrlKey || !e.shiftKey) return;
             const shell = document.querySelector('[data-dexo-room]');
@@ -821,10 +726,40 @@ export function DexoRoom() {
         };
         window.addEventListener('keydown', onKeyDown);
         return () => window.removeEventListener('keydown', onKeyDown);
-    }, [isSpeaking, isListening, stopSpeaking, startListening]);
+    }, [activeProject?.id, isSpeaking, isListening, stopSpeaking, startListening]);
 
-    const orbState: ConvoVoiceState | 'loading' =
-        loading && loadingKind === 'analyze' && !currentReport ? 'loading' : voiceState;
+    const orbState: ConvoVoiceState | 'loading' = loading && !currentReport ? 'loading' : voiceState;
+
+    // ── Empty state ──
+    if (!activeProject?.id) {
+        return (
+            <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-[#030304] px-4 py-8 sm:px-6">
+                {/* Ambient background */}
+                <div className="pointer-events-none absolute inset-0">
+                    <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 70% 55% at 50% 40%, rgba(116,86,255,0.07) 0%, transparent 70%)' }} />
+                    <div className="absolute inset-0 opacity-[0.35]" style={{ backgroundImage: 'radial-gradient(circle at center, #52525b 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
+                </div>
+                <div className="relative z-10 max-w-sm shrink-0 space-y-6 text-center">
+                    {/* Orb */}
+                    <div className="relative mx-auto flex h-24 w-24 items-center justify-center">
+                        <div className="absolute inset-0 rounded-full bg-[rgba(116,86,255,0.08)] blur-xl" />
+                        <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-[rgba(116,86,255,0.18)] bg-[rgba(116,86,255,0.06)] shadow-[0_0_40px_rgba(116,86,255,0.12),inset_0_1px_0_rgba(255,255,255,0.04)]">
+                            <DexoParticleCanvas mode="room" size={52} state="idle" />
+                        </div>
+                    </div>
+                    {/* Text */}
+                    <div className="space-y-3">
+                        <h2 className="font-sans text-[18px] font-semibold tracking-tight text-white">
+                            No venture selected
+                        </h2>
+                        <p className="font-sans text-[13px] leading-relaxed text-zinc-500">
+                            Open a venture from the sidebar or create one — Dexo needs a workspace before it can start analyzing and chatting.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     // Determine which report to display
     const displayedReport = activeAnalysisIndex !== null 
@@ -832,28 +767,26 @@ export function DexoRoom() {
         : currentReport;
 
     return (
-        <div data-dexo-room className="flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--bg)]">
+        <div data-dexo-room className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-[#030304]">
+
+            {/* Ambient background — subtle violet radial + dot grid */}
+            <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+                <div className="absolute inset-0" style={{ background: ‘radial-gradient(ellipse 80% 50% at 50% 0%, rgba(116,86,255,0.06) 0%, transparent 65%)’ }} />
+                <div className="absolute inset-0 opacity-[0.28]" style={{ backgroundImage: ‘radial-gradient(circle at center, #3f3f46 1px, transparent 1px)’, backgroundSize: ‘28px 28px’ }} />
+            </div>
 
             {/* ── Scrollable body (min-h-0 required or flex won’t shrink below content → no scroll on mobile) ── */}
-            <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]">
+            <div className="custom-scrollbar relative z-10 min-h-0 flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]">
                 <div className="mx-auto max-w-[660px] px-5 pb-32 pt-8">
 
-                    {loading && loadingKind === 'analyze' && <AnalyzingBanner name={activeProject?.name} />}
+                    {loading && <AnalyzingBanner name={activeProject.name} />}
 
                     {/* Error */}
                     {error && !loading && (
                         <div className="mb-5 flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] px-4 py-3 shadow-[0_1px_2px_rgba(34,29,24,0.04)]">
                             <AlertTriangle className="h-4 w-4 shrink-0 text-[var(--muted)]" />
                             <p className="flex-1 text-[12px] text-[var(--muted)]">{error}</p>
-                            {activeProject?.id ? (
-                                <button
-                                    type="button"
-                                    onClick={() => run('analyze')}
-                                    className="text-[11px] text-[var(--text)] underline underline-offset-2 hover:opacity-90"
-                                >
-                                    Retry
-                                </button>
-                            ) : null}
+                            <button type="button" onClick={() => run('analyze')} className="text-[11px] text-[var(--text)] underline underline-offset-2 hover:opacity-90">Retry</button>
                         </div>
                     )}
                     
@@ -919,65 +852,50 @@ export function DexoRoom() {
                         </div>
                     ) : null}
                     
-                    <div className="mb-5 rounded-2xl border border-[var(--border)] bg-[var(--bg-card)]/60 px-3 py-3 shadow-[0_1px_0_rgba(255,255,255,0.04)_inset] sm:px-4">
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch sm:justify-between sm:gap-4">
-                            <div className="min-w-0 flex-1">
-                                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
-                                    Chat &amp; analysis
-                                </p>
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <button
-                                        type="button"
-                                        onClick={resetConversation}
-                                        disabled={loading}
-                                        className="inline-flex h-9 min-w-0 shrink-0 items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-3 text-[12px] font-medium text-[var(--text)] transition hover:bg-white/[0.06] disabled:opacity-40"
-                                    >
-                                        <MessageSquarePlus className="h-3.5 w-3.5 shrink-0" />
-                                        New chat
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => run('analyze')}
-                                        disabled={loading || !activeProject?.id}
-                                        className="inline-flex h-9 min-w-0 shrink-0 items-center justify-center gap-2 rounded-xl border border-[rgba(116,86,255,0.35)] bg-[var(--accent-soft)] px-3 text-[12px] font-medium text-[var(--text)] transition hover:border-[rgba(116,86,255,0.5)] disabled:opacity-40"
-                                    >
-                                        <Zap className="h-3.5 w-3.5 shrink-0 text-[var(--accent)]" />
-                                        {loading ? 'Analyzing…' : 'Analyze latest'}
-                                    </button>
-                                    {activeAnalysisIndex === null && activeProject?.id ? (
-                                        <span className="inline-flex h-9 items-center">
-                                            <TokenCostPill cost={currentReport ? TOKEN_COSTS.REANALYZE : TOKEN_COSTS.ANALYSIS} />
-                                        </span>
-                                    ) : null}
-                                </div>
-                            </div>
-                            <div className="flex shrink-0 flex-col justify-center border-t border-[var(--border)] pt-3 sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0">
-                                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)] sm:text-right">
-                                    Balance
-                                </p>
-                                <div className="flex justify-start sm:justify-end">
-                                    <TokenDisplay compact={false} showCosts={true} />
-                                </div>
-                            </div>
+                    <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={resetConversation}
+                                disabled={loading || !activeProject?.id}
+                                className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] px-3.5 py-1.5 font-sans text-[12px] font-medium text-zinc-400 transition-all duration-200 hover:border-[rgba(255,255,255,0.12)] hover:bg-[rgba(255,255,255,0.07)] hover:text-zinc-200 disabled:opacity-40"
+                            >
+                                <MessageSquarePlus className="h-3.5 w-3.5" />
+                                New chat
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => run('analyze')}
+                                disabled={loading}
+                                className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(116,86,255,0.3)] bg-[rgba(116,86,255,0.12)] px-3.5 py-1.5 font-sans text-[12px] font-medium text-[#c4b5fd] transition-all duration-200 hover:border-[rgba(116,86,255,0.5)] hover:bg-[rgba(116,86,255,0.2)] disabled:opacity-40"
+                            >
+                                <Zap className="h-3.5 w-3.5" />
+                                {loading ? 'Analyzing…' : 'Analyze'}
+                            </button>
+                            {activeAnalysisIndex === null ? (
+                                <TokenCostPill cost={currentReport ? TOKEN_COSTS.REANALYZE : TOKEN_COSTS.ANALYSIS} />
+                            ) : null}
                         </div>
+                        <TokenDisplay compact={false} showCosts={true} />
                     </div>
 
                     {/* ── Analysis History Timeline ── */}
                     {analysisHistory.length > 0 && (
-                        <div className="mb-6 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)]/30 px-3 py-3">
-                            <div className="mb-2.5 flex items-center justify-between gap-2">
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">Analysis history</p>
-                                <span className="tabular-nums text-[10px] text-[var(--muted)]">{analysisHistory.length} saved</span>
+                        <div className="mb-6">
+                            <div className="mb-3 flex items-center gap-2">
+                                <div className="h-px flex-1 bg-[rgba(255,255,255,0.05)]" />
+                                <span className="font-sans text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-600">History</span>
+                                <div className="h-px flex-1 bg-[rgba(255,255,255,0.05)]" />
                             </div>
-                            <div className="-mx-0.5 flex flex-wrap gap-2 overflow-x-auto px-0.5 pb-1 [scrollbar-width:thin] sm:flex-nowrap">
+                            <div className="flex flex-wrap gap-1.5">
                                 {/* Current/Active button */}
                                 <button
                                     onClick={() => setActiveAnalysisIndex(null)}
                                     type="button"
-                                    className={`h-8 shrink-0 rounded-lg border px-3 text-[11px] font-medium transition-all ${
+                                    className={`rounded-full px-3 py-1 font-sans text-[11px] font-medium transition-all duration-200 ${
                                         activeAnalysisIndex === null
-                                            ? 'border-[rgba(116,86,255,0.22)] bg-[var(--accent-soft)] text-[var(--text)]'
-                                            : 'border-[var(--border)] bg-[var(--bg-card)] text-[var(--muted)] hover:bg-[var(--accent-soft)] hover:text-[var(--text)]'
+                                            ? 'bg-[rgba(116,86,255,0.2)] text-[#c4b5fd] ring-1 ring-[rgba(116,86,255,0.3)]'
+                                            : 'text-zinc-500 hover:bg-[rgba(255,255,255,0.05)] hover:text-zinc-300'
                                     }`}
                                 >
                                     {currentReport ? 'Current' : 'Latest'}
@@ -991,14 +909,14 @@ export function DexoRoom() {
                                             key={actualIndex}
                                             type="button"
                                             onClick={() => setActiveAnalysisIndex(actualIndex)}
-                                            className={`h-8 max-w-[160px] shrink-0 truncate rounded-lg border px-3 text-left text-[11px] font-medium transition-all ${
+                                            className={`max-w-[140px] truncate rounded-full px-3 py-1 font-sans text-[11px] font-medium transition-all duration-200 ${
                                                 isActive
-                                                    ? 'border-[rgba(116,86,255,0.22)] bg-[var(--accent-soft)] text-[var(--text)]'
-                                                    : 'border-[var(--border)] bg-[var(--bg-card)] text-[var(--muted)] hover:bg-[var(--accent-soft)] hover:text-[var(--text)]'
+                                                    ? 'bg-[rgba(116,86,255,0.2)] text-[#c4b5fd] ring-1 ring-[rgba(116,86,255,0.3)]'
+                                                    : 'text-zinc-500 hover:bg-[rgba(255,255,255,0.05)] hover:text-zinc-300'
                                             }`}
                                             title={r.headline}
                                         >
-                                            #{actualIndex + 1} {r.headline.slice(0, 20)}{r.headline.length > 20 ? '...' : ''}
+                                            #{actualIndex + 1} · {r.headline.slice(0, 18)}{r.headline.length > 18 ? '…' : ''}
                                         </button>
                                     );
                                 })}
@@ -1021,144 +939,134 @@ export function DexoRoom() {
                         </div>
                     )}
 
-                    {/* ── Orb + voice controls (always — no “analyze first” gate) ── */}
-                    <div className="mb-8 flex flex-col items-center gap-5">
-                        <VoiceOrb
-                            state={orbState}
-                            onClick={() => {
-                                if (isSpeaking) stopSpeaking();
-                                else if (!isMuted) {
-                                    if (displayedReport) {
-                                        speakJarvis(`${displayedReport.headline}. ${displayedReport.summary}`);
-                                    } else if (activeProject?.name) {
-                                        speakJarvis(
-                                            `I'm Dexo. We're in ${activeProject.name}. Tell me what you want help with first, or use Analyze latest if you want a structured brief.`,
-                                        );
-                                    } else {
-                                        speakJarvis(
-                                            `Hey, I'm Dexo. Let's create your venture together. Tell me what you're exploring, and when you're ready, use New venture in the sidebar to save a workspace and unlock structured briefs.`,
-                                        );
-                                    }
+                    {/* ── Co-founder presence — avatar + particle orb side by side ── */}
+                    <div className=”mb-8”>
+                        {/* Identity row */}
+                        <div className=”mb-5 flex items-center gap-4”>
+                            <DexoAvatar
+                                state={
+                                    orbState === 'loading'    ? 'thinking'  :
+                                    orbState === 'listening'  ? 'listening' :
+                                    orbState === 'speaking'   ? 'speaking'  :
+                                    orbState === 'thinking'   ? 'thinking'  : 'idle'
                                 }
-                            }}
-                        />
-                        <div className="space-y-2 text-center">
-                            {displayedReport ? (
-                                <>
-                                    <h1 className="text-[22px] font-semibold leading-tight tracking-[-0.02em] text-[var(--text)]">
-                                        {displayedReport.headline}
-                                    </h1>
-                                    <p className="mx-auto max-w-lg text-[13.5px] leading-[1.75] text-[var(--muted)]">
-                                        {displayedReport.summary}
-                                    </p>
-                                </>
-                            ) : (
-                                <>
-                                    <h1 className="text-[22px] font-semibold leading-tight tracking-[-0.02em] text-[var(--text)]">
-                                        {activeProject?.name ? `Dexo · ${activeProject.name}` : 'Dexo'}
-                                    </h1>
-                                    <p className="mx-auto max-w-lg text-[13.5px] leading-[1.75] text-[var(--muted)]">
-                                        {activeProject?.id ? (
-                                            <>
-                                                Start with chat. Tell Dexo what you want help with, the idea in your head, or the
-                                                problem you keep coming back to. Use{' '}
-                                                <span className="text-[var(--text)]">Analyze latest</span> only when you want a
-                                                structured brief.
-                                            </>
-                                        ) : (
-                                            <>
-                                                Chat without a saved venture to shape your idea. When you&apos;re ready, use{' '}
-                                                <span className="text-[var(--text)]">New venture</span> in the sidebar to name a
-                                                workspace — then <span className="text-[var(--text)]">Analyze latest</span> unlocks a
-                                                full brief.
-                                            </>
-                                        )}
-                                    </p>
-                                </>
-                            )}
+                                size=”lg”
+                                pulse
+                            />
+                            <div className=”min-w-0 flex-1”>
+                                <div className=”flex items-center gap-2”>
+                                    <span className=”font-sans text-[10px] font-bold uppercase tracking-[0.22em] text-[#7456ff]”>Dexo</span>
+                                    <span className=”rounded-full border border-[rgba(116,86,255,0.2)] bg-[rgba(116,86,255,0.08)] px-2 py-0.5 font-sans text-[9px] font-semibold uppercase tracking-widest text-[#9d88ff]”>
+                                        AI Co-Founder
+                                    </span>
+                                </div>
+                                <div className=”mt-1.5”>
+                                    {displayedReport ? (
+                                        <h1 className=”font-sans text-[18px] font-semibold leading-snug tracking-tight text-white”>
+                                            {displayedReport.headline}
+                                        </h1>
+                                    ) : (
+                                        <h1 className=”font-sans text-[17px] font-semibold leading-snug tracking-tight text-white”>
+                                            {activeProject.name}
+                                        </h1>
+                                    )}
+                                    {displayedReport ? (
+                                        <p className=”mt-1 font-sans text-[13px] leading-relaxed text-zinc-500”>
+                                            {displayedReport.summary.slice(0, 120)}{displayedReport.summary.length > 120 ? '…' : ''}
+                                        </p>
+                                    ) : (
+                                        <p className=”mt-1 font-sans text-[13px] leading-relaxed text-zinc-500”>
+                                            I'm here. Tell me what's on your mind — or use <span className=”text-zinc-400”>Analyze</span> for a structured brief.
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Voice state badge */}
+                                {(isSpeaking || isListening) && (
+                                    <div className={`mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-sans text-[11px] font-medium ${
+                                        isListening ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400'
+                                    }`}>
+                                        <WaveBars active />
+                                        <span>{isListening ? 'Listening…' : 'Speaking…'}</span>
+                                        <button
+                                            type=”button”
+                                            onClick={isSpeaking ? stopSpeaking : stopListening}
+                                            className=”ml-0.5 opacity-60 hover:opacity-100”
+                                        >
+                                            <Square className=”h-2 w-2” />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Particle orb — kept alongside avatar */}
+                            <button
+                                type=”button”
+                                onClick={() => {
+                                    if (isSpeaking) stopSpeaking();
+                                    else if (!isMuted) {
+                                        if (displayedReport) {
+                                            speakJarvis(`${displayedReport.headline}. ${displayedReport.summary}`);
+                                        } else {
+                                            speakJarvis(`I'm Dexo. We're in ${activeProject.name}. Tell me what you want help with first.`);
+                                        }
+                                    }
+                                }}
+                                className=”shrink-0 opacity-80 transition hover:opacity-100”
+                                title=”Click to hear Dexo speak”
+                            >
+                                <VoiceOrb state={orbState} />
+                            </button>
                         </div>
 
-                        {(isSpeaking || isListening) && (
-                            <div
-                                className={`flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--bg-elevated)] px-3 py-1.5 text-[11px] text-[var(--text)]`}
-                            >
-                                <WaveBars active />
-                                <span>{isListening ? 'Listening…' : 'Speaking…'}</span>
-                                <button
-                                    type="button"
-                                    onClick={isSpeaking ? stopSpeaking : stopListening}
-                                    className="ml-1 opacity-60 hover:opacity-100"
-                                >
-                                    <Square className="h-2.5 w-2.5" />
-                                </button>
-                            </div>
-                        )}
-
                         {voiceError && (
-                            <div className="flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 py-1.5 text-[10px] text-[var(--muted)]">
-                                <AlertTriangle className="h-3 w-3 shrink-0" />
+                            <div className=”flex items-center gap-2 rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] px-3 py-2 font-sans text-[11px] text-zinc-500”>
+                                <AlertTriangle className=”h-3 w-3 shrink-0” />
                                 {voiceError}
                             </div>
                         )}
 
-                        <div className="w-full max-w-lg rounded-2xl border border-[var(--border)] bg-[var(--bg-card)]/50 px-3 py-3">
-                            <p className="mb-2.5 text-center text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
-                                Voice &amp; playback
-                            </p>
-                            <div
-                                className={`grid grid-cols-2 gap-2 ${
-                                    displayedReport && !isMuted && !isSpeaking
-                                        ? 'sm:grid-cols-4'
-                                        : 'sm:grid-cols-3'
+                        {/* Voice control pills */}
+                        <div className=”flex flex-wrap items-center gap-1.5”>
+                            <button
+                                type=”button”
+                                onClick={() => setHandsFree((h) => !h)}
+                                title=”After Dexo speaks, mic opens automatically”
+                                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-sans text-[11px] font-medium transition-all ${
+                                    handsFree
+                                        ? 'bg-[rgba(116,86,255,0.15)] text-[#c4b5fd] ring-1 ring-[rgba(116,86,255,0.3)]'
+                                        : 'text-zinc-600 hover:bg-[rgba(255,255,255,0.05)] hover:text-zinc-400'
                                 }`}
                             >
+                                <AudioLines className=”h-3 w-3” />
+                                {handsFree ? 'Conversation on' : 'Conversation'}
+                            </button>
+                            <button
+                                type=”button”
+                                onClick={() => setIsMuted((m) => !m)}
+                                className=”inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-sans text-[11px] font-medium text-zinc-600 transition hover:bg-[rgba(255,255,255,0.05)] hover:text-zinc-400”
+                            >
+                                {isMuted ? <VolumeX className=”h-3 w-3” /> : <Volume2 className=”h-3 w-3” />}
+                                {isMuted ? 'Unmute' : 'Mute'}
+                            </button>
+                            <button
+                                type=”button”
+                                onClick={() => setShowVoiceSettings(true)}
+                                className=”inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-sans text-[11px] font-medium text-zinc-600 transition hover:bg-[rgba(255,255,255,0.05)] hover:text-zinc-400”
+                                title={`Voice: ${voicePreset}`}
+                            >
+                                <Settings2 className=”h-3 w-3” />
+                                Voice
+                            </button>
+                            {displayedReport && !isMuted && !isSpeaking && (
                                 <button
-                                    type="button"
-                                    onClick={() => setHandsFree((h) => !h)}
-                                    title="After Dexo speaks, mic opens automatically"
-                                    className={`flex min-h-[2.5rem] flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2 text-center text-[10px] font-medium leading-tight transition sm:text-[11px] ${
-                                        handsFree
-                                            ? 'border-[rgba(116,86,255,0.28)] bg-[var(--accent-soft)] text-[var(--text)]'
-                                            : 'border-[var(--border)] bg-[var(--bg-elevated)] text-[var(--muted)] hover:bg-white/[0.04]'
-                                    }`}
+                                    type=”button”
+                                    onClick={() => speakJarvis(`${displayedReport.headline}. ${displayedReport.summary}`)}
+                                    className=”inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-sans text-[11px] font-medium text-zinc-600 transition hover:bg-[rgba(255,255,255,0.05)] hover:text-zinc-400”
                                 >
-                                    <AudioLines className="h-3.5 w-3.5 shrink-0 opacity-90" />
-                                    <span>{handsFree ? 'Hands-free on' : 'Hands-free'}</span>
+                                    <Volume2 className=”h-3 w-3” /> Read brief
                                 </button>
-                                <button
-                                    type="button"
-                                    onClick={toggleDexoMute}
-                                    className={`flex min-h-[2.5rem] flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2 text-center text-[10px] font-medium leading-tight transition sm:text-[11px] ${
-                                        isMuted
-                                            ? 'border-rose-500/30 bg-rose-500/10 text-rose-200'
-                                            : 'border-[var(--border)] bg-[var(--bg-elevated)] text-[var(--muted)] hover:bg-white/[0.04]'
-                                    }`}
-                                >
-                                    {isMuted ? <VolumeX className="h-3.5 w-3.5 shrink-0" /> : <Volume2 className="h-3.5 w-3.5 shrink-0" />}
-                                    <span>{isMuted ? 'Unmute' : 'Mute'}</span>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowVoiceSettings(true)}
-                                    className="flex min-h-[2.5rem] flex-col items-center justify-center gap-1 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-2 py-2 text-center text-[10px] font-medium leading-tight text-[var(--text)] transition hover:bg-white/[0.04] sm:text-[11px]"
-                                    title={`Voice: ${voicePreset} (click to change)`}
-                                >
-                                    <Settings2 className="h-3.5 w-3.5 shrink-0" />
-                                    <span>Voice</span>
-                                </button>
-                                {displayedReport && !isMuted && !isSpeaking ? (
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            speakJarvis(`${displayedReport.headline}. ${displayedReport.summary}`)
-                                        }
-                                        className="flex min-h-[2.5rem] flex-col items-center justify-center gap-1 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-2 py-2 text-center text-[10px] font-medium leading-tight text-[var(--muted)] transition hover:bg-white/[0.04] sm:text-[11px]"
-                                    >
-                                        <Volume2 className="h-3.5 w-3.5 shrink-0" />
-                                        <span>Read brief</span>
-                                    </button>
-                                ) : null}
-                            </div>
+                            )}
                         </div>
                     </div>
 
@@ -1215,18 +1123,16 @@ export function DexoRoom() {
                             )}
 
                             {displayedReport.followUp.length > 0 && activeAnalysisIndex === null && (
-                                <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)]/25 px-3 py-3">
-                                    <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">
-                                        Suggested prompts
-                                    </p>
-                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                <div className="space-y-2 pb-2">
+                                    <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-600">Ask Dexo</p>
+                                    <div className="flex flex-wrap gap-2">
                                         {displayedReport.followUp.map((q, i) => (
                                             <button
                                                 key={`fu-${i}`}
                                                 type="button"
                                                 onClick={() => run('converse', q)}
                                                 disabled={loading}
-                                                className="min-h-[2.75rem] rounded-xl border border-[var(--border)] bg-[var(--bg-card)] px-3 py-2.5 text-left text-[12px] leading-snug text-[var(--text)] transition hover:border-[rgba(116,86,255,0.25)] hover:bg-[var(--accent-soft)] disabled:opacity-40"
+                                                className="rounded-full border border-[rgba(116,86,255,0.18)] bg-[rgba(116,86,255,0.06)] px-4 py-1.5 font-sans text-[12px] text-[#9d88ff] transition-all duration-200 hover:border-[rgba(116,86,255,0.35)] hover:bg-[rgba(116,86,255,0.12)] hover:text-[#c4b5fd] disabled:opacity-40"
                                             >
                                                 {q}
                                             </button>
@@ -1237,13 +1143,15 @@ export function DexoRoom() {
                         </div>
                     )}
 
-                    {(convo.length > 0 || (loading && loadingKind === 'converse')) && (
-                        <div className="mt-8 pb-28">
-                            <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] pb-3">
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
+                    {convo.length > 0 && (
+                        <div className="mt-10 pb-28">
+                            {/* Divider */}
+                            <div className="mb-6 flex items-center gap-3">
+                                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-[rgba(255,255,255,0.07)] to-transparent" />
+                                <span className="font-sans text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-600">
                                     Conversation
-                                </p>
-                                <span className="tabular-nums text-[10px] text-[var(--muted)]">{convo.length} messages</span>
+                                </span>
+                                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-[rgba(255,255,255,0.07)] to-transparent" />
                             </div>
 
                             <div className="space-y-4">
@@ -1253,55 +1161,34 @@ export function DexoRoom() {
                                     return (
                                         <div
                                             key={msg.id}
-                                            className={`flex items-end gap-2 ${isUser ? 'justify-end' : 'justify-start'}`}
+                                            className={`flex items-end gap-2.5 ${isUser ? 'justify-end' : 'justify-start'}`}
                                         >
+                                            {/* Dexo avatar */}
                                             {!isUser && (
-                                                <div className="mb-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--bg-elevated)]">
-                                                    <Sparkles className="h-3.5 w-3.5 text-[var(--muted)]" />
-                                                </div>
+                                                <DexoAvatar size="xs" state="idle" pulse={false} className="mb-1" />
                                             )}
 
                                             <div
-                                                className={`max-w-[88%] rounded-2xl border px-4 py-3 text-[13px] leading-relaxed shadow-[0_10px_30px_rgba(0,0,0,0.22)] ${
+                                                className={`max-w-[85%] rounded-2xl px-4 py-3 text-[13.5px] leading-relaxed ${
                                                     isInterrupted
-                                                        ? 'border-[var(--border)] bg-[var(--bg-card)] italic text-[var(--muted)]'
+                                                        ? 'border border-[rgba(255,255,255,0.05)] bg-[rgba(255,255,255,0.03)] italic text-zinc-600'
                                                         : isUser
-                                                          ? 'border-[rgba(116,86,255,0.16)] bg-[var(--accent-soft)] text-[var(--text)]'
-                                                          : 'border-[var(--border)] bg-[var(--bg-elevated)] text-[var(--text)]'
+                                                          ? 'rounded-br-sm border border-[rgba(116,86,255,0.22)] bg-gradient-to-br from-[rgba(116,86,255,0.18)] to-[rgba(116,86,255,0.1)] text-white shadow-[0_0_24px_rgba(116,86,255,0.1),0_4px_16px_rgba(0,0,0,0.4)]'
+                                                          : 'rounded-bl-sm border border-[rgba(255,255,255,0.06)] bg-[#111116] text-zinc-200 shadow-[0_4px_20px_rgba(0,0,0,0.5)]'
                                                 }`}
                                             >
-                                                {!isUser && !isInterrupted ? (
-                                                    <div className="flex items-start gap-2">
-                                                        <p className="min-w-0 flex-1 whitespace-pre-wrap">{msg.text}</p>
-                                                        <button
-                                                            type="button"
-                                                            onClick={toggleDexoMute}
-                                                            title={isMuted ? 'Unmute Dexo voice' : 'Mute Dexo voice'}
-                                                            aria-label={isMuted ? 'Unmute Dexo voice' : 'Mute Dexo voice'}
-                                                            className="shrink-0 rounded-lg p-1 text-[var(--muted)] transition hover:bg-white/[0.06] hover:text-[var(--text)]"
-                                                        >
-                                                            {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-                                                        </button>
-                                                    </div>
-                                                ) : (
-                                                    <p className="whitespace-pre-wrap">{msg.text}</p>
-                                                )}
+                                                <p className="whitespace-pre-wrap">{msg.text}</p>
                                             </div>
 
+                                            {/* User avatar */}
                                             {isUser && (
-                                                <div className="mb-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--bg-elevated)]">
-                                                    <Activity className="h-3.5 w-3.5 text-[var(--muted)]" />
+                                                <div className="mb-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.05)]">
+                                                    <Activity className="h-3 w-3 text-zinc-500" />
                                                 </div>
                                             )}
                                         </div>
                                     );
                                 })}
-                                {loading && loadingKind === 'converse' ? (
-                                    <DexoConverseLoadingBubble
-                                        isMuted={isMuted}
-                                        onToggleMute={toggleDexoMute}
-                                    />
-                                ) : null}
                                 <div ref={chatEndRef} />
                             </div>
                         </div>
@@ -1309,79 +1196,73 @@ export function DexoRoom() {
                 </div>
             </div>
 
-            {/* ── Input strip — match room bg (gradient + black tint read as a slab under the bar) ── */}
-            <div className="shrink-0 border-t border-[var(--border)] bg-[var(--bg)] px-4 py-3">
-                <div className="mx-auto max-w-[660px] space-y-2">
-                    <p className="px-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
-                        Message Dexo
-                    </p>
-                    {/* Listening indicator bar */}
-                    {isListening && (
-                        <div className="flex items-center gap-2 px-2">
-                            <span className="flex h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
-                            <div className="flex-1 flex items-center gap-[2px] h-4">
-                                {[...Array(8)].map((_, i) => (
-                                    <span
-                                        key={i}
-                                        className="w-1 bg-rose-500/60 rounded-full animate-pulse"
-                                        style={{
-                                            height: `${8 + Math.random() * 16}px`,
-                                            animationDelay: `${i * 0.1}s`,
-                                        }}
-                                    />
-                                ))}
+            {/* ── Input strip ── */}
+            <div className="relative z-10 shrink-0">
+                {/* Fade gradient from transparent → room bg, so content scrolls under it cleanly */}
+                <div className="pointer-events-none absolute inset-x-0 -top-10 h-10 bg-gradient-to-t from-[#030304] to-transparent" />
+                <div className="border-t border-[rgba(255,255,255,0.05)] bg-[#030304] px-4 pb-4 pt-3">
+                    <div className="mx-auto max-w-[660px] space-y-2">
+
+                        {/* Listening indicator */}
+                        {isListening && (
+                            <div className="flex items-center gap-2.5 px-1">
+                                <span className="flex h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
+                                <div className="flex flex-1 items-end gap-[3px] h-4">
+                                    {[...Array(10)].map((_, i) => (
+                                        <span
+                                            key={i}
+                                            className="w-[3px] rounded-full bg-rose-500/50 animate-pulse"
+                                            style={{ height: `${6 + Math.random() * 14}px`, animationDelay: `${i * 80}ms` }}
+                                        />
+                                    ))}
+                                </div>
+                                <span className="font-sans text-[11px] font-medium text-rose-400">Listening</span>
                             </div>
-                            <span className="text-[10px] text-rose-400 font-medium">Listening...</span>
-                        </div>
-                    )}
-                    
-                    {/* Interim transcript */}
-                    {voiceInterimTranscript && (
-                        <p className="truncate px-2 text-[12px] tracking-wide text-[var(--accent)]">
-                            {voiceInterimTranscript}
-                        </p>
-                    )}
-                    
-                    <div
-                        className={`flex items-end gap-2 rounded-[28px] bg-[var(--bg-elevated)]/95 px-3 py-2 transition-all duration-300 ${
-                            isListening
-                                ? 'shadow-[0_0_0_1px_rgba(116,86,255,0.28),0_0_20px_rgba(116,86,255,0.12)]'
-                                : isSpeaking
-                                  ? 'shadow-[0_0_0_1px_rgba(116,86,255,0.2)]'
-                                  : isProcessing
-                                    ? 'shadow-[0_0_0_1px_rgba(157,136,255,0.22)]'
-                                    : 'shadow-[0_0_0_1px_rgba(255,255,255,0.06)]'
-                        }`}
-                    >
+                        )}
+
+                        {/* Interim transcript */}
+                        {voiceInterimTranscript && (
+                            <p className="truncate px-1 font-sans text-[12px] italic text-[#9d88ff]">
+                                {voiceInterimTranscript}
+                            </p>
+                        )}
+
+                        {/* Input pill */}
+                        <div
+                            className={`flex items-end gap-2 rounded-2xl border px-3 py-2.5 backdrop-blur-sm transition-all duration-300 ${
+                                isListening
+                                    ? 'border-[rgba(244,63,94,0.3)] bg-[rgba(244,63,94,0.04)] shadow-[0_0_0_1px_rgba(244,63,94,0.1),0_0_24px_rgba(244,63,94,0.08)]'
+                                    : isSpeaking
+                                      ? 'border-[rgba(16,185,129,0.25)] bg-[rgba(16,185,129,0.04)] shadow-[0_0_0_1px_rgba(16,185,129,0.08)]'
+                                      : isProcessing
+                                        ? 'border-[rgba(116,86,255,0.3)] bg-[rgba(116,86,255,0.05)] shadow-[0_0_0_1px_rgba(116,86,255,0.12),0_0_20px_rgba(116,86,255,0.06)]'
+                                        : 'border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] shadow-[0_0_0_1px_rgba(255,255,255,0.03)] focus-within:border-[rgba(116,86,255,0.25)] focus-within:shadow-[0_0_0_1px_rgba(116,86,255,0.1),0_0_20px_rgba(116,86,255,0.06)]'
+                            }`}
+                        >
+                            {/* Mic button */}
                             <div className="relative">
                                 {isListening && (
-                                    <span className="absolute inset-0 rounded-full animate-ping bg-[rgba(116,86,255,0.24)]" />
+                                    <span className="absolute inset-0 rounded-full animate-ping bg-rose-500/20" />
                                 )}
                                 <button
                                     type="button"
                                     onClick={onMicClick}
-                                    title={
+                                    title={isListening ? 'Stop listening' : isSpeaking ? 'Interrupt' : 'Voice input'}
+                                    className={`relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-200 ${
                                         isListening
-                                            ? 'Click to stop listening'
+                                            ? 'bg-rose-500/90 text-white shadow-[0_0_16px_rgba(244,63,94,0.4)]'
                                             : isSpeaking
-                                              ? 'Click to interrupt'
-                                              : 'Click to start voice input'
-                                    }
-                                    className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all ${
-                                        isListening
-                                            ? 'bg-[var(--accent)] text-white shadow-lg shadow-[rgba(116,86,255,0.24)]'
-                                            : isSpeaking
-                                              ? 'bg-[rgba(116,86,255,0.12)] text-[var(--accent)]'
+                                              ? 'bg-emerald-500/15 text-emerald-400'
                                               : isProcessing
-                                                ? 'bg-[rgba(157,136,255,0.16)] text-[var(--accent)]'
-                                                : 'text-[var(--muted)] hover:bg-[var(--accent-soft)] hover:text-[var(--text)]'
+                                                ? 'bg-[rgba(116,86,255,0.15)] text-[#9d88ff]'
+                                                : 'text-zinc-500 hover:bg-[rgba(255,255,255,0.06)] hover:text-zinc-300'
                                     }`}
                                 >
                                     {isListening ? (
-                                        <div className="flex items-center gap-[2px]">
-                                            <span className="h-3 w-1 rounded-full bg-[var(--accent)] animate-pulse" />
-                                            <span className="h-4 w-1 rounded-full bg-[var(--accent)] animate-pulse delay-75" />
-                                            <span className="h-2 w-1 rounded-full bg-[var(--accent)] animate-pulse delay-150" />
+                                        <div className="flex items-end gap-[2px]">
+                                            <span className="h-2.5 w-[3px] rounded-full bg-current animate-pulse" />
+                                            <span className="h-3.5 w-[3px] rounded-full bg-current animate-pulse [animation-delay:80ms]" />
+                                            <span className="h-2 w-[3px] rounded-full bg-current animate-pulse [animation-delay:160ms]" />
                                         </div>
                                     ) : isSpeaking ? (
                                         <Volume2 className="h-4 w-4" />
@@ -1391,6 +1272,7 @@ export function DexoRoom() {
                                 </button>
                             </div>
 
+                            {/* Text input */}
                             <textarea
                                 ref={inputRef}
                                 value={inputText}
@@ -1398,26 +1280,23 @@ export function DexoRoom() {
                                 onKeyDown={onKey}
                                 rows={1}
                                 placeholder={
-                                    isListening
-                                        ? 'Speak now...'
-                                        : isProcessing
-                                          ? 'Thinking...'
-                                          : isSpeaking
-                                            ? 'AI is speaking...'
-                                            : loading
-                                              ? 'Analyzing venture...'
-                                              : 'Message Dexo...'
+                                    isListening   ? 'Speak now…'
+                                    : isProcessing  ? 'Thinking…'
+                                    : isSpeaking    ? 'Dexo is speaking…'
+                                    : loading       ? 'Analyzing venture…'
+                                    : 'Message Dexo…'
                                 }
-                                className="min-h-[42px] min-w-0 flex-1 resize-none border-none bg-transparent px-2 py-2.5 text-[14px] leading-[1.45] text-[var(--text)] placeholder:text-[var(--muted)] focus:outline-none focus:ring-0"
+                                className="min-h-[38px] min-w-0 flex-1 resize-none border-none bg-transparent px-1.5 py-2 font-sans text-[14px] leading-[1.45] text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-0"
                                 style={{ maxHeight: '84px', overflowY: 'hidden' }}
                             />
 
+                            {/* Send / Stop button */}
                             {isSpeaking ? (
                                 <button
                                     type="button"
                                     onClick={stopSpeaking}
                                     title="Stop speaking"
-                                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-rose-400 transition hover:bg-rose-500/10"
+                                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-rose-400 transition hover:bg-rose-500/10"
                                 >
                                     <Square className="h-4 w-4 fill-current" />
                                 </button>
@@ -1426,11 +1305,12 @@ export function DexoRoom() {
                                     type="button"
                                     onClick={handleSend}
                                     disabled={!inputText.trim() || loading}
-                                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-[#131314] transition hover:opacity-90 disabled:opacity-25"
+                                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#7456ff] text-white shadow-[0_0_16px_rgba(116,86,255,0.35)] transition-all duration-200 hover:bg-[#8a6fff] hover:shadow-[0_0_24px_rgba(116,86,255,0.5)] disabled:opacity-20 disabled:shadow-none"
                                 >
                                     <Send className="h-4 w-4" />
                                 </button>
                             )}
+                        </div>
                     </div>
                 </div>
             </div>

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { X, Check, Zap, Infinity } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useUser } from '@clerk/nextjs';
 import { FREE_DAILY_TOKENS, TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 import {
     BILLING_CONFIG,
@@ -12,6 +13,7 @@ import {
     type BillingCycle,
 } from '@/lib/billingConfig';
 import { usePricingRegion } from '@/hooks/usePricingRegion';
+import { openRazorpayPaymentPage } from '@/lib/razorpayPaymentLink';
 
 /** One line for Free tier — only metering differs from Pro. */
 const FREE_METERING_LINE = `${FREE_DAILY_TOKENS} Dexo tokens per day (resets midnight) · ${TOKEN_COSTS.ANALYSIS} per new analysis · ${TOKEN_COSTS.REANALYZE} per re-analyze · ${TOKEN_COSTS.CHAT_MESSAGE} per Dexo message`;
@@ -22,7 +24,8 @@ interface UpgradeModalProps {
 }
 
 export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
-    const { isPaidPro, isInTrial, hasUsedTrial, trialDaysLeft, trialHoursLeft, startTrial, activatePro, deactivatePro } = useSubscription();
+    const { isPaidPro, isInTrial, hasUsedTrial, trialDaysLeft, trialHoursLeft, startTrial, deactivatePro } = useSubscription();
+    const { user } = useUser();
     const [billing, setBilling] = useState<BillingCycle>('monthly');
     const pricingRegion = usePricingRegion();
     const PRO_BILLING = getProBillingAmounts();
@@ -31,6 +34,19 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
 
     const isYearly = billing === 'yearly';
     const trialLabel = trialHoursLeft < 24 ? `${trialHoursLeft}h` : `${trialDaysLeft} day${trialDaysLeft !== 1 ? 's' : ''}`;
+
+    const payOnRazorpay = () => {
+        const cycle = isYearly ? 'yearly' : 'monthly';
+        // Pass userId so Razorpay embeds it in payment notes → webhook reads it back.
+        const opened = openRazorpayPaymentPage(cycle, user?.id);
+        if (opened) {
+            onClose();
+            return;
+        }
+        // Payment link not configured — never grant Pro for free.
+        // Dev note: set NEXT_PUBLIC_RAZORPAY_PAYMENT_LINK in .env.local and restart the dev server.
+        alert('Payment is not configured yet. Contact support to upgrade.');
+    };
 
     return (
         <div
@@ -227,7 +243,7 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                                 <>
                                     <button
                                         type="button"
-                                        onClick={() => { activatePro(); onClose(); }}
+                                        onClick={payOnRazorpay}
                                         className="w-full rounded-xl bg-[var(--accent)] py-3 text-sm font-semibold text-white transition hover:brightness-110 active:scale-[0.98]"
                                     >
                                         Upgrade to Pro — keep full access
@@ -255,7 +271,7 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                                     </div>
                                     <button
                                         type="button"
-                                        onClick={() => { activatePro(); onClose(); }}
+                                        onClick={payOnRazorpay}
                                         className="w-full rounded-xl border border-zinc-700 py-2.5 text-xs font-medium text-zinc-400 transition hover:border-zinc-500 hover:text-white"
                                     >
                                         {isYearly
@@ -267,7 +283,7 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                                 <>
                                     <button
                                         type="button"
-                                        onClick={() => { activatePro(); onClose(); }}
+                                        onClick={payOnRazorpay}
                                         className="w-full rounded-xl bg-[var(--accent)] py-3 text-sm font-semibold text-white transition hover:brightness-110 active:scale-[0.98]"
                                     >
                                         {isYearly

@@ -11,6 +11,7 @@ import { AppShell } from '@/components/ui/AppShell';
 import { AIInputBarShell } from '@/components/ui/AIInputBar';
 
 import { useOffice } from '@/lib/OfficeContext';
+import { useSessionClaim } from '@/hooks/useSessionClaim';
 import { Project, saveProject, getAllProjects } from '@/lib/db';
 import { emptyVentureShell } from '@/lib/minimalVenture';
 import { OfficeShell } from '@/components/OfficeShell';
@@ -52,6 +53,9 @@ export default function Home() {
   const [sessionResolving, setSessionResolving] = useState(false);
   const { isSignedIn, isLoaded } = useAuth();
   const { setActiveProject, setAllProjects, switchRoom, activeRoom, resetSystem } = useOffice();
+
+  // Tie ventures to Clerk userId when signed in; migrate anonymous ventures on first sign-in.
+  useSessionClaim();
 
   const enterWorkspaceWithVenturePrompt = useCallback(() => {
     persistEnterWorkspace();
