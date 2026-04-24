@@ -56,20 +56,11 @@ export function NameVentureModal({
         >
             <button
                 type="button"
-                className="absolute inset-0 bg-[#030304]/80 backdrop-blur-sm"
+                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
                 aria-label="Close"
                 onClick={onClose}
             />
-            <div
-                className="relative z-10 w-full max-w-md overflow-hidden rounded-3xl border border-[rgba(116,86,255,0.16)]"
-                style={{
-                    background: 'linear-gradient(160deg, #0e0c1c 0%, #08080e 100%)',
-                    boxShadow: '0 32px_80px rgba(0,0,0,0.6), 0 0 0 1px rgba(116,86,255,0.06), inset 0 1px 0 rgba(255,255,255,0.04)',
-                }}
-            >
-                {/* Top accent */}
-                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#7456ff]/50 to-transparent" aria-hidden />
-
+            <div className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-secondary)] shadow-[0_24px_64px_rgba(0,0,0,0.18)]">
                 {/* Avatar + greeting */}
                 <div className="flex items-start gap-4 px-5 pt-5">
                     <DexoAvatar size="md" state="idle" pulse={false} className="mt-0.5 shrink-0" />
@@ -77,29 +68,29 @@ export function NameVentureModal({
                         <div className="flex items-center justify-between">
                             <div>
                                 <span className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#7456ff]">Dexo</span>
-                                <span className="ml-2 font-sans text-[9px] font-semibold uppercase tracking-widest text-zinc-600">AI Co-Founder</span>
+                                <span className="ml-2 font-sans text-[9px] font-semibold uppercase tracking-widest text-[var(--muted)]">AI Co-Founder</span>
                             </div>
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="shrink-0 rounded-lg p-1.5 text-zinc-600 transition hover:bg-white/[0.06] hover:text-zinc-300"
+                                className="shrink-0 rounded-lg p-1.5 text-[var(--muted)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]"
                                 aria-label="Close"
                             >
                                 <X className="h-4 w-4" />
                             </button>
                         </div>
-                        <div className="mt-2 rounded-2xl rounded-tl-sm border border-[rgba(116,86,255,0.12)] bg-[rgba(116,86,255,0.06)] px-4 py-3">
-                            <h2 id="name-venture-title" className="font-sans text-[15px] font-semibold text-white">
+                        <div className="mt-2 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-3">
+                            <h2 id="name-venture-title" className="font-sans text-[15px] font-semibold text-[var(--text-primary)]">
                                 {title}
                             </h2>
-                            <p className="mt-1 font-sans text-[12.5px] leading-relaxed text-zinc-400">{description}</p>
+                            <p className="mt-1 font-sans text-[12.5px] leading-relaxed text-[var(--text-secondary)]">{description}</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Input */}
                 <div className="px-5 pb-5 pt-4">
-                    <label htmlFor="venture-name-input" className="mb-1.5 block font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
+                    <label htmlFor="venture-name-input" className="mb-1.5 block font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
                         Venture name
                     </label>
                     <input
@@ -116,20 +107,20 @@ export function NameVentureModal({
                         }}
                         placeholder="e.g. Northwind Labs"
                         autoComplete="off"
-                        className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] px-4 py-3 font-sans text-[14px] text-white placeholder:text-zinc-600 focus:border-[rgba(116,86,255,0.4)] focus:outline-none focus:ring-2 focus:ring-[rgba(116,86,255,0.15)]"
+                        className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-3 font-sans text-[14px] text-[var(--text-primary)] placeholder:text-[var(--muted)] focus:border-[rgba(116,86,255,0.4)] focus:outline-none focus:ring-2 focus:ring-[rgba(116,86,255,0.12)]"
                     />
                     <div className="mt-4 flex flex-wrap justify-end gap-2">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] px-4 py-2.5 font-sans text-[13px] font-medium text-zinc-400 transition hover:bg-[rgba(255,255,255,0.06)] hover:text-zinc-200"
+                            className="rounded-xl border border-[var(--border)] bg-transparent px-4 py-2.5 font-sans text-[13px] font-medium text-[var(--text-secondary)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]"
                         >
                             Cancel
                         </button>
                         <button
                             type="button"
                             onClick={submit}
-                            className="rounded-xl bg-[#7456ff] px-5 py-2.5 font-sans text-[13px] font-semibold text-white shadow-[0_0_20px_rgba(116,86,255,0.35)] transition hover:bg-[#8a6fff] hover:shadow-[0_0_28px_rgba(116,86,255,0.5)]"
+                            className="rounded-xl bg-[#7456ff] px-5 py-2.5 font-sans text-[13px] font-semibold text-white transition hover:bg-[#8a6fff]"
                         >
                             Let&apos;s build it →
                         </button>
