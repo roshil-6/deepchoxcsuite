@@ -144,8 +144,8 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                                 {/* Company branding */}
                                 <div className="flex flex-col items-center">
                                     <div className="flex items-baseline gap-4 sm:gap-6">
-                                        <span className="font-sans text-[clamp(3.75rem,13vw,8rem)] font-black tracking-[-0.01em] text-white [text-shadow:0_0_60px_rgba(255,255,255,0.08)]">
-                                            north<span className="text-brand-teal [text-shadow:0_0_48px_rgba(116,86,255,0.45)]">ROSC</span>
+                                        <span className="font-sans text-[clamp(2.25rem,13vw,8rem)] font-black tracking-[-0.01em] text-white">
+                                            north<span className="text-brand-teal">ROSC</span>
                                         </span>
                                         <span className="font-sans text-[clamp(1.75rem,5.5vw,3.25rem)] font-black tracking-[0.28em] text-zinc-400">
                                             LABS
@@ -177,7 +177,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                         {/* Auth — links to `/sign-in` & `/sign-up` (path routing; OAuth works reliably there) */}
                         <div
                             id="landing-auth"
-                            className="relative z-[35] mx-auto mt-6 w-full max-w-md scroll-mt-28 sm:mt-7"
+                            className="relative z-[35] mx-auto mt-6 w-full max-w-sm scroll-mt-28 sm:mt-7 sm:max-w-md"
                         >
                             <div className="rounded-2xl border border-white/15 bg-white p-4 shadow-[0_24px_48px_rgba(0,0,0,0.35)] sm:p-5">
                                 <LandingClerkAuth />

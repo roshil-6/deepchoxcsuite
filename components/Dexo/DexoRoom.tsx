@@ -14,6 +14,8 @@ import {
     ChevronDown,
     ChevronUp,
     ClipboardList,
+    Copy,
+    ExternalLink,
     Loader2,
     MessageSquarePlus,
     Mic,
@@ -1113,6 +1115,71 @@ export function DexoRoom() {
                                     </div>
                                 </div>
                             )}
+
+                            {/* Open in AI — copy report + jump to your favourite AI tool */}
+                            <div className="space-y-2 border-t border-[var(--border)] pt-5">
+                                <div className="flex items-center gap-2">
+                                    <ExternalLink className="h-3 w-3 text-[var(--muted)]" />
+                                    <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
+                                        Continue in AI
+                                    </p>
+                                    <span className="font-sans text-[10px] text-[var(--muted)]/60">— paste this report into any AI</span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                                    {([
+                                        { label: 'ChatGPT', icon: '🤖', url: 'https://chatgpt.com/' },
+                                        { label: 'Claude', icon: '✦', url: 'https://claude.ai/' },
+                                        { label: 'Gemini', icon: '✦', url: 'https://gemini.google.com/' },
+                                        { label: 'Perplexity', icon: '⊕', url: 'https://www.perplexity.ai/' },
+                                    ] as const).map(({ label, icon, url }) => (
+                                        <button
+                                            key={label}
+                                            type="button"
+                                            onClick={async () => {
+                                                // Build a clean text version of the report
+                                                const lines: string[] = [
+                                                    `=== Dexo Venture Analysis ===`,
+                                                    `Venture: ${activeProject?.name ?? 'My Venture'}`,
+                                                    '',
+                                                    '--- Health ---',
+                                                    Object.entries(displayedReport.health)
+                                                        .map(([k, v]) => `${k}: ${v}`)
+                                                        .join(' | '),
+                                                    '',
+                                                    '--- Sections ---',
+                                                    ...displayedReport.sections.map(
+                                                        (s) => `[${s.desk.toUpperCase()}] ${s.status.toUpperCase()}\n${s.insight}\nAction: ${s.action}`
+                                                    ),
+                                                    '',
+                                                    '--- Risks ---',
+                                                    ...displayedReport.risks.map(
+                                                        (r) => `[${r.level.toUpperCase()}] ${r.label}: ${r.detail}`
+                                                    ),
+                                                    '',
+                                                    '--- Next Actions ---',
+                                                    ...displayedReport.nextActions.map(
+                                                        (a, idx) => `${idx + 1}. ${a.action} (${a.timeframe})`
+                                                    ),
+                                                ];
+                                                try {
+                                                    await navigator.clipboard.writeText(lines.join('\n'));
+                                                } catch {
+                                                    // clipboard not available — open anyway
+                                                }
+                                                window.open(url, '_blank', 'noopener,noreferrer');
+                                            }}
+                                            className="flex items-center justify-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-3 py-2 font-sans text-[12px] font-medium text-[var(--text-secondary)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]"
+                                        >
+                                            <span aria-hidden>{icon}</span>
+                                            {label}
+                                            <Copy className="ml-auto h-3 w-3 opacity-40" />
+                                        </button>
+                                    ))}
+                                </div>
+                                <p className="font-sans text-[10px] text-[var(--muted)]/50">
+                                    Copies the full report to your clipboard, then opens the tool in a new tab.
+                                </p>
+                            </div>
                         </div>
                     )}
 
