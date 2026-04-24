@@ -741,18 +741,41 @@ function FloatingChat({
 
 type DexoFabPanel = 'none' | 'menu' | 'chat' | 'talk';
 
+const INTRO_SEEN_KEY = 'deepchox-dexo-orb-intro-seen';
+
 export function FloatingDexoOrb() {
     const { activeProject, activeRoom, switchRoom } = useOffice();
     const [mounted, setMounted] = useState(false);
     const [offset, setOffset] = useState({ x: 0, y: 0 });
     const [hovered, setHovered] = useState(false);
     const [fabPanel, setFabPanel] = useState<DexoFabPanel>('none');
+    const [showIntro, setShowIntro] = useState(false);
 
     const dragRef = useRef<{
         px: number; py: number; ox: number; oy: number; dragged: boolean;
     } | null>(null);
 
-    useEffect(() => { setMounted(true); setOffset(readOffset()); }, []);
+    useEffect(() => {
+        setMounted(true);
+        setOffset(readOffset());
+        // Show intro tooltip on first ever visit
+        try {
+            if (!localStorage.getItem(INTRO_SEEN_KEY)) {
+                const t = window.setTimeout(() => setShowIntro(true), 1800);
+                return () => window.clearTimeout(t);
+            }
+        } catch { /* noop */ }
+    }, []);
+
+    // Auto-dismiss intro after 7 seconds
+    useEffect(() => {
+        if (!showIntro) return;
+        const t = window.setTimeout(() => {
+            setShowIntro(false);
+            try { localStorage.setItem(INTRO_SEEN_KEY, '1'); } catch { /* noop */ }
+        }, 7000);
+        return () => window.clearTimeout(t);
+    }, [showIntro]);
 
     // Close menu / panels on outside click
     useEffect(() => {
@@ -874,7 +897,49 @@ export function FloatingDexoOrb() {
                 </div>
             )}
 
-            {hovered && fabPanel === 'none' && (
+            {/* First-time intro tooltip */}
+            {showIntro && fabPanel === 'none' && (
+                <div
+                    className="absolute bottom-[calc(100%+12px)] right-0 w-[min(calc(100vw-1.5rem),18rem)] overflow-hidden rounded-2xl border border-[rgba(116,86,255,0.3)] shadow-[0_16px_40px_rgba(0,0,0,0.35)]"
+                    style={{
+                        background: 'linear-gradient(160deg, #13102a 0%, #0d0b1e 100%)',
+                        animation: 'dexo-chat-enter 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards',
+                    }}
+                >
+                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(116,86,255,0.6)] to-transparent" aria-hidden />
+                    <div className="flex items-start gap-3 p-3.5">
+                        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-zinc-100 ring-2 ring-[rgba(116,86,255,0.35)]">
+                            <img src="/dexo-avatar.jpg" alt="Dexo" className="h-full w-full object-cover object-top" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5">
+                                <span className="font-sans text-[9px] font-bold uppercase tracking-[0.22em] text-[#7456ff]">Dexo</span>
+                                <span className="font-sans text-[8px] font-semibold uppercase tracking-widest text-zinc-600">AI Co-Founder</span>
+                            </div>
+                            <p className="mt-1.5 font-sans text-[12px] leading-relaxed text-zinc-200">
+                                Hey! You can speak to me or chat with me by clicking this icon.
+                            </p>
+                            <p className="mt-1 font-sans text-[10px] text-zinc-500">
+                                Try live voice or text — I know your venture.
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setShowIntro(false);
+                                try { localStorage.setItem(INTRO_SEEN_KEY, '1'); } catch { /* noop */ }
+                            }}
+                            className="shrink-0 rounded-md p-0.5 text-zinc-600 transition hover:text-zinc-300"
+                            aria-label="Dismiss"
+                        >
+                            <X className="h-3.5 w-3.5" />
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Hover tooltip (only when intro already seen) */}
+            {hovered && fabPanel === 'none' && !showIntro && (
                 <div
                     className="pointer-events-none absolute bottom-[calc(100%+10px)] right-0 w-[min(calc(100vw-1.5rem),15rem)] rounded-xl border border-zinc-200/90 px-3 py-2.5 text-left shadow-lg"
                     style={{
