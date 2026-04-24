@@ -742,16 +742,10 @@ export function DexoRoom() {
         : currentReport;
 
     return (
-        <div data-dexo-room className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-[#030304]">
-
-            {/* Ambient background — subtle violet radial + dot grid */}
-            <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-                <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(116,86,255,0.06) 0%, transparent 65%)' }} />
-                <div className="absolute inset-0 opacity-[0.28]" style={{ backgroundImage: 'radial-gradient(circle at center, #3f3f46 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
-            </div>
+        <div data-dexo-room className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--bg-primary)]">
 
             {/* ── Scrollable body (min-h-0 required or flex won't shrink below content → no scroll on mobile) ── */}
-            <div className="custom-scrollbar relative z-10 min-h-0 flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]">
+            <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]">
                 <div className="mx-auto max-w-[660px] px-5 pb-32 pt-8">
 
                     {loading && <AnalyzingBanner name={activeProject?.name ?? ''} />}
@@ -833,7 +827,7 @@ export function DexoRoom() {
                                 type="button"
                                 onClick={resetConversation}
                                 disabled={loading || !activeProject?.id}
-                                className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] px-3.5 py-1.5 font-sans text-[12px] font-medium text-zinc-400 transition-all duration-200 hover:border-[rgba(255,255,255,0.12)] hover:bg-[rgba(255,255,255,0.07)] hover:text-zinc-200 disabled:opacity-40"
+                                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--bg-elevated)] px-3.5 py-1.5 font-sans text-[12px] font-medium text-[var(--text-secondary)] transition-all duration-200 hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)] disabled:opacity-40"
                             >
                                 <MessageSquarePlus className="h-3.5 w-3.5" />
                                 New chat
@@ -858,9 +852,9 @@ export function DexoRoom() {
                     {analysisHistory.length > 0 && (
                         <div className="mb-6">
                             <div className="mb-3 flex items-center gap-2">
-                                <div className="h-px flex-1 bg-[rgba(255,255,255,0.05)]" />
-                                <span className="font-sans text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-600">History</span>
-                                <div className="h-px flex-1 bg-[rgba(255,255,255,0.05)]" />
+                                <div className="h-px flex-1 bg-[var(--border)]" />
+                                <span className="font-sans text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">History</span>
+                                <div className="h-px flex-1 bg-[var(--border)]" />
                             </div>
                             <div className="flex flex-wrap gap-1.5">
                                 {/* Current/Active button */}
@@ -870,7 +864,7 @@ export function DexoRoom() {
                                     className={`rounded-full px-3 py-1 font-sans text-[11px] font-medium transition-all duration-200 ${
                                         activeAnalysisIndex === null
                                             ? 'bg-[rgba(116,86,255,0.2)] text-[#c4b5fd] ring-1 ring-[rgba(116,86,255,0.3)]'
-                                            : 'text-zinc-500 hover:bg-[rgba(255,255,255,0.05)] hover:text-zinc-300'
+                                            : 'text-[var(--muted)] hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]'
                                     }`}
                                 >
                                     {currentReport ? 'Current' : 'Latest'}
@@ -887,7 +881,7 @@ export function DexoRoom() {
                                             className={`max-w-[140px] truncate rounded-full px-3 py-1 font-sans text-[11px] font-medium transition-all duration-200 ${
                                                 isActive
                                                     ? 'bg-[rgba(116,86,255,0.2)] text-[#c4b5fd] ring-1 ring-[rgba(116,86,255,0.3)]'
-                                                    : 'text-zinc-500 hover:bg-[rgba(255,255,255,0.05)] hover:text-zinc-300'
+                                                    : 'text-[var(--muted)] hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]'
                                             }`}
                                             title={r.headline}
                                         >
@@ -937,21 +931,21 @@ export function DexoRoom() {
                                 </div>
                                 <div className="mt-1.5">
                                     {displayedReport ? (
-                                        <h1 className="font-sans text-[18px] font-semibold leading-snug tracking-tight text-white">
+                                        <h1 className="font-sans text-[18px] font-semibold leading-snug tracking-tight text-[var(--text-primary)]">
                                             {displayedReport.headline}
                                         </h1>
                                     ) : (
-                                        <h1 className="font-sans text-[17px] font-semibold leading-snug tracking-tight text-white">
+                                        <h1 className="font-sans text-[17px] font-semibold leading-snug tracking-tight text-[var(--text-primary)]">
                                             {activeProject?.name ?? 'Dexo'}
                                         </h1>
                                     )}
                                     {displayedReport ? (
-                                        <p className="mt-1 font-sans text-[13px] leading-relaxed text-zinc-500">
+                                        <p className="mt-1 font-sans text-[13px] leading-relaxed text-[var(--text-secondary)]">
                                             {displayedReport.summary.slice(0, 120)}{displayedReport.summary.length > 120 ? '…' : ''}
                                         </p>
                                     ) : (
-                                        <p className="mt-1 font-sans text-[13px] leading-relaxed text-zinc-500">
-                                            I'm here. Tell me what's on your mind — or use <span className="text-zinc-400">Analyze</span> for a structured brief.
+                                        <p className="mt-1 font-sans text-[13px] leading-relaxed text-[var(--text-secondary)]">
+                                            I'm here. Tell me what's on your mind — or use <span className="text-[var(--text-primary)]">Analyze</span> for a structured brief.
                                         </p>
                                     )}
                                 </div>
@@ -995,7 +989,7 @@ export function DexoRoom() {
                         </div>
 
                         {voiceError && (
-                            <div className="flex items-center gap-2 rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] px-3 py-2 font-sans text-[11px] text-zinc-500">
+                            <div className="flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-3 py-2 font-sans text-[11px] text-[var(--text-secondary)]">
                                 <AlertTriangle className="h-3 w-3 shrink-0" />
                                 {voiceError}
                             </div>
@@ -1010,7 +1004,7 @@ export function DexoRoom() {
                                 className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-sans text-[11px] font-medium transition-all ${
                                     handsFree
                                         ? 'bg-[rgba(116,86,255,0.15)] text-[#c4b5fd] ring-1 ring-[rgba(116,86,255,0.3)]'
-                                        : 'text-zinc-600 hover:bg-[rgba(255,255,255,0.05)] hover:text-zinc-400'
+                                        : 'text-[var(--muted)] hover:bg-[var(--accent-soft)] hover:text-[var(--text-secondary)]'
                                 }`}
                             >
                                 <AudioLines className="h-3 w-3" />
@@ -1019,7 +1013,7 @@ export function DexoRoom() {
                             <button
                                 type="button"
                                 onClick={() => setIsMuted((m) => !m)}
-                                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-sans text-[11px] font-medium text-zinc-600 transition hover:bg-[rgba(255,255,255,0.05)] hover:text-zinc-400"
+                                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-sans text-[11px] font-medium text-[var(--muted)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--text-secondary)]"
                             >
                                 {isMuted ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
                                 {isMuted ? 'Unmute' : 'Mute'}
@@ -1187,11 +1181,11 @@ export function DexoRoom() {
                         <div className="mt-10 pb-28">
                             {/* Divider */}
                             <div className="mb-6 flex items-center gap-3">
-                                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-[rgba(255,255,255,0.07)] to-transparent" />
-                                <span className="font-sans text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-600">
+                                <div className="h-px flex-1 bg-[var(--border)]" />
+                                <span className="font-sans text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
                                     Conversation
                                 </span>
-                                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-[rgba(255,255,255,0.07)] to-transparent" />
+                                <div className="h-px flex-1 bg-[var(--border)]" />
                             </div>
 
                             <div className="space-y-4">
@@ -1211,10 +1205,10 @@ export function DexoRoom() {
                                             <div
                                                 className={`max-w-[85%] rounded-2xl px-4 py-3 text-[13.5px] leading-relaxed ${
                                                     isInterrupted
-                                                        ? 'border border-[rgba(255,255,255,0.05)] bg-[rgba(255,255,255,0.03)] italic text-zinc-600'
+                                                        ? 'border border-[var(--border)] bg-[var(--bg-elevated)] italic text-[var(--muted)]'
                                                         : isUser
-                                                          ? 'rounded-br-sm border border-[rgba(116,86,255,0.22)] bg-gradient-to-br from-[rgba(116,86,255,0.18)] to-[rgba(116,86,255,0.1)] text-white shadow-[0_0_24px_rgba(116,86,255,0.1),0_4px_16px_rgba(0,0,0,0.4)]'
-                                                          : 'rounded-bl-sm border border-[rgba(255,255,255,0.06)] bg-[#111116] text-zinc-200 shadow-[0_4px_20px_rgba(0,0,0,0.5)]'
+                                                          ? 'rounded-br-sm border border-[rgba(116,86,255,0.22)] bg-gradient-to-br from-[rgba(116,86,255,0.18)] to-[rgba(116,86,255,0.1)] text-[var(--text-primary)] shadow-[0_0_24px_rgba(116,86,255,0.08),0_2px_8px_rgba(0,0,0,0.15)]'
+                                                          : 'rounded-bl-sm border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text)] shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
                                                 }`}
                                             >
                                                 <p className="whitespace-pre-wrap">{msg.text}</p>
@@ -1222,8 +1216,8 @@ export function DexoRoom() {
 
                                             {/* User avatar */}
                                             {isUser && (
-                                                <div className="mb-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.05)]">
-                                                    <Activity className="h-3 w-3 text-zinc-500" />
+                                                <div className="mb-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--bg-elevated)]">
+                                                    <Activity className="h-3 w-3 text-[var(--muted)]" />
                                                 </div>
                                             )}
                                         </div>
@@ -1239,8 +1233,8 @@ export function DexoRoom() {
             {/* ── Input strip ── */}
             <div className="relative z-10 shrink-0">
                 {/* Fade gradient from transparent → room bg, so content scrolls under it cleanly */}
-                <div className="pointer-events-none absolute inset-x-0 -top-10 h-10 bg-gradient-to-t from-[#030304] to-transparent" />
-                <div className="border-t border-[rgba(255,255,255,0.05)] bg-[#030304] px-4 pb-4 pt-3">
+                <div className="pointer-events-none absolute inset-x-0 -top-10 h-10 bg-gradient-to-t from-[var(--bg-primary)] to-transparent" />
+                <div className="border-t border-[var(--border)] bg-[var(--bg-primary)] px-4 pb-4 pt-3">
                     <div className="mx-auto max-w-[660px] space-y-2">
 
                         {/* Listening indicator */}
@@ -1276,7 +1270,7 @@ export function DexoRoom() {
                                       ? 'border-[rgba(16,185,129,0.25)] bg-[rgba(16,185,129,0.04)] shadow-[0_0_0_1px_rgba(16,185,129,0.08)]'
                                       : isProcessing
                                         ? 'border-[rgba(116,86,255,0.3)] bg-[rgba(116,86,255,0.05)] shadow-[0_0_0_1px_rgba(116,86,255,0.12),0_0_20px_rgba(116,86,255,0.06)]'
-                                        : 'border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] shadow-[0_0_0_1px_rgba(255,255,255,0.03)] focus-within:border-[rgba(116,86,255,0.25)] focus-within:shadow-[0_0_0_1px_rgba(116,86,255,0.1),0_0_20px_rgba(116,86,255,0.06)]'
+                                        : 'border-[var(--border)] bg-[var(--bg-elevated)] focus-within:border-[rgba(116,86,255,0.25)] focus-within:shadow-[0_0_0_1px_rgba(116,86,255,0.08)]'
                             }`}
                         >
                             {/* Mic button */}
@@ -1295,7 +1289,7 @@ export function DexoRoom() {
                                               ? 'bg-emerald-500/15 text-emerald-400'
                                               : isProcessing
                                                 ? 'bg-[rgba(116,86,255,0.15)] text-[#9d88ff]'
-                                                : 'text-zinc-500 hover:bg-[rgba(255,255,255,0.06)] hover:text-zinc-300'
+                                                : 'text-[var(--muted)] hover:bg-[var(--accent-soft)] hover:text-[var(--text-secondary)]'
                                     }`}
                                 >
                                     {isListening ? (
@@ -1326,7 +1320,7 @@ export function DexoRoom() {
                                     : loading       ? 'Analyzing venture…'
                                     : 'Message Dexo…'
                                 }
-                                className="min-h-[38px] min-w-0 flex-1 resize-none border-none bg-transparent px-1.5 py-2 font-sans text-[14px] leading-[1.45] text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-0"
+                                className="min-h-[38px] min-w-0 flex-1 resize-none border-none bg-transparent px-1.5 py-2 font-sans text-[14px] leading-[1.45] text-[var(--text-primary)] placeholder:text-[var(--muted)] focus:outline-none focus:ring-0"
                                 style={{ maxHeight: '84px', overflowY: 'hidden' }}
                             />
 
