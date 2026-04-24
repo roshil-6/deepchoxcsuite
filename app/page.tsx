@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { DexoAvatar } from '@/components/Dexo/DexoAvatar';
 import { useAuth } from '@clerk/nextjs';
 import { ChatAssistant } from '@/components/ChatAssistant';
 import { WorkspaceStage } from '@/components/WorkspaceStage';
@@ -34,13 +35,45 @@ const VENTURE_AUTH_KEY = 'deepchox-after-auth-new-venture';
 
 function SessionGateOverlay({ title, subtitle }: { title: string; subtitle: string }) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#030304] px-6">
-      <div
-        className="h-10 w-10 animate-spin rounded-full border-2 border-teal-500/25 border-t-teal-400"
-        aria-hidden
-      />
-      <p className="mt-5 text-center text-[15px] font-semibold tracking-tight text-zinc-100">{title}</p>
-      <p className="mt-1.5 text-center text-[13px] text-zinc-500">{subtitle}</p>
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[#0a0812] px-6">
+      {/* Violet radial */}
+      <div className="pointer-events-none absolute inset-0" aria-hidden>
+        <div
+          className="absolute inset-0"
+          style={{ background: 'radial-gradient(ellipse 90% 55% at 50% 20%, rgba(116,86,255,0.22) 0%, transparent 70%)' }}
+        />
+        <div
+          className="absolute inset-0 opacity-[0.18]"
+          style={{
+            backgroundImage: 'radial-gradient(circle at center, #5b5b7a 1px, transparent 1px)',
+            backgroundSize: '28px 28px',
+          }}
+        />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(116,86,255,0.6)] to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[rgba(116,86,255,0.15)] to-transparent" />
+      </div>
+
+      <div className="relative z-10 flex flex-col items-center">
+        {/* Brand wordmark */}
+        <p className="mb-8 font-sans text-[10px] font-bold uppercase tracking-[0.35em] text-[#7456ff]">
+          NorthROSC Labs · DeepChox AI
+        </p>
+
+        {/* Dexo avatar — thinking state */}
+        <DexoAvatar size="lg" state="thinking" pulse />
+
+        {/* Spinner */}
+        <div
+          className="mt-7 h-7 w-7 animate-spin rounded-full border-2 border-[rgba(116,86,255,0.18)] border-t-[#7456ff]"
+          aria-hidden
+        />
+
+        <p className="mt-5 text-center font-sans text-[15px] font-semibold tracking-tight text-zinc-100">{title}</p>
+        <p className="mt-1.5 text-center font-sans text-[13px] text-zinc-500">{subtitle}</p>
+
+        {/* Subtle bottom brand */}
+        <p className="mt-10 font-sans text-[10px] text-zinc-700">Powered by AI · NorthROSC Labs</p>
+      </div>
     </div>
   );
 }

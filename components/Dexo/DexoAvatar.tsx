@@ -72,7 +72,7 @@ export function DexoAvatar({
             />
             {/* Avatar frame */}
             <div
-                className={`relative overflow-hidden ring-2 transition-all duration-500 ${frameRadius} ${ring}`}
+                className={`relative overflow-hidden bg-zinc-100 ring-2 transition-all duration-500 ${frameRadius} ${ring}`}
                 style={{ width: px, height: px }}
             >
                 <Image
@@ -80,14 +80,14 @@ export function DexoAvatar({
                     alt="Dexo — your AI co-founder"
                     width={px}
                     height={px}
-                    className="h-full w-full object-cover object-top [mix-blend-mode:multiply]"
+                    className="h-full w-full object-cover object-top"
                     priority
                 />
             </div>
             {/* State dot — bottom-right corner */}
             {state !== 'idle' && (
                 <span
-                    className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#030304] ${
+                    className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-zinc-100 ${
                         state === 'thinking'  ? 'bg-amber-400 animate-pulse' :
                         state === 'speaking'  ? 'bg-emerald-400' :
                         /* listening */         'bg-rose-500 animate-pulse'
