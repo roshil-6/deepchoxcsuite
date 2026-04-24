@@ -5,6 +5,21 @@
 
 type ChatMessage = { role: string; content: string };
 
+/** Wraps a fetch with a hard timeout (default 28 s) using AbortController. */
+async function fetchWithTimeout(
+  url: string,
+  init: RequestInit,
+  timeoutMs = 28_000,
+): Promise<Response> {
+  const controller = new AbortController();
+  const tid = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(tid);
+  }
+}
+
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_VERSION = '2023-06-01';
 /** Claude Haiku — fast, cost-efficient, strong analytical reasoning */
@@ -116,7 +131,7 @@ export async function chatWithOpenAI(
     body.response_format = { type: 'json_object' };
   }
 
-  const res = await fetch(OPENAI_URL, {
+  const res = await fetchWithTimeout(OPENAI_URL, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -187,7 +202,7 @@ export async function chatWithGroq(
     body.response_format = { type: 'json_object' };
   }
 
-  const res = await fetch(GROQ_URL, {
+  const res = await fetchWithTimeout(GROQ_URL, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -357,7 +372,7 @@ export async function chatWithClaude(
   };
   if (system) body.system = system;
 
-  const res = await fetch(ANTHROPIC_URL, {
+  const res = await fetchWithTimeout(ANTHROPIC_URL, {
     method: 'POST',
     headers: {
       'x-api-key': apiKey,

@@ -34,6 +34,8 @@ export function UpgradeModal({ isOpen, onClose, triggerReason }: UpgradeModalPro
     const tokens = useTokens();
     const { user } = useUser();
     const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
+    const [awaitingPayment, setAwaitingPayment] = useState(false);
+    const [checking, setChecking] = useState(false);
     const pricingRegion = usePricingRegion();
     const proBilling = getProBillingAmounts();
     const hasRazorpay = getRazorpayPaymentLinkUrl(selectedPlan) !== null;
@@ -215,28 +217,53 @@ export function UpgradeModal({ isOpen, onClose, triggerReason }: UpgradeModalPro
                 
                 {/* CTA Buttons */}
                 <div className="space-y-2">
-                    <button
-                        onClick={() => {
-                            if (openRazorpayPaymentPage(selectedPlan, user?.id)) {
-                                onClose();
-                                return;
-                            }
-                            // Payment link not configured — do not grant Pro for free.
-                            alert('Payment is not configured yet. Contact support to upgrade.');
-                        }}
-                        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-900 font-medium text-[13px] hover:opacity-90 transition-opacity"
-                    >
-                        <Crown className="h-4 w-4" />
-                        {hasRazorpay ? 'Pay with Razorpay' : 'Upgrade to Pro'}
-                        <ArrowRight className="h-4 w-4" />
-                    </button>
-                    {hasRazorpay && (
+                    {!awaitingPayment ? (
+                        <button
+                            onClick={() => {
+                                if (openRazorpayPaymentPage(selectedPlan, user?.id)) {
+                                    setAwaitingPayment(true);
+                                    return;
+                                }
+                                // Payment link not configured — do not grant Pro for free.
+                                alert('Payment is not configured yet. Contact support to upgrade.');
+                            }}
+                            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-900 font-medium text-[13px] hover:opacity-90 transition-opacity"
+                        >
+                            <Crown className="h-4 w-4" />
+                            {hasRazorpay ? 'Pay with Razorpay' : 'Upgrade to Pro'}
+                            <ArrowRight className="h-4 w-4" />
+                        </button>
+                    ) : (
+                        <div className="space-y-2 rounded-xl border border-amber-500/30 bg-amber-950/20 p-3">
+                            <p className="text-center text-[12px] text-amber-300 font-medium">
+                                Complete your payment in the Razorpay tab, then come back here.
+                            </p>
+                            <button
+                                onClick={async () => {
+                                    setChecking(true);
+                                    try { await user?.reload(); } catch { /* noop */ }
+                                    // Give the sync effect a moment to pick up new metadata
+                                    setTimeout(() => setChecking(false), 1500);
+                                }}
+                                disabled={checking}
+                                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-200 font-medium text-[12px] hover:bg-amber-500/30 transition disabled:opacity-60"
+                            >
+                                {checking ? 'Checking…' : "I've paid — activate my Pro"}
+                            </button>
+                            <button
+                                onClick={() => setAwaitingPayment(false)}
+                                className="w-full text-center text-[10px] text-slate-600 hover:text-slate-400"
+                            >
+                                Pay again / change plan
+                            </button>
+                        </div>
+                    )}
+                    {hasRazorpay && !awaitingPayment && (
                         <p className="text-center text-[10px] text-slate-500">
-                            Checkout opens in a new tab. Pro unlocks in the app after your server confirms payment (e.g.
-                            Razorpay webhook).
+                            Checkout opens in a new tab. Pro activates automatically when payment is confirmed.
                         </p>
                     )}
-                    
+
                     <button
                         onClick={onClose}
                         className="w-full py-2.5 text-[12px] text-slate-500 hover:text-slate-300"

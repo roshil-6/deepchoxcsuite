@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { DexoAvatar } from '@/components/Dexo/DexoAvatar';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { ChatAssistant } from '@/components/ChatAssistant';
 import { WorkspaceStage } from '@/components/WorkspaceStage';
@@ -35,44 +34,63 @@ const VENTURE_AUTH_KEY = 'deepchox-after-auth-new-venture';
 
 function SessionGateOverlay({ title, subtitle }: { title: string; subtitle: string }) {
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[#0a0812] px-6">
-      {/* Violet radial */}
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[#080808] px-4 sm:px-6">
+      {/* Subtle dot grid only — no glow */}
       <div className="pointer-events-none absolute inset-0" aria-hidden>
         <div
-          className="absolute inset-0"
-          style={{ background: 'radial-gradient(ellipse 90% 55% at 50% 20%, rgba(116,86,255,0.22) 0%, transparent 70%)' }}
-        />
-        <div
-          className="absolute inset-0 opacity-[0.18]"
+          className="absolute inset-0 opacity-[0.12]"
           style={{
-            backgroundImage: 'radial-gradient(circle at center, #5b5b7a 1px, transparent 1px)',
-            backgroundSize: '28px 28px',
+            backgroundImage: 'radial-gradient(circle at center, #4b5563 1px, transparent 1px)',
+            backgroundSize: '32px 32px',
           }}
         />
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(116,86,255,0.6)] to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[rgba(116,86,255,0.15)] to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700/60 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-zinc-800/40 to-transparent" />
       </div>
 
       <div className="relative z-10 flex flex-col items-center">
-        {/* Brand wordmark */}
-        <p className="mb-8 font-sans text-[10px] font-bold uppercase tracking-[0.35em] text-[#7456ff]">
-          NorthROSC Labs · DeepChox AI
-        </p>
 
-        {/* Dexo avatar — thinking state */}
-        <DexoAvatar size="lg" state="thinking" pulse />
+        {/* ── northROSC wordmark ── */}
+        <div className="flex flex-col items-center">
+          {/* Diamond overline */}
+          <div className="mb-4 flex items-center gap-2.5">
+            <span className="block h-px w-12 bg-zinc-800" />
+            <span
+              className="block h-[6px] w-[6px] rotate-45"
+              style={{ background: '#0D9488' }}
+              aria-hidden
+            />
+            <span className="block h-px w-12 bg-zinc-800" />
+          </div>
+
+          {/* Wordmark + LABS */}
+          <div className="flex items-end gap-4">
+            <span className="font-sans font-black leading-[0.88] tracking-[-0.03em]" style={{ fontSize: 'clamp(2.25rem,8vw,3.5rem)' }}>
+              <span className="text-zinc-400">north</span>
+              <span style={{ color: '#0D9488' }}>ROSC</span>
+            </span>
+            <span
+              className="mb-[0.08em] border-l border-zinc-800 pl-3 font-sans font-black uppercase leading-tight tracking-[0.38em] text-zinc-600" style={{ fontSize: 'clamp(0.6rem,1.4vw,0.75rem)' }}
+            >
+              LABS
+            </span>
+          </div>
+
+          {/* Underline rule */}
+          <div className="mt-4 h-px w-40 bg-zinc-800" />
+        </div>
 
         {/* Spinner */}
         <div
-          className="mt-7 h-7 w-7 animate-spin rounded-full border-2 border-[rgba(116,86,255,0.18)] border-t-[#7456ff]"
+          className="mt-8 h-5 w-5 animate-spin rounded-full border border-zinc-800 border-t-zinc-500"
           aria-hidden
         />
 
-        <p className="mt-5 text-center font-sans text-[15px] font-semibold tracking-tight text-zinc-100">{title}</p>
-        <p className="mt-1.5 text-center font-sans text-[13px] text-zinc-500">{subtitle}</p>
+        <p className="mt-5 text-center font-sans text-[14px] font-medium tracking-tight text-zinc-300">{title}</p>
+        <p className="mt-1.5 text-center font-sans text-[12px] text-zinc-600">{subtitle}</p>
 
-        {/* Subtle bottom brand */}
-        <p className="mt-10 font-sans text-[10px] text-zinc-700">Powered by AI · NorthROSC Labs</p>
+        {/* Bottom micro-brand */}
+        <p className="mt-10 font-sans text-[10px] text-zinc-800">DeepChox AI · NorthROSC Labs</p>
       </div>
     </div>
   );

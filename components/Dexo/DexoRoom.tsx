@@ -11,6 +11,7 @@ import {
     AlertTriangle,
     ArrowRight,
     AudioLines,
+    BarChart2,
     ChevronDown,
     ChevronUp,
     ClipboardList,
@@ -51,6 +52,8 @@ import type { DexoBootstrapPayload } from '@/lib/dexoBootstrap';
 import { DexoParticleCanvas } from '@/components/Dexo/DexoParticleSphere';
 import { DexoAvatar } from '@/components/Dexo/DexoAvatar';
 import { submitDexoVenturePatch } from '@/lib/dexoProposalClient';
+import { DexoDailyBriefPanel } from '@/components/Dexo/DexoDailyBriefPanel';
+import { PlanGate } from '@/components/PlanGate';
 
 // ─── Global CSS ──────────────────────────────────────────────────────────────
 
@@ -341,6 +344,8 @@ export function DexoRoom() {
     const [activeAnalysisIndex, setActiveAnalysisIndex] = useState<number | null>(null);
     /** Shown after "Set up in Dexo" so the room feels scoped to that task */
     const [setupMission, setSetupMission] = useState<DexoBootstrapPayload | null>(null);
+    /** Toggle between chat/analysis and daily research brief */
+    const [view, setView] = useState<'chat' | 'daily'>('chat');
     const convoId = useRef(0);
     const skipConvoPersistRef = useRef(true);
     const prevDexoVentureIdRef = useRef<number | undefined>(undefined);
@@ -746,7 +751,7 @@ export function DexoRoom() {
 
             {/* ── Scrollable body (min-h-0 required or flex won't shrink below content → no scroll on mobile) ── */}
             <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]">
-                <div className="mx-auto max-w-[660px] px-5 pb-32 pt-8">
+                <div className="mx-auto max-w-[660px] px-4 pb-32 pt-6 sm:px-5 sm:pt-8">
 
                     {loading && <AnalyzingBanner name={activeProject?.name ?? ''} />}
 
@@ -823,31 +828,69 @@ export function DexoRoom() {
                     
                     <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
                         <div className="flex flex-wrap items-center gap-2">
+                            {/* View toggle */}
                             <button
                                 type="button"
-                                onClick={resetConversation}
-                                disabled={loading || !activeProject?.id}
-                                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--bg-elevated)] px-3.5 py-1.5 font-sans text-[12px] font-medium text-[var(--text-secondary)] transition-all duration-200 hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)] disabled:opacity-40"
+                                onClick={() => setView('chat')}
+                                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-sans text-[12px] font-medium transition-all duration-200 ${
+                                    view === 'chat'
+                                        ? 'border border-[rgba(116,86,255,0.3)] bg-[rgba(116,86,255,0.12)] text-[#c4b5fd]'
+                                        : 'border border-[var(--border)] bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]'
+                                }`}
                             >
                                 <MessageSquarePlus className="h-3.5 w-3.5" />
-                                New chat
+                                Chat
                             </button>
                             <button
                                 type="button"
-                                onClick={() => run('analyze')}
-                                disabled={loading}
-                                className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(116,86,255,0.3)] bg-[rgba(116,86,255,0.12)] px-3.5 py-1.5 font-sans text-[12px] font-medium text-[#c4b5fd] transition-all duration-200 hover:border-[rgba(116,86,255,0.5)] hover:bg-[rgba(116,86,255,0.2)] disabled:opacity-40"
+                                onClick={() => setView('daily')}
+                                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-sans text-[12px] font-medium transition-all duration-200 ${
+                                    view === 'daily'
+                                        ? 'border border-[rgba(116,86,255,0.3)] bg-[rgba(116,86,255,0.12)] text-[#c4b5fd]'
+                                        : 'border border-[var(--border)] bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]'
+                                }`}
                             >
-                                <Zap className="h-3.5 w-3.5" />
-                                {loading ? 'Analyzing…' : 'Analyze'}
+                                <BarChart2 className="h-3.5 w-3.5" />
+                                Daily Brief
                             </button>
-                            {activeAnalysisIndex === null ? (
-                                <TokenCostPill cost={currentReport ? TOKEN_COSTS.REANALYZE : TOKEN_COSTS.ANALYSIS} />
-                            ) : null}
+                            {view === 'chat' && (
+                                <>
+                                    <button
+                                        type="button"
+                                        onClick={resetConversation}
+                                        disabled={loading || !activeProject?.id}
+                                        className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--bg-elevated)] px-3.5 py-1.5 font-sans text-[12px] font-medium text-[var(--text-secondary)] transition-all duration-200 hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)] disabled:opacity-40"
+                                    >
+                                        New chat
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => run('analyze')}
+                                        disabled={loading}
+                                        className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(116,86,255,0.3)] bg-[rgba(116,86,255,0.12)] px-3.5 py-1.5 font-sans text-[12px] font-medium text-[#c4b5fd] transition-all duration-200 hover:border-[rgba(116,86,255,0.5)] hover:bg-[rgba(116,86,255,0.2)] disabled:opacity-40"
+                                    >
+                                        <Zap className="h-3.5 w-3.5" />
+                                        {loading ? 'Analyzing…' : 'Analyze'}
+                                    </button>
+                                    {activeAnalysisIndex === null ? (
+                                        <TokenCostPill cost={currentReport ? TOKEN_COSTS.REANALYZE : TOKEN_COSTS.ANALYSIS} />
+                                    ) : null}
+                                </>
+                            )}
                         </div>
                         <TokenDisplay compact={false} showCosts={true} />
                     </div>
 
+                    {/* ── Daily Brief Panel ── */}
+                    {view === 'daily' && activeProject && (
+                        <PlanGate feature="dexoDailyBriefReports">
+                            <DexoDailyBriefPanel activeProject={activeProject} autoRunPulse />
+                        </PlanGate>
+                    )}
+
+                    {/* ── Chat / Analysis view ── */}
+                    {view === 'chat' && (
+                    <>
                     {/* ── Analysis History Timeline ── */}
                     {analysisHistory.length > 0 && (
                         <div className="mb-6">
@@ -911,7 +954,7 @@ export function DexoRoom() {
                     {/* ── Co-founder presence — avatar + particle orb side by side ── */}
                     <div className="mb-8">
                         {/* Identity row */}
-                        <div className="mb-5 flex items-center gap-4">
+                        <div className="mb-5 flex items-center gap-3 sm:gap-4">
                             <DexoAvatar
                                 state={
                                     orbState === 'loading'    ? 'thinking'  :
@@ -931,11 +974,11 @@ export function DexoRoom() {
                                 </div>
                                 <div className="mt-1.5">
                                     {displayedReport ? (
-                                        <h1 className="font-sans text-[18px] font-semibold leading-snug tracking-tight text-[var(--text-primary)]">
+                                        <h1 className="font-sans text-[15px] font-semibold leading-snug tracking-tight text-[var(--text-primary)] sm:text-[18px]">
                                             {displayedReport.headline}
                                         </h1>
                                     ) : (
-                                        <h1 className="font-sans text-[17px] font-semibold leading-snug tracking-tight text-[var(--text-primary)]">
+                                        <h1 className="font-sans text-[15px] font-semibold leading-snug tracking-tight text-[var(--text-primary)] sm:text-[17px]">
                                             {activeProject?.name ?? 'Dexo'}
                                         </h1>
                                     )}
@@ -1119,12 +1162,13 @@ export function DexoRoom() {
                                     </p>
                                     <span className="font-sans text-[10px] text-[var(--muted)]/60">— paste this report into any AI</span>
                                 </div>
-                                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                                <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
                                     {([
                                         { label: 'ChatGPT', icon: '🤖', url: 'https://chatgpt.com/' },
                                         { label: 'Claude', icon: '✦', url: 'https://claude.ai/' },
                                         { label: 'Gemini', icon: '✦', url: 'https://gemini.google.com/' },
                                         { label: 'Perplexity', icon: '⊕', url: 'https://www.perplexity.ai/' },
+                                        { label: 'Google', icon: '🔍', url: 'https://www.google.com/' },
                                     ] as const).map(({ label, icon, url }) => (
                                         <button
                                             key={label}
@@ -1203,7 +1247,7 @@ export function DexoRoom() {
                                             )}
 
                                             <div
-                                                className={`max-w-[85%] rounded-2xl px-4 py-3 text-[13.5px] leading-relaxed ${
+                                                className={`max-w-[92%] rounded-2xl px-3 py-2.5 text-[13px] leading-relaxed sm:max-w-[85%] sm:px-4 sm:py-3 sm:text-[13.5px] ${
                                                     isInterrupted
                                                         ? 'border border-[var(--border)] bg-[var(--bg-elevated)] italic text-[var(--muted)]'
                                                         : isUser
@@ -1226,6 +1270,8 @@ export function DexoRoom() {
                                 <div ref={chatEndRef} />
                             </div>
                         </div>
+                    )}
+                    </>
                     )}
                 </div>
             </div>

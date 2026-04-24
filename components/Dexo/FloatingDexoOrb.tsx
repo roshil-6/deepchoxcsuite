@@ -532,7 +532,7 @@ function FloatingChat({
 
     return (
         <div
-            className="flex max-h-[520px] w-[372px] flex-col overflow-hidden rounded-xl border border-zinc-300/90 bg-zinc-50 shadow-[0_20px_50px_rgba(15,23,42,0.18)]"
+            className="flex w-[min(372px,calc(100vw-1rem))] max-h-[min(520px,calc(100dvh-5rem))] flex-col overflow-hidden rounded-xl border border-zinc-300/90 bg-zinc-50 shadow-[0_20px_50px_rgba(15,23,42,0.18)]"
         >
             <div className="flex shrink-0 items-center justify-between border-b border-zinc-200/90 bg-gradient-to-b from-white to-zinc-100/95 px-3.5 py-3">
                 <div className="flex min-w-0 items-center gap-2.5">
@@ -606,7 +606,7 @@ function FloatingChat({
                 </div>
             </div>
 
-            <div className="custom-scrollbar min-h-[200px] max-h-[340px] flex-1 space-y-2.5 overflow-y-auto bg-zinc-50/90 px-3.5 py-3">
+            <div className="custom-scrollbar min-h-[120px] max-h-[min(340px,calc(100dvh-16rem))] flex-1 space-y-2.5 overflow-y-auto bg-zinc-50/90 px-3 py-3 sm:px-3.5">
                 {messages.length === 0 && variant === 'chat' && (
                     <div className="flex h-full flex-col items-center justify-center px-2 py-12">
                         <p className="max-w-[248px] text-center text-[12px] leading-relaxed text-zinc-500">
@@ -655,7 +655,7 @@ function FloatingChat({
 
             <div className="shrink-0 border-t border-zinc-200 bg-white px-3 py-2.5">
                 {variant === 'talk' && (
-                    <p className="mb-2 text-[10px] leading-snug text-zinc-500">
+                    <p className="mb-2 hidden text-[10px] leading-snug text-zinc-500 sm:block">
                         Mic stays active in the background: you can <span className="font-semibold text-zinc-700">interrupt</span> Dexo while it speaks. Use
                         headphones to reduce echo. Say <span className="font-semibold text-zinc-700">end session</span> or tap{' '}
                         <span className="font-semibold text-zinc-700">End</span> when finished.
