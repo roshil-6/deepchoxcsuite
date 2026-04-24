@@ -143,14 +143,25 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                             <div className="flex w-full max-w-xl flex-col items-center text-center sm:max-w-2xl lg:max-w-3xl">
                                 {/* Company branding */}
                                 <div className="flex flex-col items-center">
-                                    <div className="flex items-baseline gap-4 sm:gap-6">
-                                        <span className="font-sans text-[clamp(2.25rem,13vw,8rem)] font-black tracking-[-0.01em] text-white">
-                                            north<span className="text-brand-teal">ROSC</span>
+                                    {/* Decorative overline */}
+                                    <div className="mb-5 flex items-center gap-2.5">
+                                        <span className="block h-px w-14 bg-zinc-700 sm:w-20" />
+                                        <span className="block h-[7px] w-[7px] rotate-45 bg-brand-teal" aria-hidden />
+                                        <span className="block h-px w-14 bg-zinc-700 sm:w-20" />
+                                    </div>
+
+                                    <div className="flex items-end gap-4 sm:gap-6">
+                                        <span className="font-sans text-[clamp(2.25rem,13vw,8rem)] font-black tracking-[-0.025em] leading-[0.88] text-white">
+                                            <span className="text-zinc-300/90">north</span><span className="text-brand-teal">ROSC</span>
                                         </span>
-                                        <span className="font-sans text-[clamp(1.75rem,5.5vw,3.25rem)] font-black tracking-[0.28em] text-zinc-400">
+                                        {/* LABS badge — separated by left border rule */}
+                                        <span className="mb-[0.1em] border-l-2 border-zinc-700 pl-3 font-sans text-[clamp(0.65rem,1.8vw,1rem)] font-black uppercase leading-tight tracking-[0.4em] text-zinc-500">
                                             LABS
                                         </span>
                                     </div>
+
+                                    {/* Bottom rule */}
+                                    <div className="mt-5 h-px w-48 bg-zinc-800 sm:w-64" />
                                 </div>
                                 <div className="mt-4 flex items-center gap-3">
                                     <span className="h-px w-12 bg-gradient-to-r from-transparent via-brand-teal/50 to-transparent" />
