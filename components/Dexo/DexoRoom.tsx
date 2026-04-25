@@ -405,8 +405,6 @@ export function DexoRoom() {
     const [setupMission, setSetupMission] = useState<DexoBootstrapPayload | null>(null);
     /** Toggle between chat/analysis and daily research brief */
     const [view, setView] = useState<'chat' | 'daily'>('chat');
-    /** True once user has explicitly clicked Chat — exits overview mode */
-    const [chatStarted, setChatStarted] = useState(false);
     const convoId = useRef(0);
     const skipConvoPersistRef = useRef(true);
     const prevDexoVentureIdRef = useRef<number | undefined>(undefined);
@@ -585,7 +583,6 @@ export function DexoRoom() {
     }, [activeProject]);
 
     const resetConversation = useCallback(() => {
-        setChatStarted(false);
         if (!activeProject?.id) {
             setConvo([]);
             return;
@@ -820,8 +817,6 @@ export function DexoRoom() {
         ? analysisHistory[activeAnalysisIndex]
         : currentReport;
 
-    /** True when user hasn't chatted or analyzed yet — show overview landing */
-    const isOverview = view === 'chat' && !displayedReport && !loading && !chatStarted && !convo.some(m => m.role === 'user');
 
     return (
         <div data-dexo-room className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--bg-primary)]">
@@ -965,130 +960,8 @@ export function DexoRoom() {
                         </PlanGate>
                     )}
 
-                    {/* ── Overview landing (pre-chat/analysis) ── */}
-                    {isOverview && (
-                        <div className="flex flex-col gap-5 pb-10">
-
-                            {/* Hero */}
-                            <div className="flex items-center gap-4 pt-1">
-                                <DexoAvatar state="idle" size="lg" pulse className="shrink-0" />
-                                <div className="min-w-0">
-                                    <div className="flex flex-wrap items-center gap-2">
-                                        <span className="font-sans text-[10px] font-bold uppercase tracking-[0.22em] text-[#7456ff]">Dexo</span>
-                                        <span className="rounded-full border border-[rgba(116,86,255,0.2)] bg-[rgba(116,86,255,0.08)] px-2 py-0.5 font-sans text-[9px] font-semibold uppercase tracking-widest text-[#9d88ff]">AI Co-Founder</span>
-                                    </div>
-                                    <h1 className="mt-1.5 font-sans text-[17px] font-semibold leading-snug tracking-tight text-[var(--text-primary)] sm:text-[20px]">
-                                        {activeProject ? `Let's build ${activeProject.name}` : 'Your AI command center'}
-                                    </h1>
-                                    <p className="mt-0.5 font-sans text-[12px] leading-relaxed text-[var(--text-secondary)]">
-                                        {activeProject
-                                            ? 'Run an analysis, check your daily brief, or just ask me anything.'
-                                            : 'Create a venture from the sidebar, then ask me anything.'}
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* Action tiles */}
-                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                {/* Analyze */}
-                                <button
-                                    type="button"
-                                    onClick={() => { setChatStarted(true); void run('analyze'); }}
-                                    disabled={!activeProject || loading}
-                                    className="group flex flex-col gap-2.5 rounded-2xl border border-[rgba(116,86,255,0.28)] bg-gradient-to-br from-[rgba(116,86,255,0.13)] to-[rgba(116,86,255,0.04)] p-4 text-left transition hover:border-[rgba(116,86,255,0.48)] hover:from-[rgba(116,86,255,0.2)] hover:to-[rgba(116,86,255,0.1)] disabled:cursor-not-allowed disabled:opacity-40"
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[rgba(116,86,255,0.15)]">
-                                            <Zap className="h-4 w-4 text-[#c4b5fd]" aria-hidden />
-                                        </div>
-                                        <span className="font-sans text-[13px] font-semibold text-[var(--text-primary)]">Analyze Venture</span>
-                                        <ArrowRight className="ml-auto h-3.5 w-3.5 shrink-0 text-[var(--muted)] opacity-0 transition-opacity group-hover:opacity-100" aria-hidden />
-                                    </div>
-                                    <p className="font-sans text-[11.5px] leading-snug text-[var(--text-secondary)]">
-                                        Structured brief — health score, risks, and next actions across every desk.
-                                    </p>
-                                    <TokenCostPill cost={currentReport ? TOKEN_COSTS.REANALYZE : TOKEN_COSTS.ANALYSIS} />
-                                </button>
-
-                                {/* Daily Brief */}
-                                <button
-                                    type="button"
-                                    onClick={() => setView('daily')}
-                                    disabled={!activeProject}
-                                    className="group flex flex-col gap-2.5 rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-4 text-left transition hover:border-[rgba(116,86,255,0.2)] hover:bg-[var(--bg-elevated)] disabled:cursor-not-allowed disabled:opacity-40"
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--bg-elevated)]">
-                                            <BarChart2 className="h-4 w-4 text-[var(--text-secondary)]" aria-hidden />
-                                        </div>
-                                        <span className="font-sans text-[13px] font-semibold text-[var(--text-primary)]">Daily Brief</span>
-                                        <ArrowRight className="ml-auto h-3.5 w-3.5 shrink-0 text-[var(--muted)] opacity-0 transition-opacity group-hover:opacity-100" aria-hidden />
-                                    </div>
-                                    <p className="font-sans text-[11.5px] leading-snug text-[var(--text-secondary)]">
-                                        Auto-researched market updates, competitor moves, and daily priorities.
-                                    </p>
-                                    <span className="inline-flex items-center gap-1 self-start rounded-full border border-[var(--border)] bg-[var(--bg-elevated)] px-2 py-0.5 font-sans text-[10px] font-medium text-[var(--muted)]">Pro</span>
-                                </button>
-                            </div>
-
-                            {/* Chat entry */}
-                            <button
-                                type="button"
-                                onClick={() => { setChatStarted(true); setTimeout(() => inputRef.current?.focus(), 60); }}
-                                className="group flex w-full items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-3.5 text-left transition hover:border-[rgba(116,86,255,0.2)] hover:bg-[var(--bg-card)]"
-                            >
-                                <DexoAvatar state="idle" size="xs" className="shrink-0" />
-                                <span className="min-w-0 flex-1 font-sans text-[13px] text-[var(--muted)]">Ask Dexo anything about your venture…</span>
-                                <MessageSquarePlus className="h-4 w-4 shrink-0 text-[var(--muted)] opacity-0 transition-opacity group-hover:opacity-70" aria-hidden />
-                            </button>
-
-                            {/* AI Tools */}
-                            <div>
-                                <div className="mb-3 flex items-center gap-3">
-                                    <div className="h-px flex-1 bg-[var(--border)]" />
-                                    <span className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">AI Tools</span>
-                                    <div className="h-px flex-1 bg-[var(--border)]" />
-                                </div>
-                                <p className="mb-2.5 font-sans text-[11px] leading-snug text-[var(--muted)]/70">
-                                    Run an analysis first to copy your venture report, then continue the conversation in any AI.
-                                </p>
-                                <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-                                    {AI_TOOLS.map(({ label, icon, url }) => (
-                                        <a
-                                            key={label}
-                                            href={url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="flex flex-col items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] px-2 py-3 font-sans text-[11px] font-medium text-[var(--text-secondary)] transition hover:border-[rgba(116,86,255,0.2)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)]"
-                                            onClick={(e) => e.stopPropagation()}
-                                        >
-                                            <span className="text-[18px] leading-none" aria-hidden>{icon}</span>
-                                            {label}
-                                        </a>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Voice controls */}
-                            <div className="flex flex-wrap items-center gap-1.5 border-t border-[var(--border)] pt-4">
-                                <button type="button" onClick={() => setHandsFree(h => !h)} className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-sans text-[11px] font-medium transition-all ${handsFree ? 'bg-[rgba(116,86,255,0.15)] text-[#c4b5fd] ring-1 ring-[rgba(116,86,255,0.3)]' : 'text-[var(--muted)] hover:bg-[var(--accent-soft)] hover:text-[var(--text-secondary)]'}`}>
-                                    <AudioLines className="h-3 w-3" />
-                                    {handsFree ? 'Conversation on' : 'Conversation'}
-                                </button>
-                                <button type="button" onClick={() => setIsMuted(m => !m)} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-sans text-[11px] font-medium text-[var(--muted)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--text-secondary)]">
-                                    {isMuted ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
-                                    {isMuted ? 'Unmute' : 'Mute'}
-                                </button>
-                                <button type="button" onClick={() => setShowVoiceSettings(true)} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-sans text-[11px] font-medium text-zinc-600 transition hover:bg-[rgba(255,255,255,0.05)] hover:text-zinc-400">
-                                    <Settings2 className="h-3 w-3" />
-                                    Voice
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
                     {/* ── Chat / Analysis view ── */}
-                    {view === 'chat' && !isOverview && (
+                    {view === 'chat' && (
                     <>
                     {/* ── Analysis History Timeline ── */}
                     {analysisHistory.length > 0 && (
@@ -1476,8 +1349,8 @@ export function DexoRoom() {
                 </div>
             </div>
 
-            {/* ── Input strip — hidden on overview landing ── */}
-            {!isOverview && <div className="relative z-10 shrink-0">
+            {/* ── Input strip ── */}
+            <div className="relative z-10 shrink-0">
                 {/* Fade gradient from transparent → room bg, so content scrolls under it cleanly */}
                 <div className="pointer-events-none absolute inset-x-0 -top-10 h-10 bg-gradient-to-t from-[var(--bg-primary)] to-transparent" />
                 <div className="border-t border-[var(--border)] bg-[var(--bg-primary)] px-4 pb-4 pt-3">
@@ -1593,7 +1466,7 @@ export function DexoRoom() {
                         </div>
                     </div>
                 </div>
-            </div>}
+            </div>
 
             {/* Voice Settings Panel */}
             <VoiceSettingsPanel 
