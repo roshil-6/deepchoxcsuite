@@ -9,41 +9,30 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
     Activity,
     AlertTriangle,
-    ArrowRight,
     AudioLines,
     BarChart2,
-    ChevronDown,
-    ChevronUp,
     ClipboardList,
-    Copy,
-    ExternalLink,
-    Loader2,
     MessageSquarePlus,
     Mic,
-    MicOff,
     Send,
     Settings2,
-    Sparkles,
     Square,
     Volume2,
     VolumeX,
     X,
-    Zap,
 } from 'lucide-react';
 import { useOffice } from '@/lib/OfficeContext';
-import type { JarvisReport, JarvisSection } from '@/app/api/jarvis/route';
-import { VoiceSettingsPanel, useVoicePreset, type VoicePreset } from '@/components/Dexo/VoiceSettings';
-import { speak as voiceEngineSpeak, stopSpeaking as stopSpeakingNative, createSpeechQueue, initVoiceCache, type VoiceSettings } from '@/lib/voiceEngine';
+import type { JarvisReport } from '@/app/api/jarvis/route';
+import { VoiceSettingsPanel, useVoicePreset } from '@/components/Dexo/VoiceSettings';
 import { speechFriendlyText } from '@/lib/speechFriendly';
 import { pickEnglishPlaybackVoice, resumeSpeechSynthIfNeeded } from '@/lib/voiceEngine';
-import { useTokens, useAnalysisCost, useChatCost } from '@/lib/tokens/useTokens';
+import { useTokens, useChatCost } from '@/lib/tokens/useTokens';
 import { useDexoConversationalVoice, type VoiceState as ConvoVoiceState } from '@/lib/useDexoConversationalVoice';
-import { TokenDisplay, TokenConfirmButton, TokenInlineCost } from '@/components/tokens/TokenDisplay';
-import { TokenWarningBanner, TokenInlineWarning, TokenCostPill } from '@/components/tokens/TokenWarning';
+import { TokenDisplay } from '@/components/tokens/TokenDisplay';
+import { TokenWarningBanner } from '@/components/tokens/TokenWarning';
 import { useUpgradeModal } from '@/components/tokens/UpgradeModal';
 import { clearDexoConvo, loadDexoConvo, saveDexoConvo, nextConvoId, type DexoConvoMessage } from '@/lib/dexoConvoStorage';
 import { buildInitialDexoMessages, shouldReplaceDexoSeedMessage } from '@/lib/dexoWelcome';
-import { DEXO_LOADING_TAGLINES } from '@/lib/dexoLoading';
 import { isVentureFoundationSparse } from '@/lib/ventureFoundation';
 import { dexoAutoSaveHintLines, dexoFullVenturePatchFromJarvis } from '@/lib/dexoApplyJarvisProductPatch';
 import { buildDexoJarvisVentureContext, DEXO_PRE_VENTURE_CONTEXT } from '@/lib/dexoJarvisContext';
@@ -86,16 +75,6 @@ if (typeof document !== 'undefined') {
     el.textContent = ORB_CSS;
     document.head.appendChild(el);
 }
-
-// ─── AI Tools ─────────────────────────────────────────────────────────────────
-
-const AI_TOOLS = [
-    { label: 'ChatGPT',    icon: '🤖', url: 'https://chatgpt.com/' },
-    { label: 'Claude',     icon: '✦',  url: 'https://claude.ai/' },
-    { label: 'Gemini',     icon: '✦',  url: 'https://gemini.google.com/' },
-    { label: 'Perplexity', icon: '⊕',  url: 'https://www.perplexity.ai/' },
-    { label: 'Google',     icon: '🔍', url: 'https://www.google.com/' },
-] as const;
 
 // ─── Voice orb ────────────────────────────────────────────────────────────────
 
@@ -197,184 +176,6 @@ function WaveBars({ active, color = 'bg-[var(--accent)]' }: { active: boolean; c
 
 // ─── Voice hook replaced by useDexoConversationalVoice from lib/useDexoConversationalVoice ─────
 
-// ─── Status palettes ──────────────────────────────────────────────────────────
-
-/** Desk / health status — coloured tiers */
-const SC = {
-    strong:   {
-        dot:   'bg-emerald-400',
-        bar:   'bg-emerald-400',
-        badge: 'border-emerald-500/35 bg-emerald-500/12 text-emerald-400',
-        card:  'border-emerald-500/20 bg-emerald-500/[0.05]',
-        ring:  'ring-emerald-500/20',
-        label: 'Strong',
-    },
-    caution:  {
-        dot:   'bg-amber-400',
-        bar:   'bg-amber-400',
-        badge: 'border-amber-500/35 bg-amber-500/12 text-amber-400',
-        card:  'border-amber-500/20 bg-amber-500/[0.05]',
-        ring:  'ring-amber-500/20',
-        label: 'Caution',
-    },
-    risk:     {
-        dot:   'bg-orange-400',
-        bar:   'bg-orange-400',
-        badge: 'border-orange-500/35 bg-orange-500/12 text-orange-400',
-        card:  'border-orange-500/20 bg-orange-500/[0.05]',
-        ring:  'ring-orange-500/20',
-        label: 'Risk',
-    },
-    critical: {
-        dot:   'bg-rose-400',
-        bar:   'bg-rose-400',
-        badge: 'border-rose-500/35 bg-rose-500/12 text-rose-400',
-        card:  'border-rose-500/20 bg-rose-500/[0.05]',
-        ring:  'ring-rose-500/20',
-        label: 'Critical',
-    },
-} as const;
-
-const RC = {
-    high:   { icon: 'text-rose-400',   badge: 'border-rose-500/35 bg-rose-500/10 text-rose-400',   leftBar: 'border-l-rose-500/50'   },
-    medium: { icon: 'text-amber-400',  badge: 'border-amber-500/35 bg-amber-500/10 text-amber-400', leftBar: 'border-l-amber-500/50'  },
-    low:    { icon: 'text-sky-400',    badge: 'border-sky-500/35 bg-sky-500/10 text-sky-400',       leftBar: 'border-l-sky-500/50'    },
-} as const;
-
-const TFC: Record<string, string> = {
-    today:        'text-rose-400 border-rose-500/30 bg-rose-500/8',
-    'this week':  'text-amber-400 border-amber-500/30 bg-amber-500/8',
-    'this month': 'text-sky-400 border-sky-500/30 bg-sky-500/8',
-};
-
-// ─── Health strip ─────────────────────────────────────────────────────────────
-
-function HealthStrip({ health }: { health: JarvisReport['health'] }) {
-    const desks = ['strategy', 'finance', 'product', 'market', 'gtm'] as const;
-    const scores = { strong: 4, caution: 3, risk: 2, critical: 1 } as const;
-    const overall = Math.round(desks.reduce((sum, d) => sum + scores[health[d]], 0) / desks.length);
-    const overallLabel = overall >= 4 ? 'Strong' : overall === 3 ? 'Caution' : overall === 2 ? 'At Risk' : 'Critical';
-    const overallColor = overall >= 4 ? 'text-emerald-400' : overall === 3 ? 'text-amber-400' : overall === 2 ? 'text-orange-400' : 'text-rose-400';
-
-    return (
-        <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
-            {/* Top accent */}
-            <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
-                <div className="flex items-center gap-2">
-                    <Activity className="h-3.5 w-3.5 text-[var(--muted)]" aria-hidden />
-                    <span className="font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">Venture Health</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                    <span className={`font-sans text-[12px] font-bold ${overallColor}`}>{overallLabel}</span>
-                    <span className="font-sans text-[10px] text-[var(--muted)]">overall</span>
-                </div>
-            </div>
-            <div className="grid grid-cols-5 gap-px bg-[var(--border)]">
-                {desks.map((d) => {
-                    const c = SC[health[d]];
-                    return (
-                        <div key={d} className={`flex flex-col items-center gap-2 bg-[var(--bg-card)] px-1 py-3 transition-colors ${c.card}`}>
-                            <span className={`h-2.5 w-2.5 rounded-full ${c.dot} shadow-[0_0_8px_currentColor]`} />
-                            <span className="font-sans text-[8px] font-bold uppercase tracking-[0.14em] text-[var(--muted)]">{d}</span>
-                            <span className={`rounded-full border px-1.5 py-[1px] font-sans text-[7.5px] font-bold uppercase tracking-wide ${c.badge}`}>{c.label}</span>
-                        </div>
-                    );
-                })}
-            </div>
-        </div>
-    );
-}
-
-// ─── Desk row ─────────────────────────────────────────────────────────────────
-
-function DeskRow({ section, onRead }: { section: JarvisSection; onRead: (t: string) => void }) {
-    const [open, setOpen] = useState(false);
-    const c = SC[section.status];
-    return (
-        <div className={`mb-2 overflow-hidden rounded-2xl border transition-all duration-200 ${open ? c.card : 'border-[var(--border)] bg-[var(--bg-card)]'} hover:border-[rgba(116,86,255,0.2)]`}>
-            <button
-                type="button"
-                onClick={() => setOpen((v) => !v)}
-                className="flex w-full items-start gap-3 px-4 py-3.5 text-left"
-            >
-                <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${c.dot}`} />
-                <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 gap-y-1">
-                    <span className="w-[52px] shrink-0 font-sans text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--muted)]">{section.desk}</span>
-                    <span className={`shrink-0 rounded-full border px-2 py-[2px] font-sans text-[8.5px] font-bold uppercase tracking-wider ${c.badge}`}>{c.label}</span>
-                    <span className="min-w-0 flex-1 font-sans text-[13px] leading-snug text-[var(--text-secondary)]">{section.insight}</span>
-                </div>
-                <span className={`ml-2 mt-0.5 shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''} text-[var(--muted)]`}>
-                    <ChevronDown className="h-3.5 w-3.5" />
-                </span>
-            </button>
-            {open && (
-                <div className="border-t border-[var(--border)] px-4 pb-4 pt-3">
-                    <p className="mb-3 font-sans text-[13.5px] leading-relaxed text-[var(--text-primary)]">{section.insight}</p>
-                    <div className="flex items-start gap-2.5 rounded-xl border border-[rgba(116,86,255,0.2)] bg-[rgba(116,86,255,0.06)] px-3.5 py-2.5">
-                        <ArrowRight className="mt-[3px] h-3.5 w-3.5 shrink-0 text-[#9d88ff]" aria-hidden />
-                        <p className="font-sans text-[12.5px] leading-snug text-[var(--text-secondary)]">{section.action}</p>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={() => onRead(`${section.desk}. ${section.insight}. Next step: ${section.action}`)}
-                        className="mt-2.5 flex items-center gap-1.5 font-sans text-[10px] text-[var(--muted)] transition hover:text-[var(--text-secondary)]"
-                    >
-                        <Volume2 className="h-3 w-3" aria-hidden /> Read aloud
-                    </button>
-                </div>
-            )}
-        </div>
-    );
-}
-
-// ─── Inline analyzing banner (non-blocking) ────────────────────────────────────
-
-function AnalyzingBanner({ name }: { name: string }) {
-    const desks = ['Strategy', 'Finance', 'Product', 'Market', 'GTM'];
-    const [tick, setTick] = useState(0);
-    useEffect(() => {
-        const t = setInterval(() => setTick((n) => (n + 1) % (desks.length * 2)), 900);
-        return () => clearInterval(t);
-    }, [desks.length]);
-    const activeDesk = desks[tick % desks.length];
-    const activeTagline = DEXO_LOADING_TAGLINES[tick % DEXO_LOADING_TAGLINES.length];
-
-    return (
-        <div className="mb-6 flex flex-col items-center gap-3 px-2 pb-4 text-center">
-            <div className="relative">
-                <div className="absolute inset-[-10px] rounded-full bg-[radial-gradient(circle,rgba(116,86,255,0.18),transparent_68%)] blur-xl" />
-                <div className="relative rounded-full border border-[rgba(116,86,255,0.18)] bg-[rgba(255,255,255,0.02)] p-2 shadow-[0_10px_30px_rgba(0,0,0,0.28)]">
-                    <DexoParticleCanvas mode="room" size={88} state="loading" />
-                </div>
-            </div>
-            <div className="space-y-1">
-                <div className="flex items-center justify-center gap-2">
-                    <span className="text-[12px] font-semibold tracking-wide text-[var(--text)]">{activeTagline}</span>
-                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
-                </div>
-                <p className="text-[11px] text-[var(--muted)]">
-                    Reading <span className="text-[var(--text)]">{name}</span> through <span className="text-[var(--text)]">{activeDesk}</span>
-                </p>
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-1.5">
-                {desks.map((d, i) => (
-                    <span
-                        key={d}
-                        className="text-[9px] font-semibold uppercase tracking-[0.14em] transition-all duration-500"
-                        style={{
-                            color: activeDesk === d ? 'var(--accent)' : 'rgba(160,167,180,0.35)',
-                            textShadow: activeDesk === d ? '0 0 10px var(--accent-soft)' : 'none',
-                        }}
-                    >
-                        {d}
-                    </span>
-                ))}
-            </div>
-            <p className="text-[10px] text-[var(--muted)]">Voice and keyboard stay live while Dexo works</p>
-        </div>
-    );
-}
-
 // ─── Main component ───────────────────────────────────────────────────────────
 
 function truncateSetupDetail(s: string, max = 320): string {
@@ -386,9 +187,7 @@ function truncateSetupDetail(s: string, max = 320): string {
 export function DexoRoom() {
     const { activeProject, dexoBootstrap, setDexoBootstrap, updateProjectField } = useOffice();
 
-    /** Analysis history - all previous analyses are kept, new ones are added */
-    const [analysisHistory, setAnalysisHistory] = useState<JarvisReport[]>([]);
-    /** Current/latest report - the most recent analysis */
+    /** Current/latest report - kept for voice continuity context */
     const [currentReport, setCurrentReport] = useState<JarvisReport | null>(null);
     const [loading, setLoading]   = useState(false);
     const [error, setError]       = useState<string | null>(null);
@@ -399,8 +198,6 @@ export function DexoRoom() {
     const [handsFree, setHandsFree] = useState(false);
     const [showVoiceSettings, setShowVoiceSettings] = useState(false);
     const voicePreset = useVoicePreset();
-    /** Track which analysis is being viewed in detail */
-    const [activeAnalysisIndex, setActiveAnalysisIndex] = useState<number | null>(null);
     /** Shown after "Set up in Dexo" so the room feels scoped to that task */
     const [setupMission, setSetupMission] = useState<DexoBootstrapPayload | null>(null);
     /** Toggle between chat/analysis and daily research brief */
@@ -413,7 +210,6 @@ export function DexoRoom() {
 
     // Token system integration
     const tokens = useTokens();
-    useAnalysisCost();
     useChatCost();
     const upgradeModal = useUpgradeModal();
 
@@ -454,7 +250,7 @@ export function DexoRoom() {
         setInputText(trimmed);
         window.setTimeout(() => setInputText(''), 400);
     }, []);
-    const runRef = useRef<((mode: 'analyze' | 'converse', userMsg?: string) => Promise<void>) | null>(null);
+    const runRef = useRef<((mode: 'converse', userMsg?: string) => Promise<void>) | null>(null);
     
     // Expose run to window for testing
     useEffect(() => {
@@ -532,9 +328,7 @@ export function DexoRoom() {
     }, [dexoWelcomeRefreshKey]);
 
     useEffect(() => {
-        setAnalysisHistory([]);
         setCurrentReport(null);
-        setActiveAnalysisIndex(null);
         setError(null);
     }, [activeProject?.id]);
 
@@ -593,9 +387,6 @@ export function DexoRoom() {
         skipConvoPersistRef.current = true;
         setConvo(seed);
         convoId.current = nextConvoId(seed);
-        setCurrentReport(null);
-        setAnalysisHistory([]);
-        setActiveAnalysisIndex(null);
         setError(null);
         setSetupMission(null);
         requestAnimationFrame(() => {
@@ -604,16 +395,9 @@ export function DexoRoom() {
         });
     }, [activeProject]);
 
-    const run = useCallback(async (mode: 'analyze' | 'converse', userMsg?: string) => {
-        // Analyze requires a venture; free-chat works without one
-        if (mode === 'analyze' && !activeProject?.id) return;
-        
+    const run = useCallback(async (mode: 'converse', userMsg?: string) => {
         // Check and spend tokens
-        const cost = mode === 'analyze' 
-            ? (currentReport ? TOKEN_COSTS.REANALYZE : TOKEN_COSTS.ANALYSIS)
-            : TOKEN_COSTS.CHAT_MESSAGE;
-        
-        const tokenResult = tokens.spend(cost, mode === 'analyze' ? 'New Analysis' : 'Chat Message');
+        const tokenResult = tokens.spend(TOKEN_COSTS.CHAT_MESSAGE, 'Chat Message');
         
         if (!tokenResult.success) {
             setError(tokenResult.message || 'Insufficient tokens');
@@ -628,28 +412,11 @@ export function DexoRoom() {
             // Build context including previous analyses for continuity
             let context = buildCtx();
 
-            // No venture selected — for analyze mode block early; for converse use pre-venture fallback
+            // No venture selected — use the generic pre-venture context so the API won't 400
             if (!context.trim()) {
-                if (mode === 'analyze') {
-                    setError('Create or select a venture first to run an analysis.');
-                    setLoading(false);
-                    return;
-                }
-                // converse without a venture — use the generic pre-venture context so the API won't 400
                 context = DEXO_PRE_VENTURE_CONTEXT;
             }
 
-            if (analysisHistory.length > 0) {
-                const previousAnalyses = analysisHistory
-                    .slice(-3) // Last 3 analyses
-                    .map((r, i) => `\n[Previous Analysis ${i + 1}]: ${r.headline}\n${r.summary}`)
-                    .join('\n');
-                context += previousAnalyses;
-            }
-            if (currentReport) {
-                context += `\n[Current Analysis]: ${currentReport.headline}\n${currentReport.summary}`;
-            }
-            
             const res = await fetch('/api/dexo', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -693,15 +460,8 @@ export function DexoRoom() {
                 }
             }
             
-            // If analyze mode, add to history
-            if (mode === 'analyze') {
-                setAnalysisHistory(prev => [...prev, data.report!]);
-                setCurrentReport(data.report!);
-                setActiveAnalysisIndex(null); // Show current/latest
-            }
-            // If converse mode, also update current report context
-            else if (mode === 'converse' && userMsg) {
-                setCurrentReport(data.report!);
+            // Update conversation
+            if (mode === 'converse' && userMsg) {
                 setConvo((prev) => {
                     const next = [...prev];
                     const last = next[next.length - 1];
@@ -724,7 +484,7 @@ export function DexoRoom() {
         } finally {
             setLoading(false);
         }
-    }, [activeProject, buildCtx, currentReport, analysisHistory, convo, isMuted, isListening, isSpeaking, speakJarvis, tokens, upgradeModal]);
+    }, [activeProject, buildCtx, convo, isMuted, isListening, isSpeaking, speakJarvis, tokens, upgradeModal]);
 
     // Keep runRef current for the pending-transcript effect
     runRef.current = run;
@@ -810,12 +570,7 @@ export function DexoRoom() {
         return () => window.removeEventListener('keydown', onKeyDown);
     }, [activeProject?.id, isSpeaking, isListening, stopSpeaking, startListening]);
 
-    const orbState: ConvoVoiceState | 'loading' = loading && !currentReport ? 'loading' : voiceState;
-
-    // Determine which report to display
-    const displayedReport = activeAnalysisIndex !== null
-        ? analysisHistory[activeAnalysisIndex]
-        : currentReport;
+    const orbState: ConvoVoiceState | 'loading' = loading ? 'loading' : voiceState;
 
 
     return (
@@ -825,14 +580,12 @@ export function DexoRoom() {
             <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]">
                 <div className="mx-auto max-w-[660px] px-4 pb-32 pt-6 sm:px-5 sm:pt-8">
 
-                    {loading && <AnalyzingBanner name={activeProject?.name ?? ''} />}
-
                     {/* Error */}
                     {error && !loading && (
                         <div className="mb-5 flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] px-4 py-3 shadow-[0_1px_2px_rgba(34,29,24,0.04)]">
                             <AlertTriangle className="h-4 w-4 shrink-0 text-[var(--muted)]" />
                             <p className="flex-1 text-[12px] text-[var(--muted)]">{error}</p>
-                            <button type="button" onClick={() => run('analyze')} className="text-[11px] text-[var(--text)] underline underline-offset-2 hover:opacity-90">Retry</button>
+                            <button type="button" onClick={() => setError(null)} className="text-[11px] text-[var(--text)] underline underline-offset-2 hover:opacity-90">Dismiss</button>
                         </div>
                     )}
                     
@@ -926,28 +679,14 @@ export function DexoRoom() {
                                 Daily Brief
                             </button>
                             {view === 'chat' && (
-                                <>
-                                    <button
-                                        type="button"
-                                        onClick={resetConversation}
-                                        disabled={loading || !activeProject?.id}
-                                        className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--bg-elevated)] px-3.5 py-1.5 font-sans text-[12px] font-medium text-[var(--text-secondary)] transition-all duration-200 hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)] disabled:opacity-40"
-                                    >
-                                        New chat
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => run('analyze')}
-                                        disabled={loading}
-                                        className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(116,86,255,0.3)] bg-[rgba(116,86,255,0.12)] px-3.5 py-1.5 font-sans text-[12px] font-medium text-[#c4b5fd] transition-all duration-200 hover:border-[rgba(116,86,255,0.5)] hover:bg-[rgba(116,86,255,0.2)] disabled:opacity-40"
-                                    >
-                                        <Zap className="h-3.5 w-3.5" />
-                                        {loading ? 'Analyzing…' : 'Analyze'}
-                                    </button>
-                                    {activeAnalysisIndex === null ? (
-                                        <TokenCostPill cost={currentReport ? TOKEN_COSTS.REANALYZE : TOKEN_COSTS.ANALYSIS} />
-                                    ) : null}
-                                </>
+                                <button
+                                    type="button"
+                                    onClick={resetConversation}
+                                    disabled={loading || !activeProject?.id}
+                                    className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--bg-elevated)] px-3.5 py-1.5 font-sans text-[12px] font-medium text-[var(--text-secondary)] transition-all duration-200 hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)] disabled:opacity-40"
+                                >
+                                    New chat
+                                </button>
                             )}
                         </div>
                         <TokenDisplay compact={false} showCosts={true} />
@@ -963,66 +702,6 @@ export function DexoRoom() {
                     {/* ── Chat / Analysis view ── */}
                     {view === 'chat' && (
                     <>
-                    {/* ── Analysis History Timeline ── */}
-                    {analysisHistory.length > 0 && (
-                        <div className="mb-6">
-                            <div className="mb-3 flex items-center gap-2">
-                                <div className="h-px flex-1 bg-[var(--border)]" />
-                                <span className="font-sans text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">History</span>
-                                <div className="h-px flex-1 bg-[var(--border)]" />
-                            </div>
-                            <div className="flex flex-wrap gap-1.5">
-                                {/* Current/Active button */}
-                                <button
-                                    onClick={() => setActiveAnalysisIndex(null)}
-                                    type="button"
-                                    className={`rounded-full px-3 py-1 font-sans text-[11px] font-medium transition-all duration-200 ${
-                                        activeAnalysisIndex === null
-                                            ? 'bg-[rgba(116,86,255,0.2)] text-[#c4b5fd] ring-1 ring-[rgba(116,86,255,0.3)]'
-                                            : 'text-[var(--muted)] hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]'
-                                    }`}
-                                >
-                                    {currentReport ? 'Current' : 'Latest'}
-                                </button>
-                                {/* History items - most recent first */}
-                                {[...analysisHistory].reverse().map((r, idx) => {
-                                    const actualIndex = analysisHistory.length - 1 - idx;
-                                    const isActive = activeAnalysisIndex === actualIndex;
-                                    return (
-                                        <button
-                                            key={actualIndex}
-                                            type="button"
-                                            onClick={() => setActiveAnalysisIndex(actualIndex)}
-                                            className={`max-w-[140px] truncate rounded-full px-3 py-1 font-sans text-[11px] font-medium transition-all duration-200 ${
-                                                isActive
-                                                    ? 'bg-[rgba(116,86,255,0.2)] text-[#c4b5fd] ring-1 ring-[rgba(116,86,255,0.3)]'
-                                                    : 'text-[var(--muted)] hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]'
-                                            }`}
-                                            title={r.headline}
-                                        >
-                                            #{actualIndex + 1} · {r.headline.slice(0, 18)}{r.headline.length > 18 ? '…' : ''}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    )}
-
-                    {displayedReport && activeAnalysisIndex !== null && (
-                        <div className="mb-6 flex flex-wrap items-center justify-center gap-3 text-center">
-                            <span className="text-[10px] text-[var(--muted)]">
-                                Viewing archived analysis #{activeAnalysisIndex + 1}
-                            </span>
-                            <button
-                                type="button"
-                                onClick={() => setActiveAnalysisIndex(null)}
-                                className="text-[10px] text-[var(--text)] underline underline-offset-2 hover:opacity-90"
-                            >
-                                Back to latest
-                            </button>
-                        </div>
-                    )}
-
                     {/* ── Co-founder header ── */}
                     <div className="mb-6">
                         {/* Identity row */}
@@ -1044,25 +723,12 @@ export function DexoRoom() {
                                     <span className="rounded-full border border-[rgba(116,86,255,0.2)] bg-[rgba(116,86,255,0.08)] px-2 py-0.5 font-sans text-[9px] font-semibold uppercase tracking-widest text-[#9d88ff]">AI Co-Founder</span>
                                 </div>
                                 <div className="mt-1.5">
-                                    {displayedReport ? (
-                                        <>
-                                            <h1 className="font-sans text-[16px] font-bold leading-snug tracking-tight text-[var(--text-primary)] sm:text-[19px]">
-                                                {displayedReport.headline}
-                                            </h1>
-                                            <p className="mt-1.5 font-sans text-[13px] leading-relaxed text-[var(--text-secondary)]">
-                                                {displayedReport.summary}
-                                            </p>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <h1 className="font-sans text-[15px] font-semibold leading-snug tracking-tight text-[var(--text-primary)] sm:text-[17px]">
-                                                {activeProject?.name ?? 'Dexo'}
-                                            </h1>
-                                            <p className="mt-1 font-sans text-[13px] leading-relaxed text-[var(--text-secondary)]">
-                                                I'm here. Tell me what's on your mind — or use <span className="text-[var(--text-primary)]">Analyze</span> for a structured brief.
-                                            </p>
-                                        </>
-                                    )}
+                                    <h1 className="font-sans text-[15px] font-semibold leading-snug tracking-tight text-[var(--text-primary)] sm:text-[17px]">
+                                        {activeProject?.name ?? 'Dexo'}
+                                    </h1>
+                                    <p className="mt-1 font-sans text-[13px] leading-relaxed text-[var(--text-secondary)]">
+                                        I'm here. Tell me what's on your mind.
+                                    </p>
                                 </div>
 
                                 {/* Voice state badge */}
@@ -1082,25 +748,6 @@ export function DexoRoom() {
                                     </div>
                                 )}
                             </div>
-
-                            {/* Particle orb — hidden on mobile to avoid squeezing the text */}
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    if (isSpeaking) stopSpeaking();
-                                    else if (!isMuted) {
-                                        if (displayedReport) {
-                                            speakJarvis(`${displayedReport.headline}. ${displayedReport.summary}`);
-                                        } else {
-                                            speakJarvis(activeProject?.name ? `I'm Dexo. We're in ${activeProject.name}. Tell me what you want help with first.` : `I'm Dexo, your AI co-founder. Create a venture in the sidebar and let's build together.`);
-                                        }
-                                    }
-                                }}
-                                className="hidden shrink-0 opacity-80 transition hover:opacity-100 sm:inline-flex"
-                                title="Click to hear Dexo speak"
-                            >
-                                <VoiceOrb state={orbState} />
-                            </button>
                         </div>
 
                         {voiceError && (
@@ -1142,169 +789,11 @@ export function DexoRoom() {
                                 <Settings2 className="h-3 w-3" />
                                 Voice
                             </button>
-                            {displayedReport && !isMuted && !isSpeaking && (
-                                <button
-                                    type="button"
-                                    onClick={() => speakJarvis(`${displayedReport.headline}. ${displayedReport.summary}`)}
-                                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-sans text-[11px] font-medium text-zinc-600 transition hover:bg-[rgba(255,255,255,0.05)] hover:text-zinc-400"
-                                >
-                                    <Volume2 className="h-3 w-3" /> Read brief
-                                </button>
-                            )}
                         </div>
                     </div>
 
-                    {displayedReport && (
-                        <div className="space-y-6">
-
-                            {/* ── Health strip ── */}
-                            <HealthStrip health={displayedReport.health} />
-
-                            {/* ── Section divider ── */}
-                            <div className="flex items-center gap-3">
-                                <div className="h-px flex-1 bg-[var(--border)]" />
-                                <span className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">Desk Overview</span>
-                                <div className="h-px flex-1 bg-[var(--border)]" />
-                            </div>
-
-                            {/* ── Desk rows ── */}
-                            <div className="space-y-0">
-                                {displayedReport.sections.map((s) => (
-                                    <DeskRow key={s.desk} section={s} onRead={(t) => !isMuted && speakJarvis(t)} />
-                                ))}
-                            </div>
-
-                            {/* ── Risks ── */}
-                            {displayedReport.risks.length > 0 && (
-                                <div className="space-y-3">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-px flex-1 bg-[var(--border)]" />
-                                        <span className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">Risk Factors</span>
-                                        <div className="h-px flex-1 bg-[var(--border)]" />
-                                    </div>
-                                    {displayedReport.risks.map((r, i) => {
-                                        const rc = RC[r.level];
-                                        return (
-                                            <div
-                                                key={`risk-${i}`}
-                                                className={`flex items-start gap-3.5 overflow-hidden rounded-2xl border border-l-2 bg-[var(--bg-card)] px-4 py-3.5 ${rc.leftBar} border-[var(--border)]`}
-                                            >
-                                                <AlertTriangle className={`mt-[2px] h-4 w-4 shrink-0 ${rc.icon}`} aria-hidden />
-                                                <div className="min-w-0 flex-1">
-                                                    <div className="mb-1 flex flex-wrap items-center gap-2">
-                                                        <span className="font-sans text-[13px] font-semibold text-[var(--text-primary)]">{r.label}</span>
-                                                        <span className={`rounded-full border px-2 py-[2px] font-sans text-[8.5px] font-bold uppercase tracking-wider ${rc.badge}`}>{r.level}</span>
-                                                    </div>
-                                                    <p className="font-sans text-[12.5px] leading-snug text-[var(--text-secondary)]">{r.detail}</p>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
-
-                            {/* ── Next Actions ── */}
-                            {displayedReport.nextActions.length > 0 && (
-                                <div className="space-y-3">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-px flex-1 bg-[var(--border)]" />
-                                        <span className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">Next Actions</span>
-                                        <div className="h-px flex-1 bg-[var(--border)]" />
-                                    </div>
-                                    {displayedReport.nextActions.map((a, i) => (
-                                        <div key={`action-${i}`} className="flex items-start gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] px-4 py-3.5">
-                                            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[rgba(116,86,255,0.3)] bg-[rgba(116,86,255,0.1)] font-sans text-[10px] font-bold text-[#c4b5fd]">
-                                                {a.priority}
-                                            </span>
-                                            <p className="min-w-0 flex-1 pt-0.5 font-sans text-[13px] leading-snug text-[var(--text-primary)]">{a.action}</p>
-                                            <span className={`mt-0.5 shrink-0 rounded-full border px-2 py-[2px] font-sans text-[9px] font-semibold capitalize ${TFC[a.timeframe] ?? 'border-[var(--border)] bg-[var(--bg-elevated)] text-[var(--muted)]'}`}>
-                                                {a.timeframe}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* ── Ask Dexo follow-up chips ── */}
-                            {displayedReport.followUp.length > 0 && activeAnalysisIndex === null && (
-                                <div className="space-y-2.5 rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-4">
-                                    <p className="font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">Ask Dexo</p>
-                                    <div className="flex flex-wrap gap-2">
-                                        {displayedReport.followUp.map((q, i) => (
-                                            <button
-                                                key={`fu-${i}`}
-                                                type="button"
-                                                onClick={() => run('converse', q)}
-                                                disabled={loading}
-                                                className="rounded-full border border-[rgba(116,86,255,0.2)] bg-[rgba(116,86,255,0.07)] px-3.5 py-1.5 font-sans text-[12px] text-[#9d88ff] transition-all duration-200 hover:border-[rgba(116,86,255,0.38)] hover:bg-[rgba(116,86,255,0.13)] hover:text-[#c4b5fd] disabled:opacity-40"
-                                            >
-                                                {q}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* ── Continue in AI ── */}
-                            <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-card)]">
-                                <div className="flex items-center gap-2 border-b border-[var(--border)] px-4 py-3">
-                                    <ExternalLink className="h-3.5 w-3.5 text-[var(--muted)]" aria-hidden />
-                                    <p className="font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">Continue in AI</p>
-                                    <span className="font-sans text-[10px] text-[var(--muted)]/55">— copies report to clipboard</span>
-                                </div>
-                                <div className="grid grid-cols-3 gap-px bg-[var(--border)] sm:grid-cols-5">
-                                    {AI_TOOLS.map(({ label, icon, url }) => (
-                                        <button
-                                            key={label}
-                                            type="button"
-                                            onClick={async () => {
-                                                const lines: string[] = [
-                                                    `=== Dexo Venture Analysis ===`,
-                                                    `Venture: ${activeProject?.name ?? 'My Venture'}`,
-                                                    '',
-                                                    '--- Health ---',
-                                                    Object.entries(displayedReport.health).map(([k, v]) => `${k}: ${v}`).join(' | '),
-                                                    '',
-                                                    '--- Sections ---',
-                                                    ...displayedReport.sections.map((s) => `[${s.desk.toUpperCase()}] ${s.status.toUpperCase()}\n${s.insight}\nAction: ${s.action}`),
-                                                    '',
-                                                    '--- Risks ---',
-                                                    ...displayedReport.risks.map((r) => `[${r.level.toUpperCase()}] ${r.label}: ${r.detail}`),
-                                                    '',
-                                                    '--- Next Actions ---',
-                                                    ...displayedReport.nextActions.map((a, idx) => `${idx + 1}. ${a.action} (${a.timeframe})`),
-                                                ];
-                                                try { await navigator.clipboard.writeText(lines.join('\n')); } catch { /* clipboard not available */ }
-                                                window.open(url, '_blank', 'noopener,noreferrer');
-                                            }}
-                                            className="flex flex-col items-center gap-1.5 bg-[var(--bg-card)] px-2 py-3.5 font-sans text-[11px] font-medium text-[var(--text-secondary)] transition hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)]"
-                                        >
-                                            <span className="text-[18px] leading-none" aria-hidden>{icon}</span>
-                                            {label}
-                                        </button>
-                                    ))}
-                                </div>
-                                <div className="border-t border-[var(--border)] px-4 py-2">
-                                    <p className="font-sans text-[10px] text-[var(--muted)]/50">Full report copied to clipboard before opening the tool.</p>
-                                </div>
-                                <p className="font-sans text-[10px] text-[var(--muted)]/50">
-                                    Copies the full report to your clipboard, then opens the tool in a new tab.
-                                </p>
-                            </div>
-                        </div>
-                    )}
-
                     {convo.length > 0 && (
-                        <div className="mt-10 pb-28">
-                            {/* Divider */}
-                            <div className="mb-6 flex items-center gap-3">
-                                <div className="h-px flex-1 bg-[var(--border)]" />
-                                <span className="font-sans text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-                                    Conversation
-                                </span>
-                                <div className="h-px flex-1 bg-[var(--border)]" />
-                            </div>
-
+                        <div className="pb-28">
                             <div className="space-y-4">
                                 {convo.map((msg) => {
                                     const isUser = msg.role === 'user';
@@ -1329,6 +818,24 @@ export function DexoRoom() {
                                                 }`}
                                             >
                                                 <p className="whitespace-pre-wrap">{msg.text}</p>
+
+                                                {/* Per-message speak/stop button — Dexo bubbles only */}
+                                                {!isUser && !isInterrupted && (
+                                                    <div className="mt-1.5 flex justify-end">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => isSpeaking ? stopSpeaking() : speakJarvis(msg.text)}
+                                                            className="rounded-md p-0.5 text-[var(--muted)] opacity-50 transition hover:opacity-100 hover:bg-[rgba(255,255,255,0.07)] hover:text-[var(--text-secondary)]"
+                                                            title={isSpeaking ? 'Stop speaking' : 'Read aloud'}
+                                                            aria-label={isSpeaking ? 'Stop speaking' : 'Read aloud'}
+                                                        >
+                                                            {isSpeaking
+                                                                ? <VolumeX className="h-3 w-3" />
+                                                                : <Volume2 className="h-3 w-3" />
+                                                            }
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
 
                                             {/* User avatar */}
