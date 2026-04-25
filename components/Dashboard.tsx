@@ -891,62 +891,532 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
 
                 {/* OVERVIEW TAB */}
                 {activeTab === 'overview' && (
-                    <div className="space-y-8">
-                        {/* KEY METRICS */}
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                            <MetricCard
-                                label={foundationSparse ? 'Venture setup' : 'Execution score (strategy + delivery)'}
-                                value={foundationSparse ? 'Needed' : `${animatedScore}%`}
-                                icon={Target}
-                                color="emerald"
-                                delay={0}
-                            />
-                            <MetricCard
-                                label={foundationSparse ? 'Phase progress' : 'Phases complete'}
-                                value={foundationSparse ? 'Pending' : `${phaseDone}/${phaseTotal || 0}`}
-                                icon={Layers}
-                                color="violet"
-                                delay={80}
-                            />
-                            <MetricCard
-                                label={foundationSparse ? 'Founder priorities' : 'Executive priorities done'}
-                                value={foundationSparse ? 'Pending' : `${priDone}/${priTotal || 0}`}
-                                icon={CheckCircle2}
-                                color="amber"
-                                delay={160}
-                            />
-                            <MetricCard
-                                label={staffSyncAt ? 'Time since AI staff research sync' : 'Time since last office refresh'}
-                                value={syncAgeMinutes < 180 ? `${syncAgeMinutes}m` : `${Math.floor(syncAgeMinutes / 60)}h ${syncAgeMinutes % 60}m`}
-                                icon={Clock}
-                                color="blue"
-                                delay={240}
-                            />
+                    <div className="space-y-6">
+                        {/* ── KPI COMMAND STRIP ── */}
+                        <div
+                            className="grid grid-cols-2 divide-x overflow-hidden rounded-2xl border lg:grid-cols-4"
+                            style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.03)' }}
+                        >
+                            {[
+                                {
+                                    label: foundationSparse ? 'Setup status' : 'Execution score',
+                                    value: foundationSparse ? 'Needed' : `${animatedScore}%`,
+                                    sub: foundationSparse ? 'Add venture data to unlock' : 'Strategy · phases · priorities',
+                                    icon: Target,
+                                    accent: THEME.chart.violet,
+                                },
+                                {
+                                    label: foundationSparse ? 'Phase timeline' : 'Phases complete',
+                                    value: foundationSparse ? 'Pending' : `${phaseDone} / ${phaseTotal || 0}`,
+                                    sub: foundationSparse ? 'Define your roadmap phases' : phaseActive > 0 ? `${phaseActive} active now` : 'All planned',
+                                    icon: Layers,
+                                    accent: THEME.chart.blue,
+                                },
+                                {
+                                    label: foundationSparse ? 'Executive priorities' : 'Priorities done',
+                                    value: foundationSparse ? 'Pending' : `${priDone} / ${priTotal || 0}`,
+                                    sub: foundationSparse ? 'Add priorities in CEO desk' : priTotal > 0 ? `${Math.round((priDone / priTotal) * 100)}% complete` : 'None set yet',
+                                    icon: CheckCircle2,
+                                    accent: THEME.chart.emerald,
+                                },
+                                {
+                                    label: staffSyncAt ? 'Last AI research sync' : 'AI staff sync',
+                                    value: staffSyncAt
+                                        ? syncAgeMinutes < 60 ? `${syncAgeMinutes}m ago`
+                                        : syncAgeMinutes < 1440 ? `${Math.floor(syncAgeMinutes / 60)}h ago`
+                                        : `${Math.floor(syncAgeMinutes / 1440)}d ago`
+                                        : 'Never synced',
+                                    sub: staffSyncAt ? lastStaffSyncLabel ?? '—' : 'Run sync to populate desks',
+                                    icon: Clock,
+                                    accent: THEME.chart.amber,
+                                },
+                            ].map(({ label, value, sub, icon: Icon, accent }, i) => (
+                                <div key={i} className="flex items-start gap-3 px-5 py-4" style={{ borderColor: THEME.border.subtle }}>
+                                    <div
+                                        className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                                        style={{ background: `${accent}14` }}
+                                    >
+                                        <Icon className="h-4 w-4" style={{ color: accent }} />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-[10px] font-medium uppercase tracking-[0.12em]" style={{ color: THEME.text.muted }}>{label}</p>
+                                        <p className="mt-0.5 text-lg font-semibold leading-none tabular-nums" style={{ color: THEME.text.primary }}>{value}</p>
+                                        <p className="mt-1 truncate text-[11px]" style={{ color: THEME.text.muted }}>{sub}</p>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
 
-                        {/* ── AI TOOLS ── always-visible, full-width row */}
-                        <Card className="p-5">
-                            <div className="mb-4 flex items-center justify-between gap-4">
-                                <div>
-                                    <h2 className="text-sm font-semibold" style={{ color: THEME.text.primary }}>AI Tools</h2>
-                                    <p className="mt-0.5 text-[11px]" style={{ color: THEME.text.muted }}>Jump straight to your favourite AI assistants</p>
+                        {/* ── HERO GRID: Venture brief + Command center ── */}
+                        <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
+                            {/* LEFT — Venture brief */}
+                            <div
+                                className="flex flex-col gap-5 overflow-hidden rounded-2xl border p-6"
+                                style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
+                            >
+                                {/* Direction + phase */}
+                                <div className="flex items-start justify-between gap-4">
+                                    <div className="min-w-0 flex-1">
+                                        <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>
+                                            Strategic direction
+                                        </p>
+                                        {strategicExcerpt ? (
+                                            <p className="text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
+                                                {strategicExcerpt.slice(0, 300)}{strategicExcerpt.length > 300 ? '…' : ''}
+                                            </p>
+                                        ) : (
+                                            <p className="text-sm" style={{ color: THEME.text.muted }}>
+                                                No strategic intent yet — add your vision in the CEO desk.
+                                            </p>
+                                        )}
+                                    </div>
+                                    <div className="flex shrink-0 flex-col items-end gap-2">
+                                        {currentPhaseInfo && (
+                                            <div
+                                                className="rounded-lg border px-2.5 py-1.5 text-right"
+                                                style={{ borderColor: `${THEME.chart.violet}30`, background: `${THEME.chart.violet}0D` }}
+                                            >
+                                                <p className="text-[9px] uppercase tracking-wider" style={{ color: THEME.chart.violet }}>{currentPhaseInfo.sub}</p>
+                                                <p className="mt-0.5 text-[12px] font-semibold leading-tight" style={{ color: THEME.text.primary }}>
+                                                    {currentPhaseInfo.title.slice(0, 28)}
+                                                </p>
+                                            </div>
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={() => switchRoom('ceo')}
+                                            className="text-[11px] font-medium underline-offset-2 transition hover:underline"
+                                            style={{ color: THEME.accent.info }}
+                                        >
+                                            CEO desk →
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* AI summary + focus today */}
+                                <div
+                                    className="rounded-xl border p-4"
+                                    style={{
+                                        borderColor: 'rgba(116,86,255,0.18)',
+                                        background: 'linear-gradient(135deg, rgba(116,86,255,0.08) 0%, rgba(116,86,255,0.03) 100%)',
+                                    }}
+                                >
+                                    <div className="mb-3 flex items-center justify-between gap-2">
+                                        <div className="flex items-center gap-1.5">
+                                            <Sparkles className="h-3.5 w-3.5" style={{ color: THEME.accent.primary }} />
+                                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.accent.primary }}>
+                                                AI staff snapshot
+                                            </p>
+                                        </div>
+                                        {lastStaffSyncLabel && (
+                                            <span className="text-[10px]" style={{ color: THEME.text.muted }}>
+                                                {lastStaffSyncLabel}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {aiSummaryExcerpt ? (
+                                        <p className="text-[13px] leading-relaxed" style={{ color: THEME.text.secondary }}>
+                                            {aiSummaryExcerpt.slice(0, 350)}{aiSummaryExcerpt.length > 350 ? '…' : ''}
+                                        </p>
+                                    ) : (
+                                        <div className="flex items-center justify-between gap-4">
+                                            <p className="text-[13px]" style={{ color: THEME.text.muted }}>
+                                                Run Staff Sync to generate an AI research brief across all desks.
+                                            </p>
+                                            <button
+                                                onClick={() => runAgentStaffSync()}
+                                                disabled={agentSyncRunning}
+                                                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-semibold transition-all"
+                                                style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary, opacity: agentSyncRunning ? 0.6 : 1 }}
+                                            >
+                                                <RefreshCw className={`h-3 w-3 ${agentSyncRunning ? 'animate-spin' : ''}`} />
+                                                Sync
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Focus today */}
+                                {staffFocusLines.length > 0 && (
+                                    <div>
+                                        <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>Focus today</p>
+                                        <ul className="space-y-1.5">
+                                            {staffFocusLines.slice(0, 5).map((line, i) => (
+                                                <li key={i} className="flex items-start gap-2 text-[13px] leading-snug" style={{ color: THEME.text.secondary }}>
+                                                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: THEME.accent.primary }} />
+                                                    {line}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {/* Attention items */}
+                                {staffAttentionPending.length > 0 && (
+                                    <div
+                                        className="rounded-xl border p-3.5"
+                                        style={{ borderColor: 'rgba(245,158,11,0.2)', background: 'rgba(245,158,11,0.06)' }}
+                                    >
+                                        <div className="mb-2 flex items-center gap-1.5">
+                                            <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: '#f59e0b' }} />
+                                            <p className="text-[11px] font-semibold" style={{ color: '#f59e0b' }}>
+                                                {staffAttentionPending.length} item{staffAttentionPending.length > 1 ? 's' : ''} need attention
+                                            </p>
+                                        </div>
+                                        <ul className="space-y-1.5">
+                                            {staffAttentionPending.slice(0, 3).map((a) => (
+                                                <li key={a.id} className="flex items-start justify-between gap-3">
+                                                    <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
+                                                        <span className="font-medium" style={{ color: THEME.text.primary }}>{a.title}</span>
+                                                        {' — '}{a.message.slice(0, 80)}{a.message.length > 80 ? '…' : ''}
+                                                    </p>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => { setDexoBootstrap(buildDexoStaffAttentionBootstrap(a)); switchRoom('dexo'); }}
+                                                        className="shrink-0 text-[10px] font-semibold underline-offset-2 hover:underline"
+                                                        style={{ color: THEME.accent.info }}
+                                                    >
+                                                        Ask Dexo
+                                                    </button>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* RIGHT — Command center */}
+                            <div className="flex flex-col gap-4">
+                                {/* Health ring */}
+                                <div
+                                    className="flex items-center gap-4 rounded-2xl border p-5"
+                                    style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
+                                >
+                                    <CircularProgress
+                                        value={executionScore}
+                                        size={88}
+                                        strokeWidth={7}
+                                        color={executionScore > 70 ? THEME.accent.primary : executionScore > 40 ? THEME.chart.amber : THEME.chart.rose}
+                                    />
+                                    <div>
+                                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>Venture health</p>
+                                        <p className="mt-1 text-base font-semibold" style={{ color: THEME.text.primary }}>
+                                            {executionScore > 70 ? 'Strong' : executionScore > 40 ? 'Developing' : foundationSparse ? 'Setup needed' : 'Needs work'}
+                                        </p>
+                                        <p className="mt-0.5 text-[11px]" style={{ color: THEME.text.muted }}>
+                                            Based on strategy, phases &amp; priorities
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Desk coverage */}
+                                <div
+                                    className="flex-1 rounded-2xl border p-5"
+                                    style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
+                                >
+                                    <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>Desk coverage</p>
+                                    <div className="space-y-3">
+                                        {deskCoverage.map((desk) => {
+                                            const room = SNAPSHOT_DESK_ROOMS[desk.label];
+                                            return (
+                                                <button
+                                                    key={desk.label}
+                                                    type="button"
+                                                    onClick={() => room && switchRoom(room)}
+                                                    className="group flex w-full items-center gap-2.5 rounded-lg px-0 text-left transition-opacity hover:opacity-80"
+                                                >
+                                                    <div
+                                                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md"
+                                                        style={{ background: `${desk.fill}18` }}
+                                                    >
+                                                        <desk.icon className="h-3.5 w-3.5" style={{ color: desk.fill }} />
+                                                    </div>
+                                                    <div className="min-w-0 flex-1">
+                                                        <div className="flex items-center justify-between gap-1 mb-0.5">
+                                                            <span className="text-[12px] font-medium" style={{ color: THEME.text.secondary }}>{desk.label}</span>
+                                                            <span className="text-[10px] tabular-nums" style={{ color: desk.pct === 100 ? THEME.accent.primary : THEME.text.muted }}>
+                                                                {desk.pct}%
+                                                            </span>
+                                                        </div>
+                                                        <div className="h-1 overflow-hidden rounded-full" style={{ background: 'rgba(255,255,255,0.07)' }}>
+                                                            <div
+                                                                className="h-full rounded-full transition-all duration-700"
+                                                                style={{ width: `${desk.pct}%`, background: desk.pct === 100 ? THEME.accent.primary : desk.fill }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => switchRoom('dexo')}
+                                        className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl border py-2 text-[12px] font-semibold transition-all hover:opacity-80"
+                                        style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.10)', color: THEME.accent.primary }}
+                                    >
+                                        <Sparkles className="h-3.5 w-3.5" />
+                                        Open Dexo AI
+                                    </button>
+                                </div>
+
+                                {/* Recent activity */}
+                                {systemLogs.length > 0 && (
+                                    <div
+                                        className="rounded-2xl border p-5"
+                                        style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
+                                    >
+                                        <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>Recent activity</p>
+                                        <ul className="space-y-2">
+                                            {systemLogs.slice(0, 4).map((log, i) => (
+                                                <li key={log.id} className="flex items-start gap-2">
+                                                    <span
+                                                        className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full"
+                                                        style={{ background: i === 0 ? THEME.accent.primary : THEME.text.muted }}
+                                                    />
+                                                    <div className="min-w-0">
+                                                        <p className="truncate text-[12px]" style={{ color: THEME.text.secondary }}>{log.message}</p>
+                                                        <p className="text-[10px]" style={{ color: THEME.text.muted }}>
+                                                            {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        </p>
+                                                    </div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* ── AI STAFF ANALYSIS REPORT ── */}
+                        {activeProject.agentStaffSnapshot ? (
+                            <div
+                                className="overflow-hidden rounded-2xl border"
+                                style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
+                            >
+                                {/* Header */}
+                                <div
+                                    className="flex items-center justify-between border-b px-6 py-4"
+                                    style={{ borderColor: THEME.border.subtle }}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div
+                                            className="flex h-8 w-8 items-center justify-center rounded-lg"
+                                            style={{ background: 'rgba(116,86,255,0.12)' }}
+                                        >
+                                            <BarChart2 className="h-4 w-4" style={{ color: THEME.accent.primary }} />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-sm font-semibold" style={{ color: THEME.text.primary }}>AI Staff Analysis</h2>
+                                            <p className="text-[11px]" style={{ color: THEME.text.muted }}>
+                                                Live internet research across all 5 desks · {lastStaffSyncLabel ?? '—'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => runAgentStaffSync()}
+                                        disabled={agentSyncRunning}
+                                        className="flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-[12px] font-medium transition-all"
+                                        style={{
+                                            borderColor: THEME.border.default,
+                                            background: 'rgba(255,255,255,0.05)',
+                                            color: THEME.text.secondary,
+                                            opacity: agentSyncRunning ? 0.55 : 1,
+                                        }}
+                                    >
+                                        <RefreshCw className={`h-3.5 w-3.5 ${agentSyncRunning ? 'animate-spin' : ''}`} />
+                                        {agentSyncRunning ? 'Syncing…' : 'Refresh'}
+                                    </button>
+                                </div>
+
+                                {/* Desk cards */}
+                                <div className="grid gap-px bg-[rgba(255,255,255,0.05)] sm:grid-cols-2 lg:grid-cols-3">
+                                    {(
+                                        [
+                                            { label: 'Strategy', sub: 'CEO desk', snap: activeProject.agentStaffSnapshot.desks.ceo, color: THEME.chart.violet, room: 'ceo' as const },
+                                            { label: 'Market Intel', sub: 'Scout desk', snap: activeProject.agentStaffSnapshot.desks.scout, color: THEME.chart.blue, room: 'scout' as const },
+                                            { label: 'Product', sub: 'PM desk', snap: activeProject.agentStaffSnapshot.desks.pm, color: THEME.chart.amber, room: 'pm' as const },
+                                            { label: 'Finance', sub: 'Accountant desk', snap: activeProject.agentStaffSnapshot.desks.accountant, color: THEME.chart.emerald, room: 'accountant' as const },
+                                            { label: 'Growth', sub: 'CMO desk', snap: activeProject.agentStaffSnapshot.desks.cmo, color: THEME.chart.rose, room: 'cmo' as const },
+                                            { label: 'Executive Summary', sub: 'Cross-desk synthesis', snap: activeProject.agentStaffSnapshot.summary, color: THEME.accent.primary, room: null },
+                                        ] as const
+                                    ).map(({ label, sub, snap, color, room }) => (
+                                        <div
+                                            key={label}
+                                            className="flex flex-col gap-3 bg-[var(--bg-primary)] p-5"
+                                            style={{ background: 'rgba(18,18,20,0.9)' }}
+                                        >
+                                            <div className="flex items-start justify-between gap-2">
+                                                <div>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span
+                                                            className="h-2 w-2 shrink-0 rounded-full"
+                                                            style={{ background: color }}
+                                                        />
+                                                        <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>{label}</p>
+                                                    </div>
+                                                    <p className="mt-0.5 text-[10px]" style={{ color: THEME.text.muted }}>{sub}</p>
+                                                </div>
+                                                {room && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => switchRoom(room)}
+                                                        className="shrink-0 rounded-md border px-2 py-1 text-[10px] font-medium transition-all hover:opacity-80"
+                                                        style={{ borderColor: `${color}30`, background: `${color}0D`, color }}
+                                                    >
+                                                        Open
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <p className="flex-1 text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>
+                                                {snap?.trim()
+                                                    ? snap.trim().length > 200 ? `${snap.trim().slice(0, 197)}…` : snap.trim()
+                                                    : <span style={{ color: THEME.text.muted }}>No analysis yet — run Staff Sync.</span>
+                                                }
+                                            </p>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
-                            <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-                                {DASH_AI_TOOLS.map(({ label, desc, url, Logo, bg, border, color }) => (
+                        ) : (
+                            <div
+                                className="flex flex-col items-center gap-5 rounded-2xl border py-12 text-center"
+                                style={{ borderColor: THEME.border.subtle, background: 'rgba(116,86,255,0.04)' }}
+                            >
+                                <div className="flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: 'rgba(116,86,255,0.12)' }}>
+                                    <Sparkles className="h-7 w-7" style={{ color: THEME.accent.primary }} />
+                                </div>
+                                <div className="max-w-sm">
+                                    <h3 className="text-base font-semibold" style={{ color: THEME.text.primary }}>AI Staff Analysis</h3>
+                                    <p className="mt-2 text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
+                                        Run Staff Sync to generate a live internet-backed analysis across Strategy, Market, Product, Finance, and Growth desks.
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => runAgentStaffSync()}
+                                    disabled={agentSyncRunning}
+                                    className="flex items-center gap-2 rounded-xl border px-6 py-2.5 text-sm font-semibold transition-all"
+                                    style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary, opacity: agentSyncRunning ? 0.6 : 1 }}
+                                >
+                                    <RefreshCw className={`h-4 w-4 ${agentSyncRunning ? 'animate-spin' : ''}`} />
+                                    {agentSyncRunning ? 'Analysing…' : 'Run analysis now'}
+                                </button>
+                            </div>
+                        )}
+
+                        {/* ── OPERATIONS ROW (living office + delivery) ── */}
+                        {((livingOffice && livingOffice.brief.greeting !== 'No venture selected.') || upcomingEvents.length > 0 || kanbanTasks.length > 0) && (
+                            <div className="grid gap-5 lg:grid-cols-3">
+                                {/* Operational brief */}
+                                {livingOffice && livingOffice.brief.greeting !== 'No venture selected.' && (
+                                    <div
+                                        className="rounded-2xl border p-5"
+                                        style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
+                                    >
+                                        <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>Daily brief</p>
+                                        <p className="text-[13px] leading-relaxed" style={{ color: THEME.text.secondary }}>{livingOffice.brief.greeting}</p>
+                                        <div className="mt-3 rounded-xl border px-3 py-2.5" style={{ borderColor: THEME.border.default, background: 'rgba(116,86,255,0.08)' }}>
+                                            <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: THEME.accent.primary }}>Focus</p>
+                                            <p className="mt-1 text-[13px] font-medium" style={{ color: THEME.text.primary }}>{livingOffice.brief.suggestedFocus}</p>
+                                        </div>
+                                        {livingOffice.brief.priorities.length > 0 && (
+                                            <ul className="mt-3 space-y-1">
+                                                {livingOffice.brief.priorities.slice(0, 3).map((p, i) => (
+                                                    <li key={i} className="flex items-start gap-2 text-[12px]" style={{ color: THEME.text.secondary }}>
+                                                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: THEME.text.muted }} />
+                                                        {p}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Upcoming events */}
+                                {upcomingEvents.length > 0 && (
+                                    <div
+                                        className="rounded-2xl border p-5"
+                                        style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
+                                    >
+                                        <div className="mb-3 flex items-center justify-between">
+                                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>Upcoming</p>
+                                            <button type="button" onClick={() => switchRoom('calendar')} className="text-[10px] font-medium" style={{ color: THEME.accent.info }}>View all →</button>
+                                        </div>
+                                        <ul className="space-y-2.5">
+                                            {upcomingEvents.slice(0, 4).map((ev, idx) => (
+                                                <li key={`${ev.date}-${idx}`} className="flex items-start gap-2.5">
+                                                    <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md" style={{ background: 'rgba(52,211,153,0.12)' }}>
+                                                        <Calendar className="h-3.5 w-3.5" style={{ color: '#34d399' }} />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[12px] font-medium leading-snug" style={{ color: THEME.text.primary }}>{ev.title}</p>
+                                                        <p className="text-[10px]" style={{ color: THEME.text.muted }}>
+                                                            {new Date(ev.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · {ev.type}
+                                                        </p>
+                                                    </div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {/* Delivery board */}
+                                {kanbanTasks.length > 0 && (
+                                    <div
+                                        className="rounded-2xl border p-5"
+                                        style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
+                                    >
+                                        <div className="mb-3 flex items-center justify-between">
+                                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>Delivery board</p>
+                                            <button type="button" onClick={() => switchRoom('pm')} className="text-[10px] font-medium" style={{ color: THEME.accent.info }}>Open PM →</button>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {([['To do', kanbanCounts.todo, THEME.text.muted], ['In progress', kanbanCounts.in_progress, THEME.chart.amber], ['Next up', kanbanCounts.next, THEME.chart.blue], ['Done', kanbanCounts.completed, THEME.chart.emerald]] as const).map(([label, n, color]) => (
+                                                <div
+                                                    key={label}
+                                                    className="rounded-xl border px-3 py-2.5 text-center"
+                                                    style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.04)' }}
+                                                >
+                                                    <p className="text-xl font-semibold tabular-nums" style={{ color: THEME.text.primary }}>{n}</p>
+                                                    <p className="mt-0.5 text-[10px] font-medium" style={{ color }}>{label}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="mt-3">
+                                            <div className="mb-1 flex justify-between text-[10px]" style={{ color: THEME.text.muted }}>
+                                                <span>Phase progress</span>
+                                                <span>{phaseDone}/{phaseTotal || 0}</span>
+                                            </div>
+                                            <ProgressBar value={phaseDone} max={phaseTotal || 1} color={THEME.chart.violet} />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* ── AI TOOLS ── */}
+                        <div
+                            className="overflow-hidden rounded-2xl border"
+                            style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
+                        >
+                            <div className="border-b px-5 py-3.5" style={{ borderColor: THEME.border.subtle }}>
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>AI Tools</p>
+                            </div>
+                            <div className="grid grid-cols-3 divide-x sm:grid-cols-5" style={{ borderColor: THEME.border.subtle }}>
+                                {DASH_AI_TOOLS.map(({ label, desc, url, Logo, color }) => (
                                     <a
                                         key={label}
                                         href={url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="group flex flex-col items-center gap-2 rounded-2xl border px-3 py-4 text-center transition-all duration-200 hover:scale-[1.03] hover:shadow-lg"
-                                        style={{ background: bg, borderColor: border }}
+                                        className="group flex flex-col items-center gap-2 border-r px-3 py-5 text-center transition-all last:border-r-0 hover:bg-[rgba(255,255,255,0.04)]"
+                                        style={{ borderColor: THEME.border.subtle }}
                                     >
                                         <div
-                                            className="flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-110"
-                                            style={{ background: `${color}18`, color }}
+                                            className="flex h-9 w-9 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-110"
+                                            style={{ background: `${color}14` }}
                                         >
-                                            <Logo size={22} />
+                                            <Logo size={20} />
                                         </div>
                                         <div>
                                             <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>{label}</p>
@@ -955,957 +1425,44 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     </a>
                                 ))}
                             </div>
-                        </Card>
-
-                        {/* ── VENTURE ANALYSIS REPORT ── desk-by-desk AI snapshot */}
-                        {activeProject.agentStaffSnapshot ? (
-                            <Card className="p-6">
-                                <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-                                    <SectionHeader
-                                        title="Venture analysis report"
-                                        subtitle={`Last synced ${lastStaffSyncLabel ?? '—'} · AI research across all desks`}
-                                    />
-                                    <button
-                                        onClick={() => runAgentStaffSync()}
-                                        disabled={agentSyncRunning}
-                                        className="flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-[11px] font-medium transition-all"
-                                        style={{
-                                            background: 'rgba(116,86,255,0.10)',
-                                            color: THEME.text.secondary,
-                                            opacity: agentSyncRunning ? 0.6 : 1,
-                                        }}
-                                    >
-                                        <RefreshCw className={`h-3.5 w-3.5 ${agentSyncRunning ? 'animate-spin' : ''}`} />
-                                        {agentSyncRunning ? 'Syncing…' : 'Refresh'}
-                                    </button>
-                                </div>
-                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                    {(
-                                        [
-                                            { label: 'Strategy', desc: 'CEO desk · Mission & vision', snap: activeProject.agentStaffSnapshot.desks.ceo, color: THEME.chart.violet, room: 'ceo' as const },
-                                            { label: 'Market', desc: 'Scout desk · Competitors & signals', snap: activeProject.agentStaffSnapshot.desks.scout, color: THEME.chart.blue, room: 'scout' as const },
-                                            { label: 'Product', desc: 'PM desk · Roadmap & features', snap: activeProject.agentStaffSnapshot.desks.pm, color: THEME.chart.amber, room: 'pm' as const },
-                                            { label: 'Finance', desc: 'Accountant · Budget & runway', snap: activeProject.agentStaffSnapshot.desks.accountant, color: THEME.chart.emerald, room: 'accountant' as const },
-                                            { label: 'Growth', desc: 'CMO desk · GTM & positioning', snap: activeProject.agentStaffSnapshot.desks.cmo, color: THEME.chart.rose, room: 'cmo' as const },
-                                            { label: 'Executive summary', desc: 'Cross-desk synthesis', snap: activeProject.agentStaffSnapshot.summary, color: THEME.accent.primary, room: null },
-                                        ] as const
-                                    ).map(({ label, desc, snap, color, room }) => (
-                                        <div
-                                            key={label}
-                                            className="rounded-xl border p-4"
-                                            style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.03)' }}
-                                        >
-                                            <div className="mb-2.5 flex items-start justify-between gap-2">
-                                                <div>
-                                                    <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color }}>{label}</p>
-                                                    <p className="mt-0.5 text-[10px]" style={{ color: THEME.text.muted }}>{desc}</p>
-                                                </div>
-                                                {room && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => switchRoom(room)}
-                                                        className="shrink-0 text-[10px] font-medium underline-offset-2 transition hover:underline"
-                                                        style={{ color: THEME.accent.info }}
-                                                    >
-                                                        Open →
-                                                    </button>
-                                                )}
-                                            </div>
-                                            {snap?.trim() ? (
-                                                <p className="text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>
-                                                    {snap.trim().length > 240 ? `${snap.trim().slice(0, 237)}…` : snap.trim()}
-                                                </p>
-                                            ) : (
-                                                <p className="text-[12px]" style={{ color: THEME.text.muted }}>
-                                                    No analysis yet — run Staff Sync to populate.
-                                                </p>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            </Card>
-                        ) : (
-                            <Card className="p-6">
-                                <div className="flex flex-col items-center gap-4 py-4 text-center">
-                                    <div
-                                        className="flex h-14 w-14 items-center justify-center rounded-2xl"
-                                        style={{ background: 'rgba(116,86,255,0.10)' }}
-                                    >
-                                        <Sparkles className="h-7 w-7" style={{ color: THEME.accent.primary }} />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-base font-semibold" style={{ color: THEME.text.primary }}>Venture analysis report</h3>
-                                        <p className="mt-1.5 max-w-md text-sm" style={{ color: THEME.text.secondary }}>
-                                            Run Staff Sync to generate a full AI analysis across strategy, market, product, finance, and growth desks.
-                                            Results appear here and update every time you sync.
-                                        </p>
-                                    </div>
-                                    <button
-                                        onClick={() => runAgentStaffSync()}
-                                        disabled={agentSyncRunning}
-                                        className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all"
-                                        style={{
-                                            background: 'rgba(116,86,255,0.15)',
-                                            color: THEME.accent.primary,
-                                            border: '1px solid rgba(116,86,255,0.25)',
-                                            opacity: agentSyncRunning ? 0.6 : 1,
-                                        }}
-                                    >
-                                        <RefreshCw className={`h-4 w-4 ${agentSyncRunning ? 'animate-spin' : ''}`} />
-                                        {agentSyncRunning ? 'Analysing…' : 'Run analysis now'}
-                                    </button>
-                                </div>
-                            </Card>
-                        )}
-
-                        {/* Venture intelligence — derived from your records + living office engine */}
-                        <div className="grid gap-6 lg:grid-cols-2">
-                            <Card className="p-6 lg:col-span-2">
-                                <SectionHeader
-                                    title="Strategy depth & venture snapshot"
-                                    subtitle={
-                                        foundationSparse
-                                            ? 'Waiting for your actual venture thesis and setup details — default templates are not treated as real company context.'
-                                            : 'Grounded in your saved strategy, calendar, and last staff sync — not generic filler.'
-                                    }
-                                />
-                                {/*
-                                  Two-column layout: wide “snapshot” (Direction + Staff) + fixed-proportion sidebar (Focus / attention).
-                                  A single lg:grid-cols-3 row lets long “Needs attention” copy set a huge min-content width and squeeze
-                                  the first columns to nothing — looks like an empty void on the left.
-                                */}
-                                <div className="grid gap-8 lg:grid-cols-[minmax(0,1.65fr)_minmax(260px,1fr)] lg:items-start">
-                                    <div className="min-w-0 space-y-6">
-                                        <div className="grid min-w-0 gap-6 sm:grid-cols-2 sm:items-start">
-                                            <div className="min-w-0 space-y-3">
-                                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>
-                                                    Direction
-                                                </p>
-                                                {strategicExcerpt ? (
-                                                    <p className="break-words text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
-                                                        {strategicExcerpt}
-                                                    </p>
-                                                ) : (
-                                                    <p className="text-sm" style={{ color: THEME.text.muted }}>
-                                                        No strategic intent or narrative yet. Add one in the CEO desk so every downstream desk aligns.
-                                                    </p>
-                                                )}
-                                                {currentPhaseInfo ? (
-                                                    <div
-                                                        className="rounded-xl border px-3 py-2.5"
-                                                        style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.03)' }}
-                                                    >
-                                                        <p className="text-[10px] uppercase tracking-wider" style={{ color: THEME.text.muted }}>
-                                                            Phase focus
-                                                        </p>
-                                                        <p className="mt-1 text-sm font-medium" style={{ color: THEME.text.primary }}>
-                                                            {currentPhaseInfo.title}
-                                                        </p>
-                                                        <p className="mt-0.5 text-xs capitalize" style={{ color: THEME.text.tertiary }}>
-                                                            {currentPhaseInfo.sub}
-                                                            {currentPhaseInfo.end ? ` · ${currentPhaseInfo.end}` : ''}
-                                                        </p>
-                                                    </div>
-                                                ) : null}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => switchRoom('ceo')}
-                                                    className="text-left text-xs font-medium underline-offset-2 transition hover:underline"
-                                                    style={{ color: THEME.accent.secondary }}
-                                                >
-                                                    Open strategy desk →
-                                                </button>
-                                            </div>
-                                            <div className="min-w-0 space-y-3 sm:border-l sm:pl-6" style={{ borderColor: THEME.border.subtle }}>
-                                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>
-                                                    AI staff research
-                                                </p>
-                                                {lastStaffSyncLabel ? (
-                                                    <p className="break-words text-sm" style={{ color: THEME.text.secondary }}>
-                                                        Last sync:{' '}
-                                                        <span style={{ color: THEME.text.primary }}>{lastStaffSyncLabel}</span>
-                                                    </p>
-                                                ) : (
-                                                    <p className="text-sm" style={{ color: THEME.text.muted }}>
-                                                        No staff sync yet — run Sync Staff to merge Groq research into each desk snapshot.
-                                                    </p>
-                                                )}
-                                                {aiSummaryExcerpt ? (
-                                                    <p className="break-words text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
-                                                        {aiSummaryExcerpt}
-                                                    </p>
-                                                ) : (
-                                                    <p className="text-xs" style={{ color: THEME.text.muted }}>
-                                                        Summary appears after the first successful multi-desk sync.
-                                                    </p>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        <div
-                                            className="rounded-xl border px-4 py-4 sm:px-5 sm:py-5"
-                                            style={{
-                                                borderColor: THEME.border.default,
-                                                background: 'linear-gradient(165deg, rgba(116,86,255,0.14) 0%, rgba(42,42,42,0.95) 45%, rgba(157,136,255,0.12) 100%)',
-                                            }}
-                                        >
-                                            <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
-                                                <div>
-                                                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>
-                                                        Coverage & rhythm
-                                                    </p>
-                                                    <p className="mt-1 text-sm font-medium" style={{ color: THEME.text.primary }}>
-                                                        What’s on the venture record
-                                                    </p>
-                                                    <p className="mt-0.5 text-xs" style={{ color: THEME.text.tertiary }}>
-                                                        {foundationSparse
-                                                            ? 'Bars estimate real founder content — default templates alone don’t count as “complete.” Start in Dexo with your story, then each desk.'
-                                                            : 'Tap a desk to add detail, or open Dexo for cross-desk chat and analysis. Bars reflect saved fields and staff snapshots.'}
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6 sm:gap-3">
-                                                {deskCoverage.map((desk) => {
-                                                    const room = SNAPSHOT_DESK_ROOMS[desk.label];
-                                                    return (
-                                                        <button
-                                                            key={desk.label}
-                                                            type="button"
-                                                            onClick={() => room && switchRoom(room)}
-                                                            className="group rounded-xl border border-[var(--border)] bg-[rgba(255,255,255,0.05)] px-2.5 py-2.5 text-left transition hover:bg-[rgba(255,255,255,0.09)]"
-                                                            style={{ borderColor: THEME.border.subtle }}
-                                                        >
-                                                            <div className="flex items-center gap-1.5">
-                                                                <div
-                                                                    className="flex h-7 w-7 items-center justify-center rounded-lg transition-transform group-hover:scale-105"
-                                                                    style={{ background: `${desk.fill}18` }}
-                                                                >
-                                                                    <desk.icon className="h-3.5 w-3.5" style={{ color: desk.fill }} aria-hidden />
-                                                                </div>
-                                                                <span className="text-[11px] font-semibold" style={{ color: THEME.text.primary }}>
-                                                                    {desk.label}
-                                                                </span>
-                                                            </div>
-                                                            <div
-                                                                className="mt-2 h-1 overflow-hidden rounded-full"
-                                                                style={{ background: 'rgba(46,41,34,0.08)' }}
-                                                            >
-                                                                <div
-                                                                    className="h-full rounded-full transition-all duration-500"
-                                                                    style={{
-                                                                        width: `${desk.pct}%`,
-                                                                        background: `linear-gradient(90deg, ${desk.fill}, ${desk.fill}CC)`,
-                                                                    }}
-                                                                />
-                                                            </div>
-                                                            <p className="mt-1.5 line-clamp-2 text-[10px] leading-snug" style={{ color: THEME.text.muted }}>
-                                                                {desk.pct === 100 ? 'Documented' : 'Needs detail'} · {desk.hint}
-                                                            </p>
-                                                        </button>
-                                                    );
-                                                })}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => switchRoom('dexo')}
-                                                    className="group rounded-xl border bg-[rgba(116,86,255,0.12)] px-2.5 py-2.5 text-left ring-1 ring-violet-500/25 transition hover:bg-[rgba(116,86,255,0.18)]"
-                                                    style={{ borderColor: THEME.border.subtle }}
-                                                    aria-label="Open Dexo command center"
-                                                >
-                                                    <div className="flex items-center gap-1.5">
-                                                        <div
-                                                            className="flex h-7 w-7 items-center justify-center rounded-lg transition-transform group-hover:scale-105"
-                                                            style={{ background: `${THEME.accent.info}28` }}
-                                                        >
-                                                            <Sparkles className="h-3.5 w-3.5" style={{ color: THEME.accent.info }} aria-hidden />
-                                                        </div>
-                                                        <span className="text-[11px] font-semibold" style={{ color: THEME.text.primary }}>
-                                                            Dexo
-                                                        </span>
-                                                    </div>
-                                                    <div
-                                                        className="mt-2 h-1 overflow-hidden rounded-full"
-                                                        style={{ background: 'rgba(46,41,34,0.08)' }}
-                                                    >
-                                                        <div
-                                                            className="h-full w-full rounded-full transition-all duration-500"
-                                                            style={{
-                                                                background: `linear-gradient(90deg, ${THEME.accent.info}, ${THEME.accent.tertiary})`,
-                                                            }}
-                                                        />
-                                                    </div>
-                                                    <p className="mt-1.5 line-clamp-2 text-[10px] leading-snug" style={{ color: THEME.text.muted }}>
-                                                        Command center · full venture context, voice and chat
-                                                    </p>
-                                                </button>
-                                            </div>
-
-                                            <div className="mt-5 grid gap-5 border-t pt-5" style={{ borderColor: THEME.border.subtle }}>
-                                                <div className="min-w-0">
-                                                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>
-                                                        Coming up
-                                                    </p>
-                                                    {upcomingEvents.length > 0 ? (
-                                                        <ul className="mt-2 space-y-2.5">
-                                                            {upcomingEvents.slice(0, 4).map((ev, idx) => (
-                                                                <li key={`${ev.date}-${idx}-${ev.title}`} className="flex gap-2.5">
-                                                                    <Calendar className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-400/85" aria-hidden />
-                                                                    <div className="min-w-0">
-                                                                        <p className="text-xs font-medium leading-snug" style={{ color: THEME.text.primary }}>
-                                                                            {ev.title}
-                                                                        </p>
-                                                                        <p className="text-[11px]" style={{ color: THEME.text.muted }}>
-                                                                            {new Date(ev.date).toLocaleString(undefined, {
-                                                                                weekday: 'short',
-                                                                                month: 'short',
-                                                                                day: 'numeric',
-                                                                                hour: 'numeric',
-                                                                                minute: '2-digit',
-                                                                            })}
-                                                                        </p>
-                                                                    </div>
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    ) : (
-                                                        <p className="mt-2 text-xs leading-relaxed" style={{ color: THEME.text.muted }}>
-                                                            No upcoming events on the calendar. Add milestones or meetings from the office calendar so they surface here.
-                                                        </p>
-                                                    )}
-                                                </div>
-                                                <div className="min-w-0">
-                                                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>
-                                                        Executive priorities
-                                                    </p>
-                                                    {priorities.length > 0 ? (
-                                                        <ul className="mt-2 space-y-2">
-                                                            {priorities.slice(0, 5).map((pr) => (
-                                                                <li key={pr.id} className="flex gap-2 text-xs leading-snug">
-                                                                    {pr.done ? (
-                                                                        <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-400/90" aria-hidden />
-                                                                    ) : (
-                                                                        <span
-                                                                            className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full border"
-                                                                            style={{ borderColor: THEME.border.strong }}
-                                                                            aria-hidden
-                                                                        />
-                                                                    )}
-                                                                    <span
-                                                                        className={`min-w-0 break-words ${pr.done ? 'line-through' : ''}`}
-                                                                        style={{ color: pr.done ? undefined : THEME.text.secondary }}
-                                                                    >
-                                                                        {pr.title}
-                                                                    </span>
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    ) : (
-                                                        <p className="mt-2 text-xs leading-relaxed" style={{ color: THEME.text.muted }}>
-                                                            No priorities in your strategy doc yet. Open the CEO desk and add a short list so execution stays visible here.
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            <div className="mt-4 flex flex-wrap gap-2 border-t pt-4" style={{ borderColor: THEME.border.subtle }}>
-                                                <span
-                                                    className="rounded-full px-2.5 py-1 text-[10px] font-medium"
-                                                    style={{
-                                                        background: 'rgba(255,255,255,0.07)',
-                                                        color: THEME.text.secondary,
-                                                    }}
-                                                >
-                                                    {phaseTotal ? (
-                                                        <>
-                                                            Phases: {phaseDone}/{phaseTotal} done
-                                                            {phaseActive ? ` · ${phaseActive} active` : ''}
-                                                        </>
-                                                    ) : (
-                                                        'Phases: add a timeline in strategy'
-                                                    )}
-                                                </span>
-                                                <span
-                                                    className="rounded-full px-2.5 py-1 text-[10px] font-medium"
-                                                    style={{
-                                                        background: 'rgba(255,255,255,0.07)',
-                                                        color: THEME.text.secondary,
-                                                    }}
-                                                >
-                                                    {priTotal ? (
-                                                        <>
-                                                            Priorities: {priDone}/{priTotal} checked off
-                                                        </>
-                                                    ) : (
-                                                        'Priorities: none saved'
-                                                    )}
-                                                </span>
-                                                <span
-                                                    className="rounded-full px-2.5 py-1 text-[10px] font-medium"
-                                                    style={{
-                                                        background: 'rgba(255,255,255,0.07)',
-                                                        color: THEME.text.secondary,
-                                                    }}
-                                                >
-                                                    Board: {kanbanCounts.todo + kanbanCounts.in_progress + kanbanCounts.next + kanbanCounts.completed}{' '}
-                                                    cards · {kanbanCounts.in_progress} in progress
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="min-w-0 space-y-3 lg:border-l lg:pl-8" style={{ borderColor: THEME.border.subtle }}>
-                                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>
-                                            Focus today
-                                        </p>
-                                        {staffFocusLines.length > 0 ? (
-                                            <ul className="space-y-2">
-                                                {staffFocusLines.slice(0, 6).map((line, i) => (
-                                                    <li
-                                                        key={`${i}-${line.slice(0, 24)}`}
-                                                        className="flex gap-2 text-sm leading-snug"
-                                                        style={{ color: THEME.text.secondary }}
-                                                    >
-                                                        <span className="shrink-0" style={{ color: THEME.accent.primary }}>
-                                                            •
-                                                        </span>
-                                                        <span className="min-w-0 break-words">{line}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        ) : (
-                                            <p className="text-sm" style={{ color: THEME.text.muted }}>
-                                                No staff “focus today” list yet. It appears after a Staff Sync when the model proposes priorities.
-                                            </p>
-                                        )}
-                                        {staffAttentionPending.length > 0 ? (
-                                            <div className="rounded-xl border px-3 py-2.5" style={{ borderColor: 'rgba(116,86,255,0.18)', background: 'rgba(116,86,255,0.08)' }}>
-                                                <p className="flex items-center gap-1.5 text-[11px] font-semibold" style={{ color: THEME.accent.primary }}>
-                                                    <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                                                    Needs attention ({staffAttentionPending.length})
-                                                </p>
-                                                <ul className="mt-2 space-y-2">
-                                                    {staffAttentionPending.slice(0, 4).map((a) => (
-                                                        <li
-                                                            key={a.id}
-                                                            className="flex flex-col gap-2 rounded-lg border border-[var(--border)] bg-[rgba(255,255,255,0.05)] px-2.5 py-2 sm:flex-row sm:items-start sm:justify-between"
-                                                            style={{ borderColor: 'rgba(116,86,255,0.12)' }}
-                                                        >
-                                                            <p className="min-w-0 max-w-full flex-1 break-words text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
-                                                                <span className="font-medium" style={{ color: THEME.text.primary }}>{a.title}</span>
-                                                                <span style={{ color: THEME.text.tertiary }}> — {a.message}</span>
-                                                            </p>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    setDexoBootstrap(buildDexoStaffAttentionBootstrap(a));
-                                                                    switchRoom('dexo');
-                                                                }}
-                                                                className="inline-flex shrink-0 items-center justify-center gap-1 rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition"
-                                                                style={{ borderColor: 'rgba(116,86,255,0.22)', background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}
-                                                            >
-                                                                <Sparkles className="h-3 w-3" aria-hidden />
-                                                                Set up in Dexo
-                                                            </button>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        ) : null}
-                                    </div>
-                                </div>
-                                <FocusBriefingPanel
-                                    ventureName={activeProject.name}
-                                    livingOffice={livingOffice}
-                                    staffFocusLines={staffFocusLines}
-                                    staffAttentionPending={staffAttentionPending}
-                                    aiSummaryExcerpt={aiSummaryExcerpt}
-                                    strategicExcerpt={strategicExcerpt}
-                                    theme={{
-                                        text: THEME.text,
-                                        border: THEME.border,
-                                        accent: THEME.accent,
-                                    }}
-                                />
-                            </Card>
                         </div>
 
-                        {livingOffice && livingOffice.brief.greeting !== 'No venture selected.' && (
-                            <Card className="p-6">
-                                <SectionHeader
-                                    title="Operational intelligence"
-                                    subtitle="Living office engine: morning brief, goal model, tasks, and ambient signals from your venture data."
-                                />
-                                <div className="grid gap-6 lg:grid-cols-3">
-                                    <div className="space-y-3 lg:border-r lg:pr-6" style={{ borderColor: THEME.border.subtle }}>
-                                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>
-                                            Daily brief
-                                        </p>
-                                        <p className="text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
-                                            {livingOffice.brief.greeting}
-                                        </p>
+                        {/* ── QUICK ACTIONS ── */}
+                        <div
+                            className="overflow-hidden rounded-2xl border"
+                            style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
+                        >
+                            <div className="border-b px-5 py-3.5" style={{ borderColor: THEME.border.subtle }}>
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>Workspace</p>
+                            </div>
+                            <div className="grid grid-cols-2 divide-x divide-y sm:grid-cols-3 lg:grid-cols-6">
+                                {([
+                                    { id: 'ceo', label: 'CEO', sub: 'Strategy', icon: Lightbulb, color: THEME.chart.violet, room: 'ceo' as const },
+                                    { id: 'scout', label: 'Scout', sub: 'Market', icon: Globe, color: THEME.chart.blue, room: 'scout' as const },
+                                    { id: 'finance', label: 'Finance', sub: 'Budget', icon: Wallet, color: THEME.chart.emerald, room: 'accountant' as const },
+                                    { id: 'product', label: 'Product', sub: 'Roadmap', icon: Layers, color: THEME.chart.amber, room: 'pm' as const },
+                                    { id: 'pa', label: 'Assistant', sub: 'Support', icon: MessageSquare, color: THEME.chart.cyan, room: 'personal_assistant' as const },
+                                    { id: 'dexo', label: 'Dexo AI', sub: 'Command', icon: Cpu, color: THEME.accent.primary, room: 'dexo' as const },
+                                ] as const).map(({ label, sub, icon: Icon, color, room }) => (
+                                    <button
+                                        key={label}
+                                        type="button"
+                                        onClick={() => switchRoom(room)}
+                                        className="group flex flex-col items-center gap-2 border-[rgba(255,255,255,0.06)] py-5 text-center transition-all hover:bg-[rgba(255,255,255,0.04)]"
+                                        style={{ borderColor: THEME.border.subtle }}
+                                    >
                                         <div
-                                            className="rounded-xl border px-3 py-2.5"
-                                            style={{ borderColor: THEME.border.default, background: 'rgba(116,86,255,0.08)' }}
+                                            className="flex h-9 w-9 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-110"
+                                            style={{ background: `${color}14` }}
                                         >
-                                            <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: THEME.accent.primary }}>Suggested focus</p>
-                                            <p className="mt-1 text-sm font-medium" style={{ color: THEME.text.primary }}>
-                                                {livingOffice.brief.suggestedFocus}
-                                            </p>
-                                        </div>
-                                        {livingOffice.brief.priorities.length > 0 ? (
-                                            <div>
-                                                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ color: THEME.text.muted }}>
-                                                    Priorities in play
-                                                </p>
-                                                <ul className="space-y-1.5">
-                                                    {livingOffice.brief.priorities.map((p, i) => (
-                                                        <li key={i} className="flex gap-2 text-sm" style={{ color: THEME.text.secondary }}>
-                                                            <ListTodo className="mt-0.5 h-3.5 w-3.5 shrink-0" style={{ color: THEME.text.muted }} aria-hidden />
-                                                            <span>{p}</span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        ) : null}
-                                        {livingOffice.brief.criticalAlerts.length > 0 ? (
-                                            <div className="rounded-xl border px-3 py-2.5" style={{ borderColor: 'rgba(95,67,223,0.22)', background: 'rgba(95,67,223,0.08)' }}>
-                                                <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: '#5f43df' }}>
-                                                    Critical alerts
-                                                </p>
-                                                <ul className="mt-2 space-y-1.5">
-                                                    {livingOffice.brief.criticalAlerts.map((a, i) => (
-                                                        <li key={i} className="text-[12px] leading-snug" style={{ color: THEME.text.primary }}>
-                                                            {a}
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        ) : null}
-                                    </div>
-                                    <div className="space-y-4 lg:border-r lg:pr-6" style={{ borderColor: THEME.border.subtle }}>
-                                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>
-                                            Goal & pace model
-                                        </p>
-                                        <div className="flex flex-wrap gap-2">
-                                            <span
-                                                className="rounded-full px-2.5 py-1 text-[11px] font-medium tabular-nums"
-                                                style={{ background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}
-                                            >
-                                                {livingOffice.progress.percentage}% blended progress
-                                            </span>
-                                            <span
-                                                className="rounded-full px-2.5 py-1 text-[11px] font-medium"
-                                                style={{ background: 'rgba(255,255,255,0.07)', color: THEME.text.secondary }}
-                                            >
-                                                Risk: {livingOffice.progress.risk}
-                                            </span>
-                                        </div>
-                                        <p className="text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
-                                            ~{livingOffice.progress.projectedDaysRemaining} days to horizon at current phase pacing. Velocity index:{' '}
-                                            {Math.round(livingOffice.progress.paceScore * 100)}% — based on tasks completed in the last 14 days vs open
-                                            work.
-                                        </p>
-                                        <div className="rounded-xl border p-3" style={{ background: 'rgba(255,255,255,0.06)', borderColor: THEME.border.subtle }}>
-                                            <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: THEME.text.muted }}>
-                                                Weekly review
-                                            </p>
-                                            <p className="mt-2 text-sm" style={{ color: THEME.text.secondary }}>
-                                                Tasks completed:{' '}
-                                                <span className="font-medium" style={{ color: THEME.text.primary }}>{livingOffice.weeklyReview.completedTasks}</span> · Churn
-                                                risk: {livingOffice.weeklyReview.churnRisk} · Next week: {livingOffice.weeklyReview.nextWeekFocus}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-4">
-                                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>
-                                            Tasks & routing
-                                        </p>
-                                        {livingOffice.taskFindings.length > 0 ? (
-                                            <ul className="space-y-2">
-                                                {livingOffice.taskFindings.slice(0, 6).map((f, i) => (
-                                                    <li
-                                                        key={`${f.taskId}-${i}`}
-                                                        className="rounded-lg border px-2.5 py-2 text-[12px] leading-snug"
-                                                        style={{
-                                                            borderColor:
-                                                                f.severity === 'critical'
-                                                                    ? 'rgba(239,68,68,0.35)'
-                                                                    : f.severity === 'warning'
-                                                                      ? 'rgba(245,158,11,0.3)'
-                                                                      : THEME.border.subtle,
-                                                            color: THEME.text.secondary,
-                                                        }}
-                                                    >
-                                                        <span className="font-medium" style={{ color: THEME.text.primary }}>{f.title}</span>
-                                                        <span style={{ color: THEME.text.muted }}> · {f.detail}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        ) : (
-                                            <p className="text-sm" style={{ color: THEME.text.muted }}>
-                                                No task intelligence flags — board is clear or tasks are not yet modeled.
-                                            </p>
-                                        )}
-                                        {livingOffice.notifications.length > 0 ? (
-                                            <div>
-                                                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ color: THEME.text.muted }}>
-                                                    Ambient signals
-                                                </p>
-                                                <ul className="space-y-1.5">
-                                                    {livingOffice.notifications.slice(0, 5).map((n, i) => (
-                                                        <li key={i} className="text-[12px] leading-snug" style={{ color: THEME.text.tertiary }}>
-                                                            <span style={{ color: THEME.text.muted }}>[{n.desk}]</span> {n.message}
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        ) : null}
-                                        {livingOffice.suggestedActions.length > 0 ? (
-                                            <div>
-                                                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ color: THEME.text.muted }}>
-                                                    Routed actions
-                                                </p>
-                                                <ul className="space-y-2">
-                                                    {livingOffice.suggestedActions.slice(0, 4).map((a, i) => (
-                                                        <li key={i} className="text-[12px]" style={{ color: THEME.text.secondary }}>
-                                                            <span className="font-medium" style={{ color: THEME.text.primary }}>{a.intent}</span> →{' '}
-                                                            {a.targetDesks.join(', ')}: {a.summary}
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        ) : null}
-                                    </div>
-                                </div>
-                            </Card>
-                        )}
-
-                        {(upcomingEvents.length > 0 || kanbanTasks.length > 0) && (
-                            <div className="grid gap-6 lg:grid-cols-2">
-                                {upcomingEvents.length > 0 ? (
-                                    <Card className="p-6">
-                                        <SectionHeader
-                                            title="Upcoming & recent milestones"
-                                            subtitle="From your venture calendar (deadlines, launches, meetings)."
-                                        />
-                                        <ul className="space-y-2">
-                                            {upcomingEvents.map((ev) => (
-                                                <li
-                                                    key={ev.id}
-                                                    className="flex items-start justify-between gap-3 rounded-lg border border-[var(--border)] bg-[rgba(255,255,255,0.05)] px-3 py-2.5"
-                                                    style={{ borderColor: THEME.border.subtle }}
-                                                >
-                                                    <div className="min-w-0">
-                                                        <p className="text-sm font-medium" style={{ color: THEME.text.primary }}>
-                                                            {ev.title}
-                                                        </p>
-                                                        <p className="mt-0.5 text-[11px]" style={{ color: THEME.text.tertiary }}>
-                                                            {new Date(ev.date).toLocaleString(undefined, {
-                                                                dateStyle: 'medium',
-                                                                timeStyle: 'short',
-                                                            })}{' '}
-                                                            · {ev.type}
-                                                        </p>
-                                                    </div>
-                                                    <Calendar className="h-4 w-4 shrink-0" style={{ color: THEME.text.muted }} aria-hidden />
-                                                </li>
-                                            ))}
-                                        </ul>
-                                        <button
-                                            type="button"
-                                            onClick={() => switchRoom('calendar')}
-                                            className="mt-4 text-xs font-medium underline-offset-2 transition hover:underline"
-                                            style={{ color: THEME.accent.info }}
-                                        >
-                                            Open calendar →
-                                        </button>
-                                    </Card>
-                                ) : null}
-                                {kanbanTasks.length > 0 ? (
-                                    <Card className="p-6">
-                                        <SectionHeader
-                                            title="Delivery board"
-                                            subtitle="Kanban snapshot for this venture."
-                                        />
-                                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                                            {(
-                                                [
-                                                    ['To do', kanbanCounts.todo],
-                                                    ['In progress', kanbanCounts.in_progress],
-                                                    ['Next', kanbanCounts.next],
-                                                    ['Done', kanbanCounts.completed],
-                                                ] as const
-                                            ).map(([label, n]) => (
-                                                <div
-                                                    key={label}
-                                                    className="rounded-xl border border-[var(--border)] bg-[rgba(255,255,255,0.06)] px-3 py-3 text-center"
-                                                    style={{ borderColor: THEME.border.subtle }}
-                                                >
-                                                    <p className="text-2xl font-semibold tabular-nums" style={{ color: THEME.text.primary }}>
-                                                        {n}
-                                                    </p>
-                                                    <p className="mt-1 text-[10px]" style={{ color: THEME.text.muted }}>{label}</p>
-                                                </div>
-                                            ))}
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => switchRoom('pm')}
-                                            className="mt-4 text-xs font-medium underline-offset-2 transition hover:underline"
-                                            style={{ color: THEME.accent.tertiary }}
-                                        >
-                                            Open product desk →
-                                        </button>
-                                    </Card>
-                                ) : null}
-                            </div>
-                        )}
-
-                        {/* MAIN DASHBOARD GRID */}
-                        <div className="grid gap-6 lg:grid-cols-3">
-                            {/* LEFT COLUMN - PROGRESS & STATUS */}
-                            <div className="space-y-6 lg:col-span-2">
-                                {/* EXECUTION PROGRESS */}
-                                <Card className="p-6">
-                                    <SectionHeader
-                                        title="Execution Progress"
-                                        subtitle="Track your venture's strategic milestones"
-                                    />
-                                    <div className="space-y-6">
-                                        <div>
-                                            <div className="mb-2 flex items-center justify-between text-sm">
-                                                <span style={{ color: THEME.text.secondary }}>Phase Completion</span>
-                                                <span style={{ color: THEME.text.primary }}>
-                                                    {phaseDone}/{phaseTotal}
-                                                </span>
-                                            </div>
-                                            <ProgressBar value={phaseDone} max={phaseTotal || 1} color={THEME.chart.violet} />
+                                            <Icon className="h-4 w-4" style={{ color }} />
                                         </div>
                                         <div>
-                                            <div className="mb-2 flex items-center justify-between text-sm">
-                                                <span style={{ color: THEME.text.secondary }}>Priority Completion</span>
-                                                <span style={{ color: THEME.text.primary }}>
-                                                    {priDone}/{priTotal}
-                                                </span>
-                                            </div>
-                                            <ProgressBar value={priDone} max={priTotal || 1} color={THEME.chart.emerald} />
+                                            <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>{label}</p>
+                                            <p className="text-[10px]" style={{ color: THEME.text.muted }}>{sub}</p>
                                         </div>
-                                    </div>
-                                </Card>
-
-                                {/* QUICK ACTIONS - Interactive Grid */}
-                                <InteractiveCard className="p-6" glowColor="rgba(139,92,246,0.3)">
-                                    <SectionHeader
-                                        title="Quick Actions"
-                                        subtitle="Navigate to key workspaces"
-                                    />
-                                    <QuickActionGrid
-                                        columns={3}
-                                        actions={[
-                                            {
-                                                id: 'ceo',
-                                                label: 'CEO Desk',
-                                                description: 'Strategy & vision',
-                                                icon: <Lightbulb className="h-4 w-4" />,
-                                                color: THEME.chart.violet,
-                                                onClick: () => switchRoom('ceo'),
-                                            },
-                                            {
-                                                id: 'scout',
-                                                label: 'Scout Desk',
-                                                description: 'Market intelligence',
-                                                icon: <Globe className="h-4 w-4" />,
-                                                color: THEME.chart.blue,
-                                                onClick: () => switchRoom('scout'),
-                                            },
-                                            {
-                                                id: 'finance',
-                                                label: 'Finance Desk',
-                                                description: 'Budget & metrics',
-                                                icon: <Wallet className="h-4 w-4" />,
-                                                color: THEME.chart.emerald,
-                                                onClick: () => switchRoom('accountant'),
-                                            },
-                                            {
-                                                id: 'product',
-                                                label: 'Product Desk',
-                                                description: 'Roadmap & features',
-                                                icon: <Layers className="h-4 w-4" />,
-                                                color: THEME.chart.amber,
-                                                onClick: () => switchRoom('pm'),
-                                            },
-                                            {
-                                                id: 'pa',
-                                                label: 'Assistant',
-                                                description: 'Executive support',
-                                                icon: <MessageSquare className="h-4 w-4" />,
-                                                color: THEME.chart.cyan,
-                                                onClick: () => switchRoom('personal_assistant'),
-                                            },
-                                            {
-                                                id: 'dexo',
-                                                label: 'Dexo AI',
-                                                description: 'AI command center',
-                                                icon: <Cpu className="h-4 w-4" />,
-                                                color: THEME.accent.secondary,
-                                                onClick: () => switchRoom('dexo'),
-                                            },
-                                        ]}
-                                    />
-                                </InteractiveCard>
-
-                            </div>
-
-                            {/* RIGHT COLUMN - STATUS & INSIGHTS */}
-                            <div className="space-y-6">
-                                {/* CIRCULAR SCORE */}
-                                <Card className="p-6 text-center">
-                                    <h3 className="mb-4 text-sm font-medium" style={{ color: THEME.text.secondary }}>
-                                        Overall Health
-                                    </h3>
-                                    <div className="flex justify-center">
-                                        <CircularProgress
-                                            value={executionScore}
-                                            color={executionScore > 70 ? THEME.accent.primary : executionScore > 40 ? THEME.accent.tertiary : THEME.accent.warning}
-                                            label="Score"
-                                        />
-                                    </div>
-                                    <p className="mt-4 text-xs" style={{ color: THEME.text.tertiary }}>
-                                        Based on strategy completeness, phases, and priorities
-                                    </p>
-                                </Card>
-
-                                {/* DESK COVERAGE */}
-                                <Card className="p-6">
-                                    <h3 className="mb-4 text-sm font-medium" style={{ color: THEME.text.secondary }}>
-                                        Desk & Dexo
-                                    </h3>
-                                    <div className="space-y-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => switchRoom('dexo')}
-                                            className="group/dexo -mx-1.5 flex w-full cursor-pointer items-center gap-3 rounded-lg border border-violet-500/20 bg-violet-500/[0.07] p-1.5 text-left ring-1 ring-violet-500/15 transition-all duration-200 hover:bg-violet-500/12"
-                                        >
-                                            <div
-                                                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-transform duration-200 group-hover/dexo:scale-110"
-                                                style={{ background: `${THEME.accent.info}22` }}
-                                            >
-                                                <Sparkles className="h-4 w-4" style={{ color: THEME.accent.info }} aria-hidden />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center justify-between gap-2 text-sm">
-                                                    <span style={{ color: THEME.text.primary }}>Dexo</span>
-                                                    <span className="flex shrink-0 items-center gap-1 text-xs font-medium" style={{ color: THEME.accent.primary }}>
-                                                        Open
-                                                        <ChevronRight className="h-3.5 w-3.5 opacity-80" aria-hidden />
-                                                    </span>
-                                                </div>
-                                                <p className="mt-1 line-clamp-2 text-[11px] leading-snug" style={{ color: THEME.text.secondary }}>
-                                                    AI co-founder — strategy, product, and delivery in one conversation
-                                                </p>
-                                            </div>
-                                        </button>
-                                        {deskCoverage.map((desk) => (
-                                            <div
-                                                key={desk.label}
-                                                className="group/desk -mx-1.5 flex cursor-default items-center gap-3 rounded-lg p-1.5 transition-all duration-200 hover:bg-[rgba(255,255,255,0.07)]"
-                                            >
-                                                <div
-                                                    className="flex h-8 w-8 items-center justify-center rounded-lg transition-transform duration-200 group-hover/desk:scale-110"
-                                                    style={{ background: `${desk.fill}15` }}
-                                                >
-                                                    <desk.icon className="h-4 w-4" style={{ color: desk.fill }} />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center justify-between gap-2 text-sm">
-                                                        <span style={{ color: THEME.text.primary }}>{desk.label}</span>
-                                                        <span
-                                                            className="flex shrink-0 items-center gap-1.5 text-xs font-medium"
-                                                        style={{ color: desk.pct === 100 ? THEME.accent.primary : THEME.text.secondary }}
-                                                        >
-                                                            {desk.pct === 100 && (
-                                                                <span className="relative flex h-1.5 w-1.5">
-                                                                    <span className="absolute inline-flex h-full w-full rounded-full opacity-50" style={{ background: THEME.accent.primary, animation: 'ping 2s cubic-bezier(0,0,0.2,1) infinite' }} />
-                                                                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full" style={{ background: THEME.accent.primary }} />
-                                                                </span>
-                                                            )}
-                                                            {desk.pct === 100 ? 'Documented' : 'Needs detail'}
-                                                        </span>
-                                                    </div>
-                                                    <p className="mt-1 line-clamp-2 text-[11px] leading-snug" style={{ color: THEME.text.secondary }}>
-                                                        {desk.hint}
-                                                    </p>
-                                                    <div
-                                                        className="mt-1.5 h-1 overflow-hidden rounded-full"
-                                                        style={{ background: 'rgba(46,41,34,0.08)' }}
-                                                    >
-                                                        <div
-                                                            className="h-full rounded-full transition-all duration-700 ease-out"
-                                                            style={{
-                                                                width: `${desk.pct}%`,
-                                                                background: `linear-gradient(90deg, ${desk.fill}, ${desk.fill}CC)`,
-                                                            }}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </Card>
-
-                                {/* RECENT ACTIVITY */}
-                                <Card className="p-6">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h3 className="text-sm font-medium" style={{ color: THEME.text.secondary }}>
-                                            Recent Activity
-                                        </h3>
-                                        <span className="relative flex h-2 w-2">
-                                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-40" style={{ background: THEME.accent.primary }} />
-                                            <span className="relative inline-flex h-2 w-2 rounded-full" style={{ background: THEME.accent.primary }} />
-                                        </span>
-                                    </div>
-                                    <div className="space-y-1">
-                                        {systemLogs.slice(0, 5).map((log, i) => (
-                                            <div
-                                                key={log.id}
-                                                className="group/activity flex cursor-default items-start gap-3 rounded-lg p-2 transition-all duration-200 hover:bg-[rgba(255,255,255,0.07)]"
-                                                style={{
-                                                    animationDelay: `${i * 60}ms`,
-                                                }}
-                                            >
-                                                <div
-                                                    className="mt-0.5 h-2 w-2 rounded-full shrink-0 transition-transform duration-200 group-hover/activity:scale-125"
-                                                    style={{
-                                                        background:
-                                                            i === 0
-                                                                ? THEME.accent.primary
-                                                                : i === 1
-                                                                    ? THEME.accent.secondary
-                                                                    : THEME.text.muted,
-                                                    }}
-                                                />
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="truncate text-xs transition-colors duration-200 group-hover/activity:text-[var(--text-primary)]" style={{ color: THEME.text.secondary }}>
-                                                        {log.message}
-                                                    </p>
-                                                    <p className="mt-0.5 text-[10px]" style={{ color: THEME.text.tertiary }}>
-                                                        {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                    </p>
-                                                </div>
-                                                <ArrowRight className="h-3 w-3 shrink-0 mt-0.5 opacity-0 transition-all duration-200 group-hover/activity:opacity-50 group-hover/activity:translate-x-0.5" style={{ color: THEME.text.tertiary }} />
-                                            </div>
-                                        ))}
-                                        {systemLogs.length === 0 && (
-                                            <div className="py-6 text-center">
-                                                <p className="text-xs" style={{ color: THEME.text.tertiary }}>
-                                                    No recent activity
-                                                </p>
-                                                <p className="mt-1 text-[10px]" style={{ color: THEME.text.muted }}>
-                                                    Run Staff Sync to generate insights
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </Card>
+                                    </button>
+                                ))}
                             </div>
                         </div>
                     </div>
