@@ -46,7 +46,7 @@ import { buildInitialDexoMessages, shouldReplaceDexoSeedMessage } from '@/lib/de
 import { DEXO_LOADING_TAGLINES } from '@/lib/dexoLoading';
 import { isVentureFoundationSparse } from '@/lib/ventureFoundation';
 import { dexoAutoSaveHintLines, dexoFullVenturePatchFromJarvis } from '@/lib/dexoApplyJarvisProductPatch';
-import { buildDexoJarvisVentureContext } from '@/lib/dexoJarvisContext';
+import { buildDexoJarvisVentureContext, DEXO_PRE_VENTURE_CONTEXT } from '@/lib/dexoJarvisContext';
 import { TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 import type { DexoBootstrapPayload } from '@/lib/dexoBootstrap';
 import { DexoParticleCanvas } from '@/components/Dexo/DexoParticleSphere';
@@ -568,6 +568,18 @@ export function DexoRoom() {
         try {
             // Build context including previous analyses for continuity
             let context = buildCtx();
+
+            // No venture selected — for analyze mode block early; for converse use pre-venture fallback
+            if (!context.trim()) {
+                if (mode === 'analyze') {
+                    setError('Create or select a venture first to run an analysis.');
+                    setLoading(false);
+                    return;
+                }
+                // converse without a venture — use the generic pre-venture context so the API won't 400
+                context = DEXO_PRE_VENTURE_CONTEXT;
+            }
+
             if (analysisHistory.length > 0) {
                 const previousAnalyses = analysisHistory
                     .slice(-3) // Last 3 analyses
