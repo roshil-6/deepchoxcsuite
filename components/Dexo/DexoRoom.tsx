@@ -199,43 +199,88 @@ function WaveBars({ active, color = 'bg-[var(--accent)]' }: { active: boolean; c
 
 // ─── Status palettes ──────────────────────────────────────────────────────────
 
-/** Desk / health status — monochrome tiers (matches executive theme, no chroma boxes). */
+/** Desk / health status — coloured tiers */
 const SC = {
-    strong:   { dot: 'bg-[var(--text)]',           bar: 'bg-[var(--text)]',           badge: 'bg-white/[0.08] text-[var(--text)]',       label: 'Strong'   },
-    caution:  { dot: 'bg-[var(--muted)]',          bar: 'bg-[var(--muted)]',          badge: 'bg-white/[0.06] text-[var(--muted)]',      label: 'Caution'  },
-    risk:     { dot: 'bg-zinc-500/55',             bar: 'bg-zinc-500/55',             badge: 'bg-white/[0.05] text-[var(--muted)]',      label: 'Risk'     },
-    critical: { dot: 'bg-zinc-600/50',             bar: 'bg-zinc-600/50',             badge: 'bg-white/[0.04] text-[var(--muted)]',      label: 'Critical' },
+    strong:   {
+        dot:   'bg-emerald-400',
+        bar:   'bg-emerald-400',
+        badge: 'border-emerald-500/35 bg-emerald-500/12 text-emerald-400',
+        card:  'border-emerald-500/20 bg-emerald-500/[0.05]',
+        ring:  'ring-emerald-500/20',
+        label: 'Strong',
+    },
+    caution:  {
+        dot:   'bg-amber-400',
+        bar:   'bg-amber-400',
+        badge: 'border-amber-500/35 bg-amber-500/12 text-amber-400',
+        card:  'border-amber-500/20 bg-amber-500/[0.05]',
+        ring:  'ring-amber-500/20',
+        label: 'Caution',
+    },
+    risk:     {
+        dot:   'bg-orange-400',
+        bar:   'bg-orange-400',
+        badge: 'border-orange-500/35 bg-orange-500/12 text-orange-400',
+        card:  'border-orange-500/20 bg-orange-500/[0.05]',
+        ring:  'ring-orange-500/20',
+        label: 'Risk',
+    },
+    critical: {
+        dot:   'bg-rose-400',
+        bar:   'bg-rose-400',
+        badge: 'border-rose-500/35 bg-rose-500/12 text-rose-400',
+        card:  'border-rose-500/20 bg-rose-500/[0.05]',
+        ring:  'ring-rose-500/20',
+        label: 'Critical',
+    },
 } as const;
 
 const RC = {
-    high:   { icon: 'text-[var(--muted)]', badge: 'border-[var(--border)] bg-white/[0.05] text-[var(--muted)]' },
-    medium: { icon: 'text-[var(--muted)]', badge: 'border-[var(--border)] bg-white/[0.04] text-[var(--muted)]' },
-    low:    { icon: 'text-[var(--muted)]', badge: 'border-[var(--border)] bg-white/[0.04] text-[var(--muted)]' },
+    high:   { icon: 'text-rose-400',   badge: 'border-rose-500/35 bg-rose-500/10 text-rose-400',   leftBar: 'border-l-rose-500/50'   },
+    medium: { icon: 'text-amber-400',  badge: 'border-amber-500/35 bg-amber-500/10 text-amber-400', leftBar: 'border-l-amber-500/50'  },
+    low:    { icon: 'text-sky-400',    badge: 'border-sky-500/35 bg-sky-500/10 text-sky-400',       leftBar: 'border-l-sky-500/50'    },
 } as const;
 
 const TFC: Record<string, string> = {
-    today:        'text-[var(--muted)]',
-    'this week':  'text-[var(--muted)]',
-    'this month': 'text-[var(--muted)]',
+    today:        'text-rose-400 border-rose-500/30 bg-rose-500/8',
+    'this week':  'text-amber-400 border-amber-500/30 bg-amber-500/8',
+    'this month': 'text-sky-400 border-sky-500/30 bg-sky-500/8',
 };
 
 // ─── Health strip ─────────────────────────────────────────────────────────────
 
 function HealthStrip({ health }: { health: JarvisReport['health'] }) {
     const desks = ['strategy', 'finance', 'product', 'market', 'gtm'] as const;
+    const scores = { strong: 4, caution: 3, risk: 2, critical: 1 } as const;
+    const overall = Math.round(desks.reduce((sum, d) => sum + scores[health[d]], 0) / desks.length);
+    const overallLabel = overall >= 4 ? 'Strong' : overall === 3 ? 'Caution' : overall === 2 ? 'At Risk' : 'Critical';
+    const overallColor = overall >= 4 ? 'text-emerald-400' : overall === 3 ? 'text-amber-400' : overall === 2 ? 'text-orange-400' : 'text-rose-400';
+
     return (
-        <div className="flex gap-2">
-            {desks.map((d) => {
-                const c = SC[health[d]];
-                return (
-                    <div key={d} className="flex flex-1 flex-col gap-1.5">
-                        <div className="h-[3px] w-full rounded-full bg-white/[0.05]">
-                            <div className={`h-full w-full rounded-full ${c.bar} opacity-60`} />
+        <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
+            {/* Top accent */}
+            <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
+                <div className="flex items-center gap-2">
+                    <Activity className="h-3.5 w-3.5 text-[var(--muted)]" aria-hidden />
+                    <span className="font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">Venture Health</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                    <span className={`font-sans text-[12px] font-bold ${overallColor}`}>{overallLabel}</span>
+                    <span className="font-sans text-[10px] text-[var(--muted)]">overall</span>
+                </div>
+            </div>
+            <div className="grid grid-cols-5 gap-px bg-[var(--border)]">
+                {desks.map((d) => {
+                    const c = SC[health[d]];
+                    return (
+                        <div key={d} className={`flex flex-col items-center gap-2 bg-[var(--bg-card)] px-1 py-3 transition-colors ${c.card}`}>
+                            <span className={`h-2.5 w-2.5 rounded-full ${c.dot} shadow-[0_0_8px_currentColor]`} />
+                            <span className="font-sans text-[8px] font-bold uppercase tracking-[0.14em] text-[var(--muted)]">{d}</span>
+                            <span className={`rounded-full border px-1.5 py-[1px] font-sans text-[7.5px] font-bold uppercase tracking-wide ${c.badge}`}>{c.label}</span>
                         </div>
-                        <span className="text-center text-[9px] font-semibold uppercase tracking-[0.1em] text-[var(--muted)]">{d}</span>
-                    </div>
-                );
-            })}
+                    );
+                })}
+            </div>
         </div>
     );
 }
@@ -246,34 +291,38 @@ function DeskRow({ section, onRead }: { section: JarvisSection; onRead: (t: stri
     const [open, setOpen] = useState(false);
     const c = SC[section.status];
     return (
-        <div className="group">
-            <button type="button" onClick={() => setOpen((v) => !v)}
-                className="flex w-full items-start gap-4 py-3.5 text-left">
-                <span className={`mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full ${c.dot}`} />
-                <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-2">
-                    <span className="w-[52px] shrink-0 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--muted)]">{section.desk}</span>
-                    <span className={`shrink-0 rounded px-1.5 py-[2px] text-[9px] font-bold uppercase tracking-wider ${c.badge}`}>{c.label}</span>
-                    <span className="min-w-0 flex-1 text-[13.5px] leading-snug text-[var(--muted)]">{section.insight}</span>
+        <div className={`mb-2 overflow-hidden rounded-2xl border transition-all duration-200 ${open ? c.card : 'border-[var(--border)] bg-[var(--bg-card)]'} hover:border-[rgba(116,86,255,0.2)]`}>
+            <button
+                type="button"
+                onClick={() => setOpen((v) => !v)}
+                className="flex w-full items-start gap-3 px-4 py-3.5 text-left"
+            >
+                <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${c.dot}`} />
+                <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 gap-y-1">
+                    <span className="w-[52px] shrink-0 font-sans text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--muted)]">{section.desk}</span>
+                    <span className={`shrink-0 rounded-full border px-2 py-[2px] font-sans text-[8.5px] font-bold uppercase tracking-wider ${c.badge}`}>{c.label}</span>
+                    <span className="min-w-0 flex-1 font-sans text-[13px] leading-snug text-[var(--text-secondary)]">{section.insight}</span>
                 </div>
-                <span className="ml-2 mt-0.5 shrink-0 opacity-0 transition-opacity group-hover:opacity-60">
-                    {open ? <ChevronUp className="h-3.5 w-3.5 text-[var(--muted)]" /> : <ChevronDown className="h-3.5 w-3.5 text-[var(--muted)]" />}
+                <span className={`ml-2 mt-0.5 shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''} text-[var(--muted)]`}>
+                    <ChevronDown className="h-3.5 w-3.5" />
                 </span>
             </button>
             {open && (
-                <div className="mb-3 ml-[26px] space-y-2.5 border-l border-white/[0.06] pl-4">
-                    <p className="text-[13px] leading-relaxed text-[var(--text)]">{section.insight}</p>
-                    <div className="flex items-start gap-2">
-                        <ArrowRight className="mt-[3px] h-3 w-3 shrink-0 text-[var(--muted)]" />
-                        <p className="text-[12px] leading-snug text-[var(--muted)]">{section.action}</p>
+                <div className="border-t border-[var(--border)] px-4 pb-4 pt-3">
+                    <p className="mb-3 font-sans text-[13.5px] leading-relaxed text-[var(--text-primary)]">{section.insight}</p>
+                    <div className="flex items-start gap-2.5 rounded-xl border border-[rgba(116,86,255,0.2)] bg-[rgba(116,86,255,0.06)] px-3.5 py-2.5">
+                        <ArrowRight className="mt-[3px] h-3.5 w-3.5 shrink-0 text-[#9d88ff]" aria-hidden />
+                        <p className="font-sans text-[12.5px] leading-snug text-[var(--text-secondary)]">{section.action}</p>
                     </div>
-                    <button type="button"
+                    <button
+                        type="button"
                         onClick={() => onRead(`${section.desk}. ${section.insight}. Next step: ${section.action}`)}
-                        className="flex items-center gap-1.5 text-[10px] text-[var(--muted)] transition hover:text-[var(--text)]">
-                        <Volume2 className="h-3 w-3" /> Read aloud
+                        className="mt-2.5 flex items-center gap-1.5 font-sans text-[10px] text-[var(--muted)] transition hover:text-[var(--text-secondary)]"
+                    >
+                        <Volume2 className="h-3 w-3" aria-hidden /> Read aloud
                     </button>
                 </div>
             )}
-            <div className="ml-[26px] h-px bg-white/[0.04]" />
         </div>
     );
 }
@@ -1101,10 +1150,10 @@ export function DexoRoom() {
                         </div>
                     )}
 
-                    {/* ── Co-founder presence — avatar + particle orb side by side ── */}
-                    <div className="mb-8">
+                    {/* ── Co-founder header ── */}
+                    <div className="mb-6">
                         {/* Identity row */}
-                        <div className="mb-5 flex items-center gap-3 sm:gap-4">
+                        <div className="mb-4 flex items-start gap-3 sm:gap-4">
                             <DexoAvatar
                                 state={
                                     orbState === 'loading'    ? 'thinking'  :
@@ -1114,32 +1163,32 @@ export function DexoRoom() {
                                 }
                                 size="lg"
                                 pulse
+                                className="shrink-0"
                             />
                             <div className="min-w-0 flex-1">
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-wrap items-center gap-2">
                                     <span className="font-sans text-[10px] font-bold uppercase tracking-[0.22em] text-[#7456ff]">Dexo</span>
-                                    <span className="rounded-full border border-[rgba(116,86,255,0.2)] bg-[rgba(116,86,255,0.08)] px-2 py-0.5 font-sans text-[9px] font-semibold uppercase tracking-widest text-[#9d88ff]">
-                                        AI Co-Founder
-                                    </span>
+                                    <span className="rounded-full border border-[rgba(116,86,255,0.2)] bg-[rgba(116,86,255,0.08)] px-2 py-0.5 font-sans text-[9px] font-semibold uppercase tracking-widest text-[#9d88ff]">AI Co-Founder</span>
                                 </div>
                                 <div className="mt-1.5">
                                     {displayedReport ? (
-                                        <h1 className="font-sans text-[15px] font-semibold leading-snug tracking-tight text-[var(--text-primary)] sm:text-[18px]">
-                                            {displayedReport.headline}
-                                        </h1>
+                                        <>
+                                            <h1 className="font-sans text-[16px] font-bold leading-snug tracking-tight text-[var(--text-primary)] sm:text-[19px]">
+                                                {displayedReport.headline}
+                                            </h1>
+                                            <p className="mt-1.5 font-sans text-[13px] leading-relaxed text-[var(--text-secondary)]">
+                                                {displayedReport.summary}
+                                            </p>
+                                        </>
                                     ) : (
-                                        <h1 className="font-sans text-[15px] font-semibold leading-snug tracking-tight text-[var(--text-primary)] sm:text-[17px]">
-                                            {activeProject?.name ?? 'Dexo'}
-                                        </h1>
-                                    )}
-                                    {displayedReport ? (
-                                        <p className="mt-1 font-sans text-[13px] leading-relaxed text-[var(--text-secondary)]">
-                                            {displayedReport.summary.slice(0, 120)}{displayedReport.summary.length > 120 ? '…' : ''}
-                                        </p>
-                                    ) : (
-                                        <p className="mt-1 font-sans text-[13px] leading-relaxed text-[var(--text-secondary)]">
-                                            I'm here. Tell me what's on your mind — or use <span className="text-[var(--text-primary)]">Analyze</span> for a structured brief.
-                                        </p>
+                                        <>
+                                            <h1 className="font-sans text-[15px] font-semibold leading-snug tracking-tight text-[var(--text-primary)] sm:text-[17px]">
+                                                {activeProject?.name ?? 'Dexo'}
+                                            </h1>
+                                            <p className="mt-1 font-sans text-[13px] leading-relaxed text-[var(--text-secondary)]">
+                                                I'm here. Tell me what's on your mind — or use <span className="text-[var(--text-primary)]">Analyze</span> for a structured brief.
+                                            </p>
+                                        </>
                                     )}
                                 </div>
 
@@ -1233,33 +1282,47 @@ export function DexoRoom() {
                     </div>
 
                     {displayedReport && (
-                        <div className="space-y-8">
+                        <div className="space-y-6">
+
+                            {/* ── Health strip ── */}
                             <HealthStrip health={displayedReport.health} />
 
-                            <div className="-mx-1">
+                            {/* ── Section divider ── */}
+                            <div className="flex items-center gap-3">
+                                <div className="h-px flex-1 bg-[var(--border)]" />
+                                <span className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">Desk Overview</span>
+                                <div className="h-px flex-1 bg-[var(--border)]" />
+                            </div>
+
+                            {/* ── Desk rows ── */}
+                            <div className="space-y-0">
                                 {displayedReport.sections.map((s) => (
                                     <DeskRow key={s.desk} section={s} onRead={(t) => !isMuted && speakJarvis(t)} />
                                 ))}
                             </div>
 
+                            {/* ── Risks ── */}
                             {displayedReport.risks.length > 0 && (
-                                <div className="space-y-4">
-                                    <div className="h-px bg-[var(--border)]" />
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-px flex-1 bg-[var(--border)]" />
+                                        <span className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">Risk Factors</span>
+                                        <div className="h-px flex-1 bg-[var(--border)]" />
+                                    </div>
                                     {displayedReport.risks.map((r, i) => {
                                         const rc = RC[r.level];
                                         return (
-                                            <div key={`risk-${i}`} className="flex items-start gap-3.5">
-                                                <AlertTriangle className={`mt-[2px] h-3.5 w-3.5 shrink-0 ${rc.icon}`} />
-                                                <div className="space-y-0.5">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-[13px] font-medium text-[var(--text)]">{r.label}</span>
-                                                        <span
-                                                            className={`rounded border px-1.5 py-[1px] text-[9px] font-bold uppercase tracking-wider ${rc.badge}`}
-                                                        >
-                                                            {r.level}
-                                                        </span>
+                                            <div
+                                                key={`risk-${i}`}
+                                                className={`flex items-start gap-3.5 overflow-hidden rounded-2xl border border-l-2 bg-[var(--bg-card)] px-4 py-3.5 ${rc.leftBar} border-[var(--border)]`}
+                                            >
+                                                <AlertTriangle className={`mt-[2px] h-4 w-4 shrink-0 ${rc.icon}`} aria-hidden />
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="mb-1 flex flex-wrap items-center gap-2">
+                                                        <span className="font-sans text-[13px] font-semibold text-[var(--text-primary)]">{r.label}</span>
+                                                        <span className={`rounded-full border px-2 py-[2px] font-sans text-[8.5px] font-bold uppercase tracking-wider ${rc.badge}`}>{r.level}</span>
                                                     </div>
-                                                    <p className="text-[12px] leading-snug text-[var(--muted)]">{r.detail}</p>
+                                                    <p className="font-sans text-[12.5px] leading-snug text-[var(--text-secondary)]">{r.detail}</p>
                                                 </div>
                                             </div>
                                         );
@@ -1267,16 +1330,21 @@ export function DexoRoom() {
                                 </div>
                             )}
 
+                            {/* ── Next Actions ── */}
                             {displayedReport.nextActions.length > 0 && (
                                 <div className="space-y-3">
-                                    <div className="h-px bg-[var(--border)]" />
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-px flex-1 bg-[var(--border)]" />
+                                        <span className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">Next Actions</span>
+                                        <div className="h-px flex-1 bg-[var(--border)]" />
+                                    </div>
                                     {displayedReport.nextActions.map((a, i) => (
-                                        <div key={`action-${i}`} className="flex items-baseline gap-3.5">
-                                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--bg-elevated)] text-[9px] font-bold text-[var(--text)]">
+                                        <div key={`action-${i}`} className="flex items-start gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] px-4 py-3.5">
+                                            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[rgba(116,86,255,0.3)] bg-[rgba(116,86,255,0.1)] font-sans text-[10px] font-bold text-[#c4b5fd]">
                                                 {a.priority}
                                             </span>
-                                            <p className="min-w-0 flex-1 text-[13px] leading-snug text-[var(--text)]">{a.action}</p>
-                                            <span className={`shrink-0 text-[10px] font-medium ${TFC[a.timeframe] ?? 'text-[var(--muted)]'}`}>
+                                            <p className="min-w-0 flex-1 pt-0.5 font-sans text-[13px] leading-snug text-[var(--text-primary)]">{a.action}</p>
+                                            <span className={`mt-0.5 shrink-0 rounded-full border px-2 py-[2px] font-sans text-[9px] font-semibold capitalize ${TFC[a.timeframe] ?? 'border-[var(--border)] bg-[var(--bg-elevated)] text-[var(--muted)]'}`}>
                                                 {a.timeframe}
                                             </span>
                                         </div>
@@ -1284,9 +1352,10 @@ export function DexoRoom() {
                                 </div>
                             )}
 
+                            {/* ── Ask Dexo follow-up chips ── */}
                             {displayedReport.followUp.length > 0 && activeAnalysisIndex === null && (
-                                <div className="space-y-2 pb-2">
-                                    <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-600">Ask Dexo</p>
+                                <div className="space-y-2.5 rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-4">
+                                    <p className="font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">Ask Dexo</p>
                                     <div className="flex flex-wrap gap-2">
                                         {displayedReport.followUp.map((q, i) => (
                                             <button
@@ -1294,7 +1363,7 @@ export function DexoRoom() {
                                                 type="button"
                                                 onClick={() => run('converse', q)}
                                                 disabled={loading}
-                                                className="rounded-full border border-[rgba(116,86,255,0.18)] bg-[rgba(116,86,255,0.06)] px-4 py-1.5 font-sans text-[12px] text-[#9d88ff] transition-all duration-200 hover:border-[rgba(116,86,255,0.35)] hover:bg-[rgba(116,86,255,0.12)] hover:text-[#c4b5fd] disabled:opacity-40"
+                                                className="rounded-full border border-[rgba(116,86,255,0.2)] bg-[rgba(116,86,255,0.07)] px-3.5 py-1.5 font-sans text-[12px] text-[#9d88ff] transition-all duration-200 hover:border-[rgba(116,86,255,0.38)] hover:bg-[rgba(116,86,255,0.13)] hover:text-[#c4b5fd] disabled:opacity-40"
                                             >
                                                 {q}
                                             </button>
@@ -1303,60 +1372,47 @@ export function DexoRoom() {
                                 </div>
                             )}
 
-                            {/* Open in AI — copy report + jump to your favourite AI tool */}
-                            <div className="space-y-2 border-t border-[var(--border)] pt-5">
-                                <div className="flex items-center gap-2">
-                                    <ExternalLink className="h-3 w-3 text-[var(--muted)]" />
-                                    <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
-                                        Continue in AI
-                                    </p>
-                                    <span className="font-sans text-[10px] text-[var(--muted)]/60">— paste this report into any AI</span>
+                            {/* ── Continue in AI ── */}
+                            <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-card)]">
+                                <div className="flex items-center gap-2 border-b border-[var(--border)] px-4 py-3">
+                                    <ExternalLink className="h-3.5 w-3.5 text-[var(--muted)]" aria-hidden />
+                                    <p className="font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">Continue in AI</p>
+                                    <span className="font-sans text-[10px] text-[var(--muted)]/55">— copies report to clipboard</span>
                                 </div>
-                                <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+                                <div className="grid grid-cols-3 gap-px bg-[var(--border)] sm:grid-cols-5">
                                     {AI_TOOLS.map(({ label, icon, url }) => (
                                         <button
                                             key={label}
                                             type="button"
                                             onClick={async () => {
-                                                // Build a clean text version of the report
                                                 const lines: string[] = [
                                                     `=== Dexo Venture Analysis ===`,
                                                     `Venture: ${activeProject?.name ?? 'My Venture'}`,
                                                     '',
                                                     '--- Health ---',
-                                                    Object.entries(displayedReport.health)
-                                                        .map(([k, v]) => `${k}: ${v}`)
-                                                        .join(' | '),
+                                                    Object.entries(displayedReport.health).map(([k, v]) => `${k}: ${v}`).join(' | '),
                                                     '',
                                                     '--- Sections ---',
-                                                    ...displayedReport.sections.map(
-                                                        (s) => `[${s.desk.toUpperCase()}] ${s.status.toUpperCase()}\n${s.insight}\nAction: ${s.action}`
-                                                    ),
+                                                    ...displayedReport.sections.map((s) => `[${s.desk.toUpperCase()}] ${s.status.toUpperCase()}\n${s.insight}\nAction: ${s.action}`),
                                                     '',
                                                     '--- Risks ---',
-                                                    ...displayedReport.risks.map(
-                                                        (r) => `[${r.level.toUpperCase()}] ${r.label}: ${r.detail}`
-                                                    ),
+                                                    ...displayedReport.risks.map((r) => `[${r.level.toUpperCase()}] ${r.label}: ${r.detail}`),
                                                     '',
                                                     '--- Next Actions ---',
-                                                    ...displayedReport.nextActions.map(
-                                                        (a, idx) => `${idx + 1}. ${a.action} (${a.timeframe})`
-                                                    ),
+                                                    ...displayedReport.nextActions.map((a, idx) => `${idx + 1}. ${a.action} (${a.timeframe})`),
                                                 ];
-                                                try {
-                                                    await navigator.clipboard.writeText(lines.join('\n'));
-                                                } catch {
-                                                    // clipboard not available — open anyway
-                                                }
+                                                try { await navigator.clipboard.writeText(lines.join('\n')); } catch { /* clipboard not available */ }
                                                 window.open(url, '_blank', 'noopener,noreferrer');
                                             }}
-                                            className="flex items-center justify-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-3 py-2 font-sans text-[12px] font-medium text-[var(--text-secondary)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]"
+                                            className="flex flex-col items-center gap-1.5 bg-[var(--bg-card)] px-2 py-3.5 font-sans text-[11px] font-medium text-[var(--text-secondary)] transition hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)]"
                                         >
-                                            <span aria-hidden>{icon}</span>
+                                            <span className="text-[18px] leading-none" aria-hidden>{icon}</span>
                                             {label}
-                                            <Copy className="ml-auto h-3 w-3 opacity-40" />
                                         </button>
                                     ))}
+                                </div>
+                                <div className="border-t border-[var(--border)] px-4 py-2">
+                                    <p className="font-sans text-[10px] text-[var(--muted)]/50">Full report copied to clipboard before opening the tool.</p>
                                 </div>
                                 <p className="font-sans text-[10px] text-[var(--muted)]/50">
                                     Copies the full report to your clipboard, then opens the tool in a new tab.
