@@ -682,7 +682,7 @@ export function DexoRoom() {
                         updateProjectField,
                     });
                     const hint = !out.ok
-                        ? `\n\n_Could not store or apply proposal (${out.error})._`
+                        ? ''
                         : out.applied
                           ? `\n\n_Applied to your venture: ${pending.join(' · ')} (${out.mode} mode)._`
                           : `\n\n_Pending your approval: ${pending.join(' · ')}._`;
@@ -1083,7 +1083,7 @@ export function DexoRoom() {
                                 )}
                             </div>
 
-                            {/* Particle orb — kept alongside avatar */}
+                            {/* Particle orb — hidden on mobile to avoid squeezing the text */}
                             <button
                                 type="button"
                                 onClick={() => {
@@ -1096,7 +1096,7 @@ export function DexoRoom() {
                                         }
                                     }
                                 }}
-                                className="shrink-0 opacity-80 transition hover:opacity-100"
+                                className="hidden shrink-0 opacity-80 transition hover:opacity-100 sm:inline-flex"
                                 title="Click to hear Dexo speak"
                             >
                                 <VoiceOrb state={orbState} />
@@ -1340,6 +1340,21 @@ export function DexoRoom() {
                                         </div>
                                     );
                                 })}
+
+                                {/* Typing indicator — shown while Dexo is generating a reply */}
+                                {loading && convo[convo.length - 1]?.role === 'user' && (
+                                    <div className="flex items-end gap-2.5 justify-start">
+                                        <DexoAvatar size="xs" state="thinking" pulse={false} className="mb-1" />
+                                        <div className="rounded-2xl rounded-bl-sm border border-[var(--border)] bg-[var(--bg-card)] px-4 py-3 shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="h-1.5 w-1.5 rounded-full bg-[var(--muted)] animate-bounce [animation-delay:0ms]" />
+                                                <span className="h-1.5 w-1.5 rounded-full bg-[var(--muted)] animate-bounce [animation-delay:150ms]" />
+                                                <span className="h-1.5 w-1.5 rounded-full bg-[var(--muted)] animate-bounce [animation-delay:300ms]" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div ref={chatEndRef} />
                             </div>
                         </div>
