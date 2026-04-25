@@ -5,7 +5,9 @@
 
 import { NextRequest } from 'next/server';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
+/** 60 s is enough for streaming; edge runtime only allows 30 s which cuts off long replies. */
+export const maxDuration = 60;
 
 // Types for streaming
 interface StreamChunk {

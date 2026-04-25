@@ -74,7 +74,7 @@ export function intelTitleToImpactResult(title: string, source = 'intel-feed'): 
         market,
         execution: neutral,
         severity: legacyLabelToSeverity(label),
-        confidence: 0.62,
+        confidence: 0.35, // keyword-match heuristic — not AI-scored
         affectedRoles: inferRolesFromTitle(title, label),
         recommendations:
             label === 'Critical' || label === 'High'
@@ -96,7 +96,7 @@ export function intelLegacyLabelToImpactResult(title: string, label: IntelLegacy
         market,
         execution: neutral,
         severity: legacyLabelToSeverity(label),
-        confidence: 0.62,
+        confidence: 0.35, // keyword-match heuristic — not AI-scored
         affectedRoles: inferRolesFromTitle(title, label),
         recommendations:
             label === 'Critical' || label === 'High'

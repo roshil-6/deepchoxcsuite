@@ -57,7 +57,7 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
 
     return (
         <div
-            className="flex h-full min-h-0 w-full flex-col bg-[var(--bg-primary)] text-[var(--text-primary)] pb-[calc(5.75rem+env(safe-area-inset-bottom,0px))] lg:pb-0"
+            className="flex h-full min-h-0 w-full flex-col bg-[var(--bg-primary)] text-[var(--text-primary)] pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] lg:pb-0"
         >
             {/* Mobile Header */}
             <header 
@@ -210,9 +210,12 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
             {bottomBar}
 
             {/* Mobile Bottom Navigation */}
-            <nav 
-                className="fixed bottom-3 left-3 right-3 z-40 flex rounded-[1.35rem] border border-[var(--border)] bg-[var(--bg-card)]/94 px-2 py-2 shadow-[var(--shadow-soft)] lg:hidden"
-                style={{ 
+            <nav
+                className="fixed z-40 flex rounded-[1.35rem] border border-[var(--border)] bg-[var(--bg-card)]/94 px-2 py-2 shadow-[var(--shadow-soft)] lg:hidden"
+                style={{
+                    bottom: 'max(0.75rem, env(safe-area-inset-bottom))',
+                    left: 'max(0.75rem, env(safe-area-inset-left))',
+                    right: 'max(0.75rem, env(safe-area-inset-right))',
                     backdropFilter: 'blur(18px)',
                     WebkitBackdropFilter: 'blur(18px)',
                 }}

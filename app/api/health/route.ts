@@ -54,9 +54,16 @@ export async function GET(req: Request) {
     ...(databaseError ? { databaseError } : {}),
     aiConfigured: Boolean(
       process.env.OPENAI_API_KEY?.trim() ||
+      process.env.ANTHROPIC_API_KEY?.trim() ||
       process.env.GROQ_API_KEY?.trim() ||
       process.env.HF_API_TOKEN?.trim()
     ),
+    aiProviders: {
+      openai: Boolean(process.env.OPENAI_API_KEY?.trim()),
+      anthropic: Boolean(process.env.ANTHROPIC_API_KEY?.trim()),
+      groq: Boolean(process.env.GROQ_API_KEY?.trim()),
+      tavily: Boolean(process.env.TAVILY_API_KEY?.trim()),
+    },
     ollamaUrl: process.env.OLLAMA_URL || null,
     timestamp: new Date().toISOString(),
   });

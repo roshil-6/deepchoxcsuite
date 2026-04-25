@@ -88,6 +88,27 @@ export function useSubscription(): SubscriptionState {
         };
     }, []);
 
+    /**
+     * When the tab becomes visible again (e.g. user returning from Razorpay payment tab),
+     * reload the Clerk user to pick up any publicMetadata changes written by the webhook.
+     */
+    useEffect(() => {
+        if (!clerkLoaded || !user) return;
+        let t: ReturnType<typeof setTimeout> | null = null;
+        const onVisible = () => {
+            if (document.visibilityState !== 'visible') return;
+            if (t) clearTimeout(t);
+            t = setTimeout(() => {
+                void user.reload().catch(() => { /* noop */ });
+            }, 800);
+        };
+        document.addEventListener('visibilitychange', onVisible);
+        return () => {
+            document.removeEventListener('visibilitychange', onVisible);
+            if (t) clearTimeout(t);
+        };
+    }, [clerkLoaded, user]);
+
     /** When Clerk loads, align localStorage with `publicMetadata` (source of truth after sync). */
     useEffect(() => {
         if (!clerkLoaded || !user) return;

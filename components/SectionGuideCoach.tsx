@@ -124,7 +124,7 @@ function CoachPanel({
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(116,86,255,0.5)] to-transparent" aria-hidden />
 
             {/* Dexo avatar + speech bubble */}
-            <div className="flex items-start gap-3 border-b border-[var(--border)] px-4 pb-3 pt-4">
+            <div className="flex items-start gap-2.5 border-b border-[var(--border)] px-3 pb-2.5 pt-3 sm:gap-3 sm:px-4 sm:pb-3 sm:pt-4">
                 <DexoAvatar
                     size="sm"
                     state={speaking ? 'speaking' : 'idle'}
@@ -213,30 +213,30 @@ function CoachPanel({
             </div>
 
             {/* Actions */}
-            <div className="flex flex-wrap items-center gap-2 px-4 pb-4 pt-3">
+            <div className="flex items-center gap-2 px-3 pb-3 pt-2.5 sm:px-4 sm:pb-4 sm:pt-3">
                 <button
                     type="button"
                     onClick={onBack}
                     disabled={first}
-                    className="inline-flex items-center gap-1 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-3 py-2 text-[12px] font-medium text-[var(--text-primary)] transition hover:bg-[rgba(255,255,255,0.08)] disabled:cursor-not-allowed disabled:opacity-40"
+                    className="inline-flex items-center gap-1 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-3 py-1.5 text-[11px] font-medium text-[var(--text-primary)] transition hover:bg-[rgba(255,255,255,0.08)] disabled:cursor-not-allowed disabled:opacity-40 sm:py-2 sm:text-[12px]"
                 >
-                    <ChevronLeft className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
+                    <ChevronLeft className="h-3 w-3 sm:h-3.5 sm:w-3.5" strokeWidth={2} aria-hidden />
                     Back
                 </button>
                 <button
                     type="button"
                     onClick={last ? onFinish : onNext}
-                    className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl border border-violet-400/35 bg-violet-500/15 px-3 py-2 text-[12px] font-semibold tracking-wide text-violet-100 shadow-[0_1px_0_rgba(255,255,255,0.06)] transition hover:border-violet-400/50 hover:bg-violet-500/25 sm:flex-none"
+                    className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl border border-violet-400/35 bg-violet-500/15 px-3 py-1.5 text-[11px] font-semibold tracking-wide text-violet-100 shadow-[0_1px_0_rgba(255,255,255,0.06)] transition hover:border-violet-400/50 hover:bg-violet-500/25 sm:py-2 sm:text-[12px]"
                 >
                     {last ? 'Done' : 'Next'}
-                    {!last ? <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} aria-hidden /> : null}
+                    {!last ? <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" strokeWidth={2} aria-hidden /> : null}
                 </button>
                 <button
                     type="button"
                     onClick={onSkip}
-                    className="ml-auto text-[11px] font-medium text-[var(--muted)] underline-offset-2 hover:text-[var(--text-secondary)] hover:underline"
+                    className="shrink-0 text-[10px] font-medium text-[var(--muted)] underline-offset-2 hover:text-[var(--text-secondary)] hover:underline sm:text-[11px]"
                 >
-                    Skip tour
+                    Skip
                 </button>
             </div>
         </div>

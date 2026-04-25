@@ -27,10 +27,15 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
     const { isPaidPro, isInTrial, hasUsedTrial, trialDaysLeft, trialHoursLeft, startTrial, deactivatePro } = useSubscription();
     const { user } = useUser();
     const [billing, setBilling] = useState<BillingCycle>('monthly');
+    const [awaitingPayment, setAwaitingPayment] = useState(false);
+    const [checking, setChecking] = useState(false);
     const pricingRegion = usePricingRegion();
     const PRO_BILLING = getProBillingAmounts();
 
     if (!open) return null;
+
+    // If they just became Pro (webhook + tab focus reload), close the modal
+    if (isPaidPro && awaitingPayment) { onClose(); }
 
     const isYearly = billing === 'yearly';
     const trialLabel = trialHoursLeft < 24 ? `${trialHoursLeft}h` : `${trialDaysLeft} day${trialDaysLeft !== 1 ? 's' : ''}`;
@@ -40,12 +45,17 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
         // Pass userId so Razorpay embeds it in payment notes → webhook reads it back.
         const opened = openRazorpayPaymentPage(cycle, user?.id);
         if (opened) {
-            onClose();
+            setAwaitingPayment(true);   // stay open — show "I've paid" CTA
             return;
         }
         // Payment link not configured — never grant Pro for free.
-        // Dev note: set NEXT_PUBLIC_RAZORPAY_PAYMENT_LINK in .env.local and restart the dev server.
         alert('Payment is not configured yet. Contact support to upgrade.');
+    };
+
+    const checkPaymentStatus = async () => {
+        setChecking(true);
+        try { await user?.reload(); } catch { /* noop */ }
+        setTimeout(() => setChecking(false), 1500);
     };
 
     return (
@@ -232,7 +242,32 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                             </div>
                         </div>
 
+                        {/* Awaiting payment confirmation banner */}
+                        {awaitingPayment && !isPaidPro && (
+                            <div className="mt-4 space-y-2 rounded-xl border border-amber-500/30 bg-amber-950/20 p-4">
+                                <p className="text-center text-[13px] font-medium text-amber-200">
+                                    Complete payment in the Razorpay tab, then come back here.
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={() => void checkPaymentStatus()}
+                                    disabled={checking}
+                                    className="w-full rounded-xl bg-amber-500/20 border border-amber-500/30 py-2.5 text-xs font-semibold text-amber-200 transition hover:bg-amber-500/30 disabled:opacity-60"
+                                >
+                                    {checking ? 'Checking…' : "I've paid — activate my Pro"}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setAwaitingPayment(false)}
+                                    className="w-full text-center text-[10px] text-zinc-600 hover:text-zinc-400"
+                                >
+                                    Pay again / change plan
+                                </button>
+                            </div>
+                        )}
+
                         {/* CTA */}
+                        {!awaitingPayment && (
                         <div className="mt-4 space-y-2">
                             {isPaidPro ? (
                                 <div className="flex items-center justify-center gap-2 rounded-xl border border-zinc-700 py-3">
@@ -296,6 +331,7 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                                 </>
                             )}
                         </div>
+                        )}
 
                     </div>
                 </div>

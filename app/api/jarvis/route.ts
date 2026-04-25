@@ -15,6 +15,9 @@
 import { NextResponse } from 'next/server';
 import { chatWithOpenAI, chatWithClaude, chatWithGroq, hasAiKey } from '@/lib/ai/chatProviders';
 
+/** Allow up to 120 s on Vercel Pro (dual-agent analyze can take 40-60 s combined). */
+export const maxDuration = 120;
+
 const MAX_CONTEXT = 16_000;
 
 export interface JarvisHealthStatus {
