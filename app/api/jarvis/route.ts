@@ -165,6 +165,33 @@ Rules:
 - voiceResponse must feel like a trusted advisor talking — never like a spreadsheet or status dashboard being read line by line
 - Output JSON only. No markdown fence. No prose outside JSON.`;
 
+/** Compact system prompt for converse/chat mode — much smaller response, faster generation. */
+const DEXO_CHAT_SYSTEM = `You are Dexo — the AI co-founder inside DEEPCHOX.
+
+Talk like a smart, grounded co-founder: plain English, direct, warm. No bullet-points, no consulting framing.
+
+OUTPUT FORMAT — return only this JSON object:
+{
+  "voiceResponse": "Your reply. 2-5 sentences. Conversational, human.",
+  "headline": "One short sentence summary of the conversation.",
+  "followUp": ["One natural follow-up question if useful"],
+  "proposedUpdates": {
+    "strategy": null,
+    "productPlan": null,
+    "marketInsights": null,
+    "budget": null,
+    "teamDirectives": null,
+    "kanbanAdds": null
+  }
+}
+
+Rules:
+- voiceResponse: plain English only, no markdown. Keep it brief and human.
+- followUp: 0–2 short questions. Empty array [] if no follow-up needed.
+- proposedUpdates: only set fields when the founder shared specific information to track. All null by default.
+- If the founder shares delivery tasks or product work items, put short titles in kanbanAdds (max 5). Otherwise null.
+- Return JSON only. No text before or after the JSON object.`;
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function stripJsonFence(raw: string): string {
@@ -515,7 +542,11 @@ The founder is talking directly to you. Reply like a thoughtful cofounder.
     let report: JarvisReport;
 
     if (mode === 'converse') {
-      const single = await runConverseSingleAgent(messages, opts);
+      const chatMessages = [
+        { role: 'system', content: DEXO_CHAT_SYSTEM },
+        { role: 'user', content: userPrompt },
+      ];
+      const single = await runConverseSingleAgent(chatMessages, opts);
       let parsed: Record<string, unknown> = {};
       if (single.ok) {
         try {
