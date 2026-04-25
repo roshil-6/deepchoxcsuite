@@ -818,6 +818,24 @@ export function DexoRoom() {
                                                 }`}
                                             >
                                                 <p className="whitespace-pre-wrap">{msg.text}</p>
+
+                                                {/* Per-message speak/stop button — Dexo bubbles only */}
+                                                {!isUser && !isInterrupted && (
+                                                    <div className="mt-1.5 flex justify-end">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => isSpeaking ? stopSpeaking() : speakJarvis(msg.text)}
+                                                            className="rounded-md p-0.5 text-[var(--muted)] opacity-50 transition hover:opacity-100 hover:bg-[rgba(255,255,255,0.07)] hover:text-[var(--text-secondary)]"
+                                                            title={isSpeaking ? 'Stop speaking' : 'Read aloud'}
+                                                            aria-label={isSpeaking ? 'Stop speaking' : 'Read aloud'}
+                                                        >
+                                                            {isSpeaking
+                                                                ? <VolumeX className="h-3 w-3" />
+                                                                : <Volume2 className="h-3 w-3" />
+                                                            }
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
 
                                             {/* User avatar */}
