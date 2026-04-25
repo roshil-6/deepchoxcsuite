@@ -13,6 +13,10 @@ import { NextResponse } from 'next/server';
 import { chatWithOpenAI, chatWithClaude, hasAiKey, hasAnthropicKey } from '@/lib/ai/chatProviders';
 import type { AgentSyncPayload, AiSyncTraceStep, SyncProjectDTO } from '@/lib/agentStaffTypes';
 import { parseStrategy } from '@/lib/strategyDoc';
+import {
+  researchForStaffSync,
+  formatSyncWebIntel,
+} from '@/lib/tavilyResearch';
 
 // ─── System prompts ────────────────────────────────────────────────────────
 
@@ -106,30 +110,60 @@ function stripJsonFence(raw: string): string {
   return s.trim();
 }
 
-async function fetchIntelHeadlines(req: Request, project: SyncProjectDTO): Promise<string> {
+/**
+ * Fetch live web intelligence via Tavily for the Staff Sync.
+ * Returns a formatted LIVE_WEB_INTEL block ready to inject into both AI agent prompts.
+ * Falls back gracefully — never blocks the sync from running.
+ */
+async function fetchSyncWebIntel(project: SyncProjectDTO): Promise<{
+  intelBlock: string;
+  sourceCount: number;
+  summary: string;
+}> {
   try {
-    const origin = new URL(req.url).origin;
     const doc = parseStrategy(project.strategy || '');
-    const strategicIntent = (doc.strategicIntent || doc.vision || '').trim().slice(0, 600);
-    const userNotes = (project.userNotes || '').trim().slice(0, 600);
-    const res = await fetch(`${origin}/api/intel`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ventureName: project.name.trim(),
-        strategicIntent: strategicIntent || undefined,
-        userNotes: userNotes || undefined,
-        lens: 'all',
-        timeWindow: '7d',
-      }),
+    const strategicIntent = (doc.strategicIntent || doc.vision || '').trim().slice(0, 200);
+
+    const data = await researchForStaffSync({
+      ventureName: project.name.trim(),
+      strategicIntent: strategicIntent || undefined,
+      // pull a rough industry from userNotes + strategy text
+      industry: extractDomainHintFromProject(project),
     });
-    if (!res.ok) return '';
-    const data = (await res.json()) as { items?: { title: string; source: string }[] };
-    const items = data.items?.slice(0, 8) || [];
-    return items.map((i) => `- ${i.title} (${i.source})`).join('\n');
+
+    const intelBlock = formatSyncWebIntel(data);
+    const sourceCount = data.totalSources;
+    const summary =
+      sourceCount > 0
+        ? `${sourceCount} Tavily web source(s) — company news (${data.companyNews.length}), market (${data.marketLandscape.length}), industry trends (${data.industryTrends.length})`
+        : 'No Tavily results (key missing or no matches)';
+
+    return { intelBlock, sourceCount, summary };
   } catch {
-    return '';
+    return {
+      intelBlock: 'LIVE_WEB_INTEL: (fetch error — research continuing without live sources)',
+      sourceCount: 0,
+      summary: 'Tavily fetch failed gracefully',
+    };
   }
+}
+
+/** Extract a rough industry/domain hint from venture project fields */
+function extractDomainHintFromProject(project: SyncProjectDTO): string | undefined {
+  const text = [project.strategy, project.marketInsights, project.userNotes]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
+    .slice(0, 2000);
+
+  const domains = [
+    'fintech', 'healthtech', 'medtech', 'edtech', 'proptech', 'legaltech', 'insurtech',
+    'saas', 'b2b saas', 'b2c', 'e-commerce', 'ecommerce', 'marketplace', 'platform',
+    'ai', 'machine learning', 'blockchain', 'crypto', 'web3', 'defi',
+    'logistics', 'supply chain', 'retail', 'food tech', 'agritech', 'cleantech',
+    'travel', 'hospitality', 'hr tech', 'devtools', 'cybersecurity',
+  ];
+  return domains.find((d) => text.includes(d));
 }
 
 /**
@@ -207,22 +241,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: 'project with id and name required' }, { status: 400 });
     }
 
-    const headlines = await fetchIntelHeadlines(req, project);
-    const headlineLines = headlines
-      ? headlines.split('\n').filter((l) => l.trim().length > 0)
-      : [];
-    const intelDetail =
-      headlineLines.length > 0
-        ? `${headlineLines.length} headline(s) from the intel feed`
-        : 'No headlines (intel API empty or failed)';
+    const { intelBlock, sourceCount, summary: intelSummary } = await fetchSyncWebIntel(project);
+    const intelDetail = intelSummary;
 
     const userBlock = `VENTURE SNAPSHOT:
 ${JSON.stringify(project, null, 2)}
 
-RECENT HEADLINES (automated RSS — verify mentally):
-${headlines || '(none fetched)'}
+${intelBlock}
 
 The JSON "kanban" array in the snapshot is the CTO **execution board** today — new kanbanAdds should align with desks.pm and complement that list.
+
+INSTRUCTIONS FOR LIVE_WEB_INTEL:
+- Use the web sources above to ground any market, competitor, or industry claims.
+- Cite source numbers (e.g. [3]) when referencing a specific headline or finding.
+- Do not invent data not supported by the venture snapshot or web sources above.
+- If LIVE_WEB_INTEL shows no results, rely solely on the venture snapshot.
 
 Respond with the JSON object only.`;
 
@@ -321,7 +354,7 @@ Respond with the JSON object only.`;
         label: 'Load venture snapshot',
         detail: `Project: ${project.name} (id ${project.id})`,
       },
-      { id: 'intel', label: 'Fetch news headlines', detail: intelDetail },
+      { id: 'intel', label: 'Tavily live web research', detail: intelDetail },
       {
         id: 'dual-parallel',
         label: 'Dual-agent parallel execution',
