@@ -924,6 +924,140 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             />
                         </div>
 
+                        {/* ── AI TOOLS ── always-visible, full-width row */}
+                        <Card className="p-5">
+                            <div className="mb-4 flex items-center justify-between gap-4">
+                                <div>
+                                    <h2 className="text-sm font-semibold" style={{ color: THEME.text.primary }}>AI Tools</h2>
+                                    <p className="mt-0.5 text-[11px]" style={{ color: THEME.text.muted }}>Jump straight to your favourite AI assistants</p>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+                                {DASH_AI_TOOLS.map(({ label, desc, url, Logo, bg, border, color }) => (
+                                    <a
+                                        key={label}
+                                        href={url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="group flex flex-col items-center gap-2 rounded-2xl border px-3 py-4 text-center transition-all duration-200 hover:scale-[1.03] hover:shadow-lg"
+                                        style={{ background: bg, borderColor: border }}
+                                    >
+                                        <div
+                                            className="flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-110"
+                                            style={{ background: `${color}18`, color }}
+                                        >
+                                            <Logo size={22} />
+                                        </div>
+                                        <div>
+                                            <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>{label}</p>
+                                            <p className="text-[10px]" style={{ color: THEME.text.muted }}>{desc}</p>
+                                        </div>
+                                    </a>
+                                ))}
+                            </div>
+                        </Card>
+
+                        {/* ── VENTURE ANALYSIS REPORT ── desk-by-desk AI snapshot */}
+                        {activeProject.agentStaffSnapshot ? (
+                            <Card className="p-6">
+                                <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+                                    <SectionHeader
+                                        title="Venture analysis report"
+                                        subtitle={`Last synced ${lastStaffSyncLabel ?? '—'} · AI research across all desks`}
+                                    />
+                                    <button
+                                        onClick={() => runAgentStaffSync()}
+                                        disabled={agentSyncRunning}
+                                        className="flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-[11px] font-medium transition-all"
+                                        style={{
+                                            background: 'rgba(116,86,255,0.10)',
+                                            color: THEME.text.secondary,
+                                            opacity: agentSyncRunning ? 0.6 : 1,
+                                        }}
+                                    >
+                                        <RefreshCw className={`h-3.5 w-3.5 ${agentSyncRunning ? 'animate-spin' : ''}`} />
+                                        {agentSyncRunning ? 'Syncing…' : 'Refresh'}
+                                    </button>
+                                </div>
+                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                    {(
+                                        [
+                                            { label: 'Strategy', desc: 'CEO desk · Mission & vision', snap: activeProject.agentStaffSnapshot.desks.ceo, color: THEME.chart.violet, room: 'ceo' as const },
+                                            { label: 'Market', desc: 'Scout desk · Competitors & signals', snap: activeProject.agentStaffSnapshot.desks.scout, color: THEME.chart.blue, room: 'scout' as const },
+                                            { label: 'Product', desc: 'PM desk · Roadmap & features', snap: activeProject.agentStaffSnapshot.desks.pm, color: THEME.chart.amber, room: 'pm' as const },
+                                            { label: 'Finance', desc: 'Accountant · Budget & runway', snap: activeProject.agentStaffSnapshot.desks.accountant, color: THEME.chart.emerald, room: 'accountant' as const },
+                                            { label: 'Growth', desc: 'CMO desk · GTM & positioning', snap: activeProject.agentStaffSnapshot.desks.cmo, color: THEME.chart.rose, room: 'cmo' as const },
+                                            { label: 'Executive summary', desc: 'Cross-desk synthesis', snap: activeProject.agentStaffSnapshot.summary, color: THEME.accent.primary, room: null },
+                                        ] as const
+                                    ).map(({ label, desc, snap, color, room }) => (
+                                        <div
+                                            key={label}
+                                            className="rounded-xl border p-4"
+                                            style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.03)' }}
+                                        >
+                                            <div className="mb-2.5 flex items-start justify-between gap-2">
+                                                <div>
+                                                    <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color }}>{label}</p>
+                                                    <p className="mt-0.5 text-[10px]" style={{ color: THEME.text.muted }}>{desc}</p>
+                                                </div>
+                                                {room && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => switchRoom(room)}
+                                                        className="shrink-0 text-[10px] font-medium underline-offset-2 transition hover:underline"
+                                                        style={{ color: THEME.accent.info }}
+                                                    >
+                                                        Open →
+                                                    </button>
+                                                )}
+                                            </div>
+                                            {snap?.trim() ? (
+                                                <p className="text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>
+                                                    {snap.trim().length > 240 ? `${snap.trim().slice(0, 237)}…` : snap.trim()}
+                                                </p>
+                                            ) : (
+                                                <p className="text-[12px]" style={{ color: THEME.text.muted }}>
+                                                    No analysis yet — run Staff Sync to populate.
+                                                </p>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </Card>
+                        ) : (
+                            <Card className="p-6">
+                                <div className="flex flex-col items-center gap-4 py-4 text-center">
+                                    <div
+                                        className="flex h-14 w-14 items-center justify-center rounded-2xl"
+                                        style={{ background: 'rgba(116,86,255,0.10)' }}
+                                    >
+                                        <Sparkles className="h-7 w-7" style={{ color: THEME.accent.primary }} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-base font-semibold" style={{ color: THEME.text.primary }}>Venture analysis report</h3>
+                                        <p className="mt-1.5 max-w-md text-sm" style={{ color: THEME.text.secondary }}>
+                                            Run Staff Sync to generate a full AI analysis across strategy, market, product, finance, and growth desks.
+                                            Results appear here and update every time you sync.
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={() => runAgentStaffSync()}
+                                        disabled={agentSyncRunning}
+                                        className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all"
+                                        style={{
+                                            background: 'rgba(116,86,255,0.15)',
+                                            color: THEME.accent.primary,
+                                            border: '1px solid rgba(116,86,255,0.25)',
+                                            opacity: agentSyncRunning ? 0.6 : 1,
+                                        }}
+                                    >
+                                        <RefreshCw className={`h-4 w-4 ${agentSyncRunning ? 'animate-spin' : ''}`} />
+                                        {agentSyncRunning ? 'Analysing…' : 'Run analysis now'}
+                                    </button>
+                                </div>
+                            </Card>
+                        )}
+
                         {/* Venture intelligence — derived from your records + living office engine */}
                         <div className="grid gap-6 lg:grid-cols-2">
                             <Card className="p-6 lg:col-span-2">
@@ -1619,36 +1753,6 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     />
                                 </InteractiveCard>
 
-                                {/* AI TOOLS */}
-                                <Card className="p-6">
-                                    <SectionHeader
-                                        title="AI Tools"
-                                        subtitle="Open your favourite AI directly from the overview."
-                                    />
-                                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
-                                        {DASH_AI_TOOLS.map(({ label, desc, url, Logo, bg, border, color }) => (
-                                            <a
-                                                key={label}
-                                                href={url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="group flex flex-col items-center gap-2 rounded-2xl border px-3 py-4 text-center transition-all duration-200 hover:scale-[1.03] hover:shadow-lg"
-                                                style={{ background: bg, borderColor: border }}
-                                            >
-                                                <div
-                                                    className="flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-110"
-                                                    style={{ background: `${color}18`, color }}
-                                                >
-                                                    <Logo size={22} />
-                                                </div>
-                                                <div>
-                                                    <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>{label}</p>
-                                                    <p className="text-[10px]" style={{ color: THEME.text.muted }}>{desc}</p>
-                                                </div>
-                                            </a>
-                                        ))}
-                                    </div>
-                                </Card>
                             </div>
 
                             {/* RIGHT COLUMN - STATUS & INSIGHTS */}
