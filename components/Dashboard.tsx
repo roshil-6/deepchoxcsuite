@@ -82,6 +82,68 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { PlanGate } from '@/components/PlanGate';
 
 // ============================================================================
+// AI TOOL LOGO MARKS — inline SVG, no external deps
+// ============================================================================
+
+function ChatGPTLogo({ size = 20 }: { size?: number }) {
+    return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path d="M22.28 9.82a5.98 5.98 0 0 0-.52-4.91 6.05 6.05 0 0 0-6.51-2.9A6.06 6.06 0 0 0 4.98 4.18a5.98 5.98 0 0 0-4 2.9 6.05 6.05 0 0 0 .74 7.1 5.98 5.98 0 0 0 .51 4.91 6.05 6.05 0 0 0 6.51 2.9A5.98 5.98 0 0 0 13.26 24a6.06 6.06 0 0 0 5.77-4.21 5.98 5.98 0 0 0 4-2.9 6.05 6.05 0 0 0-.75-7.07ZM13.26 22.38a4.47 4.47 0 0 1-2.88-1.04l.14-.08 4.78-2.76a.8.8 0 0 0 .39-.68V11.2l2.02 1.17a.07.07 0 0 1 .04.05v5.58a4.5 4.5 0 0 1-4.49 4.49ZM3.6 18.26a4.47 4.47 0 0 1-.53-3.01l.14.08 4.78 2.76a.77.77 0 0 0 .78 0l5.84-3.37v2.33a.08.08 0 0 1-.03.06L9.74 19.95A4.5 4.5 0 0 1 3.6 18.26ZM2.34 7.9a4.49 4.49 0 0 1 2.37-1.97v5.58a.77.77 0 0 0 .39.68l5.81 3.35-2.02 1.17a.08.08 0 0 1-.07 0L3.99 13.9A4.5 4.5 0 0 1 2.34 7.9Zm16.6 3.86-5.84-3.37 2.02-1.17a.07.07 0 0 1 .07 0l4.83 2.79a4.5 4.5 0 0 1-.68 8.1v-5.68a.79.79 0 0 0-.4-.67Zm2.01-3.02-.14-.09-4.77-2.78a.78.78 0 0 0-.79 0L9.41 9.23V6.9a.07.07 0 0 1 .03-.06l4.83-2.79a4.5 4.5 0 0 1 6.68 4.66ZM8.31 12.86l-2.02-1.16a.08.08 0 0 1-.04-.06V6.07A4.5 4.5 0 0 1 13.68 2.6l-.14.08L8.76 5.46a.8.8 0 0 0-.39.68l-.06 6.72Zm1.1-2.37 2.6-1.5 2.61 1.5v3L12 15l-2.6-1.5V10.5Z" fill="currentColor"/>
+        </svg>
+    );
+}
+
+function ClaudeLogo({ size = 20 }: { size?: number }) {
+    return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path d="M13.83 3.52h-3.66L5.44 20.48h3.16l1.09-3.31h4.64l1.09 3.31h3.16L13.83 3.52Zm-3.43 11.03L12 8.24l1.6 6.31H10.4Z" fill="#CC6B2A"/>
+        </svg>
+    );
+}
+
+function GeminiLogo({ size = 20 }: { size?: number }) {
+    return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden>
+            <defs>
+                <linearGradient id="dash-gem-g" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#4285F4"/>
+                    <stop offset="50%" stopColor="#8B5CF6"/>
+                    <stop offset="100%" stopColor="#EC4899"/>
+                </linearGradient>
+            </defs>
+            <path d="M12 2c.4 4.8 3.2 7.6 10 10-6.8 2.4-9.6 5.2-10 10-.4-4.8-3.2-7.6-10-10 6.8-2.4 9.6-5.2 10-10Z" fill="url(#dash-gem-g)"/>
+        </svg>
+    );
+}
+
+function GoogleLogo({ size = 20 }: { size?: number }) {
+    return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+    );
+}
+
+function PerplexityLogo({ size = 20 }: { size?: number }) {
+    return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path d="M12 2L6.5 7.5H10v4H6v1h4v4H6.5L12 22l5.5-5.5H14v-4h4v-1h-4v-4h3.5L12 2Z" fill="#20B2AA" fillRule="evenodd" clipRule="evenodd"/>
+        </svg>
+    );
+}
+
+const DASH_AI_TOOLS = [
+    { label: 'ChatGPT',    desc: 'OpenAI',      url: 'https://chatgpt.com/',            Logo: ChatGPTLogo,    bg: 'rgba(16,163,127,0.08)',  border: 'rgba(16,163,127,0.25)',  color: '#10a37f' },
+    { label: 'Claude',     desc: 'Anthropic',   url: 'https://claude.ai/',              Logo: ClaudeLogo,     bg: 'rgba(204,107,42,0.08)', border: 'rgba(204,107,42,0.25)', color: '#CC6B2A' },
+    { label: 'Gemini',     desc: 'Google',      url: 'https://gemini.google.com/',      Logo: GeminiLogo,     bg: 'rgba(66,133,244,0.08)', border: 'rgba(66,133,244,0.25)', color: '#4285F4' },
+    { label: 'Google',     desc: 'Search',      url: 'https://www.google.com/',         Logo: GoogleLogo,     bg: 'rgba(66,133,244,0.06)', border: 'rgba(52,168,83,0.25)',  color: '#4285F4' },
+    { label: 'Perplexity', desc: 'AI Search',   url: 'https://www.perplexity.ai/',      Logo: PerplexityLogo, bg: 'rgba(32,178,170,0.08)', border: 'rgba(32,178,170,0.25)', color: '#20B2AA' },
+] as const;
+
+// ============================================================================
 // MODERN DASHBOARD THEME - No Glow, Clean Depth
 // ============================================================================
 
@@ -1556,6 +1618,37 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         ]}
                                     />
                                 </InteractiveCard>
+
+                                {/* AI TOOLS */}
+                                <Card className="p-6">
+                                    <SectionHeader
+                                        title="AI Tools"
+                                        subtitle="Open your favourite AI directly from the overview."
+                                    />
+                                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+                                        {DASH_AI_TOOLS.map(({ label, desc, url, Logo, bg, border, color }) => (
+                                            <a
+                                                key={label}
+                                                href={url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="group flex flex-col items-center gap-2 rounded-2xl border px-3 py-4 text-center transition-all duration-200 hover:scale-[1.03] hover:shadow-lg"
+                                                style={{ background: bg, borderColor: border }}
+                                            >
+                                                <div
+                                                    className="flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-110"
+                                                    style={{ background: `${color}18`, color }}
+                                                >
+                                                    <Logo size={22} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>{label}</p>
+                                                    <p className="text-[10px]" style={{ color: THEME.text.muted }}>{desc}</p>
+                                                </div>
+                                            </a>
+                                        ))}
+                                    </div>
+                                </Card>
                             </div>
 
                             {/* RIGHT COLUMN - STATUS & INSIGHTS */}
