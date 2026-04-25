@@ -285,7 +285,7 @@ export default function Home() {
             onNewVenture={requestNewVenture}
             /** Floating ChatGPT-style pill + thread (same chrome as research strategy desk). Shared venture thread only on CEO; other rooms keep per-desk threads. */
             bottomBar={
-              activeRoom !== 'personal_assistant' && activeRoom !== 'dexo' ? (
+              activeRoom !== 'personal_assistant' && activeRoom !== 'dexo' && activeRoom !== 'dashboard' ? (
                 <AIInputBarShell>
                   <ChatAssistant variant="ceoSplit" useExecutiveThread={activeRoom === 'ceo'} />
                 </AIInputBarShell>
