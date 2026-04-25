@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import { chatWithAI, chatWithClaude, hasAiKey, hasAnthropicKey } from '@/lib/ai/chatProviders';
 import type { FocusBriefingPayload } from '@/types/focusBriefing';
+import {
+  researchQuickIntel,
+  formatQuickIntel,
+  extractVentureNameFromContext,
+} from '@/lib/tavilyResearch';
 
 function parseBriefing(raw: string): FocusBriefingPayload | null {
     try {
@@ -68,9 +73,21 @@ Rules:
   - "priorities": array of 3–5 strings; each starts with a verb; time-bound when possible.
   - "voiceNarration": one string, 130–260 words, fluent prose for text-to-speech: NO markdown, NO bullet characters, NO list syntax; short sentences; expand acronyms on first use; read like a chief of staff speaking aloud. Do NOT recite raw field names, internal labels, or structured data — interpret what it means in everyday language.`;
 
+    // Pull live web intel for this venture (non-blocking, best-effort)
+    let webIntelBlock = '';
+    const ventureName = extractVentureNameFromContext(context);
+    if (ventureName) {
+      try {
+        const sources = await researchQuickIntel(ventureName);
+        if (sources.length > 0) webIntelBlock = `\n\n${formatQuickIntel(sources)}`;
+      } catch {
+        /* non-blocking */
+      }
+    }
+
     const messages = [
         { role: 'system' as const, content: system },
-        { role: 'user' as const, content: `Context:\n---\n${context}\n---` },
+        { role: 'user' as const, content: `Context:\n---\n${context}\n---${webIntelBlock}` },
     ];
 
     try {

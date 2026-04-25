@@ -14,6 +14,13 @@
 
 import { NextResponse } from 'next/server';
 import { chatWithOpenAI, chatWithClaude, chatWithGroq, hasAiKey } from '@/lib/ai/chatProviders';
+import {
+  researchForJarvisAnalysis,
+  researchQuickIntel,
+  formatJarvisWebIntel,
+  formatQuickIntel,
+  ventureSearchParamsFromContext,
+} from '@/lib/tavilyResearch';
 
 /** Allow up to 120 s on Vercel Pro (dual-agent analyze can take 40-60 s combined). */
 export const maxDuration = 120;
@@ -524,12 +531,44 @@ The founder is talking directly to you. Reply like a thoughtful cofounder.
         ? `\n\n${deskContextLine.trim().slice(0, 4000)}`
         : '';
 
+    // ── Tavily live web research ──────────────────────────────────────────────
+    // Fetch in parallel with prompt construction; never blocks AI from running.
+    const searchParams = ventureSearchParamsFromContext(trimmedContext);
+    let webIntelBlock = '';
+
+    if (mode === 'analyze' && searchParams.ventureName) {
+      try {
+        const webData = await researchForJarvisAnalysis({
+          ventureName: searchParams.ventureName,
+          strategicIntent: searchParams.strategicIntent || undefined,
+          industry: searchParams.industry || undefined,
+        });
+        webIntelBlock = formatJarvisWebIntel(webData);
+      } catch {
+        webIntelBlock = 'LIVE_WEB_INTEL: (fetch error — analysis proceeding on venture data only)';
+      }
+    } else if (mode === 'converse' && searchParams.ventureName) {
+      // For converse: only pull quick intel when the message is research-oriented
+      const researchKeywords = /market|competitor|news|latest|trend|industry|landscape|rival|space|raise|funding|launch|product|customer|grow/i;
+      if (researchKeywords.test(userMessage ?? '')) {
+        try {
+          const sources = await researchQuickIntel(
+            searchParams.ventureName,
+            (userMessage ?? '').slice(0, 120),
+          );
+          if (sources.length > 0) webIntelBlock = formatQuickIntel(sources);
+        } catch {
+          /* non-blocking */
+        }
+      }
+    }
+
     // Build user prompt
     let userPrompt = '';
     if (mode === 'analyze') {
-      userPrompt = `Analyze this venture completely and return the full Jarvis report.\n\nVENTURE SNAPSHOT:\n${trimmedContext}\n\nReturn JSON only.${sparseBlock}`;
+      userPrompt = `Analyze this venture completely and return the full Jarvis report.\n\nVENTURE SNAPSHOT:\n${trimmedContext}\n\n${webIntelBlock}\n\nIMPORTANT: Ground all market, competitor, and industry claims in the LIVE_WEB_INTEL sources above. Cite source numbers [N] in section insights and risk details when referencing a specific finding. If LIVE_WEB_INTEL shows no results, rely on venture data only.\n\nReturn JSON only.${sparseBlock}`;
     } else {
-      userPrompt = `The founder said: "${userMessage ?? ''}"\n\n${previousHeadline ? `Previous Jarvis headline: "${previousHeadline}"\n\n` : ''}VENTURE SNAPSHOT:\n${trimmedContext}${deskBlock}${attachBlock}${histBlock}\n\nRespond to the founder in a natural cofounder tone, then return the full Jarvis report JSON with updated sections and proposedUpdates if the founder's message implies changes. Keep the voiceResponse human and conversational. Return JSON only.${sparseBlock}${converseStyleBlock}`;
+      userPrompt = `The founder said: "${userMessage ?? ''}"\n\n${previousHeadline ? `Previous Jarvis headline: "${previousHeadline}"\n\n` : ''}VENTURE SNAPSHOT:\n${trimmedContext}${deskBlock}${attachBlock}${histBlock}${webIntelBlock ? `\n\n${webIntelBlock}` : ''}\n\nRespond to the founder in a natural cofounder tone, then return the full Jarvis report JSON with updated sections and proposedUpdates if the founder's message implies changes. Keep the voiceResponse human and conversational. Return JSON only.${sparseBlock}${converseStyleBlock}`;
     }
 
     const messages = [
