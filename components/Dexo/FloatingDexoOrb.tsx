@@ -33,6 +33,7 @@ import {
     X,
     Maximize2,
     Volume2,
+    VolumeX,
     Square,
     MessageSquare,
     MessageSquarePlus,
