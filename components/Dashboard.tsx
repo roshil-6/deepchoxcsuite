@@ -1598,11 +1598,17 @@ function PortfolioView({
                                 <h2 className="text-[15px] font-semibold tracking-tight" style={{ color: THEME.text.primary }}>Morning Intelligence Brief</h2>
                                 <span className="rounded-full border px-2.5 py-0.5 text-[10px] font-medium" style={{ borderColor: 'rgba(6,182,212,0.2)', color: '#22d3ee' }}>Powered by Tavily · refreshed daily</span>
                             </div>
-                            <p className="mt-1 text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>
-                                Dexo ran live web research on each of your ventures and pulled verified headlines, market signals, and original source links.
-                                This is your AI co-founder's daily research briefing — not a summary, not a template. Every card cites its source.
-                                Open a venture to continue the research conversation with Dexo.
-                            </p>
+                            <div className="mt-1.5 space-y-1">
+                                <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
+                                    Dexo searched the web for each venture and returned real headlines with verified source links — live market intelligence, not AI-generated summaries.
+                                </p>
+                                <p className="text-[11px]" style={{ color: THEME.text.muted }}>
+                                    <span className="font-semibold" style={{ color: THEME.text.primary }}>Source:</span>{' '}Tavily live web search · runs daily per venture · every card links to the original article
+                                </p>
+                                <p className="text-[11px] font-medium" style={{ color: THEME.accent.info }}>
+                                    → Click any source link to read the article. Open a venture card to discuss the findings with Dexo.
+                                </p>
+                            </div>
                         </div>
                     </div>
                     <PortfolioDailyIntelSection allProjects={allProjects} onOpenVenture={setActiveProject} />
@@ -1656,23 +1662,28 @@ function PortfolioView({
                                         </button>
                                     </div>
                                 </div>
-                                <p className="mt-1 text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>
-                                    Six AI specialists ran independent deep-dives on separate functional areas of your venture.
-                                    Each card shows what that AI researcher actually found — not a template, not boilerplate.
-                                    The "Why it matters" note explains the strategic significance of each finding.
-                                    Open any desk to drill deeper or ask follow-up questions.
-                                </p>
+                                <div className="mt-1.5 space-y-1">
+                                    <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
+                                        Six AI specialists each researched a separate part of your business and wrote their own conclusions. Each card shows exactly what that desk found.
+                                    </p>
+                                    <p className="text-[11px]" style={{ color: THEME.text.muted }}>
+                                        <span className="font-semibold" style={{ color: THEME.text.primary }}>Source:</span>{' '}Last Staff Sync for {leadingVenture.name} · {new Date(leadingVenture.agentStaffSnapshot.at).toLocaleDateString(undefined, { dateStyle: 'medium' })} · generated from your venture data and AI analysis
+                                    </p>
+                                    <p className="text-[11px] font-medium" style={{ color: THEME.accent.info }}>
+                                        → Read the finding. Click "Open desk →" to continue the research or ask follow-up questions directly.
+                                    </p>
+                                </div>
                             </div>
                         </div>
 
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                             {([
-                                { key: 'scout',      label: 'Market Intelligence',  role: 'Scout',           covers: 'Competitor signals · trends · opportunities', finds: 'Market opportunities, competitor moves, and industry shifts your venture should respond to.',          color: THEME.chart.blue,    room: 'scout'      as const, icon: Globe     },
-                                { key: 'ceo',        label: 'Strategic Direction',  role: 'CEO',             covers: 'Mission · vision · positioning',              finds: 'Strategic recommendations for how your venture should be positioned and where it should go next.',   color: THEME.chart.violet,  room: 'ceo'        as const, icon: Lightbulb },
-                                { key: 'pm',         label: 'Product Insights',     role: 'Product Manager', covers: 'Roadmap · features · user problems',          finds: 'What to build next, user pain points to solve, and product decisions that need immediate attention.',  color: THEME.chart.amber,   room: 'pm'         as const, icon: Layers    },
-                                { key: 'accountant', label: 'Finance & Runway',     role: 'Accountant',      covers: 'Budget · burn · revenue signals',             finds: 'Financial health signals, runway analysis, and revenue model insights that affect your decisions.',   color: THEME.chart.emerald, room: 'accountant' as const, icon: Wallet    },
-                                { key: 'cmo',        label: 'Growth & GTM',         role: 'CMO',             covers: 'Marketing · channels · acquisition',          finds: 'Go-to-market recommendations, growth channels, and acquisition strategies ready to execute.',         color: THEME.chart.rose,    room: 'cmo'        as const, icon: Megaphone },
-                                { key: 'summary',    label: 'Executive Synthesis',  role: 'Chief of Staff',  covers: 'Cross-desk synthesis · executive brief',      finds: 'The cross-functional summary of all desk findings — the highest-priority thing to read first.',       color: THEME.accent.primary, room: null,                  icon: Cpu       },
+                                { key: 'scout',      label: 'Market Intelligence',  role: 'Scout',           covers: 'Competitor signals · trends · opportunities', finds: 'Use this to spot threats early and validate market assumptions before committing to any direction.',      color: THEME.chart.blue,    room: 'scout'      as const, icon: Globe     },
+                                { key: 'ceo',        label: 'Strategic Direction',  role: 'CEO',             covers: 'Mission · vision · positioning',              finds: 'Use this to set or challenge your strategy — it shapes every other decision across the whole business.',   color: THEME.chart.violet,  room: 'ceo'        as const, icon: Lightbulb },
+                                { key: 'pm',         label: 'Product Insights',     role: 'Product Manager', covers: 'Roadmap · features · user problems',          finds: 'Use this to decide what ships next and what gets cut. It directly drives your roadmap and sprint focus.',   color: THEME.chart.amber,   room: 'pm'         as const, icon: Layers    },
+                                { key: 'accountant', label: 'Finance & Runway',     role: 'Accountant',      covers: 'Budget · burn · revenue signals',             finds: 'Read this before any spending or pricing call — it shows your real constraints and revenue opportunities.',   color: THEME.chart.emerald, room: 'accountant' as const, icon: Wallet    },
+                                { key: 'cmo',        label: 'Growth & GTM',         role: 'CMO',             covers: 'Marketing · channels · acquisition',          finds: 'Use this to pick your channels and craft messaging before spending anything on marketing or sales.',          color: THEME.chart.rose,    room: 'cmo'        as const, icon: Megaphone },
+                                { key: 'summary',    label: 'Executive Synthesis',  role: 'Chief of Staff',  covers: 'Cross-desk synthesis · executive brief',      finds: 'Read this first — it synthesizes all six desks into one brief. The fastest way to see the full picture.',    color: THEME.accent.primary, room: null,                  icon: Cpu       },
                             ] as const).map(({ key, label, role, covers, finds, color, room, icon: DeskIcon }) => {
                                 const snap = key === 'summary'
                                     ? leadingVenture.agentStaffSnapshot.summary
@@ -1723,10 +1734,13 @@ function PortfolioView({
                                                         </p>
                                                     </div>
                                                     {/* Why it matters reasoning block */}
-                                                    <div className="mt-auto rounded-xl border px-3 py-2.5" style={{ borderColor: `${color}20`, background: `${color}08` }}>
+                                                    <div className="mt-auto space-y-1.5 rounded-xl border px-3 py-2.5" style={{ borderColor: `${color}20`, background: `${color}08` }}>
                                                         <p className="text-[10px] leading-snug" style={{ color: THEME.text.secondary }}>
-                                                            <span className="font-bold" style={{ color }}>Why it matters · </span>
+                                                            <span className="font-bold" style={{ color }}>How to use this · </span>
                                                             {finds}
+                                                        </p>
+                                                        <p className="text-[9px]" style={{ color: THEME.text.muted }}>
+                                                            Covers: {covers}
                                                         </p>
                                                     </div>
                                                 </>
@@ -1767,10 +1781,17 @@ function PortfolioView({
                                         </span>
                                     )}
                                 </div>
-                                <p className="mt-1 text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>
-                                    Your AI team flagged these signals during research — each one is a specific finding or recommendation that requires a human decision.
-                                    The badge shows <em>which AI desk</em> raised the signal. Discuss any item with Dexo to build a plan of action.
-                                </p>
+                                <div className="mt-1.5 space-y-1">
+                                    <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
+                                        Specific risks, opportunities, and open questions your AI team raised that need a human decision — not automated alerts, these are real research findings.
+                                    </p>
+                                    <p className="text-[11px]" style={{ color: THEME.text.muted }}>
+                                        <span className="font-semibold" style={{ color: THEME.text.primary }}>Source:</span>{' '}Auto-flagged by AI desks during Staff Sync · the colored badge shows which desk raised each item and why it was escalated
+                                    </p>
+                                    <p className="text-[11px] font-medium" style={{ color: THEME.accent.info }}>
+                                        → Click "Discuss →" on any item to open Dexo for that venture and build a concrete plan together.
+                                    </p>
+                                </div>
                             </div>
                         </div>
 
@@ -1779,11 +1800,12 @@ function PortfolioView({
                             {/* Flagged signals */}
                             {allAttentionItems.length > 0 && (
                                 <div className="overflow-hidden rounded-2xl border" style={{ borderColor: 'rgba(245,158,11,0.25)' }}>
-                                    <div className="flex items-center gap-2.5 border-b px-5 py-3.5" style={{ borderColor: 'rgba(245,158,11,0.15)', background: 'rgba(245,158,11,0.06)' }}>
-                                        <AlertTriangle className="h-4 w-4 shrink-0" style={{ color: '#f59e0b' }} />
-                                        <p className="text-[12px] font-semibold" style={{ color: '#f59e0b' }}>
-                                            Signals flagged for action
-                                        </p>
+                                    <div className="flex items-start gap-2.5 border-b px-5 py-3.5" style={{ borderColor: 'rgba(245,158,11,0.15)', background: 'rgba(245,158,11,0.06)' }}>
+                                        <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" style={{ color: '#f59e0b' }} />
+                                        <div>
+                                            <p className="text-[12px] font-semibold" style={{ color: '#f59e0b' }}>Signals flagged for your decision</p>
+                                            <p className="text-[10px]" style={{ color: 'rgba(245,158,11,0.7)' }}>Each badge shows which AI desk raised it · left border color = desk type</p>
+                                        </div>
                                     </div>
                                     <div>
                                         {allAttentionItems.map((a: any) => {
@@ -1841,7 +1863,10 @@ function PortfolioView({
                                         <div>
                                             <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>Dexo's Recommended Actions</p>
                                             <p className="text-[10px] mt-0.5" style={{ color: THEME.text.muted }}>
-                                                Prioritised by your AI co-founder for <span style={{ color: THEME.accent.primary }}>{leadingVenture?.name ?? 'your venture'}</span> today
+                                                What your AI co-founder thinks you should do today for <span style={{ color: THEME.accent.primary }}>{leadingVenture?.name ?? 'your venture'}</span> — ordered by priority
+                                            </p>
+                                            <p className="text-[10px] mt-0.5" style={{ color: THEME.text.muted }}>
+                                                <span className="font-semibold" style={{ color: THEME.text.secondary }}>Source:</span> Synthesised from latest Staff Sync across all desks
                                             </p>
                                         </div>
                                     </div>
@@ -1884,11 +1909,17 @@ function PortfolioView({
                                     </button>
                                 )}
                             </div>
-                            <p className="mt-1 text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>
-                                All your active workspaces. Click any venture to enter it.
-                                The desk coverage bar shows how many functional areas (CEO, Product, Finance, Growth, Scout) your AI team has researched.
-                                A venture at 5/5 desks has been fully briefed.
-                            </p>
+                            <div className="mt-1.5 space-y-1">
+                                <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
+                                    Every workspace your AI co-founder is actively working on. Desk coverage tells you how thoroughly each venture has been researched — 5/5 means all functional areas are briefed.
+                                </p>
+                                <p className="text-[11px]" style={{ color: THEME.text.muted }}>
+                                    <span className="font-semibold" style={{ color: THEME.text.primary }}>Source:</span>{' '}Your venture data + Staff Sync results · coverage updates automatically after each sync
+                                </p>
+                                <p className="text-[11px] font-medium" style={{ color: THEME.accent.info }}>
+                                    → Click any venture to enter it. Use the coverage sidebar to jump to any under-researched desk.
+                                </p>
+                            </div>
                         </div>
                     </div>
                     <div className="grid gap-5 lg:grid-cols-[1fr_280px]">
@@ -2015,9 +2046,14 @@ function PortfolioView({
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[12px] font-bold" style={{ background: 'rgba(255,255,255,0.07)', color: THEME.text.secondary }}>E</div>
                         <div>
                             <h2 className="text-[15px] font-semibold tracking-tight" style={{ color: THEME.text.primary }}>Tools &amp; Workspace Navigator</h2>
-                            <p className="mt-1 text-[12px]" style={{ color: THEME.text.secondary }}>
-                                Quick-launch AI research tools alongside your venture. Jump directly to any functional desk across your workspaces.
-                            </p>
+                            <div className="mt-1.5 space-y-1">
+                                <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
+                                    External AI tools for manual research, and instant navigation to any AI desk room across all your ventures.
+                                </p>
+                                <p className="text-[11px] font-medium" style={{ color: THEME.accent.info }}>
+                                    → Use AI tools to research manually. Click any desk button to jump straight into that room and continue AI-driven research.
+                                </p>
+                            </div>
                         </div>
                     </div>
                     <div className="space-y-5">
