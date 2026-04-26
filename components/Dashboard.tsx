@@ -72,6 +72,7 @@ import {
 import { isVentureFoundationSparse } from '@/lib/ventureFoundation';
 import { GuideHint, ActionHint } from '@/components/ui/ContextualGuide';
 import { InteractiveCard, QuickActionGrid } from '@/components/ui';
+import { pickEnglishPlaybackVoice, resumeSpeechSynthIfNeeded } from '@/lib/voiceEngine';
 import { buildDexoStaffAttentionBootstrap } from '@/lib/dexoStaffAttentionPrompt';
 import { buildDexoJarvisVentureContext } from '@/lib/dexoJarvisContext';
 import { FocusBriefingPanel } from '@/components/FocusBriefingPanel';
@@ -546,6 +547,8 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     const [portfolioDashExpanded, setPortfolioDashExpanded] = useState(false);
     const [activeTab, setActiveTab] = useState<'overview' | 'analytics' | 'activity' | 'dexo_daily'>('overview');
     const [openGuideKey, setOpenGuideKey] = useState<string | null>(null);
+    const [showDexoWelcome, setShowDexoWelcome] = useState(false);
+    const [dexoWelcomeStep, setDexoWelcomeStep] = useState(0);
 
     const dashboardTabs = [
         { id: 'overview' as const, label: 'Overview' },
@@ -575,6 +578,13 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
         if (recent) setActiveProject(recent);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeRoom, allProjects.length]);
+
+    // Show Dexo welcome/guide pop-up when entering Executive Overview with an active project
+    useEffect(() => {
+        if (activeRoom !== 'dashboard' || !activeProject?.id) return;
+        setDexoWelcomeStep(0);
+        setShowDexoWelcome(true);
+    }, [activeRoom, activeProject?.id]);
 
     // Pre-load Dexo with a venture briefing whenever user enters Executive Overview
     // so clicking "Open Dexo Briefing" instantly delivers context without extra input
@@ -825,6 +835,204 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
             className="min-h-screen w-full pb-24"
             style={{ background: THEME.bg.primary }}
         >
+            {/* ── DEXO OVERVIEW GUIDE POP-UP ── renders directly on the page */}
+            {showDexoWelcome && (() => {
+                const hasSnap = !!activeProject.agentStaffSnapshot;
+                const summary = activeProject.agentStaffSnapshot?.summary?.trim() ?? '';
+                const focusLines = (activeProject.staffFocusToday ?? []).filter(Boolean);
+                const attn = staffAttentionPending.length;
+
+                const STEPS = [
+                    {
+                        icon: Sparkles,
+                        color: THEME.accent.primary,
+                        title: `Welcome back — ${activeProject.name}`,
+                        body: hasSnap
+                            ? `Dexo has briefed your venture. Your AI team has researched Strategy, Market Intelligence, Product, Finance, and Growth. Scroll down to see what was found and ask Dexo to explain anything.`
+                            : `This is your Executive Overview for ${activeProject.name}. Run a Staff Sync to let Dexo research your venture across 5 AI desks and brief you daily on what was found.`,
+                        cta: hasSnap ? null : 'Run Staff Sync',
+                        ctaAction: hasSnap ? null : () => { setShowDexoWelcome(false); runAgentStaffSync(); },
+                    },
+                    ...(hasSnap && summary ? [{
+                        icon: Cpu,
+                        color: THEME.chart.violet,
+                        title: "Here's what Dexo found",
+                        body: summary.slice(0, 320) + (summary.length > 320 ? '…' : ''),
+                        cta: null,
+                        ctaAction: null,
+                    }] : []),
+                    ...(focusLines.length > 0 ? [{
+                        icon: Target,
+                        color: THEME.chart.emerald,
+                        title: 'Dexo recommends you focus on',
+                        body: focusLines.slice(0, 3).map((l, i) => `${i + 1}. ${l}`).join('\n'),
+                        cta: null,
+                        ctaAction: null,
+                    }] : []),
+                    ...(attn > 0 ? [{
+                        icon: AlertTriangle,
+                        color: '#f59e0b',
+                        title: `${attn} thing${attn > 1 ? 's' : ''} need${attn === 1 ? 's' : ''} your attention`,
+                        body: staffAttentionPending.slice(0, 2).map(a => `• ${a.title}: ${a.message.slice(0, 80)}${a.message.length > 80 ? '…' : ''}`).join('\n'),
+                        cta: 'Ask Dexo about these',
+                        ctaAction: () => {
+                            if (staffAttentionPending[0]) setDexoBootstrap(buildDexoStaffAttentionBootstrap(staffAttentionPending[0]));
+                            setShowDexoWelcome(false);
+                            switchRoom('dexo');
+                        },
+                    }] : []),
+                    {
+                        icon: MessageSquare,
+                        color: THEME.chart.blue,
+                        title: 'Do you have anything specific in mind?',
+                        body: 'Ask Dexo directly — what should I change? What are the risks? What should I prioritize? Dexo knows your full venture context and will give you a direct answer.',
+                        cta: 'Open Dexo and ask',
+                        ctaAction: () => { setShowDexoWelcome(false); switchRoom('dexo'); },
+                    },
+                ] as const;
+
+                const step = STEPS[Math.min(dexoWelcomeStep, STEPS.length - 1)];
+                const isLast = dexoWelcomeStep >= STEPS.length - 1;
+                const StepIcon = step.icon;
+
+                // Auto-speak the current step
+                const speakBody = () => {
+                    try {
+                        resumeSpeechSynthIfNeeded();
+                        window.speechSynthesis.cancel();
+                        const u = new SpeechSynthesisUtterance(step.body.replace(/\n/g, '. '));
+                        const v = pickEnglishPlaybackVoice();
+                        if (v) u.voice = v;
+                        u.rate = 0.95;
+                        window.speechSynthesis.speak(u);
+                    } catch { /* noop */ }
+                };
+
+                return (
+                    <div
+                        className="fixed inset-0 z-[300] flex items-center justify-center p-4"
+                        style={{ background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)' }}
+                        onClick={() => { window.speechSynthesis?.cancel(); setShowDexoWelcome(false); }}
+                    >
+                        <div
+                            className="relative w-full max-w-lg overflow-hidden rounded-2xl border shadow-[0_32px_80px_rgba(0,0,0,0.65)]"
+                            style={{ background: 'rgba(14,14,20,0.99)', borderColor: `${step.color}35` }}
+                            onClick={e => e.stopPropagation()}
+                        >
+                            {/* Top accent bar */}
+                            <div className="absolute inset-x-0 top-0 h-0.5" style={{ background: `linear-gradient(90deg, transparent, ${step.color}, transparent)` }} />
+
+                            {/* Step indicator dots */}
+                            <div className="flex items-center justify-center gap-1.5 pt-5">
+                                {STEPS.map((_, i) => (
+                                    <button
+                                        key={i}
+                                        type="button"
+                                        onClick={() => { window.speechSynthesis?.cancel(); setDexoWelcomeStep(i); }}
+                                        className="h-1.5 rounded-full transition-all"
+                                        style={{ width: i === dexoWelcomeStep ? '1.5rem' : '0.375rem', background: i === dexoWelcomeStep ? step.color : 'rgba(255,255,255,0.18)' }}
+                                    />
+                                ))}
+                            </div>
+
+                            {/* Body */}
+                            <div className="px-6 pb-6 pt-4">
+                                {/* Icon + title */}
+                                <div className="mb-4 flex items-start gap-3">
+                                    <div
+                                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+                                        style={{ background: `${step.color}18`, boxShadow: `0 0 0 1px ${step.color}28` }}
+                                    >
+                                        <StepIcon className="h-5 w-5" style={{ color: step.color }} />
+                                    </div>
+                                    <div className="min-w-0 flex-1 pt-0.5">
+                                        <p className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: step.color }}>Dexo</p>
+                                        <h3 className="mt-0.5 text-[15px] font-semibold leading-snug" style={{ color: THEME.text.primary }}>{step.title}</h3>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => { window.speechSynthesis?.cancel(); setShowDexoWelcome(false); }}
+                                        className="shrink-0 flex h-7 w-7 items-center justify-center rounded-lg transition hover:bg-white/10"
+                                        style={{ color: THEME.text.muted }}
+                                    >✕</button>
+                                </div>
+
+                                {/* Content */}
+                                <div
+                                    className="rounded-xl border px-4 py-3.5"
+                                    style={{ borderColor: `${step.color}15`, background: `${step.color}07` }}
+                                >
+                                    <p className="whitespace-pre-line text-[13px] leading-relaxed" style={{ color: THEME.text.secondary }}>
+                                        {step.body}
+                                    </p>
+                                </div>
+
+                                {/* Speak button */}
+                                <button
+                                    type="button"
+                                    onClick={speakBody}
+                                    className="mt-3 flex items-center gap-1.5 text-[11px] font-medium transition hover:opacity-80"
+                                    style={{ color: THEME.text.muted }}
+                                >
+                                    <Mic className="h-3.5 w-3.5" style={{ color: step.color }} />
+                                    Hear Dexo read this
+                                </button>
+
+                                {/* Navigation */}
+                                <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+                                    <div className="flex items-center gap-2">
+                                        {dexoWelcomeStep > 0 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => { window.speechSynthesis?.cancel(); setDexoWelcomeStep(s => s - 1); }}
+                                                className="rounded-xl border px-4 py-2 text-[12px] font-medium transition hover:opacity-80"
+                                                style={{ borderColor: THEME.border.default, background: 'rgba(255,255,255,0.05)', color: THEME.text.secondary }}
+                                            >← Back</button>
+                                        )}
+                                        {!isLast ? (
+                                            <button
+                                                type="button"
+                                                onClick={() => { window.speechSynthesis?.cancel(); setDexoWelcomeStep(s => s + 1); }}
+                                                className="rounded-xl border px-5 py-2 text-[12px] font-semibold transition-all hover:opacity-80"
+                                                style={{ borderColor: `${step.color}40`, background: `${step.color}15`, color: step.color }}
+                                            >Next →</button>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                onClick={() => { window.speechSynthesis?.cancel(); setShowDexoWelcome(false); }}
+                                                className="rounded-xl border px-5 py-2 text-[12px] font-semibold transition-all hover:opacity-80"
+                                                style={{ borderColor: `${step.color}40`, background: `${step.color}15`, color: step.color }}
+                                            >Got it — show me the overview</button>
+                                        )}
+                                    </div>
+                                    {step.cta && step.ctaAction && (
+                                        <button
+                                            type="button"
+                                            onClick={step.ctaAction}
+                                            className="flex items-center gap-1.5 rounded-xl border px-4 py-2 text-[12px] font-semibold transition-all hover:opacity-80 active:scale-[0.98]"
+                                            style={{ borderColor: 'rgba(116,86,255,0.35)', background: 'rgba(116,86,255,0.18)', color: THEME.accent.primary }}
+                                        >
+                                            <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                                            {step.cta}
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* Skip */}
+                                <button
+                                    type="button"
+                                    onClick={() => { window.speechSynthesis?.cancel(); setShowDexoWelcome(false); }}
+                                    className="mt-3 w-full text-center text-[10px] transition hover:opacity-80"
+                                    style={{ color: THEME.text.muted }}
+                                >
+                                    Skip — take me to the overview
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })()}
+
             {/* HEADER */}
             <header className="sticky top-0 z-40 border-b backdrop-blur-xl" style={{ background: 'rgba(30,30,30,0.88)', borderColor: THEME.border.subtle }}>
                 <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
