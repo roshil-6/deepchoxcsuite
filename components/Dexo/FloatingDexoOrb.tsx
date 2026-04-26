@@ -301,10 +301,6 @@ function FloatingChat({
 
         void (async () => {
             if (!mutedRef.current) {
-                // Open mic immediately for barge-in (works on macOS / some Chrome configs).
-                // On Windows Chrome, TTS kills recognition instantly — onend guard prevents
-                // the loop, and we reopen below after TTS ends as a safe fallback.
-                if (talkLiveRef.current && !sig.aborted) startListeningRef.current();
                 try {
                     markAssistantSpeaking(true);
                     await speakDexoResponseAloud(greet, sig);
@@ -312,7 +308,8 @@ function FloatingChat({
                     markAssistantSpeaking(false);
                 }
             }
-            // Reopen mic after greeting for systems where concurrent listening failed.
+            // Open mic AFTER TTS ends — the echoCooldownUntilRef in the hook suppresses
+            // any residual speaker echo picked up during the first 850ms.
             if (!sig.aborted && talkLiveRef.current) {
                 window.setTimeout(() => {
                     if (talkLiveRef.current) startListeningRef.current();
@@ -491,15 +488,13 @@ function FloatingChat({
             const sig = speechAborterRef.current.signal;
             if (!mutedRef.current) {
                 void (async () => {
-                    // Open mic concurrently for barge-in; onend guard stops the loop if Chrome kills it
-                    if (talkLiveRef.current && !sig.aborted) startListeningRef.current();
                     try {
                         markAssistantSpeaking(true);
                         await speakDexoResponseAloud(dexoReply, sig);
                     } finally {
                         markAssistantSpeaking(false);
                     }
-                    // Fallback reopen after TTS for platforms where concurrent fails
+                    // Open mic after TTS — hook's echo cooldown suppresses residual speaker audio
                     if (talkLiveRef.current && !sig.aborted) {
                         window.setTimeout(() => {
                             if (talkLiveRef.current) startListeningRef.current();
@@ -507,7 +502,7 @@ function FloatingChat({
                     }
                 })();
             } else {
-                // Muted: no TTS, just open mic
+                // Muted: no TTS, open mic immediately
                 window.setTimeout(() => {
                     if (talkLiveRef.current && !sig.aborted) startListeningRef.current();
                 }, 300);
