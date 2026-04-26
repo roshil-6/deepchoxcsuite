@@ -80,8 +80,6 @@ import { FocusBriefingPanel } from '@/components/FocusBriefingPanel';
 import { DexoDailyBriefPanel } from '@/components/Dexo/DexoDailyBriefPanel';
 import { DexoOpsPanel } from '@/components/Dexo/DexoOpsPanel';
 import { PortfolioDailyIntelSection } from '@/components/Dexo/PortfolioDailyIntelSection';
-import { useSubscription } from '@/hooks/useSubscription';
-import { PlanGate } from '@/components/PlanGate';
 
 // ============================================================================
 // AI TOOL LOGO MARKS — inline SVG, no external deps
@@ -541,9 +539,6 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
         setDexoBootstrap,
     } = useOffice();
 
-    const { can } = useSubscription();
-    const hasDailyBriefPlan = can('dexoDailyBriefReports');
-
     const [dashboardExpanded, setDashboardExpanded] = useState(false);
     const [portfolioDashExpanded, setPortfolioDashExpanded] = useState(false);
     const [activeTab, setActiveTab] = useState<'overview' | 'analytics' | 'activity' | 'dexo_daily'>('overview');
@@ -605,7 +600,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     }, [activeRoom, activeProject?.id, activeProject?.agentStaffSnapshot?.at]);
 
     useEffect(() => {
-        if (activeRoom !== 'dashboard' || !activeProject?.id || !hasDailyBriefPlan) return;
+        if (activeRoom !== 'dashboard' || !activeProject?.id) return;
         const key = `deepchox-dexo-pulse:${activeProject.id}:${new Date().toISOString().slice(0, 10)}`;
         try {
             if (typeof window !== 'undefined' && localStorage.getItem(key)) return;
@@ -638,7 +633,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
             .catch(() => {
                 // non-blocking dashboard warmup
             });
-    }, [activeRoom, activeProject, hasDailyBriefPlan]);
+    }, [activeRoom, activeProject]);
 
     // Parse strategy data
     const strategyDoc = useMemo(() => parseStrategy(activeProject?.strategy || ''), [activeProject?.strategy]);
@@ -2150,12 +2145,10 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                 )}
 
                 {activeTab === 'dexo_daily' && (
-                    <PlanGate feature="dexoDailyBriefReports">
-                        <div className="space-y-6">
-                            <DexoOpsPanel activeProject={activeProject} />
-                            <DexoDailyBriefPanel activeProject={activeProject} autoRunPulse />
-                        </div>
-                    </PlanGate>
+                    <div className="space-y-6">
+                        <DexoOpsPanel activeProject={activeProject} />
+                        <DexoDailyBriefPanel activeProject={activeProject} autoRunPulse />
+                    </div>
                 )}
             </main>
 
