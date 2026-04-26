@@ -71,7 +71,7 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
 
         {/* Main Workspace */}
         <NavSection label="Overview">
-          <NavItem icon={<LayoutGrid className="w-4 h-4" />} label="Executive Overview" isActive={activeRoom === 'dashboard'} onClick={() => { setActiveProject(null); switchRoom('dashboard'); }} />
+          <NavItem icon={<LayoutGrid className="w-4 h-4" />} label="Executive Overview" isActive={activeRoom === 'dashboard'} onClick={() => switchRoom('dashboard')} />
           <NavItem
             icon={<MessageSquare className="w-4 h-4" />}
             label="Assistant"
