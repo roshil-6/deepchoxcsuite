@@ -146,6 +146,10 @@ function FloatingChat({
     const [inputText, setInputText] = useState('');
     const [messages, setMessages] = useState<DexoConvoMessage[]>([]);
     const [loading, setLoading] = useState(false);
+    const [muted, setMuted] = useState(false);
+    const [isChatSpeaking, setIsChatSpeaking] = useState(false);
+    const mutedRef = useRef(false);
+    mutedRef.current = muted;
     const msgId = useRef(0);
     const messagesRef = useRef<DexoConvoMessage[]>([]);
     const skipPersistRef = useRef(true);
@@ -300,11 +304,13 @@ function FloatingChat({
                     if (talkLiveRef.current) startListeningRef.current();
                 }, 380);
             }
-            try {
-                markAssistantSpeaking(true);
-                await speakDexoResponseAloud(greet, sig);
-            } finally {
-                markAssistantSpeaking(false);
+            if (!mutedRef.current) {
+                try {
+                    markAssistantSpeaking(true);
+                    await speakDexoResponseAloud(greet, sig);
+                } finally {
+                    markAssistantSpeaking(false);
+                }
             }
             if (!sig.aborted && talkLiveRef.current) {
                 window.setTimeout(() => {
@@ -485,19 +491,32 @@ function FloatingChat({
             window.setTimeout(() => {
                 if (talkLiveRef.current && !sig.aborted) startListeningRef.current();
             }, 380);
-            void (async () => {
-                try {
-                    markAssistantSpeaking(true);
-                    await speakDexoResponseAloud(dexoReply, sig);
-                } finally {
-                    markAssistantSpeaking(false);
-                }
-                if (talkLiveRef.current && !sig.aborted) {
-                    window.setTimeout(() => {
-                        if (talkLiveRef.current) startListeningRef.current();
-                    }, 400);
-                }
-            })();
+            if (!mutedRef.current) {
+                void (async () => {
+                    try {
+                        markAssistantSpeaking(true);
+                        await speakDexoResponseAloud(dexoReply, sig);
+                    } finally {
+                        markAssistantSpeaking(false);
+                    }
+                    if (talkLiveRef.current && !sig.aborted) {
+                        window.setTimeout(() => {
+                            if (talkLiveRef.current) startListeningRef.current();
+                        }, 400);
+                    }
+                })();
+            }
+        }
+
+        // Chat mode: speak Dexo's reply aloud (respects mute toggle)
+        if (variant === 'chat' && dexoReply && !mutedRef.current) {
+            speechAborterRef.current?.abort();
+            const ac = new AbortController();
+            speechAborterRef.current = ac;
+            setIsChatSpeaking(true);
+            void speakDexoResponseAloud(dexoReply, ac.signal).then(() => {
+                setIsChatSpeaking(false);
+            });
         }
     };
 
@@ -508,8 +527,22 @@ function FloatingChat({
         }
     };
 
+    const toggleMute = useCallback(() => {
+        const nowMuted = !mutedRef.current;
+        setMuted(nowMuted);
+        if (nowMuted) {
+            speechAborterRef.current?.abort();
+            setIsChatSpeaking(false);
+            try { window.speechSynthesis.cancel(); } catch { /* noop */ }
+        }
+    }, []);
+
     const requestClose = useCallback(() => {
         if (variant === 'talk') endTalkSession();
+        // Stop any chat TTS on close
+        speechAborterRef.current?.abort();
+        setIsChatSpeaking(false);
+        try { window.speechSynthesis.cancel(); } catch { /* noop */ }
         onClose();
     }, [variant, endTalkSession, onClose]);
 
@@ -522,17 +555,17 @@ function FloatingChat({
                   : loading
                     ? DEXO_LOADING_TAGLINES[loadingTick]
                     : 'Live · ready'
-            : isListening
-              ? 'Listening'
-              : isSpeaking
-                ? 'Speaking'
-                : loading
-                  ? DEXO_LOADING_TAGLINES[loadingTick]
+            : loading
+              ? DEXO_LOADING_TAGLINES[loadingTick]
+              : isChatSpeaking && !muted
+                ? 'Speaking — tap 🔇 to mute'
+                : isListening
+                  ? 'Listening'
                   : 'Idle';
 
     return (
         <div
-            className="flex w-[min(372px,calc(100vw-1rem))] max-h-[min(520px,calc(100dvh-5rem))] flex-col overflow-hidden rounded-xl border border-zinc-300/90 bg-zinc-50 shadow-[0_20px_50px_rgba(15,23,42,0.18)]"
+            className="flex w-[min(372px,calc(100vw-1rem))] max-h-[min(500px,calc(100dvh-12rem))] flex-col overflow-hidden rounded-xl border border-zinc-300/90 bg-zinc-50 shadow-[0_20px_50px_rgba(15,23,42,0.18)]"
         >
             <div className="flex shrink-0 items-center justify-between border-b border-zinc-200/90 bg-gradient-to-b from-white to-zinc-100/95 px-3.5 py-3">
                 <div className="flex min-w-0 items-center gap-2.5">
@@ -587,6 +620,25 @@ function FloatingChat({
                             <MessageSquarePlus className="h-3.5 w-3.5" strokeWidth={1.75} />
                         </button>
                     )}
+                    {/* Mute / unmute Dexo voice */}
+                    <button
+                        type="button"
+                        onClick={toggleMute}
+                        className={`rounded-md p-1.5 transition hover:bg-zinc-200/80 ${
+                            muted
+                                ? 'text-rose-400 hover:text-rose-600'
+                                : isChatSpeaking
+                                  ? 'text-teal-600 hover:text-teal-800'
+                                  : 'text-zinc-500 hover:text-zinc-800'
+                        }`}
+                        title={muted ? 'Unmute Dexo' : 'Mute Dexo'}
+                        aria-label={muted ? 'Unmute Dexo' : 'Mute Dexo'}
+                    >
+                        {muted
+                            ? <VolumeX className="h-3.5 w-3.5" strokeWidth={1.75} />
+                            : <Volume2 className="h-3.5 w-3.5" strokeWidth={1.75} />
+                        }
+                    </button>
                     <button
                         type="button"
                         onClick={onExpand}
@@ -606,7 +658,7 @@ function FloatingChat({
                 </div>
             </div>
 
-            <div className="custom-scrollbar min-h-[120px] max-h-[min(340px,calc(100dvh-16rem))] flex-1 space-y-2.5 overflow-y-auto bg-zinc-50/90 px-3 py-3 sm:px-3.5">
+            <div className="custom-scrollbar min-h-[100px] flex-1 space-y-2.5 overflow-y-auto bg-zinc-50/90 px-3 py-3 sm:px-3.5">
                 {messages.length === 0 && variant === 'chat' && (
                     <div className="flex h-full flex-col items-center justify-center px-2 py-12">
                         <p className="max-w-[248px] text-center text-[12px] leading-relaxed text-zinc-500">
