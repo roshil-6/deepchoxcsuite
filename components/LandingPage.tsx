@@ -296,49 +296,41 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                     <div className="mx-auto grid max-w-3xl gap-4 sm:grid-cols-2">
 
                         {/* Free card */}
-                        <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-zinc-800/80 bg-gradient-to-b from-zinc-900/60 to-zinc-950 p-6 shadow-[0_12px_40px_-20px_rgba(0,0,0,0.7)] transition-all duration-300 hover:-translate-y-0.5 hover:border-zinc-700 hover:shadow-[0_20px_48px_-20px_rgba(0,0,0,0.8)]">
+                        <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-zinc-800/60 bg-gradient-to-b from-zinc-900/40 to-zinc-950/90 p-7 shadow-[0_12px_40px_-20px_rgba(0,0,0,0.6)] transition-all duration-300 hover:-translate-y-0.5 hover:border-zinc-700/70 hover:shadow-[0_20px_48px_-20px_rgba(0,0,0,0.75)]">
                             {/* Top accent */}
-                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-600/60 to-transparent" aria-hidden />
+                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-600/40 to-transparent" aria-hidden />
 
                             {/* Tier + price */}
-                            <p className="font-sans text-[10px] font-bold uppercase tracking-[0.24em] text-zinc-500">
+                            <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
                                 Founder
                             </p>
-                            <div className="mt-3 flex items-end gap-2">
-                                <p className="font-sans text-[38px] font-black leading-none tracking-tight text-white">
-                                    Free
-                                </p>
-                            </div>
-                            <p className="mt-1.5 font-sans text-[12px] text-zinc-600">
-                                Forever — no credit card, no catch
+                            <p className="mt-4 font-sans text-[40px] font-black leading-none tracking-tight text-white">
+                                Free
+                            </p>
+                            <p className="mt-2 font-sans text-[12.5px] text-zinc-500">
+                                Forever — no card, no catch
                             </p>
 
-                            <div className="my-5 h-px bg-zinc-800/60" />
+                            <div className="my-6 h-px bg-zinc-800/50" />
 
                             {/* Features */}
-                            <ul className="flex-1 space-y-3.5">
+                            <ul className="flex-1 space-y-4">
                                 <li className="flex items-start gap-3">
-                                    <span className="mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full bg-zinc-800">
-                                        <Check className="h-2.5 w-2.5 text-zinc-400" aria-hidden />
+                                    <span className="mt-[3px] flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800/80">
+                                        <Check className="h-3 w-3 text-zinc-400" aria-hidden />
                                     </span>
-                                    <span className="font-sans text-[13px] leading-relaxed text-zinc-400">
-                                        <span className="font-semibold text-zinc-200">Full workspace</span> — every desk, Dexo chat &amp; analysis, staff sync, calendar, ventures, and tools
+                                    <span className="font-sans text-[13.5px] leading-relaxed text-zinc-400">
+                                        <span className="font-medium text-zinc-200">Full workspace</span>
+                                        <span className="mt-0.5 block text-[12px] text-zinc-500">Every desk, Dexo chat, daily briefs, staff sync, calendar, ventures &amp; tools</span>
                                     </span>
                                 </li>
                                 <li className="flex items-start gap-3">
-                                    <span className="mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full bg-zinc-800">
-                                        <Check className="h-2.5 w-2.5 text-zinc-400" aria-hidden />
+                                    <span className="mt-[3px] flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800/80">
+                                        <Check className="h-3 w-3 text-zinc-400" aria-hidden />
                                     </span>
-                                    <span className="font-sans text-[13px] leading-relaxed text-zinc-400">
-                                        <span className="font-semibold text-zinc-200">Daily AI tokens</span> — {FREE_DAILY_TOKENS} tokens/day · {TOKEN_COSTS.ANALYSIS} per analysis · {TOKEN_COSTS.CHAT_MESSAGE} per message
-                                    </span>
-                                </li>
-                                <li className="flex items-start gap-3 opacity-50">
-                                    <span className="mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full bg-zinc-800/50">
-                                        <span className="h-1.5 w-1.5 rounded-full bg-zinc-600" />
-                                    </span>
-                                    <span className="font-sans text-[13px] leading-relaxed text-zinc-500">
-                                        Daily research reports — Pro only
+                                    <span className="font-sans text-[13.5px] leading-relaxed text-zinc-400">
+                                        <span className="font-medium text-zinc-200">{FREE_DAILY_TOKENS} AI tokens/day</span>
+                                        <span className="mt-0.5 block text-[12px] text-zinc-500">Shared across Dexo chat and analysis — resets at midnight</span>
                                     </span>
                                 </li>
                             </ul>
@@ -346,27 +338,27 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                             <button
                                 type="button"
                                 onClick={continueWithoutSigningIn}
-                                className="mt-6 w-full rounded-xl border border-zinc-700/80 bg-zinc-900 py-3 font-sans text-[14px] font-semibold text-zinc-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-all duration-200 hover:border-zinc-600 hover:bg-zinc-800 hover:text-white hover:shadow-[0_4px_20px_-8px_rgba(0,0,0,0.6)]"
+                                className="mt-7 w-full rounded-xl border border-zinc-700/70 bg-zinc-900/80 py-3.5 font-sans text-[14px] font-semibold text-zinc-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-all duration-200 hover:border-zinc-600 hover:bg-zinc-800 hover:text-white"
                             >
                                 Start building — free
                             </button>
-                            <p className="mt-2.5 text-center font-sans text-[11px] text-zinc-600">
+                            <p className="mt-3 text-center font-sans text-[11.5px] text-zinc-600">
                                 No sign-up required to explore
                             </p>
                         </div>
 
                         {/* Pro card */}
-                        <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-brand-teal/30 bg-gradient-to-b from-[#0d0b1a] via-zinc-950 to-black p-6 shadow-[0_0_0_1px_rgba(116,86,255,0.06),0_24px_60px_-20px_rgba(116,86,255,0.35)] transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-teal/50 hover:shadow-[0_0_0_1px_rgba(116,86,255,0.1),0_28px_70px_-18px_rgba(116,86,255,0.45)]">
+                        <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-brand-teal/25 bg-gradient-to-b from-[#0d0b1a] via-[#0b0b16] to-black p-7 shadow-[0_0_0_1px_rgba(116,86,255,0.05),0_24px_60px_-20px_rgba(116,86,255,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-teal/40 hover:shadow-[0_0_0_1px_rgba(116,86,255,0.08),0_28px_70px_-18px_rgba(116,86,255,0.38)]">
                             {/* Ambient glow blobs */}
-                            <span className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-brand-teal/12 blur-3xl" aria-hidden />
-                            <span className="pointer-events-none absolute -bottom-20 -left-12 h-44 w-44 rounded-full bg-[#8b74ff]/10 blur-3xl" aria-hidden />
+                            <span className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-brand-teal/8 blur-3xl" aria-hidden />
+                            <span className="pointer-events-none absolute -bottom-20 -left-12 h-44 w-44 rounded-full bg-[#8b74ff]/8 blur-3xl" aria-hidden />
 
                             {/* Top gradient accent */}
-                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-teal/70 to-transparent" aria-hidden />
+                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-teal/50 to-transparent" aria-hidden />
 
                             {/* Recommended badge */}
                             <div className="absolute -top-px left-1/2 -translate-x-1/2">
-                                <span className="inline-flex items-center gap-1.5 rounded-b-full border border-t-0 border-brand-teal/35 bg-gradient-to-b from-brand-teal/20 to-brand-teal/8 px-3.5 py-1 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-white/90 backdrop-blur-sm">
+                                <span className="inline-flex items-center gap-1.5 rounded-b-full border border-t-0 border-brand-teal/30 bg-gradient-to-b from-brand-teal/15 to-brand-teal/5 px-3.5 py-1 font-sans text-[10px] font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur-sm">
                                     <Sparkles className="h-2.5 w-2.5 text-brand-teal" aria-hidden />
                                     Recommended
                                 </span>
@@ -375,61 +367,61 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                             <div className="relative flex flex-1 flex-col pt-3">
                                 {/* Tier label */}
                                 <div className="flex items-center gap-2">
-                                    <Sparkles className="h-3.5 w-3.5 text-brand-teal/80" aria-hidden />
-                                    <p className="font-sans text-[10px] font-bold uppercase tracking-[0.24em] text-brand-teal/80">
+                                    <Sparkles className="h-3 w-3 text-brand-teal/70" aria-hidden />
+                                    <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.22em] text-brand-teal/70">
                                         Co-Founder Pro
                                     </p>
                                 </div>
 
                                 {/* Price */}
-                                <div className="mt-3 flex items-end gap-2">
-                                    <p className="font-sans text-[38px] font-black leading-none tracking-tight text-white">
+                                <div className="mt-4 flex items-end gap-2">
+                                    <p className="font-sans text-[40px] font-black leading-none tracking-tight text-white">
                                         {formatRegionalPricePair(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 }).primary}
                                     </p>
-                                    <span className="mb-1.5 font-sans text-[15px] text-zinc-500">/mo</span>
+                                    <span className="mb-2 font-sans text-[14px] text-zinc-500">/mo</span>
                                 </div>
-                                <p className="mt-1 font-sans text-[12px] text-zinc-600">
+                                <p className="mt-1.5 font-sans text-[12.5px] text-zinc-500">
                                     {formatRegionalPricePair(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 }).secondary} &middot; billed monthly &middot; cancel anytime
                                 </p>
 
-                                <div className="my-5 h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
+                                <div className="my-6 h-px bg-gradient-to-r from-transparent via-zinc-800/60 to-transparent" />
 
                                 {/* Feature highlight blocks */}
                                 <div className="flex flex-1 flex-col gap-3">
-                                    <div className="flex gap-3 rounded-xl border border-brand-teal/20 bg-brand-teal/[0.06] p-3.5 transition-colors duration-200 group-hover:border-brand-teal/30 group-hover:bg-brand-teal/[0.09]">
-                                        <Infinity className="mt-0.5 h-4 w-4 shrink-0 text-brand-teal" aria-hidden />
+                                    <div className="flex gap-3.5 rounded-xl border border-brand-teal/15 bg-brand-teal/[0.05] p-4 transition-colors duration-200 group-hover:border-brand-teal/25 group-hover:bg-brand-teal/[0.08]">
+                                        <Infinity className="mt-0.5 h-4 w-4 shrink-0 text-brand-teal/80" aria-hidden />
                                         <div>
-                                            <p className="font-sans text-[12px] font-semibold leading-snug text-zinc-100">
+                                            <p className="font-sans text-[13px] font-semibold leading-snug text-zinc-100">
                                                 Unlimited AI — no daily cap
                                             </p>
-                                            <p className="mt-1 font-sans text-[11px] leading-snug text-zinc-400">
-                                                Dexo, analyses, and chat run freely. Same workspace as Founder — just no meter watching you.
+                                            <p className="mt-1.5 font-sans text-[12px] leading-relaxed text-zinc-400">
+                                                Dexo, analyses, and chat run freely — no meter, no resets.
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="flex gap-3 rounded-xl border border-[#8b74ff]/20 bg-[#8b74ff]/[0.05] p-3.5 transition-colors duration-200 group-hover:border-[#8b74ff]/30 group-hover:bg-[#8b74ff]/[0.09]">
-                                        <Globe className="mt-0.5 h-4 w-4 shrink-0 text-[#9d88ff]" aria-hidden />
+                                    <div className="flex gap-3.5 rounded-xl border border-[#8b74ff]/15 bg-[#8b74ff]/[0.04] p-4 transition-colors duration-200 group-hover:border-[#8b74ff]/25 group-hover:bg-[#8b74ff]/[0.07]">
+                                        <Globe className="mt-0.5 h-4 w-4 shrink-0 text-[#9d88ff]/80" aria-hidden />
                                         <div>
-                                            <p className="font-sans text-[12px] font-semibold leading-snug text-zinc-100">
-                                                Daily research reports
+                                            <p className="font-sans text-[13px] font-semibold leading-snug text-zinc-100">
+                                                Advanced simulations
                                             </p>
-                                            <p className="mt-1 font-sans text-[11px] leading-snug text-zinc-400">
-                                                Automated live-web brief every morning — dual-model synthesis, saved history, venture updates, Dashboard tab.
+                                            <p className="mt-1.5 font-sans text-[12px] leading-relaxed text-zinc-400">
+                                                Wargame multi-round + cross-venture intelligence for portfolio-level decisions.
                                             </p>
                                         </div>
                                     </div>
-                                    <p className="font-sans text-[11.5px] leading-relaxed text-zinc-500">
-                                        Every desk, venture, and tool from Founder — Pro just removes the ceiling.
+                                    <p className="px-0.5 font-sans text-[12px] leading-relaxed text-zinc-500">
+                                        Everything in Founder — Pro just removes the ceiling.
                                     </p>
                                 </div>
 
                                 {/* CTA */}
                                 <a
                                     href={LANDING_SIGN_UP_HREF}
-                                    className="group/btn relative mt-5 inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-b from-white to-zinc-100 py-3.5 font-sans text-[14px] font-bold text-zinc-900 shadow-[0_4px_28px_rgba(116,86,255,0.3),inset_0_1px_0_rgba(255,255,255,0.9)] transition-all duration-200 hover:shadow-[0_6px_32px_rgba(116,86,255,0.48)] active:scale-[0.98]"
+                                    className="group/btn relative mt-6 inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-b from-white to-zinc-100 py-3.5 font-sans text-[14px] font-bold text-zinc-900 shadow-[0_4px_24px_rgba(116,86,255,0.25),inset_0_1px_0_rgba(255,255,255,0.9)] transition-all duration-200 hover:shadow-[0_6px_32px_rgba(116,86,255,0.4)] active:scale-[0.98]"
                                 >
                                     <span
-                                        className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-brand-teal/15 to-transparent transition-transform duration-700 group-hover/btn:translate-x-full"
+                                        className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-brand-teal/12 to-transparent transition-transform duration-700 group-hover/btn:translate-x-full"
                                         aria-hidden
                                     />
                                     <Sparkles className="relative h-4 w-4 shrink-0" aria-hidden />
@@ -437,7 +429,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                                         {`Upgrade to Pro — ${formatRegionalPricePair(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 }).primary}/mo`}
                                     </span>
                                 </a>
-                                <p className="mt-2.5 text-center font-sans text-[10.5px] text-zinc-600">
+                                <p className="mt-3 text-center font-sans text-[11.5px] text-zinc-600">
                                     Instant access &middot; cancel anytime &middot; no questions asked
                                 </p>
                             </div>

@@ -138,30 +138,28 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                         <div className="grid gap-3 sm:grid-cols-2">
 
                             {/* Free card */}
-                            <div className="flex flex-col rounded-xl border border-zinc-800 bg-zinc-950 p-4 shadow-[0_12px_28px_-24px_rgba(0,0,0,0.8)] sm:p-5">
-                                <p className="text-xs font-medium text-zinc-500">Founder</p>
-                                <p className="mt-3 text-3xl font-semibold leading-none tracking-tight text-white">
+                            <div className="flex flex-col rounded-2xl border border-zinc-800/60 bg-gradient-to-b from-zinc-900/50 to-zinc-950 p-5 sm:p-6">
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">Founder</p>
+                                <p className="mt-4 text-[32px] font-bold leading-none tracking-tight text-white">
                                     Free
                                 </p>
-                                <p className="mt-1.5 text-xs text-zinc-600">forever · no card needed</p>
+                                <p className="mt-1.5 text-[12px] text-zinc-500">Forever — no card needed</p>
 
-                                <div className="my-4 h-px bg-zinc-800/80" />
+                                <div className="my-5 h-px bg-zinc-800/60" />
 
-                                <ul className="flex-1 space-y-3">
-                                    <li className="flex items-start gap-2">
-                                        <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
-                                        <p className="text-xs leading-relaxed text-zinc-300">
-                                            <span className="font-medium text-zinc-200">Full workspace access</span>
-                                            {' — '}all research desks, Dexo chat, daily briefs, staff sync, dashboard, calendar, ventures, and every tool.
-                                        </p>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
+                                <ul className="flex-1 space-y-4">
+                                    <li className="flex items-start gap-2.5">
+                                        <Check className="mt-[3px] h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
                                         <div>
-                                            <p className="text-xs font-medium text-zinc-200">AI usage has a daily limit</p>
-                                            <p className="mt-1 text-[11px] leading-snug text-zinc-500">
-                                                {FREE_DAILY_TOKENS} tokens per day, shared across Dexo analyses and chat. Resets at midnight.
-                                            </p>
+                                            <p className="text-[12.5px] font-medium leading-snug text-zinc-200">Full workspace</p>
+                                            <p className="mt-1 text-[11.5px] leading-relaxed text-zinc-500">Every desk, Dexo, daily briefs, staff sync, calendar &amp; tools</p>
+                                        </div>
+                                    </li>
+                                    <li className="flex items-start gap-2.5">
+                                        <Check className="mt-[3px] h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
+                                        <div>
+                                            <p className="text-[12.5px] font-medium leading-snug text-zinc-200">{FREE_DAILY_TOKENS} AI tokens/day</p>
+                                            <p className="mt-1 text-[11.5px] leading-relaxed text-zinc-500">Shared across chat &amp; analysis — resets at midnight</p>
                                         </div>
                                     </li>
                                 </ul>
@@ -170,69 +168,62 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                                     <button
                                         type="button"
                                         onClick={() => { deactivatePro(); onClose(); }}
-                                        className="mt-5 w-full rounded-lg border border-zinc-700 bg-zinc-900 py-2.5 text-xs text-zinc-300 transition hover:border-zinc-600 hover:bg-zinc-800 hover:text-white"
+                                        className="mt-6 w-full rounded-xl border border-zinc-700/70 bg-zinc-900 py-2.5 text-xs font-medium text-zinc-400 transition hover:border-zinc-600 hover:bg-zinc-800 hover:text-white"
                                     >
                                         Downgrade to Free
                                     </button>
                                 ) : (
-                                    <div className="mt-5 rounded-lg border border-zinc-800 bg-zinc-900 py-2.5 text-center text-xs text-zinc-400">
+                                    <div className="mt-6 rounded-xl border border-zinc-800/60 bg-zinc-900/60 py-2.5 text-center text-[12px] text-zinc-500">
                                         {isInTrial ? 'Trial active' : 'Current plan'}
                                     </div>
                                 )}
                             </div>
 
                             {/* Pro card */}
-                            <div className="relative flex flex-col rounded-xl border border-zinc-600/60 bg-zinc-900/60 p-4 ring-1 ring-white/[0.06] sm:p-5">
+                            <div className="relative flex flex-col overflow-hidden rounded-2xl border border-zinc-600/40 bg-gradient-to-b from-[#0e0c1a] to-zinc-950 p-5 ring-1 ring-white/[0.04] sm:p-6">
+                                {/* Subtle top glow */}
+                                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-violet-500/40 to-transparent" aria-hidden />
+                                <span className="pointer-events-none absolute -right-12 -top-12 h-36 w-36 rounded-full bg-violet-500/8 blur-3xl" aria-hidden />
+
                                 {/* Recommended badge */}
-                                <div className="absolute -top-px left-4 rounded-b-md bg-zinc-200 px-2.5 py-0.5">
-                                    <span className="text-[10px] font-semibold text-zinc-900">Recommended</span>
+                                <div className="absolute -top-px left-4 rounded-b-lg border border-t-0 border-violet-400/20 bg-violet-500/10 px-3 py-0.5">
+                                    <span className="text-[10px] font-semibold tracking-wide text-violet-300/80">Recommended</span>
                                 </div>
 
-                                <p className="mt-2 text-xs font-medium text-zinc-300">Co-Founder Pro</p>
+                                <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-violet-400/70">Co-Founder Pro</p>
 
                                 <div className="mt-3 flex items-end gap-1.5">
-                                    <span className="text-3xl font-semibold leading-none tracking-tight text-white">
-                                        {
-                                            formatRegionalPricePair(
-                                                isYearly ? PRO_BILLING.effectiveMonthlyInr : PRO_BILLING.monthlyInr,
-                                                pricingRegion,
-                                                { usdDecimals: 2, inrMaximumFractionDigits: isYearly ? 2 : 0 }
-                                            ).primary
-                                        }
-                                    </span>
-                                    <span className="mb-0.5 text-xs text-zinc-500">/mo</span>
-                                    <span className="mb-0.5 text-xs text-zinc-600">
-                                        (
+                                    <span className="text-[32px] font-bold leading-none tracking-tight text-white">
                                         {formatRegionalPricePair(
                                             isYearly ? PRO_BILLING.effectiveMonthlyInr : PRO_BILLING.monthlyInr,
                                             pricingRegion,
                                             { usdDecimals: 2, inrMaximumFractionDigits: isYearly ? 2 : 0 }
-                                        ).secondary}
-                                        )
+                                        ).primary}
                                     </span>
+                                    <span className="mb-1 text-[12px] text-zinc-500">/mo</span>
                                 </div>
-                                <p className="mt-1 text-xs text-zinc-600">
+                                <p className="mt-1.5 text-[11.5px] text-zinc-500">
                                     {isYearly
                                         ? `${formatRegionalDualLine(PRO_BILLING.yearlyInr, pricingRegion, { usdDecimals: 2 })} /yr · billed annually`
                                         : 'billed monthly · cancel anytime'}
                                 </p>
 
-                                <div className="my-4 h-px bg-zinc-800/80" />
+                                <div className="my-5 h-px bg-zinc-800/50" />
 
                                 <div className="flex-1 space-y-3">
-                                    <div className="flex items-start gap-2.5 rounded-lg border border-emerald-500/20 bg-emerald-500/[0.06] px-3 py-2.5">
-                                        <Infinity className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" aria-hidden />
+                                    <div className="flex items-start gap-3 rounded-xl border border-emerald-500/15 bg-emerald-500/[0.05] px-3.5 py-3">
+                                        <Infinity className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400/80" aria-hidden />
                                         <div>
-                                            <p className="text-xs font-semibold text-zinc-100">Unlimited AI — no daily cap</p>
-                                            <p className="mt-1 text-[11px] leading-snug text-zinc-400">
-                                                Run as many analyses, chats, and re-analyses as you want. No token counting, no daily resets — just work.
+                                            <p className="text-[12.5px] font-semibold text-zinc-100">Unlimited AI — no daily cap</p>
+                                            <p className="mt-1 text-[11.5px] leading-relaxed text-zinc-400">
+                                                Analyses, chat, and re-runs — no token meter, no resets.
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="flex items-start gap-2">
-                                        <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500/70" aria-hidden />
-                                        <p className="text-[11px] leading-relaxed text-zinc-400">
-                                            Everything in Founder, plus advanced wargame simulations and cross-venture intelligence.
+                                    <div className="flex items-start gap-2.5 px-0.5">
+                                        <Check className="mt-[3px] h-3.5 w-3.5 shrink-0 text-violet-400/60" aria-hidden />
+                                        <p className="text-[11.5px] leading-relaxed text-zinc-500">
+                                            Everything in Founder — plus wargame simulations &amp; cross-venture intelligence.
                                         </p>
                                     </div>
                                 </div>
