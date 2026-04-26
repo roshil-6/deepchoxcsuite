@@ -141,6 +141,8 @@ export function useDexoConversationalVoice({
   const abortControllerRef = useRef<AbortController | null>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const userPausedMicRef = useRef(false);
+  /** True while the user has the mic intentionally active (chat or talk mode). */
+  const micUserActiveRef = useRef(false);
   const isSpeakingRef = useRef(false);
   /** Timestamp until which mic results are suppressed (post-TTS echo cooldown). */
   const echoCooldownUntilRef = useRef(0);
@@ -440,18 +442,19 @@ export function useDexoConversationalVoice({
         return;
       }
       if (err === 'no-speech') {
+        // Restart on no-speech as long as the user has the mic active (chat or talk mode)
         if (
+          micUserActiveRef.current &&
           !userPausedMicRef.current &&
           !isSpeakingRef.current &&
-          talkLiveModeRef?.current &&
           !suspendAutoMicRestartRef?.current
         ) {
           window.setTimeout(() => {
             try {
               if (
+                micUserActiveRef.current &&
                 !userPausedMicRef.current &&
                 !isSpeakingRef.current &&
-                talkLiveModeRef?.current &&
                 !suspendAutoMicRestartRef?.current &&
                 recognitionRef.current
               ) {
@@ -475,19 +478,17 @@ export function useDexoConversationalVoice({
     recognition.onend = () => {
       setVoiceState((s) => (s === 'listening' ? 'idle' : s));
       if (userPausedMicRef.current) return;
-      // Never auto-restart while TTS is playing — Chrome kills the mic immediately,
-      // causing a rapid start/stop loop that makes the button flash and never hold.
+      // Never auto-restart while TTS is playing — Chrome kills the mic immediately.
       if (isSpeakingRef.current) return;
-      if (
-        talkLiveModeRef?.current &&
-        !suspendAutoMicRestartRef?.current
-      ) {
+      // Restart whenever the user has the mic intentionally active (chat OR talk mode).
+      // Chrome fires onend unexpectedly even with continuous:true — we must recover.
+      if (micUserActiveRef.current && !suspendAutoMicRestartRef?.current) {
         window.setTimeout(() => {
           try {
             if (
+              micUserActiveRef.current &&
               !userPausedMicRef.current &&
               !isSpeakingRef.current &&
-              talkLiveModeRef?.current &&
               !suspendAutoMicRestartRef?.current &&
               recognitionRef.current
             ) {
@@ -512,6 +513,7 @@ export function useDexoConversationalVoice({
   // Controls
   const startListening = useCallback(() => {
     userPausedMicRef.current = false;
+    micUserActiveRef.current = true;
     try {
       recognitionRef.current?.start();
       setVoiceState('listening');
@@ -525,7 +527,7 @@ export function useDexoConversationalVoice({
       // Never show a false "listening" state before the retry succeeds.
       try { recognitionRef.current?.stop(); } catch { /* noop */ }
       window.setTimeout(() => {
-        if (!userPausedMicRef.current) {
+        if (!userPausedMicRef.current && micUserActiveRef.current) {
           try {
             recognitionRef.current?.start();
             setVoiceState('listening');
@@ -537,6 +539,7 @@ export function useDexoConversationalVoice({
 
   const stopListening = useCallback(() => {
     userPausedMicRef.current = true;
+    micUserActiveRef.current = false;
     if (sendPauseTimerRef.current) { clearTimeout(sendPauseTimerRef.current); sendPauseTimerRef.current = null; }
     accumulatedSpeechRef.current = '';
     try {
