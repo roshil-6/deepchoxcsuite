@@ -40,7 +40,7 @@ const FREE_PLAN_BASE: Plan = {
         vcGauntlet: true,
         wargameNexus: true,
         intelligenceSuite: true,
-        dexoDailyBriefReports: false,
+        dexoDailyBriefReports: true,
         wargameMultiRound: false,
         crossVentureIntelligence: false,
     },

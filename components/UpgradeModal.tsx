@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { X, Check, Zap, Infinity } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useUser } from '@clerk/nextjs';
-import { FREE_DAILY_TOKENS, TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
+import { FREE_DAILY_TOKENS } from '@/lib/tokens/tokenSystem';
 import {
     BILLING_CONFIG,
     formatRegionalDualLine,
@@ -15,8 +15,6 @@ import {
 import { usePricingRegion } from '@/hooks/usePricingRegion';
 import { openRazorpayPaymentPage } from '@/lib/razorpayPaymentLink';
 
-/** One line for Free tier — only metering differs from Pro. */
-const FREE_METERING_LINE = `${FREE_DAILY_TOKENS} Dexo tokens per day (resets midnight) · ${TOKEN_COSTS.ANALYSIS} per new analysis · ${TOKEN_COSTS.REANALYZE} per re-analyze · ${TOKEN_COSTS.CHAT_MESSAGE} per Dexo message`;
 
 interface UpgradeModalProps {
     open: boolean;
@@ -73,7 +71,7 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                 <div className="flex shrink-0 items-center justify-between border-b border-zinc-800/80 px-5 py-4 sm:px-6">
                     <div>
                         <p className="text-sm font-semibold text-white">Co-Founder Pro</p>
-                        <p className="mt-0.5 text-xs text-zinc-500">Unlimited AI usage — same workspace as Founder, no token meter</p>
+                        <p className="mt-0.5 text-xs text-zinc-500">Remove the daily AI limit — use Dexo as much as you need, no cap</p>
                     </div>
                     <button
                         type="button"
@@ -153,19 +151,17 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                                     <li className="flex items-start gap-2">
                                         <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
                                         <p className="text-xs leading-relaxed text-zinc-300">
-                                            <span className="font-medium text-zinc-200">Almost everything Pro has</span>
-                                            {' — '}research desks, Dexo chat &amp; analysis, staff sync, dashboard, calendar,
-                                            ventures, and tools.{' '}
-                                            <span className="text-zinc-500">
-                                                Dexo daily research reports (web briefs + Daily brief tab) require Pro.
-                                            </span>
+                                            <span className="font-medium text-zinc-200">Full workspace access</span>
+                                            {' — '}all research desks, Dexo chat, daily briefs, staff sync, dashboard, calendar, ventures, and every tool.
                                         </p>
                                     </li>
                                     <li className="flex items-start gap-2">
                                         <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
                                         <div>
-                                            <p className="text-xs font-medium text-zinc-200">AI usage is metered</p>
-                                            <p className="mt-1 text-[11px] leading-snug text-zinc-500">{FREE_METERING_LINE}</p>
+                                            <p className="text-xs font-medium text-zinc-200">AI usage has a daily limit</p>
+                                            <p className="mt-1 text-[11px] leading-snug text-zinc-500">
+                                                {FREE_DAILY_TOKENS} tokens per day, shared across Dexo analyses and chat. Resets at midnight.
+                                            </p>
                                         </div>
                                     </li>
                                 </ul>
@@ -227,17 +223,18 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                                     <div className="flex items-start gap-2.5 rounded-lg border border-emerald-500/20 bg-emerald-500/[0.06] px-3 py-2.5">
                                         <Infinity className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" aria-hidden />
                                         <div>
-                                            <p className="text-xs font-semibold text-zinc-100">Unlimited AI usage</p>
+                                            <p className="text-xs font-semibold text-zinc-100">Unlimited AI — no daily cap</p>
                                             <p className="mt-1 text-[11px] leading-snug text-zinc-400">
-                                                No daily Dexo token pool and no per-message / per-analysis deductions. Includes
-                                                Dexo daily research reports and the Dashboard Daily brief tab — Founder keeps
-                                                metered AI without automated daily web briefs.
+                                                Run as many analyses, chats, and re-analyses as you want. No token counting, no daily resets — just work.
                                             </p>
                                         </div>
                                     </div>
-                                    <p className="text-[11px] leading-relaxed text-zinc-500">
-                                        Upgrade if you hit the free daily limit or want to run analyses and chat without counting tokens.
-                                    </p>
+                                    <div className="flex items-start gap-2">
+                                        <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500/70" aria-hidden />
+                                        <p className="text-[11px] leading-relaxed text-zinc-400">
+                                            Everything in Founder, plus advanced wargame simulations and cross-venture intelligence.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
