@@ -130,6 +130,13 @@ export function useDexoConversationalVoice({
   const [currentChunk, setCurrentChunk] = useState('');
   const [interimTranscript, setInterimTranscript] = useState('');
   
+  // Stable callback refs — keeps the recognition useEffect from re-mounting on every render
+  // when callers pass inline functions (which would change reference every render).
+  const onTranscriptRef = useRef(onTranscript);
+  onTranscriptRef.current = onTranscript;
+  const onInterruptRef = useRef(onInterrupt);
+  onInterruptRef.current = onInterrupt;
+
   const memoryManager = useRef(new ConversationMemoryManager());
   const abortControllerRef = useRef<AbortController | null>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
@@ -219,8 +226,8 @@ export function useDexoConversationalVoice({
     // Discard any pending speech accumulation on interrupt
     if (sendPauseTimerRef.current) { clearTimeout(sendPauseTimerRef.current); sendPauseTimerRef.current = null; }
     accumulatedSpeechRef.current = '';
-    onInterrupt?.();
-  }, [onInterrupt]);
+    onInterruptRef.current?.();
+  }, []);
 
   /** Dexo orb uses browser TTS outside this hook — keep barge-in / UI in sync. */
   const markAssistantSpeaking = useCallback((speaking: boolean) => {
@@ -420,7 +427,7 @@ export function useDexoConversationalVoice({
           const fullText = accumulatedSpeechRef.current.trim();
           accumulatedSpeechRef.current = '';
           if (!fullText) return;
-          onTranscript(fullText);
+          onTranscriptRef.current(fullText);
           setVoiceState('thinking');
           try { recognition.stop(); } catch { /* noop */ }
         }, 900);
@@ -496,7 +503,11 @@ export function useDexoConversationalVoice({
     recognitionRef.current = recognition;
     
     return () => recognition.stop();
-  }, [onTranscript, onInterimRef, interrupt, talkLiveModeRef, suspendAutoMicRestartRef]);
+  // onTranscript and interrupt are accessed via stable refs — no need to list them here.
+  // Listing them would cause recognition to be torn down and rebuilt on every render,
+  // killing any active listening session whenever state changes.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onInterimRef, talkLiveModeRef, suspendAutoMicRestartRef]);
 
   // Controls
   const startListening = useCallback(() => {

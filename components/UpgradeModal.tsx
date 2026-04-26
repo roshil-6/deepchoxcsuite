@@ -10,7 +10,6 @@ import {
     formatRegionalDualLine,
     formatRegionalPricePair,
     getProBillingAmounts,
-    type BillingCycle,
 } from '@/lib/billingConfig';
 import { usePricingRegion } from '@/hooks/usePricingRegion';
 import { openRazorpayPaymentPage } from '@/lib/razorpayPaymentLink';
@@ -24,7 +23,6 @@ interface UpgradeModalProps {
 export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
     const { isPaidPro, isInTrial, hasUsedTrial, trialDaysLeft, trialHoursLeft, startTrial, deactivatePro } = useSubscription();
     const { user } = useUser();
-    const [billing, setBilling] = useState<BillingCycle>('monthly');
     const [awaitingPayment, setAwaitingPayment] = useState(false);
     const [checking, setChecking] = useState(false);
     const pricingRegion = usePricingRegion();
@@ -35,13 +33,10 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
     // If they just became Pro (webhook + tab focus reload), close the modal
     if (isPaidPro && awaitingPayment) { onClose(); }
 
-    const isYearly = billing === 'yearly';
     const trialLabel = trialHoursLeft < 24 ? `${trialHoursLeft}h` : `${trialDaysLeft} day${trialDaysLeft !== 1 ? 's' : ''}`;
 
     const payOnRazorpay = () => {
-        const cycle = isYearly ? 'yearly' : 'monthly';
-        // Pass userId so Razorpay embeds it in payment notes → webhook reads it back.
-        const opened = openRazorpayPaymentPage(cycle, user?.id);
+        const opened = openRazorpayPaymentPage('monthly', user?.id);
         if (opened) {
             setAwaitingPayment(true);   // stay open — show "I've paid" CTA
             return;
@@ -98,41 +93,6 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                 <div className="flex-1 overflow-y-auto">
                     <div className="p-4 sm:p-5">
 
-                        {/* Billing toggle */}
-                        {!isInTrial && (
-                            <div className="mb-4 flex flex-col items-center gap-2">
-                                <div className="inline-flex items-center rounded-full border border-zinc-800 bg-zinc-900/50 p-1">
-                                    <button
-                                        type="button"
-                                        onClick={() => setBilling('monthly')}
-                                        className={`rounded-full px-4 py-1.5 text-xs font-medium transition-all ${
-                                            !isYearly ? 'bg-zinc-700 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'
-                                        }`}
-                                    >
-                                        Monthly
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setBilling('yearly')}
-                                        className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium transition-all ${
-                                            isYearly ? 'bg-zinc-700 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'
-                                        }`}
-                                    >
-                                        Yearly
-                                        <span className="rounded-sm bg-white/10 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-300">
-                                            –17%
-                                        </span>
-                                    </button>
-                                </div>
-                                {isYearly && (
-                                    <p className="text-[11px] text-zinc-500">
-                                        Save{' '}
-                                        {formatRegionalPricePair(PRO_BILLING.yearlySavingsInr, pricingRegion, { usdDecimals: 0 }).primary}{' '}
-                                        vs monthly
-                                    </p>
-                                )}
-                            </div>
-                        )}
 
                         {/* Plan cards */}
                         <div className="grid gap-3 sm:grid-cols-2">
@@ -195,18 +155,14 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                                 <div className="mt-3 flex items-end gap-1.5">
                                     <span className="text-[32px] font-bold leading-none tracking-tight text-white">
                                         {formatRegionalPricePair(
-                                            isYearly ? PRO_BILLING.effectiveMonthlyInr : PRO_BILLING.monthlyInr,
+                                            PRO_BILLING.monthlyInr,
                                             pricingRegion,
-                                            { usdDecimals: 2, inrMaximumFractionDigits: isYearly ? 2 : 0 }
+                                            { usdDecimals: 0 }
                                         ).primary}
                                     </span>
                                     <span className="mb-1 text-[12px] text-zinc-500">/mo</span>
                                 </div>
-                                <p className="mt-1.5 text-[11.5px] text-zinc-500">
-                                    {isYearly
-                                        ? `${formatRegionalDualLine(PRO_BILLING.yearlyInr, pricingRegion, { usdDecimals: 2 })} /yr · billed annually`
-                                        : 'billed monthly · cancel anytime'}
-                                </p>
+                                <p className="mt-1.5 text-[11.5px] text-zinc-500">billed monthly · cancel anytime</p>
 
                                 <div className="my-5 h-px bg-zinc-800/50" />
 
@@ -297,9 +253,7 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                                         onClick={payOnRazorpay}
                                         className="w-full rounded-xl border border-zinc-700 py-2.5 text-xs font-medium text-zinc-400 transition hover:border-zinc-500 hover:text-white"
                                     >
-                                        {isYearly
-                                            ? `Pay now — ${formatRegionalDualLine(PRO_BILLING.yearlyInr, pricingRegion, { usdDecimals: 2 })} /yr`
-                                            : `Pay now — ${formatRegionalDualLine(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 })} /mo`}
+                                        {`Pay now — ${formatRegionalDualLine(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 })} /mo`}
                                     </button>
                                 </>
                             ) : (
@@ -309,9 +263,7 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                                         onClick={payOnRazorpay}
                                         className="w-full rounded-xl bg-[var(--accent)] py-3 text-sm font-semibold text-white transition hover:brightness-110 active:scale-[0.98]"
                                     >
-                                        {isYearly
-                                            ? `Upgrade to Pro — ${formatRegionalDualLine(PRO_BILLING.yearlyInr, pricingRegion, { usdDecimals: 2 })} /yr`
-                                            : `Upgrade to Pro — ${formatRegionalDualLine(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 })} /mo`}
+                                        {`Upgrade to Pro — ${formatRegionalDualLine(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 })} /mo`}
                                     </button>
                                     <p className="text-center text-[11px] text-zinc-600">
                                         Instant access · cancel anytime
