@@ -135,6 +135,8 @@ export function useDexoConversationalVoice({
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const userPausedMicRef = useRef(false);
   const isSpeakingRef = useRef(false);
+  /** Timestamp until which mic results are suppressed (post-TTS echo cooldown). */
+  const echoCooldownUntilRef = useRef(0);
   const ttsQueueRef = useRef<TtsChunk[]>([]);
   const streamingContentRef = useRef('');
   /** One speech chain — never overlap utterances (Chrome stutters / doubles audio). */
@@ -216,6 +218,11 @@ export function useDexoConversationalVoice({
   /** Dexo orb uses browser TTS outside this hook — keep barge-in / UI in sync. */
   const markAssistantSpeaking = useCallback((speaking: boolean) => {
     isSpeakingRef.current = speaking;
+    if (!speaking) {
+      // Give speaker echo 850ms to dissipate before accepting mic input.
+      // Without this, the mic immediately picks up residual TTS audio as "user speech".
+      echoCooldownUntilRef.current = Date.now() + 850;
+    }
     setVoiceState((prev) => {
       if (speaking) return 'speaking';
       if (prev === 'speaking' || prev === 'interrupted') return 'idle';
@@ -362,7 +369,7 @@ export function useDexoConversationalVoice({
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       let interim = '';
       let finalText = '';
-      
+
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript;
         if (event.results[i].isFinal) {
@@ -371,15 +378,25 @@ export function useDexoConversationalVoice({
           interim += transcript;
         }
       }
-      
-      // Barge-in: user speaking while AI speaking
+
+      // Discard while Dexo's TTS is playing — this is mic picking up speaker output.
+      // Interrupt TTS so user can speak, but don't send Dexo's own voice as a message.
       if (isSpeakingRef.current && (interim || finalText)) {
         interrupt();
+        setInterimTranscript('');
+        onInterimRef?.current?.('');
+        return;
       }
-      
+
+      // Discard during post-TTS echo cooldown — residual speaker audio dissipating.
+      // The mic is open but we silently ignore results until the room is clear.
+      if (Date.now() < echoCooldownUntilRef.current) {
+        return;
+      }
+
       setInterimTranscript(interim);
       onInterimRef?.current?.(interim);
-      
+
       if (finalText) {
         setInterimTranscript('');
         onInterimRef?.current?.('');
