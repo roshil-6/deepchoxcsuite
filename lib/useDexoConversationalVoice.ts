@@ -397,6 +397,7 @@ export function useDexoConversationalVoice({
       if (err === 'no-speech') {
         if (
           !userPausedMicRef.current &&
+          !isSpeakingRef.current &&
           talkLiveModeRef?.current &&
           !suspendAutoMicRestartRef?.current
         ) {
@@ -404,6 +405,7 @@ export function useDexoConversationalVoice({
             try {
               if (
                 !userPausedMicRef.current &&
+                !isSpeakingRef.current &&
                 talkLiveModeRef?.current &&
                 !suspendAutoMicRestartRef?.current &&
                 recognitionRef.current
@@ -428,6 +430,9 @@ export function useDexoConversationalVoice({
     recognition.onend = () => {
       setVoiceState((s) => (s === 'listening' ? 'idle' : s));
       if (userPausedMicRef.current) return;
+      // Never auto-restart while TTS is playing — Chrome kills the mic immediately,
+      // causing a rapid start/stop loop that makes the button flash and never hold.
+      if (isSpeakingRef.current) return;
       if (
         talkLiveModeRef?.current &&
         !suspendAutoMicRestartRef?.current
@@ -436,6 +441,7 @@ export function useDexoConversationalVoice({
           try {
             if (
               !userPausedMicRef.current &&
+              !isSpeakingRef.current &&
               talkLiveModeRef?.current &&
               !suspendAutoMicRestartRef?.current &&
               recognitionRef.current
@@ -445,7 +451,7 @@ export function useDexoConversationalVoice({
           } catch {
             /* already running */
           }
-        }, 140);
+        }, 280);
       }
     };
 
@@ -457,10 +463,22 @@ export function useDexoConversationalVoice({
   // Controls
   const startListening = useCallback(() => {
     userPausedMicRef.current = false;
-    setVoiceState('listening');
     try {
       recognitionRef.current?.start();
-    } catch {}
+      setVoiceState('listening'); // only flip to listening if start() didn't throw
+    } catch {
+      // Chrome rejects start() if recognition is already running or audio system is busy.
+      // Stop first, then retry after a short gap so the state never shows "listening" falsely.
+      try { recognitionRef.current?.stop(); } catch { /* noop */ }
+      window.setTimeout(() => {
+        if (!userPausedMicRef.current) {
+          try {
+            recognitionRef.current?.start();
+            setVoiceState('listening');
+          } catch { /* noop */ }
+        }
+      }, 250);
+    }
   }, []);
 
   const stopListening = useCallback(() => {

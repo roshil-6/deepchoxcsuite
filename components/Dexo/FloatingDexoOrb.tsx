@@ -300,11 +300,6 @@ function FloatingChat({
         });
 
         void (async () => {
-            if (!sig.aborted && talkLiveRef.current) {
-                window.setTimeout(() => {
-                    if (talkLiveRef.current) startListeningRef.current();
-                }, 380);
-            }
             if (!mutedRef.current) {
                 try {
                     markAssistantSpeaking(true);
@@ -313,10 +308,12 @@ function FloatingChat({
                     markAssistantSpeaking(false);
                 }
             }
+            // Only open the mic AFTER the greeting finishes — starting recognition while
+            // TTS is playing causes Chrome to immediately kill it, making the button flash.
             if (!sig.aborted && talkLiveRef.current) {
                 window.setTimeout(() => {
                     if (talkLiveRef.current) startListeningRef.current();
-                }, 400);
+                }, 350);
             }
         })();
 
@@ -489,9 +486,6 @@ function FloatingChat({
             speechAborterRef.current?.abort();
             speechAborterRef.current = new AbortController();
             const sig = speechAborterRef.current.signal;
-            window.setTimeout(() => {
-                if (talkLiveRef.current && !sig.aborted) startListeningRef.current();
-            }, 380);
             if (!mutedRef.current) {
                 void (async () => {
                     try {
@@ -500,12 +494,18 @@ function FloatingChat({
                     } finally {
                         markAssistantSpeaking(false);
                     }
+                    // Open mic only after speech ends — avoids Chrome immediately killing recognition
                     if (talkLiveRef.current && !sig.aborted) {
                         window.setTimeout(() => {
                             if (talkLiveRef.current) startListeningRef.current();
-                        }, 400);
+                        }, 300);
                     }
                 })();
+            } else {
+                // Muted: no TTS, just reopen mic
+                window.setTimeout(() => {
+                    if (talkLiveRef.current && !sig.aborted) startListeningRef.current();
+                }, 300);
             }
         }
 
@@ -723,14 +723,22 @@ function FloatingChat({
                 >
                     <button
                         type="button"
-                        onClick={() =>
-                            isListening ? stopListening() : isSpeaking ? stopVoiceOutput() : startListening()
-                        }
+                        onClick={() => {
+                            if (isListening) {
+                                stopListening();
+                            } else if (isSpeaking) {
+                                // Stop TTS then open mic — one tap to interrupt + start speaking
+                                stopVoiceOutput();
+                                window.setTimeout(() => startListening(), 280);
+                            } else {
+                                startListening();
+                            }
+                        }}
                         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-colors ${
                             isListening
                                 ? 'bg-teal-600 text-white'
                                 : isSpeaking
-                                  ? 'bg-zinc-200 text-zinc-600'
+                                  ? 'bg-teal-100 text-teal-700'
                                   : 'text-zinc-500 hover:bg-zinc-200 hover:text-zinc-800'
                         }`}
                     >
