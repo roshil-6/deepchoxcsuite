@@ -465,10 +465,15 @@ export function useDexoConversationalVoice({
     userPausedMicRef.current = false;
     try {
       recognitionRef.current?.start();
-      setVoiceState('listening'); // only flip to listening if start() didn't throw
-    } catch {
-      // Chrome rejects start() if recognition is already running or audio system is busy.
-      // Stop first, then retry after a short gap so the state never shows "listening" falsely.
+      setVoiceState('listening');
+    } catch (e) {
+      // InvalidStateError = already running — just reflect that in state, don't restart
+      if (e instanceof DOMException && e.name === 'InvalidStateError') {
+        setVoiceState('listening');
+        return;
+      }
+      // Chrome rejected start() (TTS audio conflict). Stop cleanly, retry once after gap.
+      // Never show a false "listening" state before the retry succeeds.
       try { recognitionRef.current?.stop(); } catch { /* noop */ }
       window.setTimeout(() => {
         if (!userPausedMicRef.current) {
