@@ -1527,7 +1527,6 @@ function PortfolioView({
     chartUid,
     switchRoom,
 }: any) {
-    const { can } = useSubscription();
     const ventureCount = allProjects.length;
     const withStrategy = allProjects.filter((p: any) => p.strategy?.trim()).length;
     const draft = Math.max(0, allProjects.length - withStrategy);
@@ -1539,246 +1538,589 @@ function PortfolioView({
         { name: 'Draft', value: draft, fill: THEME.chart.slate },
     ].filter((d) => d.value > 0);
 
+    const syncAgeMin = Math.max(0, Math.floor((Date.now() - systemState.lastSync) / 60000));
+    const syncLabel = syncAgeMin < 60 ? `${syncAgeMin}m ago` : syncAgeMin < 1440 ? `${Math.floor(syncAgeMin / 60)}h ago` : `${Math.floor(syncAgeMin / 1440)}d ago`;
+    const synced = allProjects.filter((p: any) => p.agentStaffSnapshot?.at).length;
+    const _ = syncLabel; // suppress unused warning
+
+    // Flatten attention items across all ventures (watch list)
+    const allAttentionItems = allProjects.flatMap((p: any) =>
+        (p.staffAttentionItems ?? [])
+            .filter((a: any) => !a.dismissed)
+            .map((a: any) => ({ ...a, ventureName: p.name, ventureRef: p }))
+    ).slice(0, 8);
+
+    // All focus lines from most-recently-synced venture
+    const leadingVenture = [...allProjects]
+        .filter((p: any) => p.agentStaffSnapshot?.at)
+        .sort((a: any, b: any) => b.agentStaffSnapshot.at - a.agentStaffSnapshot.at)[0] ?? allProjects[0];
+    const focusLines: string[] = leadingVenture?.staffFocusToday ?? [];
+
     return (
         <div className="min-h-screen w-full pb-24" style={{ background: THEME.bg.primary }}>
-            <header className="border-b px-6 py-8" style={{ borderColor: THEME.border.subtle }}>
-                <div className="mx-auto max-w-7xl">
+
+            {/* ─── COMMAND HEADER ─────────────────────────────────── */}
+            <header className="border-b px-6 py-5" style={{ borderColor: THEME.border.subtle }}>
+                <div className="mx-auto max-w-7xl flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
-                        <div
-                            className="flex h-12 w-12 items-center justify-center rounded-xl"
-                            style={{ background: 'rgba(139,92,246,0.1)' }}
-                        >
-                            <LayoutDashboard className="h-6 w-6" style={{ color: THEME.accent.secondary }} />
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: 'rgba(116,86,255,0.12)' }}>
+                            <LayoutDashboard className="h-5 w-5" style={{ color: THEME.accent.primary }} />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-semibold tracking-tight" style={{ color: THEME.text.primary }}>
-                                Executive Overview
-                            </h1>
-                            <p className="mt-1 text-sm" style={{ color: THEME.text.secondary }}>
-                                Portfolio dashboard · {ventureCount} ventures
+                            <h1 className="text-xl font-semibold tracking-tight" style={{ color: THEME.text.primary }}>Executive Overview</h1>
+                            <p className="text-[11px]" style={{ color: THEME.text.muted }}>
+                                AI Co-Founder Command Center · {ventureCount} venture{ventureCount !== 1 ? 's' : ''} · {synced} synced
                             </p>
                         </div>
                     </div>
+                    {onNewVenture && (
+                        <button onClick={onNewVenture} className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all hover:opacity-90" style={{ background: THEME.accent.primary, color: '#fff' }}>
+                            <Sparkles className="h-3.5 w-3.5" /> New Venture
+                        </button>
+                    )}
                 </div>
             </header>
 
-            <main className="mx-auto max-w-7xl px-6 py-8">
-                {/* WELCOME CARD */}
-                <Card className="mb-8 p-8">
-                    <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
-                        <div>
-                            <h2 className="text-xl font-semibold" style={{ color: THEME.text.primary }}>
-                                Welcome to your portfolio
-                            </h2>
-                            <p className="mt-2 max-w-xl" style={{ color: THEME.text.secondary }}>
-                                Manage all your ventures from one place. Select a venture to view detailed analytics,
-                                or create a new one to get started.
-                            </p>
-                        </div>
-                        {onNewVenture && (
-                            <button
-                                onClick={onNewVenture}
-                                className="flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-medium transition-all hover:opacity-90"
-                                style={{ background: THEME.accent.primary, color: '#000' }}
-                            >
-                                <Sparkles className="h-4 w-4" />
-                                New Venture
-                            </button>
-                        )}
-                    </div>
-                </Card>
+            <main className="mx-auto max-w-7xl space-y-12 px-6 py-8">
 
-                {/* PORTFOLIO METRICS */}
-                <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <MetricCard label="Total Ventures" value={ventureCount} icon={Briefcase} color="violet" />
-                    <MetricCard label="Active Records" value={withStrategy} icon={CheckCircle2} color="emerald" />
-                    <MetricCard label="Drafts" value={draft} icon={FileText} color="amber" />
-                    <MetricCard
-                        label="Last Sync"
-                        value={`${Math.max(0, Math.floor((Date.now() - systemState.lastSync) / 60000))}m`}
-                        icon={Clock}
-                        color="blue"
-                    />
-                </div>
-
-                {/* PORTFOLIO COMPOSITION */}
-                <div className="grid gap-6 lg:grid-cols-2">
-                    <Card className="p-6">
-                        <SectionHeader title="Portfolio Composition" />
-                        {portfolioComposition.length > 0 ? (
-                            <div className="h-64 min-h-[256px] min-w-0">
-                                <ResponsiveContainer width="100%" height="100%" minHeight={256} minWidth={0}>
-                                    <RePieChart>
-                                        <Pie
-                                            data={portfolioComposition}
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={60}
-                                            outerRadius={90}
-                                            paddingAngle={4}
-                                            dataKey="value"
-                                        >
-                                            {portfolioComposition.map((entry: any, i: number) => (
-                                                <Cell key={`cell-${i}`} fill={entry.fill} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip {...CHART_TOOLTIP} />
-                                        <Legend />
-                                    </RePieChart>
-                                </ResponsiveContainer>
+                {/* ════════════════════════════════════════════════════════
+                    § A  MORNING INTELLIGENCE BRIEF
+                         Daily Tavily-backed web research per venture.
+                         Read the headline, check the sources, then open
+                         the venture to discuss findings with Dexo.
+                ════════════════════════════════════════════════════════ */}
+                <section>
+                    {/* Section title row */}
+                    <div className="mb-6 flex items-start gap-4 border-b pb-5" style={{ borderColor: THEME.border.subtle }}>
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[12px] font-bold" style={{ background: 'rgba(6,182,212,0.12)', color: '#22d3ee' }}>A</div>
+                        <div className="flex-1 min-w-0">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                <h2 className="text-[15px] font-semibold tracking-tight" style={{ color: THEME.text.primary }}>Morning Intelligence Brief</h2>
+                                <span className="rounded-full border px-2.5 py-0.5 text-[10px] font-medium" style={{ borderColor: 'rgba(6,182,212,0.2)', color: '#22d3ee' }}>Powered by Tavily · refreshed daily</span>
                             </div>
-                        ) : (
-                            <p className="py-12 text-center text-sm" style={{ color: THEME.text.tertiary }}>
-                                No ventures yet
-                            </p>
-                        )}
-                    </Card>
+                            <div className="mt-1.5 space-y-1">
+                                <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
+                                    Dexo searched the web for each venture and returned real headlines with verified source links — live market intelligence, not AI-generated summaries.
+                                </p>
+                                <p className="text-[11px]" style={{ color: THEME.text.muted }}>
+                                    <span className="font-semibold" style={{ color: THEME.text.primary }}>Source:</span>{' '}Tavily live web search · runs daily per venture · every card links to the original article
+                                </p>
+                                <p className="text-[11px] font-medium" style={{ color: THEME.accent.info }}>
+                                    → Click any source link to read the article. Open a venture card to discuss the findings with Dexo.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <PortfolioDailyIntelSection allProjects={allProjects} onOpenVenture={setActiveProject} />
+                    {allProjects.length === 0 && (
+                        <div className="flex flex-col items-center gap-4 rounded-2xl border py-16 text-center" style={{ borderColor: THEME.border.subtle, background: 'rgba(116,86,255,0.04)' }}>
+                            <div className="flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: 'rgba(116,86,255,0.12)' }}>
+                                <Globe className="h-7 w-7" style={{ color: THEME.accent.primary }} />
+                            </div>
+                            <div className="max-w-sm">
+                                <p className="font-semibold" style={{ color: THEME.text.primary }}>No ventures yet</p>
+                                <p className="mt-1.5 text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
+                                    Create a venture and run a Staff Sync — Dexo will pull live market research from the web and generate a daily briefing for it here.
+                                </p>
+                            </div>
+                            {onNewVenture && (
+                                <button onClick={onNewVenture} className="flex items-center gap-2 rounded-xl border px-5 py-2.5 text-sm font-semibold" style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}>
+                                    <Sparkles className="h-4 w-4" /> Create venture
+                                </button>
+                            )}
+                        </div>
+                    )}
+                </section>
 
-                    <Card className="p-6">
-                        <SectionHeader
-                            title="Research Desks"
-                            subtitle="Coverage across ventures updates as you add detail or run Staff Sync."
-                        />
-                        <div className="space-y-3">
-                            {(['ceo', 'accountant', 'pm', 'cmo', 'scout'] as const).map((role) => {
-                                const row = RESEARCH_STAFF[role];
-                                const stat = deskStats[role];
-                                const accent = PORTFOLIO_DESK_ACCENTS[role];
-                                const pct = stat.total === 0 ? 0 : Math.round(stat.coverage * 100);
-                                const subtitle =
-                                    stat.total === 0
-                                        ? row.navHint
-                                        : `${stat.documented}/${stat.total} ventures documented${
-                                              stat.snapshotSnippet
-                                                  ? ` · ${stat.snapshotSnippet}`
-                                                  : ` · ${row.navHint}`
-                                          }`;
+                {/* ════════════════════════════════════════════════════════
+                    § B  AI RESEARCH DESK BRIEFING
+                         What each AI staff member independently researched
+                         and concluded during the last Staff Sync.
+                         Each desk covers a distinct functional area —
+                         click "Open desk" to continue the research thread.
+                ════════════════════════════════════════════════════════ */}
+                {leadingVenture?.agentStaffSnapshot && (
+                    <section>
+                        <div className="mb-6 flex items-start gap-4 border-b pb-5" style={{ borderColor: THEME.border.subtle }}>
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[12px] font-bold" style={{ background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}>B</div>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <h2 className="text-[15px] font-semibold tracking-tight" style={{ color: THEME.text.primary }}>
+                                        AI Research Desk Briefing
+                                        <span className="ml-2 text-[12px] font-normal" style={{ color: THEME.text.muted }}>— {leadingVenture.name}</span>
+                                    </h2>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px]" style={{ color: THEME.text.muted }}>
+                                            Synced {new Date(leadingVenture.agentStaffSnapshot.at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+                                        </span>
+                                        <button
+                                            onClick={() => setActiveProject(leadingVenture)}
+                                            className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-semibold transition-all hover:opacity-80"
+                                            style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.10)', color: THEME.accent.primary }}
+                                        >
+                                            <Sparkles className="h-3 w-3" /> Full briefing
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="mt-1.5 space-y-1">
+                                    <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
+                                        Six AI specialists each researched a separate part of your business and wrote their own conclusions. Each card shows exactly what that desk found.
+                                    </p>
+                                    <p className="text-[11px]" style={{ color: THEME.text.muted }}>
+                                        <span className="font-semibold" style={{ color: THEME.text.primary }}>Source:</span>{' '}Last Staff Sync for {leadingVenture.name} · {new Date(leadingVenture.agentStaffSnapshot.at).toLocaleDateString(undefined, { dateStyle: 'medium' })} · generated from your venture data and AI analysis
+                                    </p>
+                                    <p className="text-[11px] font-medium" style={{ color: THEME.accent.info }}>
+                                        → Read the finding. Click "Open desk →" to continue the research or ask follow-up questions directly.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                            {([
+                                { key: 'scout',      label: 'Market Intelligence',  role: 'Scout',           covers: 'Competitor signals · trends · opportunities', finds: 'Use this to spot threats early and validate market assumptions before committing to any direction.',      color: THEME.chart.blue,    room: 'scout'      as const, icon: Globe     },
+                                { key: 'ceo',        label: 'Strategic Direction',  role: 'CEO',             covers: 'Mission · vision · positioning',              finds: 'Use this to set or challenge your strategy — it shapes every other decision across the whole business.',   color: THEME.chart.violet,  room: 'ceo'        as const, icon: Lightbulb },
+                                { key: 'pm',         label: 'Product Insights',     role: 'Product Manager', covers: 'Roadmap · features · user problems',          finds: 'Use this to decide what ships next and what gets cut. It directly drives your roadmap and sprint focus.',   color: THEME.chart.amber,   room: 'pm'         as const, icon: Layers    },
+                                { key: 'accountant', label: 'Finance & Runway',     role: 'Accountant',      covers: 'Budget · burn · revenue signals',             finds: 'Read this before any spending or pricing call — it shows your real constraints and revenue opportunities.',   color: THEME.chart.emerald, room: 'accountant' as const, icon: Wallet    },
+                                { key: 'cmo',        label: 'Growth & GTM',         role: 'CMO',             covers: 'Marketing · channels · acquisition',          finds: 'Use this to pick your channels and craft messaging before spending anything on marketing or sales.',          color: THEME.chart.rose,    room: 'cmo'        as const, icon: Megaphone },
+                                { key: 'summary',    label: 'Executive Synthesis',  role: 'Chief of Staff',  covers: 'Cross-desk synthesis · executive brief',      finds: 'Read this first — it synthesizes all six desks into one brief. The fastest way to see the full picture.',    color: THEME.accent.primary, room: null,                  icon: Cpu       },
+                            ] as const).map(({ key, label, role, covers, finds, color, room, icon: DeskIcon }) => {
+                                const snap = key === 'summary'
+                                    ? leadingVenture.agentStaffSnapshot.summary
+                                    : leadingVenture.agentStaffSnapshot.desks?.[key as 'scout'|'ceo'|'pm'|'accountant'|'cmo'];
+                                const hasContent = !!snap?.trim();
                                 return (
-                                    <button
-                                        type="button"
-                                        key={role}
-                                        onClick={() => {
-                                            const target = firstProjectNeedingRole(allProjects, role);
-                                            if (target) {
-                                                setActiveProject(target);
-                                                switchRoom(role);
-                                            }
+                                    <div key={key}
+                                        className="flex flex-col overflow-hidden rounded-2xl border"
+                                        style={{
+                                            borderColor: hasContent ? `${color}35` : THEME.border.subtle,
+                                            background: hasContent ? `${color}07` : 'rgba(255,255,255,0.02)',
                                         }}
-                                        className="flex w-full items-center gap-3 rounded-xl border border-[var(--border)] bg-[rgba(255,255,255,0.06)] p-3 text-left transition-colors hover:bg-[rgba(255,255,255,0.09)]"
-                                        style={{ borderColor: THEME.border.subtle }}
                                     >
-                                        <div className="min-w-0 flex-1">
-                                            <div className="flex items-center gap-2">
-                                                <p className="text-sm font-medium" style={{ color: THEME.text.primary }}>
-                                                    {row.navTitle}
-                                                </p>
-                                                <span
-                                                    className="rounded-full px-2 py-0.5 text-[10px] font-medium tabular-nums"
-                                                    style={{
-                                                        background: `${accent}18`,
-                                                        color: accent,
-                                                    }}
-                                                >
-                                                    {stat.total === 0 ? '—' : `${pct}%`}
-                                                </span>
+                                        {/* Desk card header */}
+                                        <div className="flex items-center justify-between gap-2 border-b px-4 py-3" style={{ borderColor: `${color}20`, background: `${color}05` }}>
+                                            <div className="flex items-center gap-2.5">
+                                                <div className="flex h-8 w-8 items-center justify-center rounded-xl" style={{ background: `${color}18` }}>
+                                                    <DeskIcon className="h-4 w-4" style={{ color }} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-[12px] font-semibold leading-tight" style={{ color: THEME.text.primary }}>{label}</p>
+                                                    <p className="text-[10px] font-medium" style={{ color }}>{role}</p>
+                                                </div>
                                             </div>
-                                            <p
-                                                className="mt-1 line-clamp-2 text-xs leading-snug"
-                                                style={{ color: THEME.text.secondary }}
-                                            >
-                                                {subtitle}
-                                            </p>
-                                            {stat.total > 0 && (
-                                                <div
-                                                    className="mt-2 h-1 w-full overflow-hidden rounded-full"
-                                                    style={{ background: 'rgba(255,255,255,0.08)' }}
+                                            {room && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { setActiveProject(leadingVenture); switchRoom(room); }}
+                                                    className="shrink-0 rounded-lg border px-2.5 py-1 text-[10px] font-semibold transition-all hover:opacity-80"
+                                                    style={{ borderColor: `${color}35`, background: `${color}12`, color }}
                                                 >
-                                                    <div
-                                                        className="h-full rounded-full transition-all duration-500"
-                                                        style={{
-                                                            width: `${pct}%`,
-                                                            background: `linear-gradient(90deg, ${accent}99, ${accent})`,
-                                                        }}
-                                                    />
+                                                    Open desk →
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        {/* Desk card body */}
+                                        <div className="flex flex-1 flex-col gap-3 p-4">
+                                            {hasContent ? (
+                                                <>
+                                                    {/* Research finding label */}
+                                                    <div>
+                                                        <p className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.14em]" style={{ color }}>
+                                                            Research Finding
+                                                        </p>
+                                                        <p className="text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>
+                                                            {snap!.trim().length > 400 ? `${snap!.trim().slice(0, 397)}…` : snap!.trim()}
+                                                        </p>
+                                                    </div>
+                                                    {/* Why it matters reasoning block */}
+                                                    <div className="mt-auto space-y-1.5 rounded-xl border px-3 py-2.5" style={{ borderColor: `${color}20`, background: `${color}08` }}>
+                                                        <p className="text-[10px] leading-snug" style={{ color: THEME.text.secondary }}>
+                                                            <span className="font-bold" style={{ color }}>How to use this · </span>
+                                                            {finds}
+                                                        </p>
+                                                        <p className="text-[9px]" style={{ color: THEME.text.muted }}>
+                                                            Covers: {covers}
+                                                        </p>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <div className="flex flex-1 flex-col items-center justify-center gap-2 py-6 text-center">
+                                                    <DeskIcon className="h-7 w-7 opacity-15" style={{ color }} />
+                                                    <p className="text-[11px] font-medium" style={{ color: THEME.text.muted }}>No research yet</p>
+                                                    <p className="max-w-[180px] text-[10px] leading-snug" style={{ color: THEME.text.muted }}>
+                                                        Run Staff Sync · covers {covers}
+                                                    </p>
                                                 </div>
                                             )}
                                         </div>
-                                        <ArrowRight className="h-4 w-4 shrink-0" style={{ color: THEME.text.muted }} />
-                                    </button>
+                                    </div>
                                 );
                             })}
-                        </div>
-                    </Card>
-                </div>
-
-                {can('dexoDailyBriefReports') ? (
-                    <PortfolioDailyIntelSection allProjects={allProjects} onOpenVenture={setActiveProject} />
-                ) : (
-                    <section className="mt-10 rounded-2xl border border-white/[0.08] bg-white/[0.02] px-6 py-10 text-center">
-                        <div className="mx-auto flex max-w-lg flex-col items-center gap-3">
-                            <div
-                                className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.04]"
-                                aria-hidden
-                            >
-                                <Globe className="h-5 w-5" style={{ color: THEME.text.tertiary }} />
-                            </div>
-                            <h2 className="text-base font-semibold tracking-tight" style={{ color: THEME.text.primary }}>
-                                Live intel by venture
-                            </h2>
-                            <p className="text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
-                                Dexo daily research reports (web-backed briefs and source links for each venture) are part of{' '}
-                                <span className="font-medium text-[var(--text-primary)]">Co-Founder Pro</span>. Upgrade from the
-                                workspace sidebar to unlock portfolio intel.
-                            </p>
                         </div>
                     </section>
                 )}
 
-                {/* VENTURE LIST */}
-                <div className="mt-8">
-                    <SectionHeader title="Your Ventures" />
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {allProjects.map((project: any) => (
-                            <Card
-                                key={project.id}
-                                interactive
-                                onClick={() => setActiveProject(project)}
-                                className="p-5"
-                            >
-                                <div className="flex items-start justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div
-                                            className="flex h-10 w-10 items-center justify-center rounded-xl"
-                                            style={{ background: 'rgba(255,255,255,0.06)' }}
-                                        >
-                                            <Briefcase className="h-5 w-5" style={{ color: THEME.text.secondary }} />
-                                        </div>
+                {/* ════════════════════════════════════════════════════════
+                    § C  DECISION QUEUE
+                         Signals your AI team flagged that need your input.
+                         These are not notifications — each item is a
+                         specific finding that requires a human decision.
+                         "Discuss →" opens Dexo for that venture directly.
+                ════════════════════════════════════════════════════════ */}
+                {(allAttentionItems.length > 0 || focusLines.length > 0) && (
+                    <section>
+                        <div className="mb-6 flex items-start gap-4 border-b pb-5" style={{ borderColor: THEME.border.subtle }}>
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[12px] font-bold" style={{ background: 'rgba(245,158,11,0.12)', color: '#f59e0b' }}>C</div>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <h2 className="text-[15px] font-semibold tracking-tight" style={{ color: THEME.text.primary }}>Decision Queue</h2>
+                                    {allAttentionItems.length > 0 && (
+                                        <span className="rounded-full border px-2.5 py-0.5 text-[10px] font-semibold" style={{ borderColor: 'rgba(245,158,11,0.3)', background: 'rgba(245,158,11,0.10)', color: '#f59e0b' }}>
+                                            {allAttentionItems.length} item{allAttentionItems.length !== 1 ? 's' : ''} need your call
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="mt-1.5 space-y-1">
+                                    <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
+                                        Specific risks, opportunities, and open questions your AI team raised that need a human decision — not automated alerts, these are real research findings.
+                                    </p>
+                                    <p className="text-[11px]" style={{ color: THEME.text.muted }}>
+                                        <span className="font-semibold" style={{ color: THEME.text.primary }}>Source:</span>{' '}Auto-flagged by AI desks during Staff Sync · the colored badge shows which desk raised each item and why it was escalated
+                                    </p>
+                                    <p className="text-[11px] font-medium" style={{ color: THEME.accent.info }}>
+                                        → Click "Discuss →" on any item to open Dexo for that venture and build a concrete plan together.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-5 lg:grid-cols-[1fr_340px]">
+
+                            {/* Flagged signals */}
+                            {allAttentionItems.length > 0 && (
+                                <div className="overflow-hidden rounded-2xl border" style={{ borderColor: 'rgba(245,158,11,0.25)' }}>
+                                    <div className="flex items-start gap-2.5 border-b px-5 py-3.5" style={{ borderColor: 'rgba(245,158,11,0.15)', background: 'rgba(245,158,11,0.06)' }}>
+                                        <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" style={{ color: '#f59e0b' }} />
                                         <div>
-                                            <h3 className="font-medium" style={{ color: THEME.text.primary }}>
-                                                {project.name}
-                                            </h3>
-                                            <p className="text-xs" style={{ color: THEME.text.tertiary }}>
-                                                {new Date(project.timestamp).toLocaleDateString()}
+                                            <p className="text-[12px] font-semibold" style={{ color: '#f59e0b' }}>Signals flagged for your decision</p>
+                                            <p className="text-[10px]" style={{ color: 'rgba(245,158,11,0.7)' }}>Each badge shows which AI desk raised it · left border color = desk type</p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        {allAttentionItems.map((a: any) => {
+                                            const roleAccent = (PORTFOLIO_DESK_ACCENTS as Record<string, string>)[a.role] ?? '#f59e0b';
+                                            const roleLabel  = (RESEARCH_STAFF as Record<string, any>)[a.role]?.navTitle ?? (a.role ?? 'AI Team');
+                                            const createdAgo = a.createdAt ? (() => {
+                                                const mins = Math.max(0, Math.floor((Date.now() - new Date(a.createdAt).getTime()) / 60000));
+                                                return mins < 60 ? `${mins}m ago` : mins < 1440 ? `${Math.floor(mins / 60)}h ago` : `${Math.floor(mins / 1440)}d ago`;
+                                            })() : null;
+                                            return (
+                                                <div key={a.id}
+                                                    className="border-b last:border-b-0"
+                                                    style={{ borderColor: 'rgba(245,158,11,0.08)', borderLeft: `3px solid ${roleAccent}` }}
+                                                >
+                                                    <div className="flex items-start justify-between gap-3 px-5 py-4">
+                                                        <div className="min-w-0 flex-1">
+                                                            {/* Who flagged it + which venture + when */}
+                                                            <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                                                                <span className="rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide" style={{ background: `${roleAccent}15`, color: roleAccent }}>
+                                                                    {roleLabel}
+                                                                </span>
+                                                                <span className="rounded-md px-2 py-0.5 text-[10px] font-medium" style={{ background: 'rgba(255,255,255,0.07)', color: THEME.text.secondary }}>
+                                                                    {a.ventureName}
+                                                                </span>
+                                                                {createdAgo && (
+                                                                    <span className="text-[10px]" style={{ color: THEME.text.muted }}>{createdAgo}</span>
+                                                                )}
+                                                            </div>
+                                                            {/* Signal title */}
+                                                            <p className="text-[13px] font-semibold leading-snug" style={{ color: THEME.text.primary }}>{a.title}</p>
+                                                            {/* Full message — not truncated */}
+                                                            <p className="mt-1.5 text-[11px] leading-relaxed" style={{ color: THEME.text.secondary }}>{a.message}</p>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => { setActiveProject(a.ventureRef); switchRoom('dexo'); }}
+                                                            className="shrink-0 rounded-xl border px-3 py-2 text-[11px] font-semibold transition-all hover:opacity-80"
+                                                            style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.10)', color: THEME.accent.primary }}
+                                                        >
+                                                            Discuss →
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Dexo's recommended actions today */}
+                            {focusLines.length > 0 && (
+                                <div className="flex flex-col overflow-hidden rounded-2xl border" style={{ borderColor: THEME.border.subtle }}>
+                                    <div className="flex items-start gap-2.5 border-b px-5 py-3.5" style={{ borderColor: THEME.border.subtle, background: 'rgba(116,86,255,0.05)' }}>
+                                        <Target className="h-4 w-4 mt-0.5 shrink-0" style={{ color: THEME.accent.primary }} />
+                                        <div>
+                                            <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>Dexo's Recommended Actions</p>
+                                            <p className="text-[10px] mt-0.5" style={{ color: THEME.text.muted }}>
+                                                What your AI co-founder thinks you should do today for <span style={{ color: THEME.accent.primary }}>{leadingVenture?.name ?? 'your venture'}</span> — ordered by priority
+                                            </p>
+                                            <p className="text-[10px] mt-0.5" style={{ color: THEME.text.muted }}>
+                                                <span className="font-semibold" style={{ color: THEME.text.secondary }}>Source:</span> Synthesised from latest Staff Sync across all desks
                                             </p>
                                         </div>
                                     </div>
-                                    <StatusBadge status={project.strategy ? 'active' : 'pending'} />
+                                    <ol className="flex-1 divide-y" style={{ borderColor: THEME.border.subtle }}>
+                                        {focusLines.slice(0, 7).map((line, i) => (
+                                            <li key={i} className="flex items-start gap-3 px-5 py-3.5">
+                                                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold tabular-nums" style={{ background: 'rgba(116,86,255,0.15)', color: THEME.accent.primary }}>
+                                                    {i + 1}
+                                                </span>
+                                                <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>{line}</p>
+                                            </li>
+                                        ))}
+                                    </ol>
+                                    <div className="border-t px-5 py-3" style={{ borderColor: THEME.border.subtle }}>
+                                        <button type="button" onClick={() => leadingVenture && setActiveProject(leadingVenture)} className="text-[11px] font-semibold" style={{ color: THEME.accent.info }}>
+                                            Open {leadingVenture?.name ?? 'venture'} to discuss these →
+                                        </button>
+                                    </div>
                                 </div>
-                            </Card>
-                        ))}
+                            )}
+                        </div>
+                    </section>
+                )}
+
+                {/* ════════════════════════════════════════════════════════
+                    § D  VENTURE WORKSPACES
+                         State of each workspace + desk research coverage.
+                         Click any venture to open it. Coverage bar shows
+                         how many AI desks have active research for it.
+                ════════════════════════════════════════════════════════ */}
+                <section>
+                    <div className="mb-6 flex items-start gap-4 border-b pb-5" style={{ borderColor: THEME.border.subtle }}>
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[12px] font-bold" style={{ background: 'rgba(16,185,129,0.12)', color: THEME.chart.emerald }}>D</div>
+                        <div className="flex-1 min-w-0">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                <h2 className="text-[15px] font-semibold tracking-tight" style={{ color: THEME.text.primary }}>Venture Workspaces</h2>
+                                {onNewVenture && (
+                                    <button onClick={onNewVenture} className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold hover:opacity-80" style={{ background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}>
+                                        <Sparkles className="h-3 w-3" /> New venture
+                                    </button>
+                                )}
+                            </div>
+                            <div className="mt-1.5 space-y-1">
+                                <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
+                                    Every workspace your AI co-founder is actively working on. Desk coverage tells you how thoroughly each venture has been researched — 5/5 means all functional areas are briefed.
+                                </p>
+                                <p className="text-[11px]" style={{ color: THEME.text.muted }}>
+                                    <span className="font-semibold" style={{ color: THEME.text.primary }}>Source:</span>{' '}Your venture data + Staff Sync results · coverage updates automatically after each sync
+                                </p>
+                                <p className="text-[11px] font-medium" style={{ color: THEME.accent.info }}>
+                                    → Click any venture to enter it. Use the coverage sidebar to jump to any under-researched desk.
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    {allProjects.length === 0 && (
-                        <Card className="p-12 text-center">
-                            <p style={{ color: THEME.text.secondary }}>
-                                No ventures yet. Create your first venture to get started.
-                            </p>
-                        </Card>
-                    )}
-                </div>
+                    <div className="grid gap-5 lg:grid-cols-[1fr_280px]">
+                        {/* Venture cards grid */}
+                        <div className="overflow-hidden rounded-2xl border" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
+                            {allProjects.length === 0 ? (
+                                <div className="flex flex-col items-center gap-3 py-14 text-center">
+                                    <Briefcase className="h-8 w-8" style={{ color: THEME.text.muted }} />
+                                    <p className="text-sm" style={{ color: THEME.text.muted }}>No ventures yet.</p>
+                                </div>
+                            ) : (
+                                <div className="grid gap-px bg-[rgba(255,255,255,0.05)] sm:grid-cols-2">
+                                    {allProjects.map((project: any) => {
+                                        const hasStrategy = !!project.strategy?.trim();
+                                        const hasSynced   = !!project.agentStaffSnapshot?.at;
+                                        const excerpt     = project.agentStaffSnapshot?.summary?.trim() || project.strategy?.trim();
+                                        const syncedAt    = project.agentStaffSnapshot?.at;
+                                        const syncAge     = syncedAt ? Math.max(0, Math.floor((Date.now() - syncedAt) / 60000)) : null;
+                                        const syncAgo     = syncAge === null ? null : syncAge < 60 ? `${syncAge}m ago` : syncAge < 1440 ? `${Math.floor(syncAge / 60)}h ago` : `${Math.floor(syncAge / 1440)}d ago`;
+                                        const desks       = project.agentStaffSnapshot?.desks;
+                                        const coveredDesks = desks ? (['ceo','pm','accountant','scout','cmo'] as const).filter(d => !!desks[d]?.trim()).length : 0;
+                                        return (
+                                            <button key={project.id} type="button" onClick={() => setActiveProject(project)}
+                                                className="group flex flex-col gap-3 bg-[rgba(14,14,16,0.95)] p-5 text-left transition-all hover:bg-[rgba(255,255,255,0.03)]"
+                                            >
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <div className="flex items-center gap-2.5">
+                                                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl" style={{ background: hasStrategy ? 'rgba(116,86,255,0.12)' : 'rgba(255,255,255,0.06)' }}>
+                                                            <Briefcase className="h-4 w-4" style={{ color: hasStrategy ? THEME.accent.primary : THEME.text.muted }} />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-semibold leading-snug" style={{ color: THEME.text.primary }}>{project.name}</p>
+                                                            <p className="text-[10px]" style={{ color: THEME.text.muted }}>{new Date(project.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                                                        </div>
+                                                    </div>
+                                                    <StatusBadge status={hasStrategy ? 'active' : 'pending'} />
+                                                </div>
+                                                {excerpt ? (
+                                                    <p className="line-clamp-2 text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>{excerpt.slice(0, 180)}{excerpt.length > 180 ? '…' : ''}</p>
+                                                ) : (
+                                                    <p className="text-[12px]" style={{ color: THEME.text.muted }}>No strategy yet — open CEO desk.</p>
+                                                )}
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <div className="flex items-center gap-2">
+                                                        {hasSynced ? (
+                                                            <span className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}>
+                                                                <Zap className="h-2.5 w-2.5" /> Synced {syncAgo}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ background: 'rgba(255,255,255,0.07)', color: THEME.text.muted }}>Not synced</span>
+                                                        )}
+                                                        {coveredDesks > 0 && (
+                                                            <span className="text-[10px] font-medium" style={{ color: THEME.text.muted }}>{coveredDesks}/5 desks</span>
+                                                        )}
+                                                    </div>
+                                                    <span className="flex items-center gap-0.5 text-[11px] font-medium opacity-0 transition-opacity group-hover:opacity-100" style={{ color: THEME.accent.info }}>
+                                                        Open <ChevronRight className="h-3.5 w-3.5" />
+                                                    </span>
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Research desk coverage sidebar */}
+                        <div className="flex flex-col gap-4">
+                            <div className="overflow-hidden rounded-2xl border" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
+                                <div className="border-b px-5 py-3.5" style={{ borderColor: THEME.border.subtle }}>
+                                    <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>Research Desk Coverage</p>
+                                    <p className="mt-0.5 text-[10px]" style={{ color: THEME.text.muted }}>% of ventures with AI research at each desk</p>
+                                </div>
+                                <div>
+                                    {(['ceo', 'accountant', 'pm', 'cmo', 'scout'] as const).map((role) => {
+                                        const row    = RESEARCH_STAFF[role];
+                                        const stat   = deskStats[role];
+                                        const accent = PORTFOLIO_DESK_ACCENTS[role];
+                                        const pct    = stat.total === 0 ? 0 : Math.round(stat.coverage * 100);
+                                        return (
+                                            <button type="button" key={role}
+                                                onClick={() => { const t = firstProjectNeedingRole(allProjects, role); if (t) { setActiveProject(t); switchRoom(role); } }}
+                                                className="group flex w-full items-center gap-3 border-b px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-[rgba(255,255,255,0.03)]"
+                                                style={{ borderColor: THEME.border.subtle }}
+                                            >
+                                                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md" style={{ background: `${accent}14` }}>
+                                                    <BarChart2 className="h-3 w-3" style={{ color: accent }} />
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="flex items-center justify-between gap-1 mb-1">
+                                                        <p className="text-[11px] font-medium" style={{ color: THEME.text.primary }}>{row.navTitle}</p>
+                                                        <span className="text-[10px] tabular-nums font-semibold" style={{ color: pct === 100 ? accent : THEME.text.muted }}>{stat.total === 0 ? '—' : `${pct}%`}</span>
+                                                    </div>
+                                                    <div className="h-1 overflow-hidden rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                                                        <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${accent}99, ${accent})` }} />
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                {[
+                                    { label: 'Ventures', value: String(ventureCount), accent: THEME.chart.violet },
+                                    { label: 'AI Synced', value: String(synced),       accent: THEME.chart.amber  },
+                                ].map(({ label, value, accent }) => (
+                                    <div key={label} className="rounded-xl border p-3 text-center" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.03)' }}>
+                                        <p className="text-xl font-bold tabular-nums" style={{ color: THEME.text.primary }}>{value}</p>
+                                        <p className="text-[10px] font-medium" style={{ color: accent }}>{label}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* ════════════════════════════════════════════════════════
+                    § E  AI TOOLS DIRECTORY + WORKSPACE NAVIGATOR
+                         Quick-launch AI tools and jump to any desk room.
+                ════════════════════════════════════════════════════════ */}
+                <section>
+                    <div className="mb-6 flex items-start gap-4 border-b pb-5" style={{ borderColor: THEME.border.subtle }}>
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[12px] font-bold" style={{ background: 'rgba(255,255,255,0.07)', color: THEME.text.secondary }}>E</div>
+                        <div>
+                            <h2 className="text-[15px] font-semibold tracking-tight" style={{ color: THEME.text.primary }}>Tools &amp; Workspace Navigator</h2>
+                            <div className="mt-1.5 space-y-1">
+                                <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
+                                    External AI tools for manual research, and instant navigation to any AI desk room across all your ventures.
+                                </p>
+                                <p className="text-[11px] font-medium" style={{ color: THEME.accent.info }}>
+                                    → Use AI tools to research manually. Click any desk button to jump straight into that room and continue AI-driven research.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="space-y-5">
+                        {/* AI Tools row */}
+                        <div>
+                            <p className="mb-2.5 text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: THEME.text.muted }}>AI Tools Directory</p>
+                            <div className="overflow-hidden rounded-2xl border" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
+                                <div className="grid grid-cols-3 sm:grid-cols-5">
+                                    {DASH_AI_TOOLS.map(({ label, desc, url, Logo, color }) => (
+                                        <a key={label} href={url} target="_blank" rel="noopener noreferrer"
+                                            className="group flex flex-col items-center gap-2.5 border-r px-4 py-6 text-center transition-all last:border-r-0 hover:bg-[rgba(255,255,255,0.04)]"
+                                            style={{ borderColor: THEME.border.subtle }}
+                                        >
+                                            <div className="flex h-11 w-11 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-110" style={{ background: `${color}14` }}>
+                                                <Logo size={24} />
+                                            </div>
+                                            <div>
+                                                <p className="text-[13px] font-semibold" style={{ color: THEME.text.primary }}>{label}</p>
+                                                <p className="text-[10px]" style={{ color: THEME.text.muted }}>{desc}</p>
+                                            </div>
+                                        </a>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                        {/* Desk navigator */}
+                        <div>
+                            <p className="mb-2.5 text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: THEME.text.muted }}>Desk Navigator — Jump to any room</p>
+                            <div className="overflow-hidden rounded-2xl border" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+                                    {([
+                                        { role: 'ceo'        as const, label: 'CEO Desk', sub: 'Strategy & Vision',  icon: Lightbulb, color: THEME.chart.violet  },
+                                        { role: 'scout'      as const, label: 'Scout',    sub: 'Market Research',    icon: Globe,     color: THEME.chart.blue    },
+                                        { role: 'accountant' as const, label: 'Finance',  sub: 'Budget & Runway',    icon: Wallet,    color: THEME.chart.emerald },
+                                        { role: 'pm'         as const, label: 'Product',  sub: 'Roadmap & Features', icon: Layers,    color: THEME.chart.amber   },
+                                        { role: 'cmo'        as const, label: 'Growth',   sub: 'GTM & Acquisition',  icon: Megaphone, color: THEME.chart.rose    },
+                                        { role: null,                  label: 'Dexo AI',  sub: 'Discuss & Plan',     icon: Cpu,       color: THEME.accent.primary },
+                                    ] as const).map(({ role, label, sub, icon: Icon, color }) => (
+                                        <button key={label} type="button"
+                                            onClick={() => {
+                                                if (!role) { if (leadingVenture) setActiveProject(leadingVenture); switchRoom('dexo'); return; }
+                                                const target = firstProjectNeedingRole(allProjects, role) ?? allProjects[0];
+                                                if (target) { setActiveProject(target); switchRoom(role); }
+                                            }}
+                                            className="group flex flex-col items-center gap-2 border-r border-b py-5 text-center transition-all last-of-type:border-r-0 hover:bg-[rgba(255,255,255,0.04)]"
+                                            style={{ borderColor: THEME.border.subtle }}
+                                        >
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-110" style={{ background: `${color}14` }}>
+                                                <Icon className="h-4.5 w-4.5" style={{ color }} />
+                                            </div>
+                                            <div>
+                                                <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>{label}</p>
+                                                <p className="text-[10px]" style={{ color: THEME.text.muted }}>{sub}</p>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
             </main>
         </div>
     );
 }
+
 
 function AnalyticsTab({
     phasePieData,
