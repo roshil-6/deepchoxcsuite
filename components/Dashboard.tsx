@@ -545,6 +545,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     const [dashboardExpanded, setDashboardExpanded] = useState(false);
     const [portfolioDashExpanded, setPortfolioDashExpanded] = useState(false);
     const [activeTab, setActiveTab] = useState<'overview' | 'analytics' | 'activity' | 'dexo_daily'>('overview');
+    const [openGuideKey, setOpenGuideKey] = useState<string | null>(null);
 
     const dashboardTabs = [
         { id: 'overview' as const, label: 'Overview' },
@@ -1188,121 +1189,319 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             </div>
                         </div>
 
-                        {/* ── AI STAFF ANALYSIS REPORT ── */}
+                        {/* ── DEXO RESEARCH GUIDE ── */}
+
+                        {/* Popup guide overlay — renders on top of page via fixed positioning */}
+                        {openGuideKey && activeProject.agentStaffSnapshot && (() => {
+                            const DESK_DEFS = [
+                                { key: 'ceo',        label: 'Strategic Direction', role: 'CEO',             covers: 'Vision, mission, and competitive positioning',        snap: activeProject.agentStaffSnapshot!.desks.ceo,        color: THEME.chart.violet,  room: 'ceo'        as const, icon: Lightbulb, guide: "Use this to set or challenge your strategy. It shapes every other decision — read it first when you're unsure about direction."                    },
+                                { key: 'scout',      label: 'Market Intelligence', role: 'Scout',           covers: 'Competitor signals, trends, and market opportunities', snap: activeProject.agentStaffSnapshot!.desks.scout,      color: THEME.chart.blue,    room: 'scout'      as const, icon: Globe,     guide: 'Use this to spot threats before they hit and validate your market assumptions. Check it before any competitive or go-to-market decision.'             },
+                                { key: 'pm',         label: 'Product Insights',    role: 'Product Manager', covers: 'Roadmap priorities, features, and user problems',      snap: activeProject.agentStaffSnapshot!.desks.pm,         color: THEME.chart.amber,   room: 'pm'         as const, icon: Layers,    guide: 'Use this to decide what to build next and what to cut. It directly informs your roadmap and sprint priorities.'                                      },
+                                { key: 'accountant', label: 'Finance & Runway',    role: 'Accountant',      covers: 'Budget, burn rate, and revenue model signals',        snap: activeProject.agentStaffSnapshot!.desks.accountant, color: THEME.chart.emerald, room: 'accountant' as const, icon: Wallet,    guide: 'Read this before any spending or pricing decision. It shows your real financial constraints and revenue opportunities.'                               },
+                                { key: 'cmo',        label: 'Growth & GTM',        role: 'CMO',             covers: 'Channels, acquisition, and marketing strategy',       snap: activeProject.agentStaffSnapshot!.desks.cmo,        color: THEME.chart.rose,    room: 'cmo'        as const, icon: Megaphone, guide: 'Use this to pick channels and craft messaging before investing in any marketing or sales motion.'                                                    },
+                            ] as const;
+                            const d = DESK_DEFS.find(x => x.key === openGuideKey);
+                            if (!d) return null;
+                            return (
+                                <div
+                                    className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center"
+                                    style={{ background: 'rgba(0,0,0,0.70)', backdropFilter: 'blur(6px)' }}
+                                    onClick={() => setOpenGuideKey(null)}
+                                >
+                                    <div
+                                        className="w-full max-w-md overflow-hidden rounded-2xl border"
+                                        style={{ background: 'rgba(16,16,20,0.99)', borderColor: `${d.color}40`, boxShadow: `0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px ${d.color}25` }}
+                                        onClick={e => e.stopPropagation()}
+                                    >
+                                        {/* Popup header */}
+                                        <div className="flex items-start justify-between gap-3 border-b px-5 py-4" style={{ borderColor: `${d.color}18`, background: `linear-gradient(135deg, ${d.color}12, ${d.color}06)` }}>
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: `${d.color}20`, boxShadow: `0 0 0 1px ${d.color}30` }}>
+                                                    <Cpu className="h-4.5 w-4.5" style={{ color: d.color }} />
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="text-[13px] font-semibold" style={{ color: THEME.text.primary }}>Dexo Co-Founder Guide</p>
+                                                    <p className="text-[11px] font-medium" style={{ color: d.color }}>{d.label} · {d.role}</p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setOpenGuideKey(null)}
+                                                className="shrink-0 flex h-7 w-7 items-center justify-center rounded-lg text-[13px] font-bold transition hover:bg-white/10"
+                                                style={{ color: THEME.text.muted }}
+                                            >
+                                                ✕
+                                            </button>
+                                        </div>
+
+                                        {/* Popup body */}
+                                        <div className="space-y-3 px-5 py-4">
+                                            {/* What this covers */}
+                                            <div className="rounded-xl border px-4 py-3" style={{ borderColor: `${d.color}18`, background: `${d.color}08` }}>
+                                                <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.14em]" style={{ color: d.color }}>What this desk covers</p>
+                                                <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>{d.covers}</p>
+                                            </div>
+
+                                            {/* How to use */}
+                                            <div className="rounded-xl border px-4 py-3" style={{ borderColor: 'rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.03)' }}>
+                                                <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>How to use this finding</p>
+                                                <p className="text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>{d.guide}</p>
+                                            </div>
+
+                                            {/* Ask Dexo CTA */}
+                                            {d.snap?.trim() ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setDexoBootstrap({
+                                                            title: `${d.label} Finding — ${activeProject.name}`,
+                                                            detail: d.snap!.trim(),
+                                                            sourceRole: d.key as 'ceo'|'pm'|'accountant'|'cmo'|'scout',
+                                                            requiredInfo: [],
+                                                            userMessage: `I am reviewing the ${d.label} research from my last Staff Sync for ${activeProject.name}.\n\nFinding:\n"${d.snap!.trim().slice(0, 400)}"\n\nExplain what this means and tell me:\n1. What does this mean for my business right now?\n2. What is the single most important action to take?\n3. Any immediate risks or opportunities?\n\nBe specific and grounded in what is already saved in this venture.`,
+                                                        });
+                                                        setOpenGuideKey(null);
+                                                        switchRoom('dexo');
+                                                    }}
+                                                    className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-[13px] font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
+                                                    style={{ background: `linear-gradient(135deg, ${d.color}28, rgba(116,86,255,0.22))`, border: `1px solid ${d.color}35`, color: THEME.text.primary }}
+                                                >
+                                                    <Sparkles className="h-4 w-4 shrink-0" style={{ color: d.color }} />
+                                                    Ask Dexo about this finding →
+                                                </button>
+                                            ) : (
+                                                <p className="text-center text-[11px]" style={{ color: THEME.text.muted }}>
+                                                    Run Staff Sync to generate a finding for this desk.
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })()}
+
                         {activeProject.agentStaffSnapshot ? (
                             <div
                                 className="overflow-hidden rounded-2xl border"
-                                style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
+                                style={{ borderColor: 'rgba(116,86,255,0.18)', background: 'rgba(12,12,16,0.85)' }}
                             >
-                                {/* Header */}
+                                {/* Section header */}
                                 <div
-                                    className="flex items-center justify-between border-b px-6 py-4"
-                                    style={{ borderColor: THEME.border.subtle }}
+                                    className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-4 sm:px-6"
+                                    style={{ borderColor: 'rgba(116,86,255,0.10)', background: 'linear-gradient(135deg, rgba(116,86,255,0.10) 0%, rgba(116,86,255,0.04) 100%)' }}
                                 >
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex min-w-0 items-center gap-3">
                                         <div
-                                            className="flex h-8 w-8 items-center justify-center rounded-lg"
-                                            style={{ background: 'rgba(116,86,255,0.12)' }}
+                                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                                            style={{ background: 'rgba(116,86,255,0.22)', boxShadow: '0 0 0 1px rgba(116,86,255,0.28)' }}
                                         >
-                                            <BarChart2 className="h-4 w-4" style={{ color: THEME.accent.primary }} />
+                                            <Cpu className="h-4 w-4" style={{ color: THEME.accent.primary }} />
                                         </div>
-                                        <div>
-                                            <h2 className="text-sm font-semibold" style={{ color: THEME.text.primary }}>AI Staff Analysis</h2>
-                                            <p className="text-[11px]" style={{ color: THEME.text.muted }}>
-                                                Live internet research across all 5 desks · {lastStaffSyncLabel ?? '—'}
+                                        <div className="min-w-0">
+                                            <h2 className="text-[13px] font-semibold" style={{ color: THEME.text.primary }}>Dexo Research Guide</h2>
+                                            <p className="truncate text-[10px]" style={{ color: THEME.text.muted }}>
+                                                AI co-founder briefing · 5 desks{lastStaffSyncLabel ? ` · ${lastStaffSyncLabel}` : ''}
                                             </p>
                                         </div>
                                     </div>
-                                    <button
-                                        onClick={() => runAgentStaffSync()}
-                                        disabled={agentSyncRunning}
-                                        className="flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-[12px] font-medium transition-all"
-                                        style={{
-                                            borderColor: THEME.border.default,
-                                            background: 'rgba(255,255,255,0.05)',
-                                            color: THEME.text.secondary,
-                                            opacity: agentSyncRunning ? 0.55 : 1,
-                                        }}
-                                    >
-                                        <RefreshCw className={`h-3.5 w-3.5 ${agentSyncRunning ? 'animate-spin' : ''}`} />
-                                        {agentSyncRunning ? 'Syncing…' : 'Refresh'}
-                                    </button>
+                                    <div className="flex shrink-0 items-center gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setDexoBootstrap({
+                                                    title: `Full Research Briefing — ${activeProject.name}`,
+                                                    detail: activeProject.agentStaffSnapshot!.summary ?? '',
+                                                    sourceRole: 'ceo',
+                                                    requiredInfo: [],
+                                                    userMessage: `Give me a complete briefing on all the latest Staff Sync research for ${activeProject.name}. Walk through each desk — Strategy, Market Intelligence, Product, Finance, Growth — and give me the top 3 actions I should take right now.`,
+                                                });
+                                                switchRoom('dexo');
+                                            }}
+                                            className="flex items-center gap-1.5 rounded-xl border px-3 py-2 text-[11px] font-semibold transition-all hover:opacity-80"
+                                            style={{ borderColor: 'rgba(116,86,255,0.32)', background: 'rgba(116,86,255,0.14)', color: THEME.accent.primary }}
+                                        >
+                                            <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                                            <span className="hidden sm:inline">Full briefing</span>
+                                            <span className="sm:hidden">Brief</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => runAgentStaffSync()}
+                                            disabled={agentSyncRunning}
+                                            className="flex items-center gap-1.5 rounded-xl border px-3 py-2 text-[11px] font-medium transition-all hover:opacity-70"
+                                            style={{ borderColor: THEME.border.default, background: 'rgba(255,255,255,0.05)', color: THEME.text.muted, opacity: agentSyncRunning ? 0.5 : 1 }}
+                                        >
+                                            <RefreshCw className={`h-3 w-3 shrink-0 ${agentSyncRunning ? 'animate-spin' : ''}`} />
+                                            <span className="hidden sm:inline">{agentSyncRunning ? 'Syncing…' : 'Refresh'}</span>
+                                        </button>
+                                    </div>
                                 </div>
 
-                                {/* Desk cards */}
-                                <div className="grid gap-px bg-[rgba(255,255,255,0.05)] sm:grid-cols-2 lg:grid-cols-3">
-                                    {(
-                                        [
-                                            { label: 'Strategy', sub: 'CEO desk', snap: activeProject.agentStaffSnapshot.desks.ceo, color: THEME.chart.violet, room: 'ceo' as const },
-                                            { label: 'Market Intel', sub: 'Scout desk', snap: activeProject.agentStaffSnapshot.desks.scout, color: THEME.chart.blue, room: 'scout' as const },
-                                            { label: 'Product', sub: 'PM desk', snap: activeProject.agentStaffSnapshot.desks.pm, color: THEME.chart.amber, room: 'pm' as const },
-                                            { label: 'Finance', sub: 'Accountant desk', snap: activeProject.agentStaffSnapshot.desks.accountant, color: THEME.chart.emerald, room: 'accountant' as const },
-                                            { label: 'Growth', sub: 'CMO desk', snap: activeProject.agentStaffSnapshot.desks.cmo, color: THEME.chart.rose, room: 'cmo' as const },
-                                            { label: 'Executive Summary', sub: 'Cross-desk synthesis', snap: activeProject.agentStaffSnapshot.summary, color: THEME.accent.primary, room: null },
-                                        ] as const
-                                    ).map(({ label, sub, snap, color, room }) => (
-                                        <div
-                                            key={label}
-                                            className="flex flex-col gap-3 bg-[var(--bg-primary)] p-5"
-                                            style={{ background: 'rgba(18,18,20,0.9)' }}
-                                        >
-                                            <div className="flex items-start justify-between gap-2">
-                                                <div>
-                                                    <div className="flex items-center gap-1.5">
-                                                        <span
-                                                            className="h-2 w-2 shrink-0 rounded-full"
-                                                            style={{ background: color }}
-                                                        />
-                                                        <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>{label}</p>
+                                {/* Desk cards — 1 col mobile, 2 col sm+ */}
+                                <div className="grid gap-px bg-[rgba(255,255,255,0.04)] sm:grid-cols-2">
+                                    {([
+                                        { key: 'ceo',        label: 'Strategic Direction', role: 'CEO',             sub: 'Vision · positioning · strategy',       snap: activeProject.agentStaffSnapshot.desks.ceo,        color: THEME.chart.violet,  room: 'ceo'        as const, icon: Lightbulb },
+                                        { key: 'scout',      label: 'Market Intelligence', role: 'Scout',           sub: 'Competitors · trends · opportunities',  snap: activeProject.agentStaffSnapshot.desks.scout,      color: THEME.chart.blue,    room: 'scout'      as const, icon: Globe     },
+                                        { key: 'pm',         label: 'Product Insights',    role: 'Product Manager', sub: 'Roadmap · features · user problems',    snap: activeProject.agentStaffSnapshot.desks.pm,         color: THEME.chart.amber,   room: 'pm'         as const, icon: Layers    },
+                                        { key: 'accountant', label: 'Finance & Runway',    role: 'Accountant',      sub: 'Budget · burn · revenue signals',       snap: activeProject.agentStaffSnapshot.desks.accountant, color: THEME.chart.emerald, room: 'accountant' as const, icon: Wallet    },
+                                        { key: 'cmo',        label: 'Growth & GTM',        role: 'CMO',             sub: 'Channels · marketing · acquisition',    snap: activeProject.agentStaffSnapshot.desks.cmo,        color: THEME.chart.rose,    room: 'cmo'        as const, icon: Megaphone },
+                                    ] as const).map(({ key, label, role, sub, snap, color, room, icon: DeskIcon }) => {
+                                        const hasSnap = !!snap?.trim();
+                                        return (
+                                            <div key={key} className="flex flex-col bg-[rgba(14,14,18,0.97)] p-4 sm:p-5">
+                                                {/* Card header row */}
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <div className="flex min-w-0 items-center gap-2.5">
+                                                        <div
+                                                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl"
+                                                            style={{ background: `${color}16`, boxShadow: `0 0 0 1px ${color}20` }}
+                                                        >
+                                                            <DeskIcon className="h-3.5 w-3.5" style={{ color }} />
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className="truncate text-[12px] font-semibold" style={{ color: THEME.text.primary }}>{label}</p>
+                                                            <p className="text-[10px] font-medium" style={{ color }}>{role}</p>
+                                                        </div>
                                                     </div>
-                                                    <p className="mt-0.5 text-[10px]" style={{ color: THEME.text.muted }}>{sub}</p>
-                                                </div>
-                                                {room && (
                                                     <button
                                                         type="button"
                                                         onClick={() => switchRoom(room)}
-                                                        className="shrink-0 rounded-md border px-2 py-1 text-[10px] font-medium transition-all hover:opacity-80"
-                                                        style={{ borderColor: `${color}30`, background: `${color}0D`, color }}
+                                                        className="shrink-0 rounded-lg border px-2 py-1 text-[10px] font-semibold transition-all hover:opacity-80"
+                                                        style={{ borderColor: `${color}30`, background: `${color}0E`, color }}
                                                     >
-                                                        Open
+                                                        Open →
                                                     </button>
-                                                )}
+                                                </div>
+
+                                                {/* Desk sub-label */}
+                                                <p className="mt-1.5 text-[10px]" style={{ color: THEME.text.muted }}>{sub}</p>
+
+                                                {/* Research finding */}
+                                                <div className="mt-3 flex-1">
+                                                    {hasSnap ? (
+                                                        <>
+                                                            <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.12em]" style={{ color }}>Research Finding</p>
+                                                            <p className="text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>
+                                                                {snap!.trim().length > 240 ? `${snap!.trim().slice(0, 237)}…` : snap!.trim()}
+                                                            </p>
+                                                        </>
+                                                    ) : (
+                                                        <p className="text-[11px] italic" style={{ color: THEME.text.muted }}>
+                                                            No research yet — run Staff Sync.
+                                                        </p>
+                                                    )}
+                                                </div>
+
+                                                {/* Action row — wraps on narrow screens */}
+                                                <div className="mt-4 flex flex-wrap items-center gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setOpenGuideKey(key)}
+                                                        className="flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition-all hover:opacity-80"
+                                                        style={{ borderColor: 'rgba(255,255,255,0.10)', background: 'rgba(255,255,255,0.05)', color: THEME.text.secondary }}
+                                                    >
+                                                        <Cpu className="h-3 w-3 shrink-0" style={{ color: THEME.accent.primary }} />
+                                                        Dexo Guide
+                                                    </button>
+                                                    {hasSnap && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setDexoBootstrap({
+                                                                    title: `${label} Finding — ${activeProject.name}`,
+                                                                    detail: snap!.trim(),
+                                                                    sourceRole: key as 'ceo'|'pm'|'accountant'|'cmo'|'scout',
+                                                                    requiredInfo: [],
+                                                                    userMessage: `I am reviewing the ${label} research from my last Staff Sync for ${activeProject.name}.\n\nFinding:\n"${snap!.trim().slice(0, 400)}"\n\nExplain what this means and tell me:\n1. What does this mean for my business right now?\n2. What is the single most important action to take?\n3. Any immediate risks or opportunities?\n\nBe specific and grounded in what is already saved in this venture.`,
+                                                                });
+                                                                switchRoom('dexo');
+                                                            }}
+                                                            className="flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-semibold transition-all hover:opacity-80"
+                                                            style={{ borderColor: 'rgba(116,86,255,0.28)', background: 'rgba(116,86,255,0.10)', color: THEME.accent.primary }}
+                                                        >
+                                                            <Sparkles className="h-3 w-3 shrink-0" />
+                                                            Ask Dexo
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <p className="flex-1 text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>
-                                                {snap?.trim()
-                                                    ? snap.trim().length > 200 ? `${snap.trim().slice(0, 197)}…` : snap.trim()
-                                                    : <span style={{ color: THEME.text.muted }}>No analysis yet — run Staff Sync.</span>
-                                                }
-                                            </p>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
+
+                                {/* Executive Synthesis footer */}
+                                {activeProject.agentStaffSnapshot.summary?.trim() && (
+                                    <div
+                                        className="border-t px-4 py-4 sm:px-6"
+                                        style={{ borderColor: 'rgba(116,86,255,0.10)', background: 'rgba(116,86,255,0.06)' }}
+                                    >
+                                        <div className="flex flex-wrap items-start justify-between gap-3">
+                                            <div className="min-w-0 flex-1">
+                                                <div className="mb-2 flex flex-wrap items-center gap-2">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <Sparkles className="h-3.5 w-3.5 shrink-0" style={{ color: THEME.accent.primary }} />
+                                                        <p className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: THEME.accent.primary }}>Executive Synthesis</p>
+                                                    </div>
+                                                    <span className="text-[10px]" style={{ color: THEME.text.muted }}>Cross-desk summary by AI chief of staff</span>
+                                                </div>
+                                                <p className="text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>
+                                                    {activeProject.agentStaffSnapshot.summary.trim().length > 300
+                                                        ? `${activeProject.agentStaffSnapshot.summary.trim().slice(0, 297)}…`
+                                                        : activeProject.agentStaffSnapshot.summary.trim()}
+                                                </p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setDexoBootstrap({
+                                                        title: `Executive Synthesis — ${activeProject.name}`,
+                                                        detail: activeProject.agentStaffSnapshot!.summary ?? '',
+                                                        sourceRole: 'ceo',
+                                                        requiredInfo: [],
+                                                        userMessage: `I am reading the executive synthesis from the last Staff Sync for ${activeProject.name}:\n\n"${(activeProject.agentStaffSnapshot!.summary ?? '').trim().slice(0, 500)}"\n\nBased on this, what are the three most important things I should do this week? Be specific and direct.`,
+                                                    });
+                                                    switchRoom('dexo');
+                                                }}
+                                                className="shrink-0 flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-[11px] font-semibold transition-all hover:opacity-80"
+                                                style={{ borderColor: 'rgba(116,86,255,0.28)', background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}
+                                            >
+                                                <Sparkles className="h-3 w-3 shrink-0" />
+                                                Unpack with Dexo →
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         ) : (
                             <div
-                                className="flex flex-col items-center gap-5 rounded-2xl border py-12 text-center"
-                                style={{ borderColor: THEME.border.subtle, background: 'rgba(116,86,255,0.04)' }}
+                                className="flex flex-col items-center gap-5 rounded-2xl border px-6 py-12 text-center"
+                                style={{ borderColor: 'rgba(116,86,255,0.18)', background: 'rgba(116,86,255,0.04)' }}
                             >
-                                <div className="flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: 'rgba(116,86,255,0.12)' }}>
-                                    <Sparkles className="h-7 w-7" style={{ color: THEME.accent.primary }} />
+                                <div
+                                    className="flex h-14 w-14 items-center justify-center rounded-2xl"
+                                    style={{ background: 'rgba(116,86,255,0.16)', boxShadow: '0 0 0 1px rgba(116,86,255,0.22)' }}
+                                >
+                                    <Cpu className="h-7 w-7" style={{ color: THEME.accent.primary }} />
                                 </div>
-                                <div className="max-w-sm">
-                                    <h3 className="text-base font-semibold" style={{ color: THEME.text.primary }}>AI Staff Analysis</h3>
+                                <div className="max-w-xs">
+                                    <h3 className="text-base font-semibold" style={{ color: THEME.text.primary }}>Dexo Research Guide</h3>
+                                    <p className="mt-1 text-[10px] font-semibold uppercase tracking-wider" style={{ color: THEME.text.muted }}>Source: Staff Sync · 5 desks</p>
                                     <p className="mt-2 text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
-                                        Run Staff Sync to generate a live internet-backed analysis across Strategy, Market, Product, Finance, and Growth desks.
+                                        Run Staff Sync to activate your AI team. Each desk researches a functional area and Dexo guides you through what was found and how to act on it.
                                     </p>
                                 </div>
                                 <button
                                     onClick={() => runAgentStaffSync()}
                                     disabled={agentSyncRunning}
-                                    className="flex items-center gap-2 rounded-xl border px-6 py-2.5 text-sm font-semibold transition-all"
-                                    style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary, opacity: agentSyncRunning ? 0.6 : 1 }}
+                                    className="flex items-center gap-2 rounded-xl border px-6 py-2.5 text-sm font-semibold transition-all active:scale-[0.98]"
+                                    style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.14)', color: THEME.accent.primary, opacity: agentSyncRunning ? 0.6 : 1 }}
                                 >
-                                    <RefreshCw className={`h-4 w-4 ${agentSyncRunning ? 'animate-spin' : ''}`} />
-                                    {agentSyncRunning ? 'Analysing…' : 'Run analysis now'}
+                                    <RefreshCw className={`h-4 w-4 shrink-0 ${agentSyncRunning ? 'animate-spin' : ''}`} />
+                                    {agentSyncRunning ? 'Analysing…' : 'Run Staff Sync now'}
                                 </button>
                             </div>
                         )}
+
 
                         {/* ── OPERATIONS ROW (living office + delivery) ── */}
                         {((livingOffice && livingOffice.brief.greeting !== 'No venture selected.') || upcomingEvents.length > 0 || kanbanTasks.length > 0) && (
