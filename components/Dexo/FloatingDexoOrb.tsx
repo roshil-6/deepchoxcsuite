@@ -141,7 +141,8 @@ function FloatingChat({
     onExpand: () => void;
     variant: 'chat' | 'talk';
 }) {
-    const { activeProject, updateProjectField, staffAttentionPending, staffFocusToday } = useOffice();
+    const { activeProject, updateProjectField, staffAttentionPending } = useOffice();
+    const staffFocusToday = activeProject?.staffFocusToday ?? [];
     const tokens = useTokens();
     const upgradeModal = useUpgradeModal();
     const [inputText, setInputText] = useState('');
@@ -405,7 +406,7 @@ function FloatingChat({
 
         const pending = staffAttentionPending?.filter(i => !i.role || true) ?? [];
         if (pending.length) {
-            lines.push(`\n${pending.length} item${pending.length > 1 ? 's' : ''} need${pending.length === 1 ? 's' : ''} your attention:\n${pending.slice(0, 5).map(i => `• ${i.label ?? i.role}`).join('\n')}`);
+            lines.push(`\n${pending.length} item${pending.length > 1 ? 's' : ''} need${pending.length === 1 ? 's' : ''} your attention:\n${pending.slice(0, 5).map(i => `• ${i.title ?? i.role}`).join('\n')}`);
         }
 
         const desks = snap?.desks ?? {};
