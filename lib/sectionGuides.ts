@@ -12,24 +12,29 @@ export type SectionGuideStep = {
 
 const DASHBOARD: SectionGuideStep[] = [
     {
-        title: 'Executive overview',
-        body: 'This is your venture command center: health metrics, staff sync, and a snapshot of strategy, product, finance, and market coverage.',
-        lookFor: 'Venture name and date in the header; Sync Staff refreshes AI desk research.',
+        title: 'Dexo AI Co-Founder Briefing',
+        body: 'The first panel is your Dexo Intelligence Briefing — a live daily summary of what is happening in your venture. It shows the executive summary from your last Staff Sync, what Dexo recommends you focus on today, and any items that need your attention.',
+        lookFor: 'The large "Dexo — AI Co-Founder Briefing" panel at the very top of this page.',
     },
     {
-        title: 'Overview, Analytics, Activity',
-        body: 'Use the tabs to move between the main dashboard, deeper charts, and a log of what changed recently.',
-        lookFor: 'Three tabs under the header — Overview · Analytics · Activity.',
+        title: 'Ask Dexo anything — one click',
+        body: 'See the clickable question buttons below the briefing? Each one opens Dexo with a pre-loaded question about your venture. Click "What should I prioritize today?" to get an instant answer. You can also click "Open Dexo Briefing" to get a full structured debrief from your AI co-founder.',
+        lookFor: 'The row of question buttons — "What should I prioritize today?", "Walk me through all findings", "What are the biggest risks?" and more.',
     },
     {
-        title: 'Execution score & desk coverage',
-        body: 'Scores reflect what you have saved in the venture record. The desk coverage row links Strategy, Market, Finance, Product, and Growth to your persisted fields.',
-        lookFor: 'Metric cards and the colored desk coverage strip on the Overview tab.',
+        title: 'Dexo Research Guide — 5 desk findings',
+        body: 'Below the Intelligence Briefing you will find the Research Guide — this shows what each AI desk found during the last Staff Sync. Each card covers one area: Strategy, Market Intelligence, Product, Finance, and Growth. Click "Dexo Guide" on any card to understand what that finding means and how to act on it.',
+        lookFor: 'The 5 desk cards below the briefing panel — each has a "Dexo Guide" button and an "Ask Dexo" button.',
     },
     {
-        title: 'Jump to a desk',
-        body: 'Open any research desk from the left rail when you want to edit narrative, backlog, ledger, or market intel — the dashboard stays the bird’s-eye view.',
-        lookFor: 'Left navigation (desktop) or menu (mobile).',
+        title: 'Run Staff Sync to activate everything',
+        body: 'If the briefing shows "no sync yet", click Run Staff Sync. Your AI team will research your venture across all 5 desks and Dexo will brief you on what was found. This takes a few minutes and updates automatically.',
+        lookFor: 'The "Run Staff Sync" button in the Dexo briefing panel header, or the big CTA if no sync has been run yet.',
+    },
+    {
+        title: 'Attention items need action',
+        body: 'If Dexo flags attention items — shown in amber — these are research signals that need a decision from you. Click "Ask Dexo" next to any item and Dexo will explain what it means and what to do.',
+        lookFor: 'Amber-bordered items inside the Dexo Intelligence Briefing panel.',
     },
 ];
 

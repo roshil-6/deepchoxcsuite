@@ -566,6 +566,16 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
         }
     }, [activeRoom, activeProject?.id, refreshLivingOffice]);
 
+    // Auto-select most recently created venture when user enters Executive Overview
+    // with no active project — so they always see a venture, not the empty portfolio view
+    useEffect(() => {
+        if (activeRoom !== 'dashboard' || activeProject || allProjects.length === 0) return;
+        const sorted = [...allProjects].sort((a, b) => (b.timestamp ?? 0) - (a.timestamp ?? 0));
+        const recent = sorted[0];
+        if (recent) setActiveProject(recent);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeRoom, allProjects.length]);
+
     // Pre-load Dexo with a venture briefing whenever user enters Executive Overview
     // so clicking "Open Dexo Briefing" instantly delivers context without extra input
     useEffect(() => {

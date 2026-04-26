@@ -578,10 +578,8 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
    */
   const setActiveProject = (project: Project | null) => {
     setActiveProjectState(project);
-    // From overview-style rooms, selecting a venture opens Dexo (workspace hub).
-    if (project && (activeRoom === 'dashboard' || activeRoom === 'calendar')) {
-      setActiveRoom('dexo');
-    }
+    // Navigation is always handled explicitly by the caller via switchRoom.
+    // Do NOT auto-redirect here — it causes Executive Overview to kick users out.
   };
 
   const patchActiveProject = (updates: Partial<Project>) => {
