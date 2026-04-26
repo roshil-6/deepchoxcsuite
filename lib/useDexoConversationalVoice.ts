@@ -137,6 +137,10 @@ export function useDexoConversationalVoice({
   const isSpeakingRef = useRef(false);
   /** Timestamp until which mic results are suppressed (post-TTS echo cooldown). */
   const echoCooldownUntilRef = useRef(0);
+  /** Accumulated final text across multiple Chrome partial-final segments. */
+  const accumulatedSpeechRef = useRef('');
+  /** Timer that fires after 900ms of silence to commit the accumulated speech. */
+  const sendPauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const ttsQueueRef = useRef<TtsChunk[]>([]);
   const streamingContentRef = useRef('');
   /** One speech chain — never overlap utterances (Chrome stutters / doubles audio). */
@@ -212,6 +216,9 @@ export function useDexoConversationalVoice({
     ttsQueueRef.current = [];
     streamingContentRef.current = '';
     didStreamSpeakRef.current = false;
+    // Discard any pending speech accumulation on interrupt
+    if (sendPauseTimerRef.current) { clearTimeout(sendPauseTimerRef.current); sendPauseTimerRef.current = null; }
+    accumulatedSpeechRef.current = '';
     onInterrupt?.();
   }, [onInterrupt]);
 
@@ -379,8 +386,7 @@ export function useDexoConversationalVoice({
         }
       }
 
-      // Discard while Dexo's TTS is playing — this is mic picking up speaker output.
-      // Interrupt TTS so user can speak, but don't send Dexo's own voice as a message.
+      // Discard while Dexo's TTS is playing — mic is picking up speaker output.
       if (isSpeakingRef.current && (interim || finalText)) {
         interrupt();
         setInterimTranscript('');
@@ -388,21 +394,36 @@ export function useDexoConversationalVoice({
         return;
       }
 
-      // Discard during post-TTS echo cooldown — residual speaker audio dissipating.
-      // The mic is open but we silently ignore results until the room is clear.
+      // Discard during post-TTS echo cooldown (residual speaker audio dissipating).
       if (Date.now() < echoCooldownUntilRef.current) {
         return;
       }
 
-      setInterimTranscript(interim);
+      // Show live interim while user is still speaking
+      setInterimTranscript(interim || (finalText ? '' : ''));
       onInterimRef?.current?.(interim);
 
       if (finalText) {
+        // Accumulate — Chrome fires isFinal mid-sentence on short pauses.
+        // We wait 900ms of silence before committing so the full sentence is captured.
+        accumulatedSpeechRef.current = (
+          accumulatedSpeechRef.current
+            ? accumulatedSpeechRef.current + ' ' + finalText.trim()
+            : finalText.trim()
+        );
         setInterimTranscript('');
         onInterimRef?.current?.('');
-        onTranscript(finalText.trim());
-        setVoiceState('thinking');
-        recognition.stop();
+
+        if (sendPauseTimerRef.current) clearTimeout(sendPauseTimerRef.current);
+        sendPauseTimerRef.current = setTimeout(() => {
+          sendPauseTimerRef.current = null;
+          const fullText = accumulatedSpeechRef.current.trim();
+          accumulatedSpeechRef.current = '';
+          if (!fullText) return;
+          onTranscript(fullText);
+          setVoiceState('thinking');
+          try { recognition.stop(); } catch { /* noop */ }
+        }, 900);
       }
     };
 
@@ -505,6 +526,8 @@ export function useDexoConversationalVoice({
 
   const stopListening = useCallback(() => {
     userPausedMicRef.current = true;
+    if (sendPauseTimerRef.current) { clearTimeout(sendPauseTimerRef.current); sendPauseTimerRef.current = null; }
+    accumulatedSpeechRef.current = '';
     try {
       recognitionRef.current?.stop();
     } catch {}

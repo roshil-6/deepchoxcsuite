@@ -141,7 +141,7 @@ function FloatingChat({
     onExpand: () => void;
     variant: 'chat' | 'talk';
 }) {
-    const { activeProject, updateProjectField } = useOffice();
+    const { activeProject, updateProjectField, staffAttentionPending, staffFocusToday } = useOffice();
     const tokens = useTokens();
     const upgradeModal = useUpgradeModal();
     const [inputText, setInputText] = useState('');
@@ -385,6 +385,38 @@ function FloatingChat({
         stopSpeaking();
     }, [stopSpeaking]);
 
+    /** Build a local update summary from staff sync data — no API call needed. */
+    const buildLocalUpdateSummary = (project: typeof activeProject): string | null => {
+        const snap = project?.agentStaffSnapshot;
+        if (!snap?.summary && !snap?.desks && !staffFocusToday?.length && !staffAttentionPending?.length) return null;
+
+        const lines: string[] = [];
+        const vname = project?.name ?? 'your venture';
+
+        lines.push(`Here's the latest on ${vname}:`);
+
+        if (snap?.summary?.trim()) {
+            lines.push(`\n${snap.summary.trim()}`);
+        }
+
+        if (staffFocusToday?.length) {
+            lines.push(`\nFocus areas right now:\n${staffFocusToday.slice(0, 4).map(f => `• ${f}`).join('\n')}`);
+        }
+
+        const pending = staffAttentionPending?.filter(i => !i.role || true) ?? [];
+        if (pending.length) {
+            lines.push(`\n${pending.length} item${pending.length > 1 ? 's' : ''} need${pending.length === 1 ? 's' : ''} your attention:\n${pending.slice(0, 5).map(i => `• ${i.label ?? i.role}`).join('\n')}`);
+        }
+
+        const desks = snap?.desks ?? {};
+        const deskEntries = Object.entries(desks).filter(([, v]) => typeof v === 'string' && (v as string).trim());
+        if (deskEntries.length) {
+            lines.push(`\nResearch highlights:\n${deskEntries.slice(0, 4).map(([k, v]) => `• ${k.toUpperCase()}: ${(v as string).slice(0, 120)}`).join('\n')}`);
+        }
+
+        return lines.join('') || null;
+    };
+
     const handleSend = async (override?: string) => {
         const text = (override || inputText).trim();
         if (!text || loading) return;
@@ -409,6 +441,35 @@ function FloatingChat({
         }
 
         const project = activeProjectRef.current;
+
+        // ── Local-data fast path: update/status queries answered from staff sync ──
+        const isUpdateQuery = /latest\s+update|what.{0,20}(update|changed|happen|new|going on)|any\s+update|status\s+update|what.{0,10}research|brief\s+me|catch\s+me\s+up|what.{0,10}found|recent\s+finding/i.test(text);
+        if (isUpdateQuery) {
+            const localReply = buildLocalUpdateSummary(project);
+            if (localReply) {
+                setInputText('');
+                const userMsgId = ++msgId.current;
+                const dexoMsgId = ++msgId.current;
+                setMessages(prev => [...prev,
+                    { role: 'user', text, id: userMsgId },
+                    { role: 'dexo', text: localReply, id: dexoMsgId },
+                ]);
+                if (variant === 'talk' && talkLiveRef.current && !mutedRef.current) {
+                    speechAborterRef.current?.abort();
+                    const ac = new AbortController();
+                    speechAborterRef.current = ac;
+                    void speakDexoResponseAloud(localReply, ac.signal);
+                }
+                if (variant === 'chat' && !mutedRef.current) {
+                    speechAborterRef.current?.abort();
+                    const ac = new AbortController();
+                    speechAborterRef.current = ac;
+                    setIsChatSpeaking(true);
+                    void speakDexoResponseAloud(localReply, ac.signal).then(() => setIsChatSpeaking(false));
+                }
+                return;
+            }
+        }
 
         const tokenResult = tokens.spend(TOKEN_COSTS.CHAT_MESSAGE, 'Chat Message');
         if (!tokenResult.success) {
