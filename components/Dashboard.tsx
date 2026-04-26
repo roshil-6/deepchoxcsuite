@@ -1527,7 +1527,6 @@ function PortfolioView({
     chartUid,
     switchRoom,
 }: any) {
-    const { can } = useSubscription();
     const ventureCount = allProjects.length;
     const withStrategy = allProjects.filter((p: any) => p.strategy?.trim()).length;
     const draft = Math.max(0, allProjects.length - withStrategy);
@@ -1542,96 +1541,234 @@ function PortfolioView({
     const syncAgeMin = Math.max(0, Math.floor((Date.now() - systemState.lastSync) / 60000));
     const syncLabel = syncAgeMin < 60 ? `${syncAgeMin}m ago` : syncAgeMin < 1440 ? `${Math.floor(syncAgeMin / 60)}h ago` : `${Math.floor(syncAgeMin / 1440)}d ago`;
     const synced = allProjects.filter((p: any) => p.agentStaffSnapshot?.at).length;
+    const _ = syncLabel; // suppress unused warning
 
-    // Portfolio-wide aggregate health
-    const totalDeskSlots = 5 * ventureCount;
-    const coveredDeskSlots = Object.values(deskStats).reduce((s: number, stat: any) => s + (stat.documented ?? 0), 0);
-    const portfolioHealthPct = totalDeskSlots === 0 ? 0 : Math.round((coveredDeskSlots / totalDeskSlots) * 100);
+    // Flatten attention items across all ventures (watch list)
+    const allAttentionItems = allProjects.flatMap((p: any) =>
+        (p.staffAttentionItems ?? [])
+            .filter((a: any) => !a.dismissed)
+            .map((a: any) => ({ ...a, ventureName: p.name, ventureRef: p }))
+    ).slice(0, 8);
 
-    // Recently synced ventures sorted newest first
-    const recentlySynced = [...allProjects]
+    // All focus lines from most-recently-synced venture
+    const leadingVenture = [...allProjects]
         .filter((p: any) => p.agentStaffSnapshot?.at)
-        .sort((a: any, b: any) => b.agentStaffSnapshot.at - a.agentStaffSnapshot.at)
-        .slice(0, 5);
+        .sort((a: any, b: any) => b.agentStaffSnapshot.at - a.agentStaffSnapshot.at)[0] ?? allProjects[0];
+    const focusLines: string[] = leadingVenture?.staffFocusToday ?? [];
 
     return (
         <div className="min-h-screen w-full pb-24" style={{ background: THEME.bg.primary }}>
 
-            {/* ════════════════════════════════════════
-                HEADER
-            ════════════════════════════════════════ */}
+            {/* HEADER */}
             <header className="border-b px-6 py-5" style={{ borderColor: THEME.border.subtle }}>
-                <div className="mx-auto max-w-7xl">
-                    <div className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: 'rgba(116,86,255,0.12)' }}>
-                                <LayoutDashboard className="h-5 w-5" style={{ color: THEME.accent.primary }} />
-                            </div>
-                            <div>
-                                <h1 className="text-xl font-semibold tracking-tight" style={{ color: THEME.text.primary }}>Executive Overview</h1>
-                                <p className="text-[11px]" style={{ color: THEME.text.muted }}>
-                                    {ventureCount} venture{ventureCount !== 1 ? 's' : ''} · {withStrategy} active · {synced} AI-synced · {portfolioHealthPct}% desk coverage
-                                </p>
-                            </div>
+                <div className="mx-auto max-w-7xl flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: 'rgba(116,86,255,0.12)' }}>
+                            <LayoutDashboard className="h-5 w-5" style={{ color: THEME.accent.primary }} />
                         </div>
-                        {onNewVenture && (
-                            <button
-                                onClick={onNewVenture}
-                                className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all hover:opacity-90"
-                                style={{ background: THEME.accent.primary, color: '#fff' }}
-                            >
-                                <Sparkles className="h-3.5 w-3.5" />
-                                New Venture
-                            </button>
-                        )}
+                        <div>
+                            <h1 className="text-xl font-semibold tracking-tight" style={{ color: THEME.text.primary }}>Executive Overview</h1>
+                            <p className="text-[11px]" style={{ color: THEME.text.muted }}>
+                                AI Co-Founder Command Center · {ventureCount} venture{ventureCount !== 1 ? 's' : ''} · {synced} synced
+                            </p>
+                        </div>
                     </div>
+                    {onNewVenture && (
+                        <button onClick={onNewVenture} className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all hover:opacity-90" style={{ background: THEME.accent.primary, color: '#fff' }}>
+                            <Sparkles className="h-3.5 w-3.5" /> New Venture
+                        </button>
+                    )}
                 </div>
             </header>
 
             <main className="mx-auto max-w-7xl space-y-8 px-6 py-8">
 
-                {/* ════════════════════════════════════════
-                    § 1  PORTFOLIO PULSE — KPI STRIP
-                ════════════════════════════════════════ */}
+                {/* ══════════════════════════════════════════════════════
+                    § 1  DEXO DAILY RESEARCH REPORTS  (the main event)
+                         Live web-backed briefs with sources per venture
+                ══════════════════════════════════════════════════════ */}
                 <section>
-                    <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: THEME.text.muted }}>Portfolio Pulse</p>
-                    <div
-                        className="grid grid-cols-2 divide-x overflow-hidden rounded-2xl border lg:grid-cols-4"
-                        style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
-                    >
-                        {[
-                            { label: 'Total Ventures',  value: String(ventureCount),  sub: ventureCount === 0 ? 'Create your first' : `${withStrategy} with strategy`, icon: Briefcase,    accent: THEME.chart.violet },
-                            { label: 'Active Records',  value: String(withStrategy),  sub: draft === 0 ? 'All ventures active' : `${draft} draft${draft !== 1 ? 's' : ''} remaining`,     icon: CheckCircle2, accent: THEME.chart.emerald },
-                            { label: 'AI Synced',       value: String(synced),        sub: synced === 0 ? 'Run Staff Sync to start' : `${ventureCount - synced} not yet synced`,           icon: Zap,          accent: THEME.chart.amber },
-                            { label: 'Desk Coverage',   value: `${portfolioHealthPct}%`, sub: `${coveredDeskSlots} of ${totalDeskSlots} desks populated`,                                  icon: BarChart2,     accent: THEME.chart.blue },
-                        ].map(({ label, value, sub, icon: Icon, accent }, i) => (
-                            <div key={i} className="flex items-start gap-3 px-5 py-4">
-                                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style={{ background: `${accent}14` }}>
-                                    <Icon className="h-4 w-4" style={{ color: accent }} />
-                                </div>
-                                <div className="min-w-0">
-                                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: THEME.text.muted }}>{label}</p>
-                                    <p className="mt-0.5 text-lg font-semibold leading-none tabular-nums" style={{ color: THEME.text.primary }}>{value}</p>
-                                    <p className="mt-1 truncate text-[11px]" style={{ color: THEME.text.muted }}>{sub}</p>
-                                </div>
-                            </div>
-                        ))}
+                    <div className="mb-4 flex items-center justify-between gap-4">
+                        <div>
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: THEME.text.muted }}>Dexo Daily Research Reports</p>
+                            <p className="mt-0.5 text-sm font-semibold" style={{ color: THEME.text.primary }}>
+                                Live web intelligence · Tavily-backed · updated daily per venture
+                            </p>
+                        </div>
                     </div>
+                    {/* PortfolioDailyIntelSection — shown for ALL users, no gate */}
+                    <PortfolioDailyIntelSection allProjects={allProjects} onOpenVenture={setActiveProject} />
+                    {allProjects.length === 0 && (
+                        <div className="flex flex-col items-center gap-4 rounded-2xl border py-16 text-center" style={{ borderColor: THEME.border.subtle, background: 'rgba(116,86,255,0.04)' }}>
+                            <div className="flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: 'rgba(116,86,255,0.12)' }}>
+                                <Globe className="h-7 w-7" style={{ color: THEME.accent.primary }} />
+                            </div>
+                            <div className="max-w-sm">
+                                <p className="font-semibold" style={{ color: THEME.text.primary }}>No ventures yet</p>
+                                <p className="mt-1.5 text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
+                                    Create a venture and run a Staff Sync — Dexo will pull live market research from the web and generate a daily briefing for it here.
+                                </p>
+                            </div>
+                            {onNewVenture && (
+                                <button onClick={onNewVenture} className="flex items-center gap-2 rounded-xl border px-5 py-2.5 text-sm font-semibold" style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}>
+                                    <Sparkles className="h-4 w-4" /> Create venture
+                                </button>
+                            )}
+                        </div>
+                    )}
                 </section>
 
-                {/* ════════════════════════════════════════
-                    § 2  AI TOOLS DIRECTORY
-                ════════════════════════════════════════ */}
+                {/* ══════════════════════════════════════════════════════
+                    § 2  AI STAFF RESEARCH DESK FINDINGS
+                         What each AI researcher found — from Staff Sync
+                ══════════════════════════════════════════════════════ */}
+                {leadingVenture?.agentStaffSnapshot && (
+                    <section>
+                        <div className="mb-4 flex items-start justify-between gap-4">
+                            <div>
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: THEME.text.muted }}>AI Staff Research Findings</p>
+                                <p className="mt-0.5 text-sm font-semibold" style={{ color: THEME.text.primary }}>
+                                    What your AI team researched for <span style={{ color: THEME.accent.primary }}>{leadingVenture.name}</span>
+                                </p>
+                                <p className="text-[11px]" style={{ color: THEME.text.muted }}>
+                                    Last sync: {new Date(leadingVenture.agentStaffSnapshot.at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setActiveProject(leadingVenture)}
+                                className="flex shrink-0 items-center gap-1.5 rounded-xl border px-3.5 py-2 text-[12px] font-semibold transition-all hover:opacity-80"
+                                style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.10)', color: THEME.accent.primary }}
+                            >
+                                <Sparkles className="h-3.5 w-3.5" /> Open &amp; Discuss
+                            </button>
+                        </div>
+                        <div className="overflow-hidden rounded-2xl border" style={{ borderColor: THEME.border.subtle }}>
+                            <div className="grid gap-px bg-[rgba(255,255,255,0.05)] sm:grid-cols-2 lg:grid-cols-3">
+                                {([
+                                    { key: 'scout',      label: 'Market Intelligence',  sub: 'Competitor signals · trends · opportunities', color: THEME.chart.blue,    room: 'scout'      as const },
+                                    { key: 'ceo',        label: 'Strategic Direction',  sub: 'Mission · vision · positioning',              color: THEME.chart.violet,  room: 'ceo'        as const },
+                                    { key: 'pm',         label: 'Product Insights',     sub: 'Roadmap · features · user problems',          color: THEME.chart.amber,   room: 'pm'         as const },
+                                    { key: 'accountant', label: 'Finance & Runway',     sub: 'Budget · burn · revenue signals',             color: THEME.chart.emerald, room: 'accountant' as const },
+                                    { key: 'cmo',        label: 'Growth & GTM',         sub: 'Marketing · channels · acquisition',          color: THEME.chart.rose,    room: 'cmo'        as const },
+                                    { key: 'summary',    label: 'Executive Summary',    sub: 'Cross-desk synthesis by AI chief of staff',   color: THEME.accent.primary, room: null },
+                                ] as const).map(({ key, label, sub, color, room }) => {
+                                    const snap = key === 'summary'
+                                        ? leadingVenture.agentStaffSnapshot.summary
+                                        : leadingVenture.agentStaffSnapshot.desks?.[key as 'scout'|'ceo'|'pm'|'accountant'|'cmo'];
+                                    return (
+                                        <div key={key} className="flex flex-col gap-3 bg-[rgba(14,14,16,0.97)] p-5">
+                                            <div className="flex items-start justify-between gap-2">
+                                                <div>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: color }} />
+                                                        <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>{label}</p>
+                                                    </div>
+                                                    <p className="mt-0.5 text-[10px]" style={{ color: THEME.text.muted }}>{sub}</p>
+                                                </div>
+                                                {room && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => { setActiveProject(leadingVenture); switchRoom(room); }}
+                                                        className="shrink-0 rounded-md border px-2 py-1 text-[10px] font-semibold transition-all hover:opacity-80"
+                                                        style={{ borderColor: `${color}30`, background: `${color}10`, color }}
+                                                    >
+                                                        Open desk
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <p className="flex-1 text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>
+                                                {snap?.trim()
+                                                    ? snap.trim().length > 220 ? `${snap.trim().slice(0, 217)}…` : snap.trim()
+                                                    : <span style={{ color: THEME.text.muted }}>No research yet — run Staff Sync to populate this desk.</span>
+                                                }
+                                            </p>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </section>
+                )}
+
+                {/* ══════════════════════════════════════════════════════
+                    § 3  WHAT DEXO IS WATCHING  +  TODAY'S FOCUS
+                         Attention items · flagged signals · focus lines
+                ══════════════════════════════════════════════════════ */}
+                {(allAttentionItems.length > 0 || focusLines.length > 0) && (
+                    <section>
+                        <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: THEME.text.muted }}>What Dexo Is Watching</p>
+                        <div className="grid gap-5 lg:grid-cols-[1fr_340px]">
+
+                            {/* Attention / watch items */}
+                            {allAttentionItems.length > 0 && (
+                                <div className="overflow-hidden rounded-2xl border" style={{ borderColor: 'rgba(245,158,11,0.2)', background: 'rgba(245,158,11,0.04)' }}>
+                                    <div className="flex items-center gap-2 border-b px-5 py-3.5" style={{ borderColor: 'rgba(245,158,11,0.15)' }}>
+                                        <AlertTriangle className="h-4 w-4" style={{ color: '#f59e0b' }} />
+                                        <p className="text-[12px] font-semibold" style={{ color: '#f59e0b' }}>
+                                            Signals to act on ({allAttentionItems.length})
+                                        </p>
+                                    </div>
+                                    <div className="divide-y" style={{ borderColor: 'rgba(245,158,11,0.10)' }}>
+                                        {allAttentionItems.map((a: any) => (
+                                            <div key={a.id} className="flex items-start justify-between gap-3 px-5 py-4">
+                                                <div className="min-w-0">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide" style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>
+                                                            {a.ventureName}
+                                                        </span>
+                                                        <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>{a.title}</p>
+                                                    </div>
+                                                    <p className="mt-1 text-[11px] leading-relaxed" style={{ color: THEME.text.secondary }}>{a.message}</p>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { setActiveProject(a.ventureRef); switchRoom('dexo'); }}
+                                                    className="shrink-0 rounded-lg border px-2.5 py-1.5 text-[10px] font-semibold transition-all hover:opacity-80"
+                                                    style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.10)', color: THEME.accent.primary }}
+                                                >
+                                                    Discuss →
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Today's focus lines */}
+                            {focusLines.length > 0 && (
+                                <div className="overflow-hidden rounded-2xl border" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
+                                    <div className="flex items-center gap-2 border-b px-5 py-3.5" style={{ borderColor: THEME.border.subtle }}>
+                                        <Target className="h-4 w-4" style={{ color: THEME.accent.primary }} />
+                                        <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>Today's Focus</p>
+                                    </div>
+                                    <ul className="divide-y" style={{ borderColor: THEME.border.subtle }}>
+                                        {focusLines.slice(0, 7).map((line, i) => (
+                                            <li key={i} className="flex items-start gap-2.5 px-5 py-3.5">
+                                                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: THEME.accent.primary }} />
+                                                <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>{line}</p>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    <div className="border-t px-5 py-3" style={{ borderColor: THEME.border.subtle }}>
+                                        <button type="button" onClick={() => leadingVenture && setActiveProject(leadingVenture)} className="text-[11px] font-semibold" style={{ color: THEME.accent.info }}>
+                                            Open {leadingVenture?.name ?? 'venture'} to discuss →
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </section>
+                )}
+
+                {/* ══════════════════════════════════════════════════════
+                    § 4  AI TOOLS DIRECTORY
+                ══════════════════════════════════════════════════════ */}
                 <section>
                     <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: THEME.text.muted }}>AI Tools Directory</p>
                     <div className="overflow-hidden rounded-2xl border" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
                         <div className="grid grid-cols-3 divide-x sm:grid-cols-5" style={{ borderColor: THEME.border.subtle }}>
                             {DASH_AI_TOOLS.map(({ label, desc, url, Logo, color }) => (
-                                <a
-                                    key={label}
-                                    href={url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                <a key={label} href={url} target="_blank" rel="noopener noreferrer"
                                     className="group flex flex-col items-center gap-2.5 border-r px-4 py-6 text-center transition-all last:border-r-0 hover:bg-[rgba(255,255,255,0.04)]"
                                     style={{ borderColor: THEME.border.subtle }}
                                 >
@@ -1648,37 +1785,26 @@ function PortfolioView({
                     </div>
                 </section>
 
-                {/* ════════════════════════════════════════
-                    § 3  VENTURE INTELLIGENCE
-                         [Venture cards] + [Research Desks]
-                ════════════════════════════════════════ */}
+                {/* ══════════════════════════════════════════════════════
+                    § 5  YOUR VENTURES  +  PORTFOLIO STATS
+                ══════════════════════════════════════════════════════ */}
                 <section>
-                    <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: THEME.text.muted }}>Venture Intelligence</p>
-                    <div className="grid gap-5 lg:grid-cols-[1fr_300px]">
-
+                    <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: THEME.text.muted }}>Your Ventures</p>
+                    <div className="grid gap-5 lg:grid-cols-[1fr_280px]">
                         {/* Venture cards */}
                         <div className="overflow-hidden rounded-2xl border" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
                             <div className="flex items-center justify-between border-b px-5 py-3.5" style={{ borderColor: THEME.border.subtle }}>
-                                <div>
-                                    <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>Your Ventures</p>
-                                    <p className="text-[10px]" style={{ color: THEME.text.muted }}>{ventureCount} total · click to open</p>
-                                </div>
+                                <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>{ventureCount} workspace{ventureCount !== 1 ? 's' : ''}</p>
                                 {onNewVenture && (
-                                    <button
-                                        onClick={onNewVenture}
-                                        className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all hover:opacity-80"
-                                        style={{ background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}
-                                    >
+                                    <button onClick={onNewVenture} className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold hover:opacity-80" style={{ background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}>
                                         <Sparkles className="h-3 w-3" /> New
                                     </button>
                                 )}
                             </div>
                             {allProjects.length === 0 ? (
-                                <div className="flex flex-col items-center gap-3 py-16 text-center">
-                                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl" style={{ background: 'rgba(116,86,255,0.10)' }}>
-                                        <Briefcase className="h-6 w-6" style={{ color: THEME.accent.primary }} />
-                                    </div>
-                                    <p className="max-w-xs text-sm" style={{ color: THEME.text.muted }}>No ventures yet. Create your first to get started.</p>
+                                <div className="flex flex-col items-center gap-3 py-14 text-center">
+                                    <Briefcase className="h-8 w-8" style={{ color: THEME.text.muted }} />
+                                    <p className="text-sm" style={{ color: THEME.text.muted }}>No ventures yet.</p>
                                 </div>
                             ) : (
                                 <div className="grid gap-px bg-[rgba(255,255,255,0.05)] sm:grid-cols-2">
@@ -1690,11 +1816,8 @@ function PortfolioView({
                                         const syncAge     = syncedAt ? Math.max(0, Math.floor((Date.now() - syncedAt) / 60000)) : null;
                                         const syncAgo     = syncAge === null ? null : syncAge < 60 ? `${syncAge}m ago` : syncAge < 1440 ? `${Math.floor(syncAge / 60)}h ago` : `${Math.floor(syncAge / 1440)}d ago`;
                                         return (
-                                            <button
-                                                key={project.id}
-                                                type="button"
-                                                onClick={() => setActiveProject(project)}
-                                                className="group flex flex-col gap-3 bg-[rgba(18,18,20,0.95)] p-5 text-left transition-all hover:bg-[rgba(255,255,255,0.03)]"
+                                            <button key={project.id} type="button" onClick={() => setActiveProject(project)}
+                                                className="group flex flex-col gap-3 bg-[rgba(14,14,16,0.95)] p-5 text-left transition-all hover:bg-[rgba(255,255,255,0.03)]"
                                             >
                                                 <div className="flex items-start justify-between gap-2">
                                                     <div className="flex items-center gap-2.5">
@@ -1703,17 +1826,13 @@ function PortfolioView({
                                                         </div>
                                                         <div>
                                                             <p className="font-semibold leading-snug" style={{ color: THEME.text.primary }}>{project.name}</p>
-                                                            <p className="text-[10px]" style={{ color: THEME.text.muted }}>
-                                                                {new Date(project.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                                                            </p>
+                                                            <p className="text-[10px]" style={{ color: THEME.text.muted }}>{new Date(project.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</p>
                                                         </div>
                                                     </div>
                                                     <StatusBadge status={hasStrategy ? 'active' : 'pending'} />
                                                 </div>
                                                 {excerpt ? (
-                                                    <p className="line-clamp-2 text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>
-                                                        {excerpt.slice(0, 180)}{excerpt.length > 180 ? '…' : ''}
-                                                    </p>
+                                                    <p className="line-clamp-2 text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>{excerpt.slice(0, 180)}{excerpt.length > 180 ? '…' : ''}</p>
                                                 ) : (
                                                     <p className="text-[12px]" style={{ color: THEME.text.muted }}>No strategy yet — open CEO desk.</p>
                                                 )}
@@ -1736,12 +1855,11 @@ function PortfolioView({
                             )}
                         </div>
 
-                        {/* Research Desks */}
-                        <div className="flex flex-col gap-5">
+                        {/* Research desks sidebar */}
+                        <div className="flex flex-col gap-4">
                             <div className="overflow-hidden rounded-2xl border" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
                                 <div className="border-b px-5 py-3.5" style={{ borderColor: THEME.border.subtle }}>
-                                    <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>Research Desks</p>
-                                    <p className="text-[10px]" style={{ color: THEME.text.muted }}>Coverage across all ventures</p>
+                                    <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>Research Desk Coverage</p>
                                 </div>
                                 <div className="divide-y" style={{ borderColor: THEME.border.subtle }}>
                                     {(['ceo', 'accountant', 'pm', 'cmo', 'scout'] as const).map((role) => {
@@ -1750,195 +1868,66 @@ function PortfolioView({
                                         const accent = PORTFOLIO_DESK_ACCENTS[role];
                                         const pct    = stat.total === 0 ? 0 : Math.round(stat.coverage * 100);
                                         return (
-                                            <button
-                                                type="button"
-                                                key={role}
-                                                onClick={() => {
-                                                    const target = firstProjectNeedingRole(allProjects, role);
-                                                    if (target) { setActiveProject(target); switchRoom(role); }
-                                                }}
-                                                className="group flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-[rgba(255,255,255,0.03)]"
+                                            <button type="button" key={role}
+                                                onClick={() => { const t = firstProjectNeedingRole(allProjects, role); if (t) { setActiveProject(t); switchRoom(role); } }}
+                                                className="group flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[rgba(255,255,255,0.03)]"
                                             >
-                                                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md" style={{ background: `${accent}14` }}>
-                                                    <BarChart2 className="h-3.5 w-3.5" style={{ color: accent }} />
+                                                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md" style={{ background: `${accent}14` }}>
+                                                    <BarChart2 className="h-3 w-3" style={{ color: accent }} />
                                                 </div>
                                                 <div className="min-w-0 flex-1">
-                                                    <div className="flex items-center justify-between gap-1">
-                                                        <p className="text-[12px] font-medium" style={{ color: THEME.text.primary }}>{row.navTitle}</p>
-                                                        <span className="shrink-0 text-[10px] font-semibold tabular-nums" style={{ color: pct === 100 ? accent : THEME.text.muted }}>
-                                                            {stat.total === 0 ? '—' : `${pct}%`}
-                                                        </span>
+                                                    <div className="flex items-center justify-between gap-1 mb-1">
+                                                        <p className="text-[11px] font-medium" style={{ color: THEME.text.primary }}>{row.navTitle}</p>
+                                                        <span className="text-[10px] tabular-nums font-semibold" style={{ color: pct === 100 ? accent : THEME.text.muted }}>{stat.total === 0 ? '—' : `${pct}%`}</span>
                                                     </div>
-                                                    {stat.total > 0 && (
-                                                        <div className="mt-1.5 h-1 overflow-hidden rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                                                            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${accent}99, ${accent})` }} />
-                                                        </div>
-                                                    )}
-                                                    {stat.snapshotSnippet && (
-                                                        <p className="mt-1 line-clamp-1 text-[10px]" style={{ color: THEME.text.muted }}>{stat.snapshotSnippet}</p>
-                                                    )}
+                                                    <div className="h-1 overflow-hidden rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                                                        <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${accent}99, ${accent})` }} />
+                                                    </div>
                                                 </div>
-                                                <ArrowRight className="h-3 w-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-50" style={{ color: THEME.text.muted }} />
                                             </button>
                                         );
                                     })}
                                 </div>
                             </div>
 
-                            {/* Mini health ring */}
-                            <div className="flex items-center gap-4 rounded-2xl border p-4" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
-                                <CircularProgress
-                                    value={portfolioHealthPct}
-                                    size={64}
-                                    strokeWidth={5}
-                                    color={portfolioHealthPct > 70 ? THEME.accent.primary : portfolioHealthPct > 40 ? THEME.chart.amber : THEME.chart.rose}
-                                />
-                                <div>
-                                    <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: THEME.text.muted }}>Portfolio health</p>
-                                    <p className="mt-0.5 text-sm font-semibold" style={{ color: THEME.text.primary }}>
-                                        {portfolioHealthPct > 70 ? 'Strong coverage' : portfolioHealthPct > 40 ? 'Developing' : ventureCount === 0 ? 'No ventures' : 'Needs work'}
-                                    </p>
-                                    <p className="text-[10px]" style={{ color: THEME.text.muted }}>{coveredDeskSlots}/{totalDeskSlots} desks filled</p>
-                                </div>
+                            {/* Pulse strip */}
+                            <div className="grid grid-cols-2 gap-3">
+                                {[
+                                    { label: 'Ventures', value: String(ventureCount), accent: THEME.chart.violet },
+                                    { label: 'AI Synced', value: String(synced), accent: THEME.chart.amber },
+                                ].map(({ label, value, accent }) => (
+                                    <div key={label} className="rounded-xl border p-3 text-center" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.03)' }}>
+                                        <p className="text-xl font-bold tabular-nums" style={{ color: THEME.text.primary }}>{value}</p>
+                                        <p className="text-[10px] font-medium" style={{ color: accent }}>{label}</p>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
                 </section>
 
-                {/* ════════════════════════════════════════
-                    § 4  ANALYTICS ROW
-                         Composition · AI Coverage · Activity
-                ════════════════════════════════════════ */}
-                <section>
-                    <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: THEME.text.muted }}>Portfolio Analytics</p>
-                    <div className="grid gap-5 lg:grid-cols-3">
-
-                        {/* Portfolio composition donut */}
-                        <div className="overflow-hidden rounded-2xl border p-5" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
-                            <p className="mb-3 text-[12px] font-semibold" style={{ color: THEME.text.primary }}>Composition</p>
-                            {portfolioComposition.length > 0 ? (
-                                <div className="h-44 min-h-[176px] min-w-0">
-                                    <ResponsiveContainer width="100%" height="100%" minHeight={176} minWidth={0}>
-                                        <RePieChart>
-                                            <Pie data={portfolioComposition} cx="50%" cy="50%" innerRadius={45} outerRadius={68} paddingAngle={4} dataKey="value">
-                                                {portfolioComposition.map((entry: any, i: number) => (
-                                                    <Cell key={`cell-${i}`} fill={entry.fill} />
-                                                ))}
-                                            </Pie>
-                                            <Tooltip {...CHART_TOOLTIP} />
-                                            <Legend />
-                                        </RePieChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            ) : (
-                                <p className="py-8 text-center text-sm" style={{ color: THEME.text.tertiary }}>No ventures yet</p>
-                            )}
-                            {ventureCount > 0 && (
-                                <div className="mt-3 grid grid-cols-2 gap-2 border-t pt-3" style={{ borderColor: THEME.border.subtle }}>
-                                    {[['Active', withStrategy, THEME.chart.emerald], ['Draft', draft, THEME.text.muted]].map(([lbl, n, c]) => (
-                                        <div key={String(lbl)} className="rounded-lg border px-3 py-2 text-center" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.03)' }}>
-                                            <p className="text-base font-semibold tabular-nums" style={{ color: THEME.text.primary }}>{n}</p>
-                                            <p className="text-[10px] font-medium" style={{ color: String(c) }}>{lbl}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* AI Research coverage bars */}
-                        <div className="overflow-hidden rounded-2xl border p-5" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
-                            <p className="mb-3 text-[12px] font-semibold" style={{ color: THEME.text.primary }}>AI Research Coverage</p>
-                            <div className="space-y-3">
-                                {(['ceo', 'accountant', 'pm', 'cmo', 'scout'] as const).map((role) => {
-                                    const stat   = deskStats[role];
-                                    const accent = PORTFOLIO_DESK_ACCENTS[role];
-                                    const pct    = stat.total === 0 ? 0 : Math.round(stat.coverage * 100);
-                                    const label  = RESEARCH_STAFF[role].navTitle;
-                                    return (
-                                        <div key={role}>
-                                            <div className="mb-1 flex items-center justify-between">
-                                                <p className="text-[11px] font-medium" style={{ color: THEME.text.secondary }}>{label}</p>
-                                                <p className="text-[10px] tabular-nums" style={{ color: pct === 100 ? accent : THEME.text.muted }}>{pct}%</p>
-                                            </div>
-                                            <div className="h-1.5 overflow-hidden rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                                                <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${accent}99, ${accent})` }} />
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                            <div className="mt-4 rounded-xl border px-3 py-2.5" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.03)' }}>
-                                <p className="text-[10px]" style={{ color: THEME.text.muted }}>
-                                    <span className="font-semibold" style={{ color: THEME.text.primary }}>{synced}</span> of <span className="font-semibold" style={{ color: THEME.text.primary }}>{ventureCount}</span> ventures AI-synced · run Staff Sync inside a venture to populate
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Recent activity */}
-                        <div className="overflow-hidden rounded-2xl border p-5" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
-                            <p className="mb-3 text-[12px] font-semibold" style={{ color: THEME.text.primary }}>Recent AI Activity</p>
-                            {recentlySynced.length === 0 ? (
-                                <div className="flex flex-col items-center gap-3 py-8 text-center">
-                                    <Zap className="h-7 w-7" style={{ color: THEME.text.muted }} />
-                                    <p className="text-[12px]" style={{ color: THEME.text.muted }}>No AI syncs yet. Run Staff Sync inside a venture to see activity here.</p>
-                                </div>
-                            ) : (
-                                <ul className="space-y-2.5">
-                                    {recentlySynced.map((p: any) => {
-                                        const at  = p.agentStaffSnapshot.at;
-                                        const age = Math.max(0, Math.floor((Date.now() - at) / 60000));
-                                        const ago = age < 60 ? `${age}m ago` : age < 1440 ? `${Math.floor(age / 60)}h ago` : `${Math.floor(age / 1440)}d ago`;
-                                        return (
-                                            <li key={p.id}>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setActiveProject(p)}
-                                                    className="group flex w-full items-start gap-2.5 rounded-xl border px-3 py-2.5 text-left transition-all hover:bg-[rgba(255,255,255,0.04)]"
-                                                    style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.03)' }}
-                                                >
-                                                    <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md" style={{ background: 'rgba(116,86,255,0.12)' }}>
-                                                        <Zap className="h-3 w-3" style={{ color: THEME.accent.primary }} />
-                                                    </div>
-                                                    <div className="min-w-0 flex-1">
-                                                        <p className="truncate text-[12px] font-medium" style={{ color: THEME.text.primary }}>{p.name}</p>
-                                                        <p className="text-[10px]" style={{ color: THEME.text.muted }}>Staff Sync · {ago}</p>
-                                                    </div>
-                                                    <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-0 transition-opacity group-hover:opacity-60" style={{ color: THEME.text.muted }} />
-                                                </button>
-                                            </li>
-                                        );
-                                    })}
-                                </ul>
-                            )}
-                        </div>
-                    </div>
-                </section>
-
-                {/* ════════════════════════════════════════
-                    § 5  WORKSPACE NAVIGATOR
-                ════════════════════════════════════════ */}
+                {/* ══════════════════════════════════════════════════════
+                    § 6  WORKSPACE NAVIGATOR
+                ══════════════════════════════════════════════════════ */}
                 <section>
                     <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: THEME.text.muted }}>Workspace Navigator</p>
                     <div className="overflow-hidden rounded-2xl border" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
                         <div className="grid grid-cols-2 divide-x divide-y sm:grid-cols-3 lg:grid-cols-6" style={{ borderColor: THEME.border.subtle }}>
                             {([
-                                { role: 'ceo'  as const, label: 'CEO Desk',   sub: 'Strategy',  icon: Lightbulb,    color: THEME.chart.violet  },
-                                { role: 'scout' as const, label: 'Scout',     sub: 'Market',    icon: Globe,        color: THEME.chart.blue    },
-                                { role: 'accountant' as const, label: 'Finance', sub: 'Budget', icon: Wallet,       color: THEME.chart.emerald },
-                                { role: 'pm'   as const, label: 'Product',    sub: 'Roadmap',   icon: Layers,       color: THEME.chart.amber   },
-                                { role: 'cmo'  as const, label: 'Growth',     sub: 'GTM',       icon: Megaphone,    color: THEME.chart.rose    },
-                                { role: null,            label: 'Dexo AI',    sub: 'Command',   icon: Cpu,          color: THEME.accent.primary },
+                                { role: 'ceo'        as const, label: 'CEO Desk',  sub: 'Strategy',  icon: Lightbulb, color: THEME.chart.violet  },
+                                { role: 'scout'      as const, label: 'Scout',     sub: 'Market',    icon: Globe,     color: THEME.chart.blue    },
+                                { role: 'accountant' as const, label: 'Finance',   sub: 'Budget',    icon: Wallet,    color: THEME.chart.emerald },
+                                { role: 'pm'         as const, label: 'Product',   sub: 'Roadmap',   icon: Layers,    color: THEME.chart.amber   },
+                                { role: 'cmo'        as const, label: 'Growth',    sub: 'GTM',       icon: Megaphone, color: THEME.chart.rose    },
+                                { role: null,                  label: 'Dexo AI',   sub: 'Discuss',   icon: Cpu,       color: THEME.accent.primary },
                             ] as const).map(({ role, label, sub, icon: Icon, color }) => (
-                                <button
-                                    key={label}
-                                    type="button"
+                                <button key={label} type="button"
                                     onClick={() => {
-                                        if (!role) { switchRoom('dexo'); return; }
+                                        if (!role) { if (leadingVenture) setActiveProject(leadingVenture); switchRoom('dexo'); return; }
                                         const target = firstProjectNeedingRole(allProjects, role) ?? allProjects[0];
                                         if (target) { setActiveProject(target); switchRoom(role); }
                                     }}
-                                    className="group flex flex-col items-center gap-2 border-[rgba(255,255,255,0.06)] py-5 text-center transition-all hover:bg-[rgba(255,255,255,0.04)]"
-                                    style={{ borderColor: THEME.border.subtle }}
+                                    className="group flex flex-col items-center gap-2 py-5 text-center transition-all hover:bg-[rgba(255,255,255,0.04)]"
                                 >
                                     <div className="flex h-9 w-9 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-110" style={{ background: `${color}14` }}>
                                         <Icon className="h-4 w-4" style={{ color }} />
@@ -1950,32 +1939,6 @@ function PortfolioView({
                                 </button>
                             ))}
                         </div>
-                    </div>
-                </section>
-
-                {/* ════════════════════════════════════════
-                    § 6  DAILY INTEL
-                ════════════════════════════════════════ */}
-                <section>
-                    <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: THEME.text.muted }}>Live Intelligence</p>
-                    <div className="overflow-hidden rounded-2xl border" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
-                        {can('dexoDailyBriefReports') ? (
-                            <PortfolioDailyIntelSection allProjects={allProjects} onOpenVenture={setActiveProject} />
-                        ) : (
-                            <div className="flex flex-col items-center gap-4 px-8 py-12 text-center sm:flex-row sm:text-left">
-                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.04)' }}>
-                                    <Globe className="h-5 w-5" style={{ color: THEME.text.muted }} />
-                                </div>
-                                <div>
-                                    <p className="font-semibold" style={{ color: THEME.text.primary }}>Live intel by venture</p>
-                                    <p className="mt-1 text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
-                                        Web-backed daily briefs and live source links per venture are part of{' '}
-                                        <span className="font-medium" style={{ color: THEME.text.primary }}>Co-Founder Pro</span>.
-                                        Upgrade from the sidebar to unlock real-time portfolio intelligence.
-                                    </p>
-                                </div>
-                            </div>
-                        )}
                     </div>
                 </section>
 
