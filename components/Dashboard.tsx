@@ -1543,25 +1543,34 @@ function PortfolioView({
     const syncLabel = syncAgeMin < 60 ? `${syncAgeMin}m ago` : syncAgeMin < 1440 ? `${Math.floor(syncAgeMin / 60)}h ago` : `${Math.floor(syncAgeMin / 1440)}d ago`;
     const synced = allProjects.filter((p: any) => p.agentStaffSnapshot?.at).length;
 
+    // Portfolio-wide aggregate health
+    const totalDeskSlots = 5 * ventureCount;
+    const coveredDeskSlots = Object.values(deskStats).reduce((s: number, stat: any) => s + (stat.documented ?? 0), 0);
+    const portfolioHealthPct = totalDeskSlots === 0 ? 0 : Math.round((coveredDeskSlots / totalDeskSlots) * 100);
+
+    // Recently synced ventures sorted newest first
+    const recentlySynced = [...allProjects]
+        .filter((p: any) => p.agentStaffSnapshot?.at)
+        .sort((a: any, b: any) => b.agentStaffSnapshot.at - a.agentStaffSnapshot.at)
+        .slice(0, 5);
+
     return (
         <div className="min-h-screen w-full pb-24" style={{ background: THEME.bg.primary }}>
-            {/* ── HEADER ── */}
-            <header className="border-b px-6 py-6" style={{ borderColor: THEME.border.subtle }}>
+
+            {/* ════════════════════════════════════════
+                HEADER
+            ════════════════════════════════════════ */}
+            <header className="border-b px-6 py-5" style={{ borderColor: THEME.border.subtle }}>
                 <div className="mx-auto max-w-7xl">
                     <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
-                            <div
-                                className="flex h-10 w-10 items-center justify-center rounded-xl"
-                                style={{ background: 'rgba(116,86,255,0.12)' }}
-                            >
+                            <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: 'rgba(116,86,255,0.12)' }}>
                                 <LayoutDashboard className="h-5 w-5" style={{ color: THEME.accent.primary }} />
                             </div>
                             <div>
-                                <h1 className="text-xl font-semibold tracking-tight" style={{ color: THEME.text.primary }}>
-                                    Executive Overview
-                                </h1>
+                                <h1 className="text-xl font-semibold tracking-tight" style={{ color: THEME.text.primary }}>Executive Overview</h1>
                                 <p className="text-[11px]" style={{ color: THEME.text.muted }}>
-                                    Portfolio · {ventureCount} venture{ventureCount !== 1 ? 's' : ''} · {withStrategy} active · {synced} synced
+                                    {ventureCount} venture{ventureCount !== 1 ? 's' : ''} · {withStrategy} active · {synced} AI-synced · {portfolioHealthPct}% desk coverage
                                 </p>
                             </div>
                         </div>
@@ -1579,287 +1588,396 @@ function PortfolioView({
                 </div>
             </header>
 
-            <main className="mx-auto max-w-7xl space-y-6 px-6 py-8">
+            <main className="mx-auto max-w-7xl space-y-8 px-6 py-8">
 
-                {/* ── KPI COMMAND STRIP ── */}
-                <div
-                    className="grid grid-cols-2 divide-x overflow-hidden rounded-2xl border lg:grid-cols-4"
-                    style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
-                >
-                    {[
-                        { label: 'Total Ventures', value: String(ventureCount), sub: ventureCount === 0 ? 'Create your first venture' : `${withStrategy} with strategy`, icon: Briefcase, accent: THEME.chart.violet },
-                        { label: 'Active Records', value: String(withStrategy), sub: withStrategy === 0 ? 'Add strategy to a venture' : `${draft} draft${draft !== 1 ? 's' : ''} remaining`, icon: CheckCircle2, accent: THEME.chart.emerald },
-                        { label: 'AI Synced', value: String(synced), sub: synced === 0 ? 'Run Staff Sync on a venture' : `${ventureCount - synced} not yet synced`, icon: Zap, accent: THEME.chart.amber },
-                        { label: 'Last Refresh', value: syncAgeMin === 0 ? 'Just now' : syncLabel, sub: 'Across all ventures', icon: Clock, accent: THEME.chart.blue },
-                    ].map(({ label, value, sub, icon: Icon, accent }, i) => (
-                        <div key={i} className="flex items-start gap-3 px-5 py-4" style={{ borderColor: THEME.border.subtle }}>
-                            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style={{ background: `${accent}14` }}>
-                                <Icon className="h-4 w-4" style={{ color: accent }} />
-                            </div>
-                            <div className="min-w-0">
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: THEME.text.muted }}>{label}</p>
-                                <p className="mt-0.5 text-lg font-semibold leading-none tabular-nums" style={{ color: THEME.text.primary }}>{value}</p>
-                                <p className="mt-1 truncate text-[11px]" style={{ color: THEME.text.muted }}>{sub}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                {/* ── AI TOOLS DIRECTORY ── */}
-                <div
-                    className="overflow-hidden rounded-2xl border"
-                    style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
-                >
-                    <div className="flex items-center justify-between border-b px-5 py-3.5" style={{ borderColor: THEME.border.subtle }}>
-                        <div>
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>AI Tools Directory</p>
-                            <p className="mt-0.5 text-[11px]" style={{ color: THEME.text.muted }}>Jump to your favourite AI assistants</p>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-3 divide-x sm:grid-cols-5" style={{ borderColor: THEME.border.subtle }}>
-                        {DASH_AI_TOOLS.map(({ label, desc, url, Logo, color }) => (
-                            <a
-                                key={label}
-                                href={url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="group flex flex-col items-center gap-2 border-r px-3 py-5 text-center transition-all last:border-r-0 hover:bg-[rgba(255,255,255,0.04)]"
-                                style={{ borderColor: THEME.border.subtle }}
-                            >
-                                <div
-                                    className="flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-110"
-                                    style={{ background: `${color}14` }}
-                                >
-                                    <Logo size={22} />
-                                </div>
-                                <div>
-                                    <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>{label}</p>
-                                    <p className="text-[10px]" style={{ color: THEME.text.muted }}>{desc}</p>
-                                </div>
-                            </a>
-                        ))}
-                    </div>
-                </div>
-
-                {/* ── VENTURES + RESEARCH DESKS ── */}
-                <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
-
-                    {/* LEFT — Venture cards */}
+                {/* ════════════════════════════════════════
+                    § 1  PORTFOLIO PULSE — KPI STRIP
+                ════════════════════════════════════════ */}
+                <section>
+                    <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: THEME.text.muted }}>Portfolio Pulse</p>
                     <div
-                        className="overflow-hidden rounded-2xl border"
+                        className="grid grid-cols-2 divide-x overflow-hidden rounded-2xl border lg:grid-cols-4"
                         style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
                     >
-                        <div className="flex items-center justify-between border-b px-5 py-3.5" style={{ borderColor: THEME.border.subtle }}>
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>Your Ventures</p>
-                            {onNewVenture && (
-                                <button
-                                    onClick={onNewVenture}
-                                    className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all hover:opacity-80"
-                                    style={{ background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}
-                                >
-                                    <Sparkles className="h-3 w-3" />
-                                    New
-                                </button>
-                            )}
-                        </div>
-                        {allProjects.length === 0 ? (
-                            <div className="flex flex-col items-center gap-3 py-14 text-center">
-                                <div className="flex h-12 w-12 items-center justify-center rounded-2xl" style={{ background: 'rgba(116,86,255,0.10)' }}>
-                                    <Briefcase className="h-6 w-6" style={{ color: THEME.accent.primary }} />
+                        {[
+                            { label: 'Total Ventures',  value: String(ventureCount),  sub: ventureCount === 0 ? 'Create your first' : `${withStrategy} with strategy`, icon: Briefcase,    accent: THEME.chart.violet },
+                            { label: 'Active Records',  value: String(withStrategy),  sub: draft === 0 ? 'All ventures active' : `${draft} draft${draft !== 1 ? 's' : ''} remaining`,     icon: CheckCircle2, accent: THEME.chart.emerald },
+                            { label: 'AI Synced',       value: String(synced),        sub: synced === 0 ? 'Run Staff Sync to start' : `${ventureCount - synced} not yet synced`,           icon: Zap,          accent: THEME.chart.amber },
+                            { label: 'Desk Coverage',   value: `${portfolioHealthPct}%`, sub: `${coveredDeskSlots} of ${totalDeskSlots} desks populated`,                                  icon: BarChart2,     accent: THEME.chart.blue },
+                        ].map(({ label, value, sub, icon: Icon, accent }, i) => (
+                            <div key={i} className="flex items-start gap-3 px-5 py-4">
+                                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style={{ background: `${accent}14` }}>
+                                    <Icon className="h-4 w-4" style={{ color: accent }} />
                                 </div>
-                                <p className="text-sm" style={{ color: THEME.text.muted }}>No ventures yet — create your first one to get started.</p>
+                                <div className="min-w-0">
+                                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: THEME.text.muted }}>{label}</p>
+                                    <p className="mt-0.5 text-lg font-semibold leading-none tabular-nums" style={{ color: THEME.text.primary }}>{value}</p>
+                                    <p className="mt-1 truncate text-[11px]" style={{ color: THEME.text.muted }}>{sub}</p>
+                                </div>
                             </div>
-                        ) : (
-                            <div className="grid gap-px bg-[rgba(255,255,255,0.05)] sm:grid-cols-2">
-                                {allProjects.map((project: any) => {
-                                    const hasStrategy = !!project.strategy?.trim();
-                                    const hasSynced = !!project.agentStaffSnapshot?.at;
-                                    const excerpt = project.agentStaffSnapshot?.summary?.trim() || project.strategy?.trim();
-                                    const syncedAt = project.agentStaffSnapshot?.at;
-                                    const syncAge = syncedAt ? Math.max(0, Math.floor((Date.now() - syncedAt) / 60000)) : null;
-                                    const syncAgo = syncAge === null ? null : syncAge < 60 ? `${syncAge}m ago` : syncAge < 1440 ? `${Math.floor(syncAge / 60)}h ago` : `${Math.floor(syncAge / 1440)}d ago`;
-                                    return (
-                                        <button
-                                            key={project.id}
-                                            type="button"
-                                            onClick={() => setActiveProject(project)}
-                                            className="group flex flex-col gap-3 bg-[rgba(18,18,20,0.95)] p-5 text-left transition-all hover:bg-[rgba(255,255,255,0.03)]"
-                                        >
-                                            {/* Name + status */}
-                                            <div className="flex items-start justify-between gap-2">
-                                                <div className="flex items-center gap-2.5">
-                                                    <div
-                                                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-                                                        style={{ background: hasStrategy ? 'rgba(116,86,255,0.12)' : 'rgba(255,255,255,0.06)' }}
-                                                    >
-                                                        <Briefcase className="h-4 w-4" style={{ color: hasStrategy ? THEME.accent.primary : THEME.text.muted }} />
+                        ))}
+                    </div>
+                </section>
+
+                {/* ════════════════════════════════════════
+                    § 2  AI TOOLS DIRECTORY
+                ════════════════════════════════════════ */}
+                <section>
+                    <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: THEME.text.muted }}>AI Tools Directory</p>
+                    <div className="overflow-hidden rounded-2xl border" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
+                        <div className="grid grid-cols-3 divide-x sm:grid-cols-5" style={{ borderColor: THEME.border.subtle }}>
+                            {DASH_AI_TOOLS.map(({ label, desc, url, Logo, color }) => (
+                                <a
+                                    key={label}
+                                    href={url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="group flex flex-col items-center gap-2.5 border-r px-4 py-6 text-center transition-all last:border-r-0 hover:bg-[rgba(255,255,255,0.04)]"
+                                    style={{ borderColor: THEME.border.subtle }}
+                                >
+                                    <div className="flex h-11 w-11 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-110" style={{ background: `${color}14` }}>
+                                        <Logo size={24} />
+                                    </div>
+                                    <div>
+                                        <p className="text-[13px] font-semibold" style={{ color: THEME.text.primary }}>{label}</p>
+                                        <p className="text-[10px]" style={{ color: THEME.text.muted }}>{desc}</p>
+                                    </div>
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* ════════════════════════════════════════
+                    § 3  VENTURE INTELLIGENCE
+                         [Venture cards] + [Research Desks]
+                ════════════════════════════════════════ */}
+                <section>
+                    <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: THEME.text.muted }}>Venture Intelligence</p>
+                    <div className="grid gap-5 lg:grid-cols-[1fr_300px]">
+
+                        {/* Venture cards */}
+                        <div className="overflow-hidden rounded-2xl border" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
+                            <div className="flex items-center justify-between border-b px-5 py-3.5" style={{ borderColor: THEME.border.subtle }}>
+                                <div>
+                                    <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>Your Ventures</p>
+                                    <p className="text-[10px]" style={{ color: THEME.text.muted }}>{ventureCount} total · click to open</p>
+                                </div>
+                                {onNewVenture && (
+                                    <button
+                                        onClick={onNewVenture}
+                                        className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all hover:opacity-80"
+                                        style={{ background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}
+                                    >
+                                        <Sparkles className="h-3 w-3" /> New
+                                    </button>
+                                )}
+                            </div>
+                            {allProjects.length === 0 ? (
+                                <div className="flex flex-col items-center gap-3 py-16 text-center">
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl" style={{ background: 'rgba(116,86,255,0.10)' }}>
+                                        <Briefcase className="h-6 w-6" style={{ color: THEME.accent.primary }} />
+                                    </div>
+                                    <p className="max-w-xs text-sm" style={{ color: THEME.text.muted }}>No ventures yet. Create your first to get started.</p>
+                                </div>
+                            ) : (
+                                <div className="grid gap-px bg-[rgba(255,255,255,0.05)] sm:grid-cols-2">
+                                    {allProjects.map((project: any) => {
+                                        const hasStrategy = !!project.strategy?.trim();
+                                        const hasSynced   = !!project.agentStaffSnapshot?.at;
+                                        const excerpt     = project.agentStaffSnapshot?.summary?.trim() || project.strategy?.trim();
+                                        const syncedAt    = project.agentStaffSnapshot?.at;
+                                        const syncAge     = syncedAt ? Math.max(0, Math.floor((Date.now() - syncedAt) / 60000)) : null;
+                                        const syncAgo     = syncAge === null ? null : syncAge < 60 ? `${syncAge}m ago` : syncAge < 1440 ? `${Math.floor(syncAge / 60)}h ago` : `${Math.floor(syncAge / 1440)}d ago`;
+                                        return (
+                                            <button
+                                                key={project.id}
+                                                type="button"
+                                                onClick={() => setActiveProject(project)}
+                                                className="group flex flex-col gap-3 bg-[rgba(18,18,20,0.95)] p-5 text-left transition-all hover:bg-[rgba(255,255,255,0.03)]"
+                                            >
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <div className="flex items-center gap-2.5">
+                                                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl" style={{ background: hasStrategy ? 'rgba(116,86,255,0.12)' : 'rgba(255,255,255,0.06)' }}>
+                                                            <Briefcase className="h-4 w-4" style={{ color: hasStrategy ? THEME.accent.primary : THEME.text.muted }} />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-semibold leading-snug" style={{ color: THEME.text.primary }}>{project.name}</p>
+                                                            <p className="text-[10px]" style={{ color: THEME.text.muted }}>
+                                                                {new Date(project.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                            </p>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <p className="font-semibold leading-snug" style={{ color: THEME.text.primary }}>{project.name}</p>
-                                                        <p className="text-[10px]" style={{ color: THEME.text.muted }}>
-                                                            Created {new Date(project.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                                                        </p>
-                                                    </div>
+                                                    <StatusBadge status={hasStrategy ? 'active' : 'pending'} />
                                                 </div>
-                                                <StatusBadge status={hasStrategy ? 'active' : 'pending'} />
-                                            </div>
-
-                                            {/* Strategy / AI excerpt */}
-                                            {excerpt ? (
-                                                <p className="line-clamp-2 text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>
-                                                    {excerpt.slice(0, 160)}{excerpt.length > 160 ? '…' : ''}
-                                                </p>
-                                            ) : (
-                                                <p className="text-[12px]" style={{ color: THEME.text.muted }}>
-                                                    No strategy yet — open CEO desk to add your vision.
-                                                </p>
-                                            )}
-
-                                            {/* Footer: sync badge + open arrow */}
-                                            <div className="flex items-center justify-between gap-2">
-                                                <div className="flex items-center gap-1.5">
+                                                {excerpt ? (
+                                                    <p className="line-clamp-2 text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>
+                                                        {excerpt.slice(0, 180)}{excerpt.length > 180 ? '…' : ''}
+                                                    </p>
+                                                ) : (
+                                                    <p className="text-[12px]" style={{ color: THEME.text.muted }}>No strategy yet — open CEO desk.</p>
+                                                )}
+                                                <div className="flex items-center justify-between gap-2">
                                                     {hasSynced ? (
                                                         <span className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}>
-                                                            <Zap className="h-2.5 w-2.5" />
-                                                            Synced {syncAgo}
+                                                            <Zap className="h-2.5 w-2.5" /> Synced {syncAgo}
                                                         </span>
                                                     ) : (
-                                                        <span className="rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ background: 'rgba(255,255,255,0.07)', color: THEME.text.muted }}>
-                                                            Not synced
+                                                        <span className="rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ background: 'rgba(255,255,255,0.07)', color: THEME.text.muted }}>Not synced</span>
+                                                    )}
+                                                    <span className="flex items-center gap-0.5 text-[11px] font-medium opacity-0 transition-opacity group-hover:opacity-100" style={{ color: THEME.accent.info }}>
+                                                        Open <ChevronRight className="h-3.5 w-3.5" />
+                                                    </span>
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Research Desks */}
+                        <div className="flex flex-col gap-5">
+                            <div className="overflow-hidden rounded-2xl border" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
+                                <div className="border-b px-5 py-3.5" style={{ borderColor: THEME.border.subtle }}>
+                                    <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>Research Desks</p>
+                                    <p className="text-[10px]" style={{ color: THEME.text.muted }}>Coverage across all ventures</p>
+                                </div>
+                                <div className="divide-y" style={{ borderColor: THEME.border.subtle }}>
+                                    {(['ceo', 'accountant', 'pm', 'cmo', 'scout'] as const).map((role) => {
+                                        const row    = RESEARCH_STAFF[role];
+                                        const stat   = deskStats[role];
+                                        const accent = PORTFOLIO_DESK_ACCENTS[role];
+                                        const pct    = stat.total === 0 ? 0 : Math.round(stat.coverage * 100);
+                                        return (
+                                            <button
+                                                type="button"
+                                                key={role}
+                                                onClick={() => {
+                                                    const target = firstProjectNeedingRole(allProjects, role);
+                                                    if (target) { setActiveProject(target); switchRoom(role); }
+                                                }}
+                                                className="group flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-[rgba(255,255,255,0.03)]"
+                                            >
+                                                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md" style={{ background: `${accent}14` }}>
+                                                    <BarChart2 className="h-3.5 w-3.5" style={{ color: accent }} />
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="flex items-center justify-between gap-1">
+                                                        <p className="text-[12px] font-medium" style={{ color: THEME.text.primary }}>{row.navTitle}</p>
+                                                        <span className="shrink-0 text-[10px] font-semibold tabular-nums" style={{ color: pct === 100 ? accent : THEME.text.muted }}>
+                                                            {stat.total === 0 ? '—' : `${pct}%`}
                                                         </span>
+                                                    </div>
+                                                    {stat.total > 0 && (
+                                                        <div className="mt-1.5 h-1 overflow-hidden rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                                                            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${accent}99, ${accent})` }} />
+                                                        </div>
+                                                    )}
+                                                    {stat.snapshotSnippet && (
+                                                        <p className="mt-1 line-clamp-1 text-[10px]" style={{ color: THEME.text.muted }}>{stat.snapshotSnippet}</p>
                                                     )}
                                                 </div>
-                                                <span className="flex items-center gap-0.5 text-[11px] font-medium opacity-0 transition-opacity group-hover:opacity-100" style={{ color: THEME.accent.info }}>
-                                                    Open <ChevronRight className="h-3.5 w-3.5" />
-                                                </span>
+                                                <ArrowRight className="h-3 w-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-50" style={{ color: THEME.text.muted }} />
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Mini health ring */}
+                            <div className="flex items-center gap-4 rounded-2xl border p-4" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
+                                <CircularProgress
+                                    value={portfolioHealthPct}
+                                    size={64}
+                                    strokeWidth={5}
+                                    color={portfolioHealthPct > 70 ? THEME.accent.primary : portfolioHealthPct > 40 ? THEME.chart.amber : THEME.chart.rose}
+                                />
+                                <div>
+                                    <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: THEME.text.muted }}>Portfolio health</p>
+                                    <p className="mt-0.5 text-sm font-semibold" style={{ color: THEME.text.primary }}>
+                                        {portfolioHealthPct > 70 ? 'Strong coverage' : portfolioHealthPct > 40 ? 'Developing' : ventureCount === 0 ? 'No ventures' : 'Needs work'}
+                                    </p>
+                                    <p className="text-[10px]" style={{ color: THEME.text.muted }}>{coveredDeskSlots}/{totalDeskSlots} desks filled</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* ════════════════════════════════════════
+                    § 4  ANALYTICS ROW
+                         Composition · AI Coverage · Activity
+                ════════════════════════════════════════ */}
+                <section>
+                    <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: THEME.text.muted }}>Portfolio Analytics</p>
+                    <div className="grid gap-5 lg:grid-cols-3">
+
+                        {/* Portfolio composition donut */}
+                        <div className="overflow-hidden rounded-2xl border p-5" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
+                            <p className="mb-3 text-[12px] font-semibold" style={{ color: THEME.text.primary }}>Composition</p>
+                            {portfolioComposition.length > 0 ? (
+                                <div className="h-44 min-h-[176px] min-w-0">
+                                    <ResponsiveContainer width="100%" height="100%" minHeight={176} minWidth={0}>
+                                        <RePieChart>
+                                            <Pie data={portfolioComposition} cx="50%" cy="50%" innerRadius={45} outerRadius={68} paddingAngle={4} dataKey="value">
+                                                {portfolioComposition.map((entry: any, i: number) => (
+                                                    <Cell key={`cell-${i}`} fill={entry.fill} />
+                                                ))}
+                                            </Pie>
+                                            <Tooltip {...CHART_TOOLTIP} />
+                                            <Legend />
+                                        </RePieChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            ) : (
+                                <p className="py-8 text-center text-sm" style={{ color: THEME.text.tertiary }}>No ventures yet</p>
+                            )}
+                            {ventureCount > 0 && (
+                                <div className="mt-3 grid grid-cols-2 gap-2 border-t pt-3" style={{ borderColor: THEME.border.subtle }}>
+                                    {[['Active', withStrategy, THEME.chart.emerald], ['Draft', draft, THEME.text.muted]].map(([lbl, n, c]) => (
+                                        <div key={String(lbl)} className="rounded-lg border px-3 py-2 text-center" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.03)' }}>
+                                            <p className="text-base font-semibold tabular-nums" style={{ color: THEME.text.primary }}>{n}</p>
+                                            <p className="text-[10px] font-medium" style={{ color: String(c) }}>{lbl}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* AI Research coverage bars */}
+                        <div className="overflow-hidden rounded-2xl border p-5" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
+                            <p className="mb-3 text-[12px] font-semibold" style={{ color: THEME.text.primary }}>AI Research Coverage</p>
+                            <div className="space-y-3">
+                                {(['ceo', 'accountant', 'pm', 'cmo', 'scout'] as const).map((role) => {
+                                    const stat   = deskStats[role];
+                                    const accent = PORTFOLIO_DESK_ACCENTS[role];
+                                    const pct    = stat.total === 0 ? 0 : Math.round(stat.coverage * 100);
+                                    const label  = RESEARCH_STAFF[role].navTitle;
+                                    return (
+                                        <div key={role}>
+                                            <div className="mb-1 flex items-center justify-between">
+                                                <p className="text-[11px] font-medium" style={{ color: THEME.text.secondary }}>{label}</p>
+                                                <p className="text-[10px] tabular-nums" style={{ color: pct === 100 ? accent : THEME.text.muted }}>{pct}%</p>
                                             </div>
-                                        </button>
+                                            <div className="h-1.5 overflow-hidden rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                                                <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${accent}99, ${accent})` }} />
+                                            </div>
+                                        </div>
                                     );
                                 })}
                             </div>
-                        )}
-                    </div>
-
-                    {/* RIGHT — Research Desks */}
-                    <div
-                        className="overflow-hidden rounded-2xl border"
-                        style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
-                    >
-                        <div className="border-b px-5 py-3.5" style={{ borderColor: THEME.border.subtle }}>
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>Research Desks</p>
-                            <p className="mt-0.5 text-[11px]" style={{ color: THEME.text.muted }}>Coverage across all ventures</p>
+                            <div className="mt-4 rounded-xl border px-3 py-2.5" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.03)' }}>
+                                <p className="text-[10px]" style={{ color: THEME.text.muted }}>
+                                    <span className="font-semibold" style={{ color: THEME.text.primary }}>{synced}</span> of <span className="font-semibold" style={{ color: THEME.text.primary }}>{ventureCount}</span> ventures AI-synced · run Staff Sync inside a venture to populate
+                                </p>
+                            </div>
                         </div>
-                        <div className="divide-y" style={{ borderColor: THEME.border.subtle }}>
-                            {(['ceo', 'accountant', 'pm', 'cmo', 'scout'] as const).map((role) => {
-                                const row = RESEARCH_STAFF[role];
-                                const stat = deskStats[role];
-                                const accent = PORTFOLIO_DESK_ACCENTS[role];
-                                const pct = stat.total === 0 ? 0 : Math.round(stat.coverage * 100);
-                                const subtitle =
-                                    stat.total === 0
-                                        ? row.navHint
-                                        : `${stat.documented}/${stat.total} ventures documented`;
-                                return (
-                                    <button
-                                        type="button"
-                                        key={role}
-                                        onClick={() => {
-                                            const target = firstProjectNeedingRole(allProjects, role);
-                                            if (target) { setActiveProject(target); switchRoom(role); }
-                                        }}
-                                        className="group flex w-full items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-[rgba(255,255,255,0.03)]"
-                                    >
-                                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style={{ background: `${accent}14` }}>
-                                            <BarChart2 className="h-3.5 w-3.5" style={{ color: accent }} />
-                                        </div>
-                                        <div className="min-w-0 flex-1">
-                                            <div className="flex items-center justify-between gap-2">
-                                                <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>{row.navTitle}</p>
-                                                <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold tabular-nums" style={{ background: `${accent}18`, color: accent }}>
-                                                    {stat.total === 0 ? '—' : `${pct}%`}
-                                                </span>
-                                            </div>
-                                            <p className="mt-0.5 text-[11px]" style={{ color: THEME.text.muted }}>{subtitle}</p>
-                                            {stat.total > 0 && (
-                                                <div className="mt-2 h-1 overflow-hidden rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                                                    <div
-                                                        className="h-full rounded-full transition-all duration-500"
-                                                        style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${accent}99, ${accent})` }}
-                                                    />
-                                                </div>
-                                            )}
-                                            {stat.snapshotSnippet && (
-                                                <p className="mt-1 line-clamp-1 text-[10px]" style={{ color: THEME.text.muted }}>{stat.snapshotSnippet}</p>
-                                            )}
-                                        </div>
-                                        <ArrowRight className="h-3.5 w-3.5 shrink-0 opacity-0 transition-opacity group-hover:opacity-60" style={{ color: THEME.text.muted }} />
-                                    </button>
-                                );
-                            })}
+
+                        {/* Recent activity */}
+                        <div className="overflow-hidden rounded-2xl border p-5" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
+                            <p className="mb-3 text-[12px] font-semibold" style={{ color: THEME.text.primary }}>Recent AI Activity</p>
+                            {recentlySynced.length === 0 ? (
+                                <div className="flex flex-col items-center gap-3 py-8 text-center">
+                                    <Zap className="h-7 w-7" style={{ color: THEME.text.muted }} />
+                                    <p className="text-[12px]" style={{ color: THEME.text.muted }}>No AI syncs yet. Run Staff Sync inside a venture to see activity here.</p>
+                                </div>
+                            ) : (
+                                <ul className="space-y-2.5">
+                                    {recentlySynced.map((p: any) => {
+                                        const at  = p.agentStaffSnapshot.at;
+                                        const age = Math.max(0, Math.floor((Date.now() - at) / 60000));
+                                        const ago = age < 60 ? `${age}m ago` : age < 1440 ? `${Math.floor(age / 60)}h ago` : `${Math.floor(age / 1440)}d ago`;
+                                        return (
+                                            <li key={p.id}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setActiveProject(p)}
+                                                    className="group flex w-full items-start gap-2.5 rounded-xl border px-3 py-2.5 text-left transition-all hover:bg-[rgba(255,255,255,0.04)]"
+                                                    style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.03)' }}
+                                                >
+                                                    <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md" style={{ background: 'rgba(116,86,255,0.12)' }}>
+                                                        <Zap className="h-3 w-3" style={{ color: THEME.accent.primary }} />
+                                                    </div>
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="truncate text-[12px] font-medium" style={{ color: THEME.text.primary }}>{p.name}</p>
+                                                        <p className="text-[10px]" style={{ color: THEME.text.muted }}>Staff Sync · {ago}</p>
+                                                    </div>
+                                                    <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-0 transition-opacity group-hover:opacity-60" style={{ color: THEME.text.muted }} />
+                                                </button>
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            )}
                         </div>
                     </div>
-                </div>
+                </section>
 
-                {/* ── PORTFOLIO COMPOSITION + DAILY INTEL ── */}
-                <div className="grid gap-5 lg:grid-cols-2">
-                    {/* Portfolio donut */}
-                    <div
-                        className="overflow-hidden rounded-2xl border p-6"
-                        style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
-                    >
-                        <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>Portfolio Composition</p>
-                        {portfolioComposition.length > 0 ? (
-                            <div className="h-52 min-h-[208px] min-w-0">
-                                <ResponsiveContainer width="100%" height="100%" minHeight={208} minWidth={0}>
-                                    <RePieChart>
-                                        <Pie data={portfolioComposition} cx="50%" cy="50%" innerRadius={55} outerRadius={80} paddingAngle={4} dataKey="value">
-                                            {portfolioComposition.map((entry: any, i: number) => (
-                                                <Cell key={`cell-${i}`} fill={entry.fill} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip {...CHART_TOOLTIP} />
-                                        <Legend />
-                                    </RePieChart>
-                                </ResponsiveContainer>
-                            </div>
-                        ) : (
-                            <p className="py-10 text-center text-sm" style={{ color: THEME.text.tertiary }}>No ventures yet</p>
-                        )}
-                        {ventureCount > 0 && (
-                            <div className="mt-4 grid grid-cols-2 gap-3 border-t pt-4" style={{ borderColor: THEME.border.subtle }}>
-                                <div className="rounded-xl border px-3 py-2.5 text-center" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.03)' }}>
-                                    <p className="text-xl font-semibold tabular-nums" style={{ color: THEME.text.primary }}>{withStrategy}</p>
-                                    <p className="text-[10px] font-medium" style={{ color: THEME.chart.emerald }}>Active</p>
-                                </div>
-                                <div className="rounded-xl border px-3 py-2.5 text-center" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.03)' }}>
-                                    <p className="text-xl font-semibold tabular-nums" style={{ color: THEME.text.primary }}>{draft}</p>
-                                    <p className="text-[10px] font-medium" style={{ color: THEME.text.muted }}>Draft</p>
-                                </div>
-                            </div>
-                        )}
+                {/* ════════════════════════════════════════
+                    § 5  WORKSPACE NAVIGATOR
+                ════════════════════════════════════════ */}
+                <section>
+                    <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: THEME.text.muted }}>Workspace Navigator</p>
+                    <div className="overflow-hidden rounded-2xl border" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
+                        <div className="grid grid-cols-2 divide-x divide-y sm:grid-cols-3 lg:grid-cols-6" style={{ borderColor: THEME.border.subtle }}>
+                            {([
+                                { role: 'ceo'  as const, label: 'CEO Desk',   sub: 'Strategy',  icon: Lightbulb,    color: THEME.chart.violet  },
+                                { role: 'scout' as const, label: 'Scout',     sub: 'Market',    icon: Globe,        color: THEME.chart.blue    },
+                                { role: 'accountant' as const, label: 'Finance', sub: 'Budget', icon: Wallet,       color: THEME.chart.emerald },
+                                { role: 'pm'   as const, label: 'Product',    sub: 'Roadmap',   icon: Layers,       color: THEME.chart.amber   },
+                                { role: 'cmo'  as const, label: 'Growth',     sub: 'GTM',       icon: Megaphone,    color: THEME.chart.rose    },
+                                { role: null,            label: 'Dexo AI',    sub: 'Command',   icon: Cpu,          color: THEME.accent.primary },
+                            ] as const).map(({ role, label, sub, icon: Icon, color }) => (
+                                <button
+                                    key={label}
+                                    type="button"
+                                    onClick={() => {
+                                        if (!role) { switchRoom('dexo'); return; }
+                                        const target = firstProjectNeedingRole(allProjects, role) ?? allProjects[0];
+                                        if (target) { setActiveProject(target); switchRoom(role); }
+                                    }}
+                                    className="group flex flex-col items-center gap-2 border-[rgba(255,255,255,0.06)] py-5 text-center transition-all hover:bg-[rgba(255,255,255,0.04)]"
+                                    style={{ borderColor: THEME.border.subtle }}
+                                >
+                                    <div className="flex h-9 w-9 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-110" style={{ background: `${color}14` }}>
+                                        <Icon className="h-4 w-4" style={{ color }} />
+                                    </div>
+                                    <div>
+                                        <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>{label}</p>
+                                        <p className="text-[10px]" style={{ color: THEME.text.muted }}>{sub}</p>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
                     </div>
+                </section>
 
-                    {/* Daily intel or upgrade */}
+                {/* ════════════════════════════════════════
+                    § 6  DAILY INTEL
+                ════════════════════════════════════════ */}
+                <section>
+                    <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: THEME.text.muted }}>Live Intelligence</p>
                     <div className="overflow-hidden rounded-2xl border" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
                         {can('dexoDailyBriefReports') ? (
                             <PortfolioDailyIntelSection allProjects={allProjects} onOpenVenture={setActiveProject} />
                         ) : (
-                            <div className="flex h-full flex-col items-center justify-center gap-4 px-8 py-12 text-center">
-                                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.04)' }}>
+                            <div className="flex flex-col items-center gap-4 px-8 py-12 text-center sm:flex-row sm:text-left">
+                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.04)' }}>
                                     <Globe className="h-5 w-5" style={{ color: THEME.text.muted }} />
                                 </div>
                                 <div>
                                     <p className="font-semibold" style={{ color: THEME.text.primary }}>Live intel by venture</p>
-                                    <p className="mt-2 text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
-                                        Web-backed daily briefs and source links per venture are part of{' '}
+                                    <p className="mt-1 text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
+                                        Web-backed daily briefs and live source links per venture are part of{' '}
                                         <span className="font-medium" style={{ color: THEME.text.primary }}>Co-Founder Pro</span>.
-                                        Upgrade from the sidebar to unlock.
+                                        Upgrade from the sidebar to unlock real-time portfolio intelligence.
                                     </p>
                                 </div>
                             </div>
                         )}
                     </div>
-                </div>
+                </section>
 
             </main>
         </div>
