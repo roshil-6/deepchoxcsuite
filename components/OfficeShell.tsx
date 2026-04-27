@@ -5,6 +5,7 @@ import { useOffice } from '@/lib/OfficeContext';
 import { NOISE_DATA_URL } from '@/lib/noiseTexture';
 import { EyeOff } from 'lucide-react';
 import { DexoPendingChangesFloating } from '@/components/Dexo/DexoPendingChangesPanel';
+import DarkVeil from '@/components/DarkVeil';
 
 export function OfficeShell({ children }: { children: React.ReactNode }) {
     const { systemState, toggleDeepWork, activeProject } = useOffice();
@@ -12,8 +13,19 @@ export function OfficeShell({ children }: { children: React.ReactNode }) {
     return (
         <div className={`relative h-screen w-full overflow-hidden bg-[var(--bg-primary)] font-sans text-[var(--text)] transition-all duration-700 ${systemState.isDeepWork ? 'brightness-95 saturate-75' : ''
             }`}>
+            {/* DarkVeil WebGL ambient background */}
+            <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.18]" aria-hidden>
+                <DarkVeil
+                    speed={0.3}
+                    hueShift={240}
+                    noiseIntensity={0.02}
+                    warpAmount={0.2}
+                    resolutionScale={0.5}
+                />
+            </div>
+
             <div
-                className="pointer-events-none absolute inset-0 z-0 opacity-[0.02]"
+                className="pointer-events-none absolute inset-0 z-[1] opacity-[0.02]"
                 style={{ backgroundImage: `url("${NOISE_DATA_URL}")`, mixBlendMode: 'multiply' }}
             />
 
