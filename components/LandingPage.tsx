@@ -8,6 +8,7 @@ import { formatRegionalPricePair, getProBillingAmounts } from '@/lib/billingConf
 import { usePricingRegion } from '@/hooks/usePricingRegion';
 import { SITE_HERO_H1, SITE_HERO_LEAD, SITE_PULL_QUOTE, SITE_TAGLINE_SHORT } from '@/lib/siteSeo';
 import { LandingClerkAuth, LANDING_SIGN_IN_HREF, LANDING_SIGN_UP_HREF } from '@/components/LandingClerkAuth';
+import DarkVeil from '@/components/DarkVeil';
 
 /** @deprecated Hero is Clerk sign-in; kept for older imports / env docs. */
 export const LANDING_HERO_VIDEO_DEFAULT = '/landing-hero-demo.mp4';
@@ -136,8 +137,20 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                 </header>
 
                 {/* Above-the-fold hero — Google AI Studio–style stack (fits in one viewport) */}
-                <section className="flex min-h-[calc(100dvh-3.75rem)] shrink-0 flex-col items-center justify-center px-4 py-4 sm:px-6 sm:py-6 lg:px-10">
-                    <div className="mx-auto flex w-full max-w-[min(100%,72rem)] flex-col items-center text-center lg:max-w-[min(100%,80rem)]">
+                <section className="relative flex min-h-[calc(100dvh-3.75rem)] shrink-0 flex-col items-center justify-center overflow-hidden px-4 py-4 sm:px-6 sm:py-6 lg:px-10">
+                    {/* DarkVeil WebGL background */}
+                    <div className="pointer-events-none absolute inset-0 z-0 opacity-30" aria-hidden>
+                        <DarkVeil
+                            speed={0.4}
+                            hueShift={220}
+                            noiseIntensity={0.04}
+                            warpAmount={0.3}
+                            resolutionScale={0.6}
+                        />
+                    </div>
+                    {/* Fade to dark at bottom so content below reads cleanly */}
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-40 bg-gradient-to-t from-[#030304] to-transparent" aria-hidden />
+                    <div className="relative z-10 mx-auto flex w-full max-w-[min(100%,72rem)] flex-col items-center text-center lg:max-w-[min(100%,80rem)]">
                         {/* Wordmark — no logo; neutral grey accent */}
                         <div className="flex w-full justify-center px-1">
                             <div className="flex w-full max-w-xl flex-col items-center text-center sm:max-w-2xl lg:max-w-3xl">
