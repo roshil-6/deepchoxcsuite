@@ -11,10 +11,11 @@ export function OfficeShell({ children }: { children: React.ReactNode }) {
     const { systemState, toggleDeepWork, activeProject } = useOffice();
 
     return (
-        <div className={`relative h-screen w-full overflow-hidden bg-[var(--bg-primary)] font-sans text-[var(--text)] transition-all duration-700 ${systemState.isDeepWork ? 'brightness-95 saturate-75' : ''
+        <div className={`relative h-screen w-full overflow-hidden bg-[var(--bg-primary)]/90 font-sans text-[var(--text)] transition-all duration-700 ${systemState.isDeepWork ? 'brightness-95 saturate-75' : ''
             }`}>
-            {/* DarkVeil WebGL ambient background */}
-            <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.18]" aria-hidden>
+            {/* DarkVeil WebGL ambient background — fixed so it fills the full viewport,
+                not clipped by overflow-hidden parents or any layout section */}
+            <div className="pointer-events-none fixed inset-0 z-0 opacity-[0.18]" aria-hidden>
                 <DarkVeil
                     speed={0.3}
                     hueShift={240}
