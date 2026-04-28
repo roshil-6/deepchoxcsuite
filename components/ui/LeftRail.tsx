@@ -269,14 +269,14 @@ export function LeftRail({
                         <div className="flex flex-col gap-2">
                             <Link
                                 href="/sign-in"
-                                className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] font-sans text-[12px] font-medium text-[var(--text-secondary)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]"
+                                className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border border-white/20 bg-white/[0.08] font-sans text-[12px] font-semibold text-white transition hover:bg-white/[0.13] hover:border-white/30"
                             >
                                 <LogIn className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
                                 Sign in
                             </Link>
                             <Link
                                 href="/sign-up"
-                                className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border border-[var(--border)] bg-transparent font-sans text-[12px] font-medium text-[var(--text-secondary)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]"
+                                className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border border-[rgba(116,86,255,0.35)] bg-[rgba(116,86,255,0.1)] font-sans text-[12px] font-semibold text-[#b8a8ff] transition hover:bg-[rgba(116,86,255,0.18)] hover:text-[#cfc3ff]"
                             >
                                 <UserPlus className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
                                 Create account
