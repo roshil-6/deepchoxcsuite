@@ -57,7 +57,7 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
 
     return (
         <div
-            className="flex h-full min-h-0 w-full flex-col bg-[var(--bg-primary)] text-[var(--text-primary)] pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] lg:pb-0"
+            className="flex h-full min-h-0 w-full flex-col bg-transparent text-[var(--text-primary)] pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] lg:pb-0"
         >
             {/* Mobile Header */}
             <header 

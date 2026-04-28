@@ -39,7 +39,7 @@ export function WorkspacePanel({
 
     return (
         <div
-            className={`relative flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--bg-primary)] ${
+            className={`relative flex min-h-0 min-w-0 flex-1 flex-col bg-transparent ${
                 fillViewport
                     ? 'overflow-hidden'
                     : 'overflow-y-auto overflow-x-hidden overscroll-y-contain custom-scrollbar'

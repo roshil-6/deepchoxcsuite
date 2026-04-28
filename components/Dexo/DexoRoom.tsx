@@ -874,8 +874,8 @@ export function DexoRoom() {
             {/* ── Input strip ── */}
             <div className="relative z-10 shrink-0">
                 {/* Fade gradient from transparent → room bg, so content scrolls under it cleanly */}
-                <div className="pointer-events-none absolute inset-x-0 -top-10 h-10 bg-gradient-to-t from-[var(--bg-primary)] to-transparent" />
-                <div className="border-t border-[var(--border)] bg-[var(--bg-primary)] backdrop-blur-md px-4 pb-4 pt-3">
+                <div className="pointer-events-none absolute inset-x-0 -top-10 h-10 bg-gradient-to-t from-[rgba(14,14,16,0.72)] to-transparent" />
+                <div className="border-t border-[var(--border)] bg-[rgba(14,14,16,0.72)] backdrop-blur-md px-4 pb-4 pt-3">
                     <div className="mx-auto max-w-[660px] space-y-2">
 
                         {/* Listening indicator */}

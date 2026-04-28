@@ -102,16 +102,6 @@ export function WorkspaceStage({
 
     return (
         <div className="relative flex min-h-0 w-full flex-1 flex-col">
-            <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${shell.wash} opacity-75`} />
-            <div
-                className="pointer-events-none absolute inset-0"
-                style={{
-                    opacity: Number(shell.gridOpacity),
-                    backgroundImage: `linear-gradient(${shell.gridColor} 1px, transparent 1px), linear-gradient(90deg, ${shell.gridColor} 1px, transparent 1px)`,
-                    backgroundSize: '40px 40px',
-                }}
-            />
-
             <div
                 className={`relative z-10 flex min-h-0 flex-1 flex-col animate-in fade-in duration-300 ${shell.immersive ? '' : 'py-3 sm:py-4'}`}
             >
