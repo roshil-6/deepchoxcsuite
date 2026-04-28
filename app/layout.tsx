@@ -93,7 +93,7 @@ export default function RootLayout({
     <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up">
       <html lang="en">
         <body
-          className={`${inter.variable} ${playfair.variable} ${jetbrains.variable} ${syne.variable} font-sans bg-brand-bg text-brand-text antialiased overflow-x-hidden leading-normal tracking-normal`}
+          className={`${inter.variable} ${playfair.variable} ${jetbrains.variable} ${syne.variable} font-sans text-brand-text antialiased overflow-x-hidden leading-normal tracking-normal`}
         >
           <Script
             id="site-json-ld"
