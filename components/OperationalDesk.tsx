@@ -234,7 +234,7 @@ export function OperationalDesk({ children }: { children: React.ReactNode }) {
     const waiting = staffAttentionPending.filter((i) => i.role === deskRole);
 
     return (
-        <div className="relative flex min-h-0 w-full flex-1 flex-col bg-[var(--color-brand-bg)]">
+        <div className="relative flex min-h-0 w-full flex-1 flex-col bg-transparent">
             {waiting.length > 0 && (
                 <StaffAttentionBanner room={activeRoom} waiting={waiting} dismissStaffAttention={dismissStaffAttention} />
             )}
