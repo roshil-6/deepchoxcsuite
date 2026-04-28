@@ -15,7 +15,7 @@ export function OfficeShell({ children }: { children: React.ReactNode }) {
             }`}>
             {/* DarkVeil WebGL ambient background — fixed so it fills the full viewport,
                 not clipped by overflow-hidden parents or any layout section */}
-            <div className="pointer-events-none fixed inset-0 z-0 opacity-[0.18]" aria-hidden>
+            <div className="pointer-events-none fixed inset-0 z-0 opacity-[0.45]" aria-hidden>
                 <DarkVeil
                     speed={0.3}
                     hueShift={240}
