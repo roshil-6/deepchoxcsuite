@@ -230,7 +230,7 @@ ${fileContext}
   };
 
   return (
-    <div className="relative flex h-full flex-col bg-[var(--bg-primary)] font-sans text-[var(--text-secondary)] transition-colors duration-500">
+    <div className="relative flex h-full flex-col bg-transparent font-sans text-[var(--text-secondary)] transition-colors duration-500">
 
       {/* Header - Floating Glass */}
       <div className="absolute top-4 left-0 right-0 z-20 px-4 flex justify-center">
