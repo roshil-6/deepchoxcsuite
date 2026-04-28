@@ -13,13 +13,18 @@ export function OfficeShell({ children }: { children: React.ReactNode }) {
     return (
         <div className={`relative h-screen w-full overflow-hidden bg-transparent font-sans text-[var(--text)] transition-all duration-700 ${systemState.isDeepWork ? 'brightness-95 saturate-75' : ''
             }`}>
-            {/* DarkVeil WebGL — fixed full-viewport, z-0 canvas behind everything */}
-            <div className="pointer-events-none fixed inset-0 z-0 opacity-[0.70]" aria-hidden>
+            {/* DarkVeil WebGL — screen blend: dark CPPN pixels = invisible,
+                bright coloured streaks become visible against the dark shell */}
+            <div
+                className="pointer-events-none fixed inset-0 z-0"
+                style={{ mixBlendMode: 'screen', opacity: 0.9 }}
+                aria-hidden
+            >
                 <DarkVeil
-                    speed={0.3}
-                    hueShift={240}
-                    noiseIntensity={0.02}
-                    warpAmount={0.2}
+                    speed={0.25}
+                    hueShift={30}
+                    noiseIntensity={0.015}
+                    warpAmount={0.35}
                     resolutionScale={0.5}
                 />
             </div>
