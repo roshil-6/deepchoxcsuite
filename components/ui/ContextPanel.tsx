@@ -165,12 +165,13 @@ export function ContextPanel({
             <aside
                 className={`
                   ${className}
-                  fixed inset-y-0 right-0 z-50 flex h-[100dvh] min-h-0 w-[min(100%,20rem)] flex-col border-l border-[var(--border)] bg-[var(--bg-secondary)]/94 transition-[width,transform] duration-300 ease-out
+                  fixed inset-y-0 right-0 z-50 flex h-[100dvh] min-h-0 w-[min(100%,20rem)] flex-col border-l border-[var(--border)] transition-[width,transform] duration-300 ease-out
                   lg:static lg:z-0 lg:h-full lg:translate-x-0
                   ${mobileOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
                   ${desktopCollapsed ? 'lg:w-11 lg:min-w-[2.75rem]' : 'lg:w-80 lg:max-w-[20rem]'}
                 `}
                 style={{
+                    background: 'rgba(14, 14, 17, 0.82)',
                     backdropFilter: 'blur(18px)',
                     WebkitBackdropFilter: 'blur(18px)',
                 }}
