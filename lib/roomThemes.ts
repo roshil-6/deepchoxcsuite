@@ -178,7 +178,7 @@ export interface WorkspaceShellTheme {
 }
 
 const SHELL_DEFAULT: WorkspaceShellTheme = {
-  wash: 'from-brand-bg to-brand-bg',
+  wash: 'from-[#1e1e1e]/80 to-[#1e1e1e]/80',
   gridColor: 'rgba(255,255,255,0.05)',
   gridOpacity: '0.02',
   /** No inner “card” frame — avoids a second panel overlaying each room */
@@ -190,7 +190,7 @@ export function getWorkspaceShellTheme(activeRoom: string): WorkspaceShellTheme 
   /** Dexo: near-black, no shell grid — particle wave canvas owns the bg */
   if (activeRoom === 'dexo') {
     return {
-      wash: 'from-[#1e1e1e] to-[#212121]',
+      wash: 'from-[#1e1e1e]/80 to-[#212121]/80',
       gridColor: 'transparent',
       gridOpacity: '0',
       chrome: '',
@@ -201,7 +201,7 @@ export function getWorkspaceShellTheme(activeRoom: string): WorkspaceShellTheme 
   /** Long-form guide: calmer canvas, almost no grid so sections feel editorial */
   if (activeRoom === 'suite_intelligence') {
     return {
-      wash: 'from-[#1e1e1e] to-[#242424]',
+      wash: 'from-[#1e1e1e]/80 to-[#242424]/80',
       gridColor: 'rgba(255,255,255,0.04)',
       gridOpacity: '0.01',
       chrome: '',
