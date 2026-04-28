@@ -9,6 +9,8 @@ export interface NameVentureModalProps {
     onClose: () => void;
     /** Called with trimmed name; empty string falls back to default venture naming in the shell. */
     onConfirm: (name: string) => void;
+    /** Disables the submit button while venture is being saved */
+    loading?: boolean;
     /** Shown above the field */
     title?: string;
     /** Shown under the title */
@@ -19,6 +21,7 @@ export function NameVentureModal({
     open,
     onClose,
     onConfirm,
+    loading = false,
     title = 'Name your venture',
     description = 'You can change this later. Next, the Assistant helps you shape the venture in chat.',
 }: NameVentureModalProps) {
@@ -120,9 +123,10 @@ export function NameVentureModal({
                         <button
                             type="button"
                             onClick={submit}
-                            className="rounded-xl bg-[#7456ff] px-5 py-2.5 font-sans text-[13px] font-semibold text-white transition hover:bg-[#8a6fff]"
+                            disabled={loading}
+                            className="rounded-xl bg-[#7456ff] px-5 py-2.5 font-sans text-[13px] font-semibold text-white transition hover:bg-[#8a6fff] disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                            Let&apos;s build it →
+                            {loading ? 'Creating…' : "Let's build it →"}
                         </button>
                     </div>
                 </div>

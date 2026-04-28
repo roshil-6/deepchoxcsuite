@@ -102,6 +102,7 @@ export default function Home() {
   const [nameVentureOpen, setNameVentureOpen] = useState(false);
   const [workspaceAuthOpen, setWorkspaceAuthOpen] = useState(false);
   const [sessionResolving, setSessionResolving] = useState(false);
+  const [ventureCreating, setVentureCreating] = useState(false);
   const { isSignedIn, isLoaded } = useAuth();
   const { setActiveProject, setAllProjects, switchRoom, activeRoom, resetSystem } = useOffice();
 
@@ -197,6 +198,7 @@ export default function Home() {
 
   /** Create a shell venture (optional name) and open Personal Assistant for chat-first setup. */
   const createVentureWithName = async (name: string) => {
+    if (ventureCreating) return;
     if (!isSignedIn) {
       try {
         sessionStorage.setItem(VENTURE_AUTH_KEY, '1');
@@ -207,6 +209,7 @@ export default function Home() {
       setWorkspaceAuthOpen(true);
       return;
     }
+    setVentureCreating(true);
     try {
       const shell = emptyVentureShell(name || undefined);
       const ts = Date.now();
@@ -219,6 +222,8 @@ export default function Home() {
       switchRoom('dexo');
     } catch (e) {
       console.error('Failed to create venture:', e);
+    } finally {
+      setVentureCreating(false);
     }
   };
 
@@ -264,7 +269,9 @@ export default function Home() {
     <div className="flex h-screen w-full overflow-hidden bg-[var(--bg)] animate-in fade-in duration-500">
       <NameVentureModal
         open={nameVentureOpen}
+        loading={ventureCreating}
         onClose={() => {
+          if (ventureCreating) return;
           setNameVentureOpen(false);
           switchRoom('dexo');
         }}

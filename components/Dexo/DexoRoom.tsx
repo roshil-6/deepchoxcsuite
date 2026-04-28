@@ -356,6 +356,14 @@ export function DexoRoom() {
         void saveDexoConvo(activeProject.id, convo);
     }, [convo, activeProject?.id]);
 
+    // Auto-resize Dexo input textarea
+    useEffect(() => {
+        const el = inputRef.current;
+        if (!el) return;
+        el.style.height = 'auto';
+        el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
+    }, [inputText]);
+
     // Legacy speak function for reading analysis reports (not streaming)
     const speakJarvis = useCallback((text: string) => {
         if (typeof window === 'undefined' || !window.speechSynthesis) return;
@@ -962,7 +970,7 @@ export function DexoRoom() {
                                     : 'Message Dexo…'
                                 }
                                 className="min-h-[38px] min-w-0 flex-1 resize-none border-none bg-transparent px-1.5 py-2 font-sans text-[14px] leading-[1.45] text-[var(--text-primary)] placeholder:text-[var(--muted)] focus:outline-none focus:ring-0"
-                                style={{ maxHeight: '84px', overflowY: 'hidden' }}
+                                style={{ maxHeight: '160px', overflowY: 'auto' }}
                             />
 
                             {/* Send / Stop button */}
