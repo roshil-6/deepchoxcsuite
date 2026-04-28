@@ -102,7 +102,7 @@ export function WorkspaceStage({
 
     return (
         <div className="relative flex min-h-0 w-full flex-1 flex-col">
-            <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${shell.wash}`} />
+            <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${shell.wash} opacity-75`} />
             <div
                 className="pointer-events-none absolute inset-0"
                 style={{
