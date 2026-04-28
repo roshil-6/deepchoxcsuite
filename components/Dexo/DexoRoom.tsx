@@ -574,7 +574,7 @@ export function DexoRoom() {
 
 
     return (
-        <div data-dexo-room className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--bg-primary)]">
+        <div data-dexo-room className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-transparent">
 
             {/* ── Scrollable body (min-h-0 required or flex won't shrink below content → no scroll on mobile) ── */}
             <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]">
@@ -875,7 +875,7 @@ export function DexoRoom() {
             <div className="relative z-10 shrink-0">
                 {/* Fade gradient from transparent → room bg, so content scrolls under it cleanly */}
                 <div className="pointer-events-none absolute inset-x-0 -top-10 h-10 bg-gradient-to-t from-[var(--bg-primary)] to-transparent" />
-                <div className="border-t border-[var(--border)] bg-[var(--bg-primary)] px-4 pb-4 pt-3">
+                <div className="border-t border-[var(--border)] bg-[var(--bg-primary)] backdrop-blur-md px-4 pb-4 pt-3">
                     <div className="mx-auto max-w-[660px] space-y-2">
 
                         {/* Listening indicator */}
