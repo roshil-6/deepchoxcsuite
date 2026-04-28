@@ -5,11 +5,12 @@
    ============================================================================ */
 
 :root {
-  --bg-primary: #1e1e1e;
-  --bg-secondary: #212121;
-  --bg-tertiary: #252525;
-  --bg-elevated: #2a2a2a;
-  --bg-card: #262626;
+  /* Semi-transparent so DarkVeil WebGL shows through all workspace panels */
+  --bg-primary:   rgba(20, 20, 22, 0.78);
+  --bg-secondary: rgba(24, 24, 26, 0.78);
+  --bg-tertiary:  rgba(28, 28, 30, 0.78);
+  --bg-elevated:  rgba(34, 34, 38, 0.82);
+  --bg-card:      rgba(30, 30, 34, 0.80);
 
   --text-primary: #ececec;
   --text-secondary: #b8b8b8;

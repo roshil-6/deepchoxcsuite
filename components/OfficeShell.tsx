@@ -11,7 +11,7 @@ export function OfficeShell({ children }: { children: React.ReactNode }) {
     const { systemState, toggleDeepWork, activeProject } = useOffice();
 
     return (
-        <div className={`relative h-screen w-full overflow-hidden bg-[var(--bg-primary)]/90 font-sans text-[var(--text)] transition-all duration-700 ${systemState.isDeepWork ? 'brightness-95 saturate-75' : ''
+        <div className={`relative h-screen w-full overflow-hidden bg-[#0d0d0f] font-sans text-[var(--text)] transition-all duration-700 ${systemState.isDeepWork ? 'brightness-95 saturate-75' : ''
             }`}>
             {/* DarkVeil WebGL ambient background — fixed so it fills the full viewport,
                 not clipped by overflow-hidden parents or any layout section */}
