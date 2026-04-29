@@ -44,7 +44,7 @@ export async function runDexoDailyBriefAi(opts: {
 The venture record is still thin. Frame this as an onboarding brief: help the founder clarify direction. Do not invent metrics.`
     : '';
 
-  const userPrompt = `Produce today's Dexo daily research brief for this venture.
+  const userPrompt = `Produce today's Dexo daily research breakdown for this venture.
 
 RESEARCH_QUERY_USED: ${opts.researchQuery}
 
@@ -53,13 +53,17 @@ ${webBlock}
 VENTURE_SNAPSHOT:
 ${opts.ventureContext.slice(0, 14_000)}
 
-[DAILY_BRIEF_RULES]
-- Ground external claims in WEB_SOURCES when present; cite [n] matching the list.
-- If WEB_SOURCES is empty, state that today's pass has no live web hits and avoid fake headlines.
-- This brief will appear in the founder's "Daily brief" tab with sources and date.
-- proposedUpdates: only valuable additive suggestions for today. The founder must tap "Apply to venture" to commit them — use null when unsure.
-- voiceResponse: 2-4 sentences, warm morning check-in; invite their take on one followUp question.
-- followUp: 2-3 short questions for the founder.
+[DAILY_RESEARCH_RULES]
+- Each section insight: write 2-3 SHORT, standalone sentences. No long paragraphs. Each sentence should be a self-contained point the founder can act on.
+- Ground external claims in WEB_SOURCES when present; cite [n] inline.
+- If WEB_SOURCES is empty, note no live web hits and stick to venture data.
+- section action (the "Move"): one crisp verb-first sentence. Time-bound if possible.
+- summary: 1-2 sentences spoken as Dexo — direct, first-person, warm. E.g. "Here's what I found today on [topic]."
+- headline: sharp and specific — name the actual insight, not a generic title.
+- proposedUpdates: only high-value additive suggestions. Null when unsure.
+- voiceResponse: 2-3 sentences, casual check-in, invite reaction to one followUp question.
+- followUp: 2-3 short direct questions for the founder.
+- risks: 2-3 items max, each named concisely with a clear level (low/medium/high).
 
 Return the full standard Jarvis JSON object (same schema as analyze mode). JSON only.${sparseBlock}`;
 

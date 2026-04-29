@@ -684,7 +684,7 @@ export function DexoRoom() {
                                 }`}
                             >
                                 <BarChart2 className="h-3.5 w-3.5" />
-                                Daily Brief
+                                Daily Research
                             </button>
                             {view === 'chat' && (
                                 <button
