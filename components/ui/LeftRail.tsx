@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { Plus, LogOut, Sparkles, LogIn, UserPlus, Home } from 'lucide-react';
 import { useAuth } from '@clerk/nextjs';
 import { useOffice } from '@/lib/OfficeContext';
@@ -60,8 +61,8 @@ export function LeftRail({
                 {/* ── Brand header ── */}
                 <div className="flex shrink-0 items-center justify-between gap-2 px-4 pb-3 pt-4">
                     <div className="min-w-0">
-                        <p className="font-sans text-[9px] font-bold uppercase tracking-[0.22em] text-[#7456ff]">NorthROSC Labs</p>
-                        <p className="mt-0.5 truncate font-sans text-[15px] font-bold tracking-tight text-[var(--text-primary)]">DeepChox AI</p>
+                        <p className="font-mono text-[8px] uppercase tracking-[0.22em] text-white/30">NorthROSC Labs</p>
+                        <p className="mt-0.5 truncate font-sans text-[15px] font-bold tracking-tight text-white/90">DeepChox AI</p>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
                         {onToggleIntel && (
@@ -101,14 +102,14 @@ export function LeftRail({
                                         switchRoom('dexo');
                                         onNavigate?.();
                                     }}
-                                    className={`group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition-colors ${
+                                    className={`group flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left transition-colors ${
                                         isActive
-                                            ? 'bg-[var(--accent-soft)] text-[var(--text-primary)] ring-1 ring-[rgba(116,86,255,0.14)]'
-                                            : 'text-[var(--text-secondary)] hover:bg-[var(--accent-soft)]/60 hover:text-[var(--text-primary)]'
+                                            ? 'bg-white/[0.07] text-white/85'
+                                            : 'text-white/40 hover:bg-white/[0.04] hover:text-white/70'
                                     }`}
                                 >
                                     <span className={`h-1.5 w-1.5 shrink-0 rounded-full transition-colors ${
-                                        isActive ? 'bg-[var(--accent)]' : 'bg-[var(--muted)]/40 group-hover:bg-[var(--muted)]/70'
+                                        isActive ? 'bg-white/60' : 'bg-white/15 group-hover:bg-white/30'
                                     }`} />
                                     <span className="min-w-0 flex-1 truncate font-sans text-[13px]">{p.name}</span>
                                 </button>
@@ -119,7 +120,7 @@ export function LeftRail({
                     <button
                         type="button"
                         onClick={() => { onNewVenture(); onNavigate?.(); }}
-                        className="mt-2 flex w-full items-center gap-2 rounded-xl border border-dashed border-[var(--border)] px-2.5 py-2 font-sans text-[12px] font-medium text-[var(--text-secondary)] transition hover:border-[rgba(116,86,255,0.25)] hover:bg-[rgba(116,86,255,0.06)] hover:text-[var(--text-primary)]"
+                        className="mt-2 flex w-full items-center gap-2 rounded-md border border-dashed border-white/[0.08] px-2.5 py-2 font-sans text-[12px] font-medium text-white/30 transition hover:border-white/[0.16] hover:bg-white/[0.04] hover:text-white/60"
                     >
                         <Plus className="h-3.5 w-3.5 shrink-0" strokeWidth={2} />
                         New venture
@@ -155,27 +156,26 @@ export function LeftRail({
                                     const isDexo = item.room === 'dexo';
 
                                     if (isDexo) {
-                                        // Dexo gets special primary treatment
                                         return (
                                             <button
                                                 key={item.room}
                                                 type="button"
                                                 onClick={() => go(item.room)}
-                                                className={`group relative flex w-full items-center gap-3 rounded-xl py-2.5 pl-3 pr-3 text-left transition-all ${
+                                                className={`group relative flex w-full items-center gap-3 rounded-lg py-2.5 pl-3 pr-3 text-left transition-colors ${
                                                     active
-                                                        ? 'border border-[rgba(116,86,255,0.35)] bg-[rgba(116,86,255,0.16)] shadow-[0_0_12px_rgba(116,86,255,0.12)]'
-                                                        : 'border border-transparent hover:border-[rgba(116,86,255,0.18)] hover:bg-[rgba(116,86,255,0.08)]'
+                                                        ? 'border border-white/[0.14] bg-white/[0.07]'
+                                                        : 'border border-transparent hover:border-white/[0.08] hover:bg-white/[0.04]'
                                                 }`}
                                             >
                                                 <Icon
-                                                    className={`h-4 w-4 shrink-0 ${active ? 'text-[#9d88ff]' : 'text-[var(--muted)] group-hover:text-[#9d88ff]'}`}
+                                                    className={`h-4 w-4 shrink-0 ${active ? 'text-white/80' : 'text-[var(--muted)] group-hover:text-white/60'}`}
                                                     strokeWidth={1.75}
                                                 />
                                                 <span className="flex flex-col gap-0.5 min-w-0">
-                                                    <span className={`truncate font-sans text-[13px] font-semibold leading-tight ${active ? 'text-violet-200' : 'text-[var(--text-primary)]'}`}>
+                                                    <span className={`truncate font-sans text-[13px] font-semibold leading-tight ${active ? 'text-white/90' : 'text-[var(--text-primary)]'}`}>
                                                         {item.label}
                                                     </span>
-                                                    <span className="font-sans text-[10px] leading-tight text-[var(--muted)]">AI co-founder</span>
+                                                    <span className="font-mono text-[9px] leading-tight text-white/25 uppercase tracking-[0.14em]">AI co-founder</span>
                                                 </span>
                                             </button>
                                         );
@@ -187,17 +187,17 @@ export function LeftRail({
                                             type="button"
                                             onClick={() => go(item.room)}
                                             title={WORKSPACE_TITLES[item.room] ?? item.label}
-                                            className={`group relative flex w-full items-center gap-3 rounded-xl py-2 pl-3 pr-2 text-left transition-colors ${
+                                            className={`group relative flex w-full items-center gap-3 rounded-md py-2 pl-3 pr-2 text-left transition-colors ${
                                                 active
-                                                    ? 'bg-[var(--accent-soft)] text-[var(--text-primary)]'
-                                                    : 'text-[var(--text-secondary)] hover:bg-[var(--accent-soft)]/70 hover:text-[var(--text-primary)]'
+                                                    ? 'bg-white/[0.06] text-white/85'
+                                                    : 'text-white/40 hover:bg-white/[0.04] hover:text-white/70'
                                             }`}
                                         >
                                             {active && (
-                                                <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-[var(--accent)]" aria-hidden />
+                                                <span className="absolute left-0 top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-full bg-white/40" aria-hidden />
                                             )}
                                             <Icon
-                                                className={`h-3.5 w-3.5 shrink-0 ${active ? 'text-[var(--accent)]' : 'text-[var(--muted)] group-hover:text-[var(--text-secondary)]'}`}
+                                                className={`h-3.5 w-3.5 shrink-0 ${active ? 'text-white/70' : 'text-white/25 group-hover:text-white/50'}`}
                                                 strokeWidth={1.75}
                                             />
                                             <span className="min-w-0 flex-1 truncate font-sans text-[12.5px] font-medium leading-tight">
@@ -221,7 +221,7 @@ export function LeftRail({
                         <button
                             type="button"
                             onClick={() => onUpgrade?.()}
-                            className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border border-[rgba(116,86,255,0.25)] bg-[rgba(116,86,255,0.1)] font-sans text-[12px] font-medium text-[#9d88ff] transition hover:border-[rgba(116,86,255,0.4)] hover:bg-[rgba(116,86,255,0.16)]"
+                            className="flex h-9 w-full items-center justify-center gap-1.5 rounded-md border border-white/[0.1] bg-white/[0.05] font-sans text-[12px] font-medium text-white/50 transition hover:border-white/[0.18] hover:bg-white/[0.09] hover:text-white/75"
                         >
                             <Sparkles className="h-3.5 w-3.5" aria-hidden />
                             Upgrade to Pro
@@ -231,20 +231,20 @@ export function LeftRail({
                         <div className="h-9" aria-hidden />
                     ) : !isSignedIn ? (
                         <div className="flex flex-col gap-2">
-                            <a
+                            <Link
                                 href="/sign-in"
                                 className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border border-white/20 bg-white/[0.08] font-sans text-[12px] font-semibold text-white transition hover:bg-white/[0.13] hover:border-white/30"
                             >
                                 <LogIn className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
                                 Sign in
-                            </a>
-                            <a
+                            </Link>
+                            <Link
                                 href="/sign-up"
-                                className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border border-[rgba(116,86,255,0.35)] bg-[rgba(116,86,255,0.1)] font-sans text-[12px] font-semibold text-[#b8a8ff] transition hover:bg-[rgba(116,86,255,0.18)] hover:text-[#cfc3ff]"
+                                className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border border-white/[0.12] bg-white/[0.06] font-sans text-[12px] font-semibold text-white/60 transition hover:border-white/[0.2] hover:bg-white/[0.1] hover:text-white/85"
                             >
                                 <UserPlus className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
                                 Create account
-                            </a>
+                            </Link>
                             <button
                                 type="button"
                                 onClick={onLogout}

@@ -129,21 +129,25 @@ function parseBodyMd(bodyMd: string): { intro: string; sections: ParsedSection[]
 
 // ─── Section card ─────────────────────────────────────────────────────────────
 function SectionCard({ section, index }: { section: ParsedSection; index: number }) {
-  const accent = section.isRisk
-    ? 'border-amber-500/20 bg-amber-500/[0.05]'
-    : 'border-white/[0.07] bg-white/[0.02]';
-
   return (
-    <div className={`rounded-xl border px-4 py-3.5 ${accent}`}>
-      <p className={`text-[10px] font-bold uppercase tracking-[0.14em] ${section.isRisk ? 'text-amber-400/80' : 'text-violet-300/70'}`}>
-        {section.isRisk ? '⚠ ' : `0${index + 1}  `}{section.title}
-      </p>
+    <div className={`border p-4 ${section.isRisk ? 'border-amber-500/[0.12] bg-amber-500/[0.02]' : 'border-white/[0.07] bg-white/[0.02]'} first:rounded-t-lg last:rounded-b-lg`}>
+      <div className="flex items-baseline gap-3 mb-2.5">
+        {section.isRisk ? (
+          <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-amber-400/60">⚠ Risk</span>
+        ) : (
+          <>
+            <span className="font-mono text-[9px] text-white/20 shrink-0">{String(index + 1).padStart(2, '0')}</span>
+            <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/40">{section.title}</span>
+          </>
+        )}
+        {section.isRisk && <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-amber-400/50">{section.title}</span>}
+      </div>
 
       {section.bullets.length > 0 && (
-        <ul className="mt-2.5 space-y-1.5">
+        <ul className="space-y-1.5 pl-7">
           {section.bullets.map((b, i) => (
-            <li key={i} className="flex items-start gap-2 text-[13px] leading-snug text-[var(--text-secondary)]">
-              <span className={`mt-[5px] h-1 w-1 shrink-0 rounded-full ${section.isRisk ? 'bg-amber-400/60' : 'bg-violet-400/60'}`} />
+            <li key={i} className="flex items-start gap-2 text-[13px] leading-snug text-white/60">
+              <span className={`mt-[5px] h-[3px] w-[3px] shrink-0 rounded-full ${section.isRisk ? 'bg-amber-400/50' : 'bg-white/25'}`} />
               {b}
             </li>
           ))}
@@ -151,9 +155,9 @@ function SectionCard({ section, index }: { section: ParsedSection; index: number
       )}
 
       {section.move ? (
-        <div className="mt-3 flex items-start gap-1.5">
-          <ArrowRight className="mt-[2px] h-3.5 w-3.5 shrink-0 text-violet-400/80" aria-hidden />
-          <p className="text-[12px] font-medium leading-snug text-violet-200/90">{section.move}</p>
+        <div className="mt-3 flex items-start gap-2 pl-7 pt-2.5 border-t border-white/[0.05]">
+          <ArrowRight className="mt-[2px] h-3 w-3 shrink-0 text-blue-400/60" aria-hidden />
+          <p className="text-[12px] font-medium leading-snug text-blue-300/80">{section.move}</p>
         </div>
       ) : null}
     </div>
@@ -296,29 +300,33 @@ export function DexoDailyBriefPanel({
   return (
     <div className="space-y-5">
       {/* ── Header ── */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-white/[0.06] pb-4">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-violet-400/70">Dexo</p>
-          <h2 className="mt-0.5 text-base font-semibold tracking-tight text-[var(--text-primary)]">Daily Research</h2>
-          <p className="mt-1 text-xs text-[var(--text-secondary)]">
-            Live web pass + AI breakdown of your venture — point by point.
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/25">Dexo</span>
+            <span className="font-mono text-[8px] text-white/15">·</span>
+            <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/25">Daily Research</span>
+          </div>
+          <h2 className="text-[15px] font-semibold text-white/85">Venture Breakdown</h2>
+          <p className="mt-0.5 text-[12px] text-white/35">
+            Live web pass + AI analysis — point by point.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5">
           <button
             type="button"
             onClick={() => void runPulse(true)}
             disabled={pulsing}
-            className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-violet-500/15 px-4 py-2 text-sm font-medium text-violet-200 transition hover:bg-violet-500/25 disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded border border-white/[0.1] bg-white/[0.05] px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-white/50 transition hover:border-white/[0.18] hover:bg-white/[0.09] hover:text-white/80 disabled:opacity-40"
           >
-            <RefreshCw className={`h-4 w-4 ${pulsing ? 'animate-spin' : ''}`} aria-hidden />
+            <RefreshCw className={`h-3 w-3 ${pulsing ? 'animate-spin' : ''}`} aria-hidden />
             {pulsing ? 'Researching…' : 'Run today'}
           </button>
           <button
             type="button"
             onClick={() => void load()}
             disabled={loadingList}
-            className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-[var(--text-secondary)] transition hover:bg-white/10"
+            className="inline-flex items-center gap-1.5 rounded border border-white/[0.08] px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-white/30 transition hover:border-white/[0.14] hover:text-white/55 disabled:opacity-40"
           >
             Reload
           </button>
@@ -327,191 +335,184 @@ export function DexoDailyBriefPanel({
 
       {/* ── Alerts ── */}
       {proRequired ? (
-        <div className="rounded-xl border border-violet-500/25 bg-violet-500/10 px-4 py-3">
-          <p className="text-sm font-medium text-violet-200">Co-Founder Pro required</p>
-          <p className="mt-1 text-xs text-violet-300/80">
+        <div className="rounded border border-white/[0.08] bg-white/[0.03] px-4 py-3">
+          <p className="font-mono text-[9px] uppercase tracking-[0.15em] text-white/45">Pro required</p>
+          <p className="mt-1 text-[12px] text-white/40">
             Daily research with live web pass is a Pro feature.
           </p>
         </div>
       ) : error ? (
-        <div className="rounded-xl border border-amber-500/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-100/90">{error}</div>
+        <div className="rounded border border-amber-500/[0.15] bg-amber-500/[0.04] px-4 py-3 font-sans text-[12px] text-amber-200/70">{error}</div>
       ) : null}
 
       {loadingList && reports.length === 0 ? (
-        <div className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
-          <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+        <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.15em] text-white/25">
+          <RefreshCw className="h-3 w-3 animate-spin" />
           Loading…
         </div>
       ) : null}
 
       {pulsing && (
-        <div className="flex items-center gap-3 rounded-xl border border-violet-500/20 bg-violet-500/[0.06] px-4 py-3">
-          <RefreshCw className="h-4 w-4 animate-spin text-violet-300" />
+        <div className="flex items-center gap-3 rounded border border-white/[0.07] bg-white/[0.03] px-4 py-3">
+          <RefreshCw className="h-3.5 w-3.5 animate-spin text-white/30" />
           <div>
-            <p className="text-sm font-medium text-violet-200">Dexo is researching…</p>
-            <p className="text-xs text-violet-300/70">Running web search and building your breakdown.</p>
+            <p className="font-mono text-[9px] uppercase tracking-[0.15em] text-white/45">Researching…</p>
+            <p className="text-[11px] text-white/30">Running web search and building your breakdown.</p>
           </div>
         </div>
       )}
 
       {/* ── Today's report ── */}
       {todayRow && parsed ? (
-        <div className="space-y-4">
-          {/* Dexo speech intro */}
-          <div className="flex items-start gap-3">
-            <DexoAvatar size="sm" state="idle" pulse={false} className="mt-0.5 shrink-0" />
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-violet-400">Dexo</span>
-                <span className="text-[9px] text-[var(--text-muted)]">{todayRow.reportDay}</span>
-                {todayRow.researchQuery ? (
-                  <span className="flex items-center gap-1 text-[9px] text-[var(--text-muted)]">
-                    <Globe className="h-3 w-3" aria-hidden />
-                    web pass ran
-                  </span>
-                ) : null}
-              </div>
-
-              {/* Headline as Dexo voice */}
-              {todayRow.headline ? (
-                <p className="mt-1 text-sm font-semibold leading-snug text-[var(--text-primary)]">
-                  {todayRow.headline}
-                </p>
+        <div className="space-y-5">
+          {/* Report meta row */}
+          <div className="flex items-center gap-3">
+            <DexoAvatar size="xs" state="idle" pulse={false} className="shrink-0" />
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/30">Dexo</span>
+              <span className="font-mono text-[8px] text-white/15">·</span>
+              <span className="font-mono text-[8px] text-white/25">{todayRow.reportDay}</span>
+              {todayRow.researchQuery && (
+                <span className="inline-flex items-center gap-1 rounded border border-white/[0.07] px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.1em] text-white/25">
+                  <Globe className="h-2.5 w-2.5" />
+                  Web pass
+                </span>
+              )}
+              {todayRow.userApprovedAt ? (
+                <span className="inline-flex items-center gap-1 rounded border border-emerald-500/[0.2] px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.1em] text-emerald-400/60">
+                  <CheckCircle2 className="h-2.5 w-2.5" />
+                  Applied
+                </span>
+              ) : hasPendingUpdates(todayRow.pendingProposedUpdates) ? (
+                <span className="inline-flex items-center gap-1 rounded border border-amber-500/[0.2] px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.1em] text-amber-400/60">
+                  Suggestions ready
+                </span>
               ) : null}
-
-              {/* Intro summary — Dexo speaking */}
-              {parsed.intro ? (
-                <p className="mt-1.5 text-[13px] leading-relaxed text-[var(--text-secondary)]">
-                  {parsed.intro}
-                </p>
-              ) : null}
-
-              {/* Status badges */}
-              <div className="mt-2 flex flex-wrap gap-2">
-                {todayRow.userApprovedAt ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-medium text-emerald-300/90">
-                    <CheckCircle2 className="h-3 w-3" aria-hidden />
-                    Updates applied
-                  </span>
-                ) : hasPendingUpdates(todayRow.pendingProposedUpdates) ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-medium text-amber-200/90">
-                    <Sparkles className="h-3 w-3" aria-hidden />
-                    Suggestions ready
-                  </span>
-                ) : null}
-              </div>
             </div>
           </div>
 
-          {/* ── Breakdown sections ── */}
-          {parsed.sections.length > 0 ? (
-            <div className="space-y-2.5">
-              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--text-muted)]">Breakdown</p>
-              {parsed.sections.map((section, i) => (
-                <SectionCard key={section.title} section={section} index={i} />
-              ))}
+          {/* Headline + intro */}
+          {(todayRow.headline || parsed.intro) && (
+            <div className="border-l-2 border-white/[0.08] pl-4">
+              {todayRow.headline && (
+                <p className="text-[14px] font-semibold leading-snug text-white/85">{todayRow.headline}</p>
+              )}
+              {parsed.intro && (
+                <p className="mt-1.5 text-[13px] leading-relaxed text-white/50">{parsed.intro}</p>
+              )}
             </div>
-          ) : null}
+          )}
 
-          {/* ── Dexo asks ── */}
-          {parseFollowUp(todayRow.followUpJson).length > 0 ? (
-            <div className="rounded-xl border border-violet-500/20 bg-violet-500/[0.06] px-4 py-3.5">
-              <div className="flex items-center gap-2">
-                <DexoAvatar size="xs" state="idle" pulse={false} />
-                <p className="text-[10px] font-bold uppercase tracking-wider text-violet-300/80">Dexo wants to know</p>
+          {/* ── Breakdown sections ── */}
+          {parsed.sections.length > 0 && (
+            <div>
+              <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/25 mb-2">Breakdown</p>
+              <div className="space-y-px">
+                {parsed.sections.map((section, i) => (
+                  <SectionCard key={section.title} section={section} index={i} />
+                ))}
               </div>
-              <ul className="mt-2.5 space-y-2">
-                {parseFollowUp(todayRow.followUpJson).map((q, i) => (
-                  <li key={q} className="flex items-start gap-2 text-[13px] text-[var(--text-secondary)]">
-                    <span className="mt-[5px] h-1 w-1 shrink-0 rounded-full bg-violet-400/50" />
+            </div>
+          )}
+
+          {/* ── Dexo follow-up questions ── */}
+          {parseFollowUp(todayRow.followUpJson).length > 0 && (
+            <div className="border border-white/[0.07] bg-white/[0.02] rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <DexoAvatar size="xs" state="idle" pulse={false} />
+                <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/30">Dexo wants to know</span>
+              </div>
+              <ul className="space-y-2">
+                {parseFollowUp(todayRow.followUpJson).map((q) => (
+                  <li key={q} className="flex items-start gap-2.5 text-[13px] text-white/55">
+                    <ArrowRight className="mt-[3px] h-3 w-3 shrink-0 text-white/20" />
                     {q}
                   </li>
                 ))}
               </ul>
             </div>
-          ) : null}
+          )}
 
-          {/* ── Sources ── */}
+          {/* ── Web sources ── */}
           {parseSources(todayRow.sourcesJson).length > 0 ? (
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--text-muted)]">Web sources</p>
-              <ul className="mt-2 space-y-1.5">
-                {parseSources(todayRow.sourcesJson).map((s) => (
-                  <li key={s.url} className="flex items-center gap-2 text-[12px]">
-                    <ExternalLink className="h-3 w-3 shrink-0 text-[var(--text-muted)]" aria-hidden />
-                    <a
-                      href={s.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="break-all text-violet-300/80 underline-offset-2 hover:text-violet-200 hover:underline"
-                    >
-                      {s.title}
-                    </a>
-                  </li>
+              <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/25 mb-2">Sources</p>
+              <div className="border border-white/[0.07] rounded-lg overflow-hidden">
+                {parseSources(todayRow.sourcesJson).map((s, idx, arr) => (
+                  <a
+                    key={s.url}
+                    href={s.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={`flex items-center gap-3 px-4 py-2.5 text-[12px] transition hover:bg-white/[0.04] ${idx < arr.length - 1 ? 'border-b border-white/[0.05]' : ''}`}
+                  >
+                    <ExternalLink className="h-3 w-3 shrink-0 text-white/20" aria-hidden />
+                    <span className="min-w-0 flex-1 truncate text-white/55 hover:text-white/80">{s.title}</span>
+                  </a>
                 ))}
-              </ul>
+              </div>
             </div>
           ) : (
-            <p className="text-xs text-[var(--text-muted)]">
-              No web sources — set <code className="rounded bg-white/10 px-1">TAVILY_API_KEY</code> for live research.
+            <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-white/20">
+              No sources — set TAVILY_API_KEY for live web research
             </p>
           )}
 
           {/* ── Apply suggested updates ── */}
-          {hasPendingUpdates(todayRow.pendingProposedUpdates) && !todayRow.userApprovedAt ? (
-            <div className="flex flex-col gap-3 rounded-xl border border-violet-500/20 bg-violet-500/[0.07] p-4 sm:flex-row sm:items-center sm:justify-between">
+          {hasPendingUpdates(todayRow.pendingProposedUpdates) && !todayRow.userApprovedAt && (
+            <div className="flex flex-col gap-3 rounded border border-white/[0.1] bg-white/[0.03] p-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <Zap className="h-3.5 w-3.5 shrink-0 text-violet-300" aria-hidden />
-                  <p className="text-sm font-medium text-[var(--text-primary)]">Dexo has suggestions</p>
+                <div className="flex items-center gap-2 mb-1">
+                  <Zap className="h-3 w-3 shrink-0 text-white/40" aria-hidden />
+                  <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-white/40">Dexo has suggestions</span>
                 </div>
-                {pendingHint ? (
-                  <p className="mt-1 text-xs text-[var(--text-secondary)]">{pendingHint}</p>
-                ) : null}
+                {pendingHint && (
+                  <p className="text-[12px] text-white/35">{pendingHint}</p>
+                )}
               </div>
               <button
                 type="button"
                 disabled={applyId === todayRow.id}
                 onClick={() => void onApply(todayRow)}
-                className="shrink-0 rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-500 disabled:opacity-50"
+                className="shrink-0 rounded border border-white/[0.14] bg-white/[0.07] px-4 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-white/65 transition hover:border-white/[0.22] hover:bg-white/[0.12] hover:text-white/90 disabled:opacity-40"
               >
                 {applyId === todayRow.id ? 'Applying…' : 'Apply to venture'}
               </button>
             </div>
-          ) : null}
+          )}
         </div>
       ) : !loadingList && !pulsing ? (
-        <div className="flex items-start gap-3 rounded-xl border border-white/[0.07] bg-white/[0.02] p-4">
+        <div className="flex items-start gap-3 border border-white/[0.07] bg-white/[0.02] rounded-lg p-4">
           <DexoAvatar size="sm" state="idle" pulse={false} className="mt-0.5 shrink-0" />
           <div>
-            <p className="text-sm font-medium text-[var(--text-primary)]">No research yet for today.</p>
-            <p className="mt-1 text-xs text-[var(--text-secondary)]">
-              Hit <strong className="text-[var(--text-primary)]">Run today</strong> — Dexo will run a web pass and build your breakdown.
+            <p className="text-[13px] font-medium text-white/65">No research yet for today.</p>
+            <p className="mt-1 text-[12px] text-white/35">
+              Hit <strong className="text-white/55">Run today</strong> — Dexo will run a web pass and build your breakdown.
             </p>
           </div>
         </div>
       ) : null}
 
       {/* ── Earlier days ── */}
-      {reports.length > 1 ? (
+      {reports.length > 1 && (
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--text-muted)]">Earlier</p>
-          <ul className="mt-2 space-y-1.5">
+          <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/25 mb-2">Earlier reports</p>
+          <div className="border border-white/[0.07] rounded-lg overflow-hidden">
             {reports
               .filter((r) => r.id !== todayRow?.id)
               .slice(0, 12)
-              .map((r) => (
-                <li
+              .map((r, idx, arr) => (
+                <div
                   key={r.id}
-                  className="flex items-center gap-3 rounded-lg border border-white/[0.05] bg-white/[0.02] px-3 py-2 text-[12px] text-[var(--text-secondary)]"
+                  className={`flex items-center gap-3 px-4 py-2.5 ${idx < arr.length - 1 ? 'border-b border-white/[0.05]' : ''}`}
                 >
-                  <span className="shrink-0 font-mono text-[11px] text-[var(--text-muted)]">{r.reportDay}</span>
-                  <span className="min-w-0 flex-1 truncate">{r.headline ?? r.summary.slice(0, 100)}</span>
-                </li>
+                  <span className="shrink-0 font-mono text-[9px] text-white/25">{r.reportDay}</span>
+                  <span className="min-w-0 flex-1 truncate text-[12px] text-white/45">{r.headline ?? r.summary.slice(0, 100)}</span>
+                </div>
               ))}
-          </ul>
+          </div>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }
