@@ -60,12 +60,12 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
             className="flex h-full min-h-0 w-full flex-col bg-transparent text-[var(--text-primary)] pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] lg:pb-0"
         >
             {/* Mobile Header */}
-            <header 
+            <header
                 className="mx-3 mt-3 flex shrink-0 items-center justify-between gap-3 rounded-[1.35rem] border border-[var(--border)] px-4 py-3 shadow-[var(--shadow-soft)] sm:mx-4 sm:px-5 lg:hidden"
                 style={{
-                    background: 'rgba(18, 18, 22, 0.88)',
-                    backdropFilter: 'blur(18px)',
-                    WebkitBackdropFilter: 'blur(18px)',
+                    background: 'rgba(18, 18, 22, 0.92)',
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)',
                 }}
             >
                 <div className="flex min-w-0 items-center gap-2">
@@ -146,11 +146,11 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
                                 exit={{ x: -320 }}
                                 transition={{ type: 'spring', stiffness: 360, damping: 34 }}
                                 className="fixed inset-y-3 left-3 z-[70] flex h-[calc(100%-1.5rem)] w-[min(20rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-[1.5rem] border border-[var(--border)] lg:hidden"
-                                style={{ 
-                                    background: 'rgba(30,30,30,0.96)',
+                                style={{
+                                    background: 'rgba(20,20,22,0.97)',
                                     boxShadow: 'var(--shadow-panel)',
-                                    backdropFilter: 'blur(24px)',
-                                    WebkitBackdropFilter: 'blur(24px)',
+                                    backdropFilter: 'blur(10px)',
+                                    WebkitBackdropFilter: 'blur(10px)',
                                 }}
                             >
                                     <div className="flex shrink-0 items-center justify-end p-3">
@@ -214,12 +214,12 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
             <nav
                 className="fixed z-40 flex rounded-[1.35rem] border border-[var(--border)] px-2 py-2 shadow-[var(--shadow-soft)] lg:hidden"
                 style={{
-                    background: 'rgba(18, 18, 22, 0.88)',
+                    background: 'rgba(18, 18, 22, 0.92)',
                     bottom: 'max(0.75rem, env(safe-area-inset-bottom))',
                     left: 'max(0.75rem, env(safe-area-inset-left))',
                     right: 'max(0.75rem, env(safe-area-inset-right))',
-                    backdropFilter: 'blur(18px)',
-                    WebkitBackdropFilter: 'blur(18px)',
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)',
                 }}
             >
                 <button

@@ -51,7 +51,7 @@ export function OfficeShell({ children }: { children: React.ReactNode }) {
             )}
 
             {/* MAIN LAYOUT CONTAINER */}
-            <div className={`relative z-10 w-full h-full flex transition-all duration-1000 ${systemState.isDeepWork ? 'scale-95' : 'scale-100'} backdrop-blur-[2px]`}>
+            <div className={`relative z-10 w-full h-full flex transition-all duration-1000 ${systemState.isDeepWork ? 'scale-95' : 'scale-100'}`}>
                 {children}
             </div>
 

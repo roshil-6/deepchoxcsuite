@@ -101,7 +101,7 @@ export function LeftRail({
         <div
             role="navigation"
             aria-label="NorthROSC Labs DeepChox workspace navigation"
-            className="relative z-30 flex h-full min-h-0 w-full min-w-0 shrink-0 flex-col overflow-hidden border-r border-[var(--border)] shadow-[inset_-1px_0_0_rgba(255,255,255,0.06)] backdrop-blur-xl lg:w-[272px]"
+            className="relative z-30 flex h-full min-h-0 w-full min-w-0 shrink-0 flex-col overflow-hidden border-r border-[var(--border)] shadow-[inset_-1px_0_0_rgba(255,255,255,0.06)] backdrop-blur-[6px] lg:w-[272px]"
             style={{ background: 'rgba(14, 14, 17, 0.88)' }}
         >
             <div className="custom-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden">
