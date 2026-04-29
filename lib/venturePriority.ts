@@ -28,7 +28,7 @@ export const VENTURE_PRIORITIES: VenturePriorityDef[] = [
   {
     id: 'vision',
     label: 'Vision & Identity',
-    icon: '🎯',
+    icon: '◉',
     tagline: 'Define who you are and why you exist',
     description: 'Brand mission, values, narrative, positioning, differentiation',
     deskFocus: ['ceo', 'cmo'],
@@ -44,7 +44,7 @@ This founder needs to crystallise their brand story before anything else.
   {
     id: 'market_research',
     label: 'Market Research',
-    icon: '🔍',
+    icon: '◎',
     tagline: 'Understand the landscape before you move',
     description: 'Competitive mapping, market size, customer segments, trends, pricing',
     deskFocus: ['scout', 'cmo'],
@@ -60,7 +60,7 @@ This founder needs market intelligence above everything else right now.
   {
     id: 'execution',
     label: 'Execution Mode',
-    icon: '⚡',
+    icon: '▸',
     tagline: 'Ship things. Clear blockers. Move fast.',
     description: 'Task prioritisation, blockers, team coordination, shipping velocity',
     deskFocus: ['pm', 'ceo'],
@@ -76,7 +76,7 @@ This founder is in build mode — they need to ship, not strategise further.
   {
     id: 'planning',
     label: 'Strategic Planning',
-    icon: '🗺️',
+    icon: '◆',
     tagline: 'Map the path from here to scale',
     description: 'Roadmap, milestones, resource sequencing, growth strategy, funding',
     deskFocus: ['ceo', 'pm', 'accountant'],
@@ -92,7 +92,7 @@ This founder needs to think in timelines, sequences, and resource constraints �
   {
     id: 'all',
     label: 'Full Stack',
-    icon: '⚙️',
+    icon: '∞',
     tagline: 'Everything, equally. No area deprioritised.',
     description: 'Vision, market, execution, and strategy — balanced across all desks',
     deskFocus: ['ceo', 'pm', 'accountant', 'scout', 'cmo'],
@@ -104,7 +104,7 @@ Balance short-term actions with long-term strategy in every response.`,
   {
     id: 'custom',
     label: 'Custom Focus',
-    icon: '✏️',
+    icon: '+',
     tagline: 'Tell Dexo exactly what to work on',
     description: 'Define your own AI focus — as specific or broad as you need',
     deskFocus: [],

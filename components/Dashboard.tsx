@@ -576,11 +576,11 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeRoom, allProjects.length]);
 
-    // Show Dexo welcome/guide pop-up when entering Executive Overview with an active project
+    // Dexo welcome modal is available on-demand (triggered via header button), not auto-shown
     useEffect(() => {
         if (activeRoom !== 'dashboard' || !activeProject?.id) return;
         setDexoWelcomeStep(0);
-        setShowDexoWelcome(true);
+        // setShowDexoWelcome(true); // disabled — too intrusive on every visit
     }, [activeRoom, activeProject?.id]);
 
     // Pre-load Dexo with a venture briefing whenever user enters Executive Overview
@@ -1071,19 +1071,29 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={() => { setDexoWelcomeStep(0); setShowDexoWelcome(true); }}
+                            className="flex items-center gap-1.5 rounded-xl border px-3 py-2 text-[12px] font-medium transition-all"
+                            style={{ borderColor: 'rgba(116,86,255,0.25)', background: 'rgba(116,86,255,0.08)', color: '#a78bfa' }}
+                        >
+                            <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                            <span className="hidden sm:inline">Dexo Guide</span>
+                        </button>
                         <button
                             onClick={() => runAgentStaffSync()}
                             disabled={agentSyncRunning}
-                            className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all"
+                            className="flex items-center gap-1.5 rounded-xl border px-3 py-2 text-[12px] font-medium transition-all"
                             style={{
-                                background: agentSyncRunning ? 'rgba(46,41,34,0.06)' : 'rgba(116,86,255,0.10)',
-                                color: THEME.text.primary,
+                                borderColor: THEME.border.subtle,
+                                background: 'rgba(255,255,255,0.04)',
+                                color: THEME.text.secondary,
                                 opacity: agentSyncRunning ? 0.6 : 1,
                             }}
                         >
-                            <RefreshCw className={`h-4 w-4 ${agentSyncRunning ? 'animate-spin' : ''}`} />
-                            {agentSyncRunning ? 'Syncing...' : 'Sync Staff'}
+                            <RefreshCw className={`h-3.5 w-3.5 ${agentSyncRunning ? 'animate-spin' : ''}`} />
+                            <span className="hidden sm:inline">{agentSyncRunning ? 'Syncing…' : 'Sync Staff'}</span>
                         </button>
                         <WorkspaceAiButton />
                     </div>
@@ -1115,12 +1125,12 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
             {/* MAIN CONTENT */}
             <main className="mx-auto max-w-7xl px-6 py-8">
                 {/* CONTEXTUAL HINTS */}
-                <div className="mb-8 space-y-3">
+                <div className="mb-4 space-y-2">
                     <GuideHint
                         id="dash-no-strategy"
                         when={!hasIntent && !narrativeRich}
                         variant="tip"
-                        message="Your venture needs a strategic foundation. Open the CEO desk to define your vision and goals."
+                        message="Add a strategic foundation in the CEO desk to unlock AI research."
                         action="Open CEO Desk"
                         onAction={() => switchRoom('ceo')}
                     />
@@ -1128,7 +1138,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         id="dash-no-sync"
                         when={!activeProject?.agentStaffSnapshot && hasIntent}
                         variant="info"
-                        message="Run Staff Sync to activate your AI team and populate all desks with insights."
+                        message="Run Staff Sync to activate your AI team across all desks."
                         action="Sync Now"
                         onAction={() => runAgentStaffSync()}
                     />
@@ -1136,218 +1146,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
 
                 {/* OVERVIEW TAB */}
                 {activeTab === 'overview' && (
-                    <div className="space-y-6">
-                        {/* ── DEXO INTELLIGENCE PANEL ── */}
-                        <div
-                            className="overflow-hidden rounded-2xl border"
-                            style={{ borderColor: 'rgba(116,86,255,0.28)', background: 'rgba(10,10,16,0.92)' }}
-                        >
-                            {/* Panel header */}
-                            <div
-                                className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4"
-                                style={{ borderColor: 'rgba(116,86,255,0.13)', background: 'linear-gradient(135deg, rgba(116,86,255,0.16) 0%, rgba(116,86,255,0.05) 100%)' }}
-                            >
-                                <div className="flex items-center gap-3 min-w-0">
-                                    <div
-                                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-                                        style={{ background: 'rgba(116,86,255,0.28)', boxShadow: '0 0 0 1px rgba(116,86,255,0.35)' }}
-                                    >
-                                        <Sparkles className="h-5 w-5" style={{ color: THEME.accent.primary }} />
-                                    </div>
-                                    <div className="min-w-0">
-                                        <h2 className="text-[14px] font-semibold" style={{ color: THEME.text.primary }}>Dexo — AI Co-Founder Briefing</h2>
-                                        <p className="text-[11px]" style={{ color: THEME.text.muted }}>
-                                            {activeProject.agentStaffSnapshot
-                                                ? `Live venture intelligence · ${lastStaffSyncLabel || 'last sync'}`
-                                                : 'Run Staff Sync to activate your briefing'}
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="flex shrink-0 items-center gap-2">
-                                    {activeProject.agentStaffSnapshot && (
-                                        <span className="flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[10px] font-semibold"
-                                            style={{ borderColor: 'rgba(52,211,153,0.25)', background: 'rgba(52,211,153,0.08)', color: '#34d399' }}>
-                                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" aria-hidden />
-                                            Live
-                                        </span>
-                                    )}
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setDexoBootstrap({
-                                                title: `Full Venture Briefing — ${activeProject.name}`,
-                                                detail: activeProject.agentStaffSnapshot?.summary ?? '',
-                                                sourceRole: 'ceo',
-                                                requiredInfo: [],
-                                                userMessage: `Give me a complete co-founder briefing for ${activeProject.name}. Cover:\n1. What is happening right now across all research desks?\n2. What are the 3 most important findings I should know?\n3. What actions do you recommend I take today?\n4. Are there any risks or opportunities I'm missing?\n\nBe direct, specific, and focused on what matters most.`,
-                                            });
-                                            switchRoom('dexo');
-                                        }}
-                                        className="flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-[12px] font-semibold transition-all hover:opacity-80 active:scale-[0.98]"
-                                        style={{ borderColor: 'rgba(116,86,255,0.35)', background: 'rgba(116,86,255,0.16)', color: THEME.accent.primary }}
-                                    >
-                                        <Sparkles className="h-3.5 w-3.5 shrink-0" />
-                                        Open Dexo Briefing
-                                    </button>
-                                </div>
-                            </div>
-
-                            {activeProject.agentStaffSnapshot ? (
-                                <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
-
-                                    {/* ── Today's Summary ── */}
-                                    {aiSummaryExcerpt && (
-                                        <div className="px-5 py-4">
-                                            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>
-                                                Executive Summary
-                                            </p>
-                                            <p className="text-[13px] leading-relaxed" style={{ color: THEME.text.secondary }}>
-                                                {aiSummaryExcerpt.slice(0, 400)}{aiSummaryExcerpt.length > 400 ? '…' : ''}
-                                            </p>
-                                        </div>
-                                    )}
-
-                                    {/* ── Dexo Focus Recommendations ── */}
-                                    {staffFocusLines.length > 0 && (
-                                        <div className="px-5 py-4">
-                                            <p className="mb-2.5 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: THEME.accent.primary }}>
-                                                Dexo Recommends — Focus Today
-                                            </p>
-                                            <ul className="space-y-2">
-                                                {staffFocusLines.slice(0, 4).map((line, i) => (
-                                                    <li key={i} className="flex items-start gap-2.5 text-[12px]" style={{ color: THEME.text.secondary }}>
-                                                        <span
-                                                            className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full"
-                                                            style={{ background: THEME.accent.primary }}
-                                                        />
-                                                        {line}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    )}
-
-                                    {/* ── Attention items ── */}
-                                    {staffAttentionPending.length > 0 && (
-                                        <div className="px-5 py-4">
-                                            <p className="mb-2.5 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: '#f59e0b' }}>
-                                                {staffAttentionPending.length} Item{staffAttentionPending.length > 1 ? 's' : ''} Need Your Attention
-                                            </p>
-                                            <div className="space-y-2.5">
-                                                {staffAttentionPending.slice(0, 3).map((a) => (
-                                                    <div key={a.id} className="flex items-start gap-3 rounded-xl border px-3.5 py-3"
-                                                        style={{ borderColor: 'rgba(245,158,11,0.18)', background: 'rgba(245,158,11,0.05)' }}>
-                                                        <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: '#f59e0b' }} />
-                                                        <div className="min-w-0 flex-1">
-                                                            <p className="text-[12px] font-semibold leading-snug" style={{ color: THEME.text.primary }}>{a.title}</p>
-                                                            <p className="mt-0.5 text-[11px] leading-snug" style={{ color: THEME.text.secondary }}>
-                                                                {a.message.slice(0, 120)}{a.message.length > 120 ? '…' : ''}
-                                                            </p>
-                                                        </div>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => { setDexoBootstrap(buildDexoStaffAttentionBootstrap(a)); switchRoom('dexo'); }}
-                                                            className="shrink-0 rounded-lg border px-2.5 py-1.5 text-[10px] font-semibold transition hover:opacity-80"
-                                                            style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.10)', color: THEME.accent.primary }}
-                                                        >
-                                                            Ask Dexo
-                                                        </button>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* ── Pre-set Dexo Questions ── */}
-                                    <div className="px-5 py-4">
-                                        <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>
-                                            Ask Dexo Anything
-                                        </p>
-                                        <div className="flex flex-wrap gap-2">
-                                            {([
-                                                {
-                                                    label: 'What should I prioritize today?',
-                                                    msg: `Looking at all the research for ${activeProject.name}, what is the single most important thing I should prioritize today and why? Be specific and direct.`,
-                                                },
-                                                {
-                                                    label: 'Walk me through all findings',
-                                                    msg: `Give me a full walkthrough of all research findings across all 5 desks for ${activeProject.name} — Strategy, Market Intelligence, Product, Finance, and Growth. For each desk: what did you find, and what action do you recommend?`,
-                                                },
-                                                {
-                                                    label: 'What are the biggest risks?',
-                                                    msg: `Based on the latest Staff Sync for ${activeProject.name}, what are the top 3 risks I should be aware of right now? For each risk, tell me how serious it is and what I should do.`,
-                                                },
-                                                {
-                                                    label: 'Do I need to change anything?',
-                                                    msg: `Based on the research findings for ${activeProject.name}, what are the most important changes I should make — in strategy, product direction, marketing, or finances? Tell me specifically what to change and why.`,
-                                                },
-                                                {
-                                                    label: 'How is the venture performing?',
-                                                    msg: `Give me an honest, direct assessment of how ${activeProject.name} is performing across all areas — strategy, market position, product, finances, and growth. What's working and what isn't?`,
-                                                },
-                                                {
-                                                    label: 'What opportunities am I missing?',
-                                                    msg: `Based on everything the AI team has researched for ${activeProject.name}, what are the biggest opportunities I might be missing or underestimating right now?`,
-                                                },
-                                            ] as const).map((q) => (
-                                                <button
-                                                    key={q.label}
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setDexoBootstrap({
-                                                            title: `${q.label} — ${activeProject.name}`,
-                                                            detail: activeProject.agentStaffSnapshot?.summary ?? '',
-                                                            sourceRole: 'ceo',
-                                                            requiredInfo: [],
-                                                            userMessage: q.msg,
-                                                        });
-                                                        switchRoom('dexo');
-                                                    }}
-                                                    className="rounded-xl border px-3 py-1.5 text-[11px] font-medium transition-all hover:opacity-80"
-                                                    style={{ borderColor: 'rgba(116,86,255,0.20)', background: 'rgba(116,86,255,0.07)', color: THEME.text.secondary }}
-                                                >
-                                                    {q.label}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : (
-                                /* No sync yet — big clear CTA */
-                                <div className="flex flex-col items-center gap-5 px-6 py-10 text-center">
-                                    <div
-                                        className="flex h-16 w-16 items-center justify-center rounded-2xl"
-                                        style={{ background: 'rgba(116,86,255,0.14)', boxShadow: '0 0 0 1px rgba(116,86,255,0.22)' }}
-                                    >
-                                        <Sparkles className="h-8 w-8" style={{ color: THEME.accent.primary }} />
-                                    </div>
-                                    <div className="max-w-sm">
-                                        <h3 className="text-base font-semibold" style={{ color: THEME.text.primary }}>Activate your AI co-founder</h3>
-                                        <p className="mt-2 text-[13px] leading-relaxed" style={{ color: THEME.text.secondary }}>
-                                            Run a Staff Sync to let Dexo research your venture across 5 desks — Strategy, Market, Product, Finance, and Growth. Dexo will then brief you daily on findings, risks, and what to do next.
-                                        </p>
-                                    </div>
-                                    <div className="flex flex-wrap items-center justify-center gap-3">
-                                        <button
-                                            onClick={() => runAgentStaffSync()}
-                                            disabled={agentSyncRunning}
-                                            className="flex items-center gap-2 rounded-xl border px-6 py-2.5 text-sm font-semibold transition-all active:scale-[0.98]"
-                                            style={{ borderColor: 'rgba(116,86,255,0.35)', background: 'rgba(116,86,255,0.16)', color: THEME.accent.primary, opacity: agentSyncRunning ? 0.6 : 1 }}
-                                        >
-                                            <RefreshCw className={`h-4 w-4 shrink-0 ${agentSyncRunning ? 'animate-spin' : ''}`} />
-                                            {agentSyncRunning ? 'Running Staff Sync…' : 'Run Staff Sync'}
-                                        </button>
-                                        <button
-                                            onClick={() => switchRoom('dexo')}
-                                            className="flex items-center gap-2 rounded-xl border px-5 py-2.5 text-sm font-medium transition-all"
-                                            style={{ borderColor: THEME.border.default, background: 'rgba(255,255,255,0.04)', color: THEME.text.secondary }}
-                                        >
-                                            Open Dexo anyway
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                    <div className="space-y-5">
 
                         {/* ── DEXO RESEARCH GUIDE ── */}
 
@@ -1760,49 +1559,6 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                             CEO desk →
                                         </button>
                                     </div>
-                                </div>
-
-                                {/* AI summary + focus today */}
-                                <div
-                                    className="rounded-xl border p-4"
-                                    style={{
-                                        borderColor: 'rgba(116,86,255,0.18)',
-                                        background: 'linear-gradient(135deg, rgba(116,86,255,0.08) 0%, rgba(116,86,255,0.03) 100%)',
-                                    }}
-                                >
-                                    <div className="mb-3 flex items-center justify-between gap-2">
-                                        <div className="flex items-center gap-1.5">
-                                            <Sparkles className="h-3.5 w-3.5" style={{ color: THEME.accent.primary }} />
-                                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.accent.primary }}>
-                                                AI staff snapshot
-                                            </p>
-                                        </div>
-                                        {lastStaffSyncLabel && (
-                                            <span className="text-[10px]" style={{ color: THEME.text.muted }}>
-                                                {lastStaffSyncLabel}
-                                            </span>
-                                        )}
-                                    </div>
-                                    {aiSummaryExcerpt ? (
-                                        <p className="text-[13px] leading-relaxed" style={{ color: THEME.text.secondary }}>
-                                            {aiSummaryExcerpt.slice(0, 350)}{aiSummaryExcerpt.length > 350 ? '…' : ''}
-                                        </p>
-                                    ) : (
-                                        <div className="flex items-center justify-between gap-4">
-                                            <p className="text-[13px]" style={{ color: THEME.text.muted }}>
-                                                Run Staff Sync to generate an AI research brief across all desks.
-                                            </p>
-                                            <button
-                                                onClick={() => runAgentStaffSync()}
-                                                disabled={agentSyncRunning}
-                                                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-semibold transition-all"
-                                                style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary, opacity: agentSyncRunning ? 0.6 : 1 }}
-                                            >
-                                                <RefreshCw className={`h-3 w-3 ${agentSyncRunning ? 'animate-spin' : ''}`} />
-                                                Sync
-                                            </button>
-                                        </div>
-                                    )}
                                 </div>
 
                                 {/* Focus today */}

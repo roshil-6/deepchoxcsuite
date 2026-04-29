@@ -28,6 +28,7 @@ import {
   persistEnterWorkspace,
   readPersistedWorkspaceStarted,
 } from '@/lib/workspacePersistence';
+import { type VenturePriorityId } from '@/lib/venturePriority';
 
 /** After workspace auth modal: open “name venture” once signed in. */
 const VENTURE_AUTH_KEY = 'deepchox-after-auth-new-venture';
@@ -196,8 +197,8 @@ export default function Home() {
     switchRoom('dexo');
   }, [isLoaded, isSignedIn, hasStarted, switchRoom]);
 
-  /** Create a shell venture (optional name) and open Personal Assistant for chat-first setup. */
-  const createVentureWithName = async (name: string) => {
+  /** Create a shell venture (optional name + focus priority) and open Dexo for chat-first setup. */
+  const createVentureWithName = async (name: string, priorityId?: VenturePriorityId) => {
     if (ventureCreating) return;
     if (!isSignedIn) {
       try {
@@ -213,8 +214,11 @@ export default function Home() {
     try {
       const shell = emptyVentureShell(name || undefined);
       const ts = Date.now();
-      const id = await saveProject({ ...shell, timestamp: ts } as Project);
-      const saved = { ...shell, id, timestamp: ts } as Project;
+      const roomPreferences = priorityId
+        ? { ...(shell.roomPreferences ?? {}), dexoPriority: priorityId }
+        : (shell.roomPreferences ?? {});
+      const id = await saveProject({ ...shell, roomPreferences, timestamp: ts } as Project);
+      const saved = { ...shell, roomPreferences, id, timestamp: ts } as Project;
       const list = await getAllProjects();
       setAllProjects(list);
       setActiveProject(saved);
@@ -275,7 +279,7 @@ export default function Home() {
           setNameVentureOpen(false);
           switchRoom('dexo');
         }}
-        onConfirm={(name) => void createVentureWithName(name)}
+        onConfirm={(name, priorityId) => void createVentureWithName(name, priorityId)}
       />
       <LandingAuthModal open={workspaceAuthOpen} onClose={closeWorkspaceAuth} />
       <OfficeShell>
