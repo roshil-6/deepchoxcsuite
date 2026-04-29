@@ -1,4 +1,5 @@
 import type { Project } from '@/lib/db';
+import { buildPriorityInstruction, readVenturePriority } from '@/lib/venturePriority';
 
 /**
  * When no venture is saved yet — Dexo still converses to help shape ideas before “New venture”.
@@ -28,5 +29,11 @@ export function buildDexoJarvisVentureContext(project: Project): string {
         if (lines.length) p.push(`Execution board (kanban):\n${lines.join('\n')}`);
     }
     if (project.agentStaffSnapshot?.summary) p.push(`Last sync:\n${project.agentStaffSnapshot.summary}`);
+
+    // Inject the active priority/focus directive so every AI call adapts
+    const { priorityId, customText } = readVenturePriority(project);
+    const priorityBlock = buildPriorityInstruction(priorityId, customText);
+    if (priorityBlock) p.push(priorityBlock);
+
     return p.join('\n\n');
 }

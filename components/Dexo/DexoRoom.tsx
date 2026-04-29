@@ -43,7 +43,9 @@ import { DexoParticleCanvas } from '@/components/Dexo/DexoParticleSphere';
 import { DexoAvatar } from '@/components/Dexo/DexoAvatar';
 import { submitDexoVenturePatch } from '@/lib/dexoProposalClient';
 import { DexoDailyBriefPanel } from '@/components/Dexo/DexoDailyBriefPanel';
+import { VenturePrioritySelector } from '@/components/Dexo/VenturePrioritySelector';
 import { PlanGate } from '@/components/PlanGate';
+import type { VenturePriorityId } from '@/lib/venturePriority';
 
 // ─── Global CSS ──────────────────────────────────────────────────────────────
 
@@ -665,6 +667,19 @@ export function DexoRoom() {
                         </div>
                     ) : null}
                     
+                    {/* ── Priority selector ── */}
+                    {activeProject && (
+                        <div className="mb-5">
+                            <VenturePrioritySelector
+                                activeProject={activeProject}
+                                onSave={(id: VenturePriorityId, customText?: string) => {
+                                    const prefs = { ...(activeProject.roomPreferences ?? {}), dexoPriority: id, ...(customText !== undefined ? { dexoPriorityCustom: customText } : {}) };
+                                    void updateProjectField('roomPreferences', prefs);
+                                }}
+                            />
+                        </div>
+                    )}
+
                     <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
                         <div className="flex flex-wrap items-center gap-2">
                             {/* View toggle */}

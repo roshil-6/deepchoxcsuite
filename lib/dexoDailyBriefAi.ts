@@ -2,6 +2,7 @@ import { chatWithOpenAI, chatWithClaude, hasAiKey } from '@/lib/ai/chatProviders
 import { JARVIS_SYSTEM, mergeReports, normalizeReport } from '@/app/api/jarvis/route';
 import { formatWebSourcesForPrompt, type DexoWebSource } from '@/lib/dexoWebResearch';
 import type { JarvisReport } from '@/app/api/jarvis/route';
+// Priority instruction is already embedded inside ventureContext via buildDexoJarvisVentureContext
 
 function stripJsonFence(raw: string): string {
   let t = raw.trim();
