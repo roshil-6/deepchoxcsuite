@@ -61,7 +61,7 @@ export function LeftRail({
                 {/* ── Brand header ── */}
                 <div className="flex shrink-0 items-center justify-between gap-2 px-4 pb-3 pt-4">
                     <div className="min-w-0">
-                        <p className="font-mono text-[8px] uppercase tracking-[0.22em] text-white/30">NorthROSC Labs</p>
+                        <p className="font-mono text-[8px] uppercase tracking-[0.22em] text-[#7456ff]">NorthROSC Labs</p>
                         <p className="mt-0.5 truncate font-sans text-[15px] font-bold tracking-tight text-white/90">DeepChox AI</p>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
@@ -109,7 +109,7 @@ export function LeftRail({
                                     }`}
                                 >
                                     <span className={`h-1.5 w-1.5 shrink-0 rounded-full transition-colors ${
-                                        isActive ? 'bg-white/60' : 'bg-white/15 group-hover:bg-white/30'
+                                        isActive ? 'bg-[#9d88ff]' : 'bg-white/15 group-hover:bg-white/30'
                                     }`} />
                                     <span className="min-w-0 flex-1 truncate font-sans text-[13px]">{p.name}</span>
                                 </button>
@@ -163,16 +163,16 @@ export function LeftRail({
                                                 onClick={() => go(item.room)}
                                                 className={`group relative flex w-full items-center gap-3 rounded-lg py-2.5 pl-3 pr-3 text-left transition-colors ${
                                                     active
-                                                        ? 'border border-white/[0.14] bg-white/[0.07]'
+                                                        ? 'border border-[rgba(116,86,255,0.35)] bg-[rgba(116,86,255,0.12)]'
                                                         : 'border border-transparent hover:border-white/[0.08] hover:bg-white/[0.04]'
                                                 }`}
                                             >
                                                 <Icon
-                                                    className={`h-4 w-4 shrink-0 ${active ? 'text-white/80' : 'text-[var(--muted)] group-hover:text-white/60'}`}
+                                                    className={`h-4 w-4 shrink-0 ${active ? 'text-[#c4b5fd]' : 'text-[var(--muted)] group-hover:text-white/60'}`}
                                                     strokeWidth={1.75}
                                                 />
                                                 <span className="flex flex-col gap-0.5 min-w-0">
-                                                    <span className={`truncate font-sans text-[13px] font-semibold leading-tight ${active ? 'text-white/90' : 'text-[var(--text-primary)]'}`}>
+                                                    <span className={`truncate font-sans text-[13px] font-semibold leading-tight ${active ? 'text-[#e9e3ff]' : 'text-[var(--text-primary)]'}`}>
                                                         {item.label}
                                                     </span>
                                                     <span className="font-mono text-[9px] leading-tight text-white/25 uppercase tracking-[0.14em]">AI co-founder</span>
@@ -189,15 +189,15 @@ export function LeftRail({
                                             title={WORKSPACE_TITLES[item.room] ?? item.label}
                                             className={`group relative flex w-full items-center gap-3 rounded-md py-2 pl-3 pr-2 text-left transition-colors ${
                                                 active
-                                                    ? 'bg-white/[0.06] text-white/85'
+                                                    ? 'bg-[var(--accent-soft)] text-[#c4b5fd]'
                                                     : 'text-white/40 hover:bg-white/[0.04] hover:text-white/70'
                                             }`}
                                         >
                                             {active && (
-                                                <span className="absolute left-0 top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-full bg-white/40" aria-hidden />
+                                                <span className="absolute left-0 top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-full bg-[var(--accent-violet)]" aria-hidden />
                                             )}
                                             <Icon
-                                                className={`h-3.5 w-3.5 shrink-0 ${active ? 'text-white/70' : 'text-white/25 group-hover:text-white/50'}`}
+                                                className={`h-3.5 w-3.5 shrink-0 ${active ? 'text-[#9d88ff]' : 'text-white/25 group-hover:text-white/50'}`}
                                                 strokeWidth={1.75}
                                             />
                                             <span className="min-w-0 flex-1 truncate font-sans text-[12.5px] font-medium leading-tight">
@@ -221,7 +221,7 @@ export function LeftRail({
                         <button
                             type="button"
                             onClick={() => onUpgrade?.()}
-                            className="flex h-9 w-full items-center justify-center gap-1.5 rounded-md border border-white/[0.1] bg-white/[0.05] font-sans text-[12px] font-medium text-white/50 transition hover:border-white/[0.18] hover:bg-white/[0.09] hover:text-white/75"
+                            className="flex h-9 w-full items-center justify-center gap-1.5 rounded-md border border-[rgba(116,86,255,0.25)] bg-[rgba(116,86,255,0.07)] font-sans text-[12px] font-medium text-[#9d88ff] transition hover:border-[rgba(116,86,255,0.4)] hover:bg-[rgba(116,86,255,0.12)] hover:text-[#c4b5fd]"
                         >
                             <Sparkles className="h-3.5 w-3.5" aria-hidden />
                             Upgrade to Pro
