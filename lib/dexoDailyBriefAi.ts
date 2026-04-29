@@ -1,4 +1,4 @@
-import { chatWithAI, chatWithClaude, hasAiKey } from '@/lib/ai/chatProviders';
+import { chatWithOpenAI, chatWithClaude, hasAiKey } from '@/lib/ai/chatProviders';
 import { JARVIS_SYSTEM, mergeReports, normalizeReport } from '@/app/api/jarvis/route';
 import { formatWebSourcesForPrompt, type DexoWebSource } from '@/lib/dexoWebResearch';
 import type { JarvisReport } from '@/app/api/jarvis/route';
@@ -70,12 +70,9 @@ Return the full standard Jarvis JSON object (same schema as analyze mode). JSON 
 
   const aiOpts = { responseJsonObject: true, temperature: 0.35 };
 
-  // "gpt" slot: OpenAI → Groq fallback (chatWithAI handles both)
-  // "claude" slot: Anthropic only (skipped when key absent)
-  const hasGptOrGroq = Boolean(process.env.OPENAI_API_KEY?.trim() || process.env.GROQ_API_KEY?.trim());
   const [gptRaw, claudeRaw] = await Promise.all([
-    hasGptOrGroq
-      ? chatWithAI(messages, 'llama3', aiOpts)
+    process.env.OPENAI_API_KEY?.trim()
+      ? chatWithOpenAI(messages, 'llama3', aiOpts)
           .then((r) => ({ content: r.message.content, ok: true }))
           .catch(() => ({ content: '{}', ok: false }))
       : Promise.resolve({ content: '{}', ok: false }),
