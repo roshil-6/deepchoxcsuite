@@ -12,6 +12,7 @@ import {
     ArrowRight,
     AudioLines,
     BarChart2,
+    ChevronDown,
     ClipboardList,
     MessageSquarePlus,
     Mic,
@@ -45,7 +46,7 @@ import { submitDexoVenturePatch } from '@/lib/dexoProposalClient';
 import { DexoDailyBriefPanel } from '@/components/Dexo/DexoDailyBriefPanel';
 import { VenturePrioritySelector } from '@/components/Dexo/VenturePrioritySelector';
 import { PlanGate } from '@/components/PlanGate';
-import type { VenturePriorityId } from '@/lib/venturePriority';
+import { readVenturePriority, getPriorityById, type VenturePriorityId } from '@/lib/venturePriority';
 
 // ─── Global CSS ──────────────────────────────────────────────────────────────
 
@@ -78,6 +79,44 @@ if (typeof document !== 'undefined') {
     el.textContent = ORB_CSS;
     document.head.appendChild(el);
 }
+
+// ─── Mode-adaptive data ───────────────────────────────────────────────────────
+
+const MODE_HINTS: Record<string, string> = {
+    vision:          "Let's explore why this venture exists and who it's really for.",
+    market_research: "Ask about competitors, pricing, market size, or customer segments.",
+    execution:       "Tell me what's blocking you — I'll help clear it.",
+    planning:        "Let's map your path — milestones, constraints, and what to sequence.",
+    all:             "Everything is fair game — strategy, market, execution, and planning.",
+    custom:          "Dexo is working within your custom focus.",
+};
+
+const MODE_LOADING_TEXT: Record<string, string> = {
+    vision:          'Shaping your brand story…',
+    market_research: 'Scanning your market landscape…',
+    execution:       'Finding your next move…',
+    planning:        'Mapping the path forward…',
+    all:             'Analyzing your venture…',
+    custom:          'Working on your focus area…',
+};
+
+const MODE_QUICK_REPLIES: Record<string, string[]> = {
+    vision:          ["Why does this venture exist?", "Who is this really for?", "What makes us different?"],
+    market_research: ["Who are my top competitors?", "What's my market size?", "Where's the pricing gap?"],
+    execution:       ["What should I work on today?", "What's blocking me?", "3 priorities for this week"],
+    planning:        ["What happens in the next 90 days?", "What are my biggest risks?", "What do I sequence first?"],
+    all:             ["Give me a full venture checkup", "What needs most attention?", "Where are the biggest gaps?"],
+    custom:          ["What should I focus on next?", "What's most important right now?"],
+};
+
+const MODE_REACTIONS: Record<string, string> = {
+    vision:          "Switching to Vision mode. I'll dig into brand story, positioning, and your 'why' before anything else. What's the core reason this venture exists?",
+    market_research: "Market research mode. I'll focus on competitors, customer segments, and market gaps from here. What do you already know about your space?",
+    execution:       "Execution mode — let's cut through the noise. Short answers, one next move at a time. What's the biggest thing blocking you right now?",
+    planning:        "Strategic planning mode. I'll think in timelines, sequences, and constraints. Where are you trying to be in the next 90 days?",
+    all:             "Full stack mode — nothing gets deprioritised. I'll balance vision, market, execution, and planning equally. What do you want to tackle?",
+    custom:          "Got it — I'm working within your custom focus now. What would you like to start with?",
+};
 
 // ─── Voice orb ────────────────────────────────────────────────────────────────
 
@@ -207,6 +246,12 @@ export function DexoRoom() {
     const [view, setView] = useState<'chat' | 'overview' | 'daily'>('chat');
     /** True once the overview nudge has been shown in this session */
     const overviewNudgeShownRef = useRef(false);
+    /** Controls the sticky mode-pill panel open/close */
+    const [modePanelOpen, setModePanelOpen] = useState(false);
+
+    // Active priority for mode-adaptive UI
+    const { priorityId: activePriorityId } = readVenturePriority(activeProject);
+    const activePriorityDef = getPriorityById(activePriorityId ?? '');
     const convoId = useRef(0);
     const skipConvoPersistRef = useRef(true);
     const prevDexoVentureIdRef = useRef<number | undefined>(undefined);
@@ -592,6 +637,55 @@ export function DexoRoom() {
     return (
         <div data-dexo-room className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-transparent">
 
+            {/* ── Sticky mode header ── */}
+            {activeProject && (
+                <div className="relative z-20 shrink-0 border-b border-white/[0.06]" style={{ background: 'rgba(14,14,16,0.90)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
+                    <div className="mx-auto flex max-w-[660px] items-center justify-between gap-3 px-4 py-2.5">
+                        <div className="flex min-w-0 items-center gap-2">
+                            <span className="max-w-[140px] truncate font-sans text-[13px] font-medium text-[var(--text-primary)]">
+                                {activeProject.name}
+                            </span>
+                            <span className="text-[var(--muted)] opacity-40 select-none">·</span>
+                            <button
+                                type="button"
+                                onClick={() => setModePanelOpen(o => !o)}
+                                className="flex items-center gap-1.5 rounded-full border border-[rgba(116,86,255,0.2)] bg-[rgba(116,86,255,0.08)] px-2.5 py-1 font-sans text-[11px] font-medium text-violet-300 transition hover:border-[rgba(116,86,255,0.35)] hover:bg-[rgba(116,86,255,0.14)]"
+                            >
+                                <span className="text-sm leading-none">{activePriorityDef?.icon ?? '🎯'}</span>
+                                <span>{activePriorityDef?.label ?? 'Set focus'}</span>
+                                <ChevronDown className={`h-3 w-3 opacity-60 transition-transform duration-200 ${modePanelOpen ? 'rotate-180' : ''}`} />
+                            </button>
+                        </div>
+                        <TokenDisplay compact={true} showCosts={false} />
+                    </div>
+
+                    {/* Mode picker — slides in below header */}
+                    {modePanelOpen && (
+                        <div className="mx-auto max-w-[660px] px-4 pb-3">
+                            <VenturePrioritySelector
+                                activeProject={activeProject}
+                                onSave={(id: VenturePriorityId, customText?: string) => {
+                                    const prefs = {
+                                        ...(activeProject.roomPreferences ?? {}),
+                                        dexoPriority: id,
+                                        ...(customText !== undefined ? { dexoPriorityCustom: customText } : {}),
+                                    };
+                                    void updateProjectField('roomPreferences', prefs);
+                                    setModePanelOpen(false);
+                                    // Push Dexo mode-change reaction to chat
+                                    const reaction = MODE_REACTIONS[id];
+                                    if (reaction) {
+                                        setConvo(prev => [...prev, { role: 'dexo', text: reaction, id: ++convoId.current }]);
+                                        if (view !== 'chat') setView('chat');
+                                        setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 150);
+                                    }
+                                }}
+                            />
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* ── Scrollable body (min-h-0 required or flex won't shrink below content → no scroll on mobile) ── */}
             <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]">
                 <div className="mx-auto max-w-[660px] px-4 pb-32 pt-6 sm:px-5 sm:pt-8">
@@ -667,19 +761,6 @@ export function DexoRoom() {
                         </div>
                     ) : null}
                     
-                    {/* ── Priority selector ── */}
-                    {activeProject && (
-                        <div className="mb-5">
-                            <VenturePrioritySelector
-                                activeProject={activeProject}
-                                onSave={(id: VenturePriorityId, customText?: string) => {
-                                    const prefs = { ...(activeProject.roomPreferences ?? {}), dexoPriority: id, ...(customText !== undefined ? { dexoPriorityCustom: customText } : {}) };
-                                    void updateProjectField('roomPreferences', prefs);
-                                }}
-                            />
-                        </div>
-                    )}
-
                     <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
                         <div className="flex flex-wrap items-center gap-2">
                             {/* View toggle */}
@@ -738,8 +819,14 @@ export function DexoRoom() {
                                 </button>
                             )}
                         </div>
-                        <TokenDisplay compact={false} showCosts={true} />
                     </div>
+
+                    {/* ── Mode hint ── */}
+                    {view === 'chat' && activePriorityId && MODE_HINTS[activePriorityId] && (
+                        <p className="-mt-2 mb-4 font-sans text-[11.5px] leading-snug text-[var(--text-muted)]">
+                            {MODE_HINTS[activePriorityId]}
+                        </p>
+                    )}
 
                     {/* ── Overview Panel ── */}
                     {view === 'overview' && currentReport && (
@@ -1002,6 +1089,29 @@ export function DexoRoom() {
                                     </div>
                                 )}
 
+                                {/* Quick reply chips — mode-specific suggestions under the last Dexo message */}
+                                {!loading && convo.length > 0 && convo[convo.length - 1]?.role === 'dexo' && (() => {
+                                    const chips = MODE_QUICK_REPLIES[activePriorityId ?? ''] ?? MODE_QUICK_REPLIES.all;
+                                    return chips.length > 0 ? (
+                                        <div className="flex flex-wrap gap-2 pl-9">
+                                            {chips.map((reply) => (
+                                                <button
+                                                    key={reply}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const uid = ++convoId.current;
+                                                        setConvo(prev => [...prev, { role: 'user', text: reply, id: uid }]);
+                                                        void run('converse', reply);
+                                                    }}
+                                                    className="rounded-full border border-[var(--border)] bg-[var(--bg-elevated)] px-3 py-1.5 font-sans text-[11.5px] text-[var(--text-secondary)] transition hover:border-[rgba(116,86,255,0.25)] hover:bg-[rgba(116,86,255,0.07)] hover:text-[var(--text-primary)]"
+                                                >
+                                                    {reply}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    ) : null;
+                                })()}
+
                                 {/* Typing indicator — shown while Dexo is generating a reply */}
                                 {loading && convo[convo.length - 1]?.role === 'user' && (
                                     <div className="flex items-end gap-2.5 justify-start">
@@ -1112,7 +1222,7 @@ export function DexoRoom() {
                                     isListening   ? 'Speak now…'
                                     : isProcessing  ? 'Thinking…'
                                     : isSpeaking    ? 'Dexo is speaking…'
-                                    : loading       ? 'Analyzing venture…'
+                                    : loading       ? (activePriorityId ? (MODE_LOADING_TEXT[activePriorityId] ?? 'Analyzing your venture…') : 'Analyzing your venture…')
                                     : 'Message Dexo…'
                                 }
                                 className="min-h-[38px] min-w-0 flex-1 resize-none border-none bg-transparent px-1.5 py-2 font-sans text-[14px] leading-[1.45] text-[var(--text-primary)] placeholder:text-[var(--muted)] focus:outline-none focus:ring-0"
