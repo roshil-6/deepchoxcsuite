@@ -9,6 +9,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
     Activity,
     AlertTriangle,
+    ArrowRight,
     AudioLines,
     BarChart2,
     ClipboardList,
@@ -200,8 +201,10 @@ export function DexoRoom() {
     const voicePreset = useVoicePreset();
     /** Shown after "Set up in Dexo" so the room feels scoped to that task */
     const [setupMission, setSetupMission] = useState<DexoBootstrapPayload | null>(null);
-    /** Toggle between chat/analysis and daily research brief */
-    const [view, setView] = useState<'chat' | 'daily'>('chat');
+    /** Toggle between chat, venture overview, and daily research */
+    const [view, setView] = useState<'chat' | 'overview' | 'daily'>('chat');
+    /** True once the overview nudge has been shown in this session */
+    const overviewNudgeShownRef = useRef(false);
     const convoId = useRef(0);
     const skipConvoPersistRef = useRef(true);
     const prevDexoVentureIdRef = useRef<number | undefined>(undefined);
@@ -443,6 +446,9 @@ export function DexoRoom() {
             const data = await res.json() as { ok: boolean; report?: JarvisReport; error?: string };
             if (!data.ok || !data.report) { setError(data.error ?? 'Analysis failed'); return; }
 
+            // Store the latest report so the Overview tab always reflects current state
+            setCurrentReport(data.report);
+
             /** After a real chat turn, persist proposed venture updates (Jarvis schema) to the DB. */
             if (mode === 'converse' && userMsg && activeProject) {
                 const patch = dexoFullVenturePatchFromJarvis(activeProject, data.report.proposedUpdates);
@@ -674,6 +680,26 @@ export function DexoRoom() {
                                 <MessageSquarePlus className="h-3.5 w-3.5" />
                                 Chat
                             </button>
+                            {currentReport && (
+                                <button
+                                    type="button"
+                                    onClick={() => { overviewNudgeShownRef.current = true; setView('overview'); }}
+                                    className={`relative inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-sans text-[12px] font-medium transition-all duration-200 ${
+                                        view === 'overview'
+                                            ? 'border border-[rgba(116,86,255,0.3)] bg-[rgba(116,86,255,0.12)] text-[#c4b5fd]'
+                                            : 'border border-[rgba(116,86,255,0.2)] bg-[rgba(116,86,255,0.07)] text-[#a78bfa] hover:bg-[rgba(116,86,255,0.14)] hover:text-[#c4b5fd]'
+                                    }`}
+                                >
+                                    <Activity className="h-3.5 w-3.5" />
+                                    Overview
+                                    {!overviewNudgeShownRef.current && view !== 'overview' && (
+                                        <span className="absolute -right-0.5 -top-0.5 flex h-2 w-2">
+                                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-400 opacity-60" />
+                                            <span className="relative inline-flex h-2 w-2 rounded-full bg-violet-500" />
+                                        </span>
+                                    )}
+                                </button>
+                            )}
                             <button
                                 type="button"
                                 onClick={() => setView('daily')}
@@ -700,7 +726,89 @@ export function DexoRoom() {
                         <TokenDisplay compact={false} showCosts={true} />
                     </div>
 
-                    {/* ── Daily Brief Panel ── */}
+                    {/* ── Overview Panel ── */}
+                    {view === 'overview' && currentReport && (
+                        <div className="space-y-4 pb-28">
+                            {/* Dexo intro */}
+                            <div className="flex items-start gap-3">
+                                <DexoAvatar size="sm" state="idle" pulse={false} className="mt-0.5 shrink-0" />
+                                <div className="min-w-0">
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-violet-400">Dexo · Venture Overview</p>
+                                    <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">{currentReport.headline}</p>
+                                    <p className="mt-1 text-[13px] leading-relaxed text-[var(--text-secondary)]">{currentReport.summary}</p>
+                                    <p className="mt-2 text-[11px] text-[var(--text-muted)]">This updates every time you chat — keep sharing and it gets sharper.</p>
+                                </div>
+                            </div>
+
+                            {/* Section breakdown */}
+                            {currentReport.sections.filter(s => s.insight?.trim()).length > 0 && (
+                                <div className="space-y-2.5">
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--text-muted)]">Breakdown</p>
+                                    {currentReport.sections.filter(s => s.insight?.trim()).map((s, i) => (
+                                        <div key={s.desk} className="rounded-xl border border-white/[0.07] bg-white/[0.02] px-4 py-3.5">
+                                            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-violet-300/70">
+                                                {String(i + 1).padStart(2, '0')}  {s.title}
+                                            </p>
+                                            <ul className="mt-2.5 space-y-1.5">
+                                                {s.insight.split(/(?<=[.!?])\s+/).filter(b => b.trim().length > 8).map((b, bi) => (
+                                                    <li key={bi} className="flex items-start gap-2 text-[13px] leading-snug text-[var(--text-secondary)]">
+                                                        <span className="mt-[5px] h-1 w-1 shrink-0 rounded-full bg-violet-400/60" />
+                                                        {b.trim()}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                            {s.action?.trim() ? (
+                                                <div className="mt-3 flex items-start gap-1.5">
+                                                    <ArrowRight className="mt-[2px] h-3.5 w-3.5 shrink-0 text-violet-400/80" aria-hidden />
+                                                    <p className="text-[12px] font-medium leading-snug text-violet-200/90">{s.action}</p>
+                                                </div>
+                                            ) : null}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Risks */}
+                            {currentReport.risks.filter(r => r.detail?.trim()).length > 0 && (
+                                <div className="space-y-2.5">
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--text-muted)]">Key risks</p>
+                                    {currentReport.risks.map((r, i) => (
+                                        <div key={i} className="rounded-xl border border-amber-500/20 bg-amber-500/[0.05] px-4 py-3">
+                                            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-amber-400/80">
+                                                ⚠ {r.label} <span className="ml-1 font-normal lowercase text-amber-400/50">({r.level})</span>
+                                            </p>
+                                            <p className="mt-1.5 text-[13px] leading-snug text-[var(--text-secondary)]">{r.detail}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Next actions */}
+                            {currentReport.nextActions.filter(a => a.action?.trim()).length > 0 && (
+                                <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] px-4 py-3.5">
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--text-muted)]">Recommended moves</p>
+                                    <ul className="mt-2.5 space-y-2">
+                                        {currentReport.nextActions.slice(0, 4).map((a, i) => (
+                                            <li key={i} className="flex items-start gap-2.5 text-[13px] text-[var(--text-secondary)]">
+                                                <span className="mt-[2px] shrink-0 rounded bg-violet-500/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-violet-300">{a.desk}</span>
+                                                {a.action}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+
+                            <button
+                                type="button"
+                                onClick={() => setView('chat')}
+                                className="text-[12px] text-[var(--text-muted)] underline-offset-2 hover:text-[var(--text-secondary)] hover:underline"
+                            >
+                                ← Back to chat
+                            </button>
+                        </div>
+                    )}
+
+                    {/* ── Daily Research Panel ── */}
                     {view === 'daily' && activeProject && (
                         <PlanGate feature="dexoDailyBriefReports">
                             <DexoDailyBriefPanel activeProject={activeProject} autoRunPulse />
@@ -855,6 +963,29 @@ export function DexoRoom() {
                                         </div>
                                     );
                                 })}
+
+                                {/* Overview ready nudge — appears after first report */}
+                                {currentReport && !loading && convo.some(m => m.role === 'dexo') && (
+                                    <div className="flex justify-start">
+                                        <div className="max-w-[92%] rounded-2xl rounded-bl-sm border border-[rgba(116,86,255,0.2)] bg-[rgba(116,86,255,0.07)] px-4 py-3 sm:max-w-[85%]">
+                                            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-violet-400/80">Dexo · Overview ready</p>
+                                            <p className="mt-1 text-[13px] leading-snug text-[var(--text-secondary)]">
+                                                {currentReport.headline}
+                                            </p>
+                                            <p className="mt-1 text-[11px] text-[var(--text-muted)]">
+                                                Don&apos;t worry about answering everything — I&apos;ve built an initial breakdown from what you&apos;ve shared. It gets sharper as we talk.
+                                            </p>
+                                            <button
+                                                type="button"
+                                                onClick={() => { overviewNudgeShownRef.current = true; setView('overview'); }}
+                                                className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg border border-[rgba(116,86,255,0.25)] bg-[rgba(116,86,255,0.12)] px-3 py-1.5 text-[12px] font-medium text-violet-200 transition hover:bg-[rgba(116,86,255,0.2)]"
+                                            >
+                                                <Activity className="h-3.5 w-3.5" />
+                                                See full overview
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Typing indicator — shown while Dexo is generating a reply */}
                                 {loading && convo[convo.length - 1]?.role === 'user' && (
