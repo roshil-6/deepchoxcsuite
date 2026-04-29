@@ -171,9 +171,9 @@ export function ContextPanel({
                   ${desktopCollapsed ? 'lg:w-11 lg:min-w-[2.75rem]' : 'lg:w-80 lg:max-w-[20rem]'}
                 `}
                 style={{
-                    background: 'rgba(14, 14, 17, 0.82)',
-                    backdropFilter: 'blur(18px)',
-                    WebkitBackdropFilter: 'blur(18px)',
+                    background: 'rgba(14, 14, 17, 0.88)',
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)',
                 }}
             >
                 {onToggleDesktopCollapse && desktopCollapsed ? (

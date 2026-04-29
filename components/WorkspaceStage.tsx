@@ -11,6 +11,7 @@ import { ReportsLibrary } from './ReportsLibrary';
 
 import { FoundersOffice } from './FoundersOffice';
 import { DexoRoom } from './Dexo/DexoRoom';
+import { DesksHub } from './Desks/DesksHub';
 import { PitchDeckForge } from './PitchDeckForge';
 import { WargameNexus } from './WargameNexus';
 import { VCGauntlet } from './VCGauntlet';
@@ -59,6 +60,8 @@ export function WorkspaceStage({
                 return <WargameNexus />;
             case 'vc_gauntlet':
                 return <VCGauntlet />;
+            case 'desks_hub':
+                return <DesksHub />;
             case 'intelligence_diary':
                 return <IntelligenceDiary />;
             case 'personal_assistant':

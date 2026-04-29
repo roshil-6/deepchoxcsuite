@@ -75,7 +75,7 @@ export interface SystemState {
 
 export interface OfficeContextType {
   // State
-  activeRoom: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence';
+  activeRoom: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence' | 'desks_hub';
   activeProject: Project | null;
   allProjects: Project[];
   systemState: SystemState;
@@ -104,7 +104,7 @@ export interface OfficeContextType {
   setSuiteIntelOpenDesk: (v: string | null) => void;
 
   // Actions
-  switchRoom: (room: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence') => void;
+  switchRoom: (room: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence' | 'desks_hub') => void;
 
   /** Multi-desk AI staff run: merges research into venture sections (requires GROQ on server). */
   agentSyncRunning: boolean;
@@ -242,7 +242,7 @@ const OfficeContext = createContext<OfficeContextType | undefined>(undefined);
 // Context Provider Component
 export function OfficeProvider({ children }: { children: ReactNode }) {
   const [activeRoom, setActiveRoom] = useState<
-    AgentRole | 'dashboard' | 'calendar' | 'reports' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence'
+    AgentRole | 'dashboard' | 'calendar' | 'reports' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence' | 'desks_hub'
   >('dexo');
   const [agentSyncRunning, setAgentSyncRunning] = useState(false);
   const [syncToastMessage, setSyncToastMessage] = useState<string | null>(null);
@@ -396,6 +396,7 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
         | 'intelligence_diary'
         | 'personal_assistant'
         | 'suite_intelligence'
+        | 'desks_hub'
     ) => {
       setDeskSectionFocus(null);
       setSuiteIntelOpenDesk(null);

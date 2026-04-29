@@ -142,20 +142,28 @@ export default function DarkVeil({
 
     const start = performance.now();
     let frame = 0;
+    let lastFrameTime = 0;
+    // Cap at 30 fps — the CPPN animation is very slow-moving so 30 fps is
+    // visually identical to 60 fps while halving GPU shader load.
+    const FRAME_BUDGET_MS = 1000 / 30;
 
-    const loop = () => {
+    const loop = (now: number) => {
+      frame = requestAnimationFrame(loop);
+      // Skip render if tab is hidden or not enough time has elapsed.
+      if (document.hidden) return;
+      if (now - lastFrameTime < FRAME_BUDGET_MS) return;
+      lastFrameTime = now;
       (program.uniforms.uTime as { value: number }).value =
-        ((performance.now() - start) / 1000) * speed;
+        ((now - start) / 1000) * speed;
       (program.uniforms.uHueShift as { value: number }).value = hueShift;
       (program.uniforms.uNoise as { value: number }).value = noiseIntensity;
       (program.uniforms.uScan as { value: number }).value = scanlineIntensity;
       (program.uniforms.uScanFreq as { value: number }).value = scanlineFrequency;
       (program.uniforms.uWarp as { value: number }).value = warpAmount;
       renderer.render({ scene: mesh });
-      frame = requestAnimationFrame(loop);
     };
 
-    loop();
+    frame = requestAnimationFrame(loop);
 
     return () => {
       cancelAnimationFrame(frame);
