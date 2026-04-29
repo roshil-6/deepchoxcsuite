@@ -7,6 +7,7 @@ import { useOffice } from '@/lib/OfficeContext';
 import { buildDexoJarvisVentureContext } from '@/lib/dexoJarvisContext';
 import { isVentureFoundationSparse } from '@/lib/ventureFoundation';
 import { dexoFullVenturePatchFromJarvis, dexoAutoSaveHintLines } from '@/lib/dexoApplyJarvisProductPatch';
+import { getEffectiveSessionId } from '@/lib/deviceSession';
 import type { JarvisProposedUpdates } from '@/app/api/jarvis/route';
 import type { Project } from '@/lib/db';
 
@@ -76,6 +77,7 @@ export function DexoDailyBriefPanel({
   const [pulsing, setPulsing] = useState(false);
   const [applyId, setApplyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [proRequired, setProRequired] = useState(false);
   const [pulseAttempted, setPulseAttempted] = useState(false);
 
   const ventureId = activeProject.id;
@@ -87,7 +89,7 @@ export function DexoDailyBriefPanel({
     try {
       const res = await fetch('/api/dexo', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-deepchox-session': getEffectiveSessionId() },
         body: JSON.stringify({
           action: 'dailyReportsList',
           payload: { ventureId, limit: 40 },
@@ -116,11 +118,12 @@ export function DexoDailyBriefPanel({
     async (force: boolean) => {
       setPulsing(true);
       setError(null);
+      setProRequired(false);
       try {
         const context = buildDexoJarvisVentureContext(activeProject);
         const res = await fetch('/api/dexo', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'x-deepchox-session': getEffectiveSessionId() },
           body: JSON.stringify({
             action: 'dailyPulse',
             payload: {
@@ -132,9 +135,13 @@ export function DexoDailyBriefPanel({
             },
           }),
         });
-        const data = (await res.json()) as { ok?: boolean; error?: string };
+        const data = (await res.json()) as { ok?: boolean; error?: string; upgrade?: boolean; message?: string };
         if (!data.ok) {
-          setError(data.error ?? 'Daily pulse failed.');
+          if (data.error === 'pro_required' || data.upgrade) {
+            setProRequired(true);
+          } else {
+            setError(data.message ?? data.error ?? 'Daily pulse failed.');
+          }
           return;
         }
         await load();
@@ -170,7 +177,7 @@ export function DexoDailyBriefPanel({
       });
       await fetch('/api/dexo', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-deepchox-session': getEffectiveSessionId() },
         body: JSON.stringify({
           action: 'dailyReportApply',
           payload: { reportId: row.id, ventureId },
@@ -219,7 +226,16 @@ export function DexoDailyBriefPanel({
         </div>
       </div>
 
-      {error ? (
+      {proRequired ? (
+        <div className="rounded-xl border border-violet-500/25 bg-violet-500/10 px-4 py-3">
+          <p className="text-sm font-medium text-violet-200">Co-Founder Pro required</p>
+          <p className="mt-1 text-xs text-violet-300/80">
+            Daily briefs with live web research are a Pro feature. Upgrade your plan or set{' '}
+            <code className="rounded bg-white/10 px-1 py-0.5 font-mono text-[11px]">DAILY_BRIEF_ALLOW_FREE=1</code>{' '}
+            in your environment to enable it for all users.
+          </p>
+        </div>
+      ) : error ? (
         <div className="rounded-xl border border-amber-500/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-100/90">{error}</div>
       ) : null}
 

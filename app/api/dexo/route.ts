@@ -52,9 +52,11 @@ type DexoRequestBody = {
 };
 
 function toJsonRequest(req: Request, payload: unknown): Request {
+  const headers = new Headers(req.headers);
+  headers.set('Content-Type', 'application/json');
   return new Request(req.url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify(payload ?? {}),
   });
 }
@@ -67,7 +69,7 @@ function toQueryRequest(req: Request, pathname: string, query: Record<string, un
     if (v === undefined || v === null) return;
     url.searchParams.set(k, String(v));
   });
-  return new Request(url.toString(), { method: 'GET' });
+  return new Request(url.toString(), { method: 'GET', headers: req.headers });
 }
 
 function toDeleteQueryRequest(req: Request, pathname: string, query: Record<string, unknown>): Request {
@@ -78,7 +80,7 @@ function toDeleteQueryRequest(req: Request, pathname: string, query: Record<stri
     if (v === undefined || v === null) return;
     url.searchParams.set(k, String(v));
   });
-  return new Request(url.toString(), { method: 'DELETE' });
+  return new Request(url.toString(), { method: 'DELETE', headers: req.headers });
 }
 
 export async function POST(req: Request) {
