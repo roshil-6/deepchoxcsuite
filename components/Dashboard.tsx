@@ -76,6 +76,7 @@ import { pickEnglishPlaybackVoice, resumeSpeechSynthIfNeeded } from '@/lib/voice
 import { DexoAvatar } from '@/components/Dexo/DexoAvatar';
 import { buildDexoStaffAttentionBootstrap } from '@/lib/dexoStaffAttentionPrompt';
 import { buildDexoJarvisVentureContext } from '@/lib/dexoJarvisContext';
+import { readVenturePriority, getPriorityById } from '@/lib/venturePriority';
 import { FocusBriefingPanel } from '@/components/FocusBriefingPanel';
 import { DexoDailyBriefPanel } from '@/components/Dexo/DexoDailyBriefPanel';
 import { DexoOpsPanel } from '@/components/Dexo/DexoOpsPanel';
@@ -751,6 +752,11 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     }, [activeProject]);
 
     const staffFocusLines = activeProject?.staffFocusToday?.filter((s) => s?.trim()) ?? [];
+
+    const activePriorityDef = useMemo(() => {
+        const { priorityId } = readVenturePriority(activeProject);
+        return priorityId ? getPriorityById(priorityId) : undefined;
+    }, [activeProject]);
 
     const kanbanTasks = useMemo(() => {
         const raw = activeProject?.kanban;
@@ -1515,98 +1521,107 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             ))}
                         </div>
 
-                        {/* ── HERO GRID: Venture brief + Command center ── */}
+                        {/* ── VENTURE CONTEXT + COMMAND CENTER ── */}
                         <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
-                            {/* LEFT — Venture brief */}
+                            {/* LEFT — Research context */}
                             <div
-                                className="flex flex-col gap-5 overflow-hidden rounded-2xl border p-6"
+                                className="flex flex-col gap-4 overflow-hidden rounded-2xl border p-5"
                                 style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
                             >
-                                {/* Direction + phase */}
-                                <div className="flex items-start justify-between gap-4">
-                                    <div className="min-w-0 flex-1">
-                                        <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>
-                                            Strategic direction
+                                {/* Active research focus — user-defined, drives all AI research */}
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="min-w-0">
+                                        <p className="font-mono text-[9px] uppercase tracking-[0.18em]" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                                            Research focus
                                         </p>
-                                        {strategicExcerpt ? (
-                                            <p className="text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
-                                                {strategicExcerpt.slice(0, 300)}{strategicExcerpt.length > 300 ? '…' : ''}
-                                            </p>
-                                        ) : (
-                                            <p className="text-sm" style={{ color: THEME.text.muted }}>
-                                                No strategic intent yet — add your vision in the CEO desk.
-                                            </p>
-                                        )}
-                                    </div>
-                                    <div className="flex shrink-0 flex-col items-end gap-2">
-                                        {currentPhaseInfo && (
-                                            <div
-                                                className="rounded-lg border px-2.5 py-1.5 text-right"
-                                                style={{ borderColor: `${THEME.chart.violet}30`, background: `${THEME.chart.violet}0D` }}
-                                            >
-                                                <p className="text-[9px] uppercase tracking-wider" style={{ color: THEME.chart.violet }}>{currentPhaseInfo.sub}</p>
-                                                <p className="mt-0.5 text-[12px] font-semibold leading-tight" style={{ color: THEME.text.primary }}>
-                                                    {currentPhaseInfo.title.slice(0, 28)}
+                                        {activePriorityDef ? (
+                                            <>
+                                                <p className="mt-1 text-[15px] font-semibold leading-tight" style={{ color: THEME.text.primary }}>
+                                                    {activePriorityDef.label}
                                                 </p>
-                                            </div>
+                                                <p className="mt-0.5 text-[12px]" style={{ color: THEME.text.muted }}>
+                                                    {activePriorityDef.tagline}
+                                                </p>
+                                            </>
+                                        ) : (
+                                            <p className="mt-1 text-[13px]" style={{ color: THEME.text.muted }}>
+                                                No focus set — Dexo runs full-stack research
+                                            </p>
                                         )}
-                                        <button
-                                            type="button"
-                                            onClick={() => switchRoom('ceo')}
-                                            className="text-[11px] font-medium underline-offset-2 transition hover:underline"
-                                            style={{ color: THEME.accent.info }}
-                                        >
-                                            CEO desk →
-                                        </button>
                                     </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => switchRoom('dexo')}
+                                        className="shrink-0 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition hover:opacity-80"
+                                        style={{ borderColor: 'rgba(116,86,255,0.25)', background: 'rgba(116,86,255,0.08)', color: '#a78bfa' }}
+                                    >
+                                        Change
+                                    </button>
                                 </div>
 
-                                {/* Focus today */}
-                                {staffFocusLines.length > 0 && (
+                                <div className="h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
+
+                                {/* Today's research output — 3 lines max, truncated */}
+                                {staffFocusLines.length > 0 ? (
                                     <div>
-                                        <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>Focus today</p>
+                                        <p className="mb-2 font-mono text-[9px] uppercase tracking-[0.18em]" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                                            Today
+                                        </p>
                                         <ul className="space-y-1.5">
-                                            {staffFocusLines.slice(0, 5).map((line, i) => (
-                                                <li key={i} className="flex items-start gap-2 text-[13px] leading-snug" style={{ color: THEME.text.secondary }}>
-                                                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: THEME.accent.primary }} />
-                                                    {line}
+                                            {staffFocusLines.slice(0, 3).map((line, i) => (
+                                                <li key={i} className="flex items-start gap-2 text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
+                                                    <span className="mt-[5px] h-1 w-1 shrink-0 rounded-full" style={{ background: THEME.accent.primary }} />
+                                                    {line.length > 90 ? `${line.slice(0, 87)}…` : line}
                                                 </li>
                                             ))}
                                         </ul>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-between gap-3">
+                                        <p className="text-[12px]" style={{ color: THEME.text.muted }}>
+                                            No research yet — run Staff Sync to generate insights.
+                                        </p>
+                                        <button
+                                            type="button"
+                                            onClick={() => runAgentStaffSync()}
+                                            disabled={agentSyncRunning}
+                                            className="shrink-0 flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition hover:opacity-80"
+                                            style={{ borderColor: THEME.border.subtle, color: THEME.text.secondary, opacity: agentSyncRunning ? 0.5 : 1 }}
+                                        >
+                                            <RefreshCw className={`h-3 w-3 ${agentSyncRunning ? 'animate-spin' : ''}`} />
+                                            Sync
+                                        </button>
                                     </div>
                                 )}
 
-                                {/* Attention items */}
+                                {/* Pending items — title only, no verbose AI text */}
                                 {staffAttentionPending.length > 0 && (
-                                    <div
-                                        className="rounded-xl border p-3.5"
-                                        style={{ borderColor: 'rgba(245,158,11,0.2)', background: 'rgba(245,158,11,0.06)' }}
-                                    >
-                                        <div className="mb-2 flex items-center gap-1.5">
-                                            <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: '#f59e0b' }} />
-                                            <p className="text-[11px] font-semibold" style={{ color: '#f59e0b' }}>
-                                                {staffAttentionPending.length} item{staffAttentionPending.length > 1 ? 's' : ''} need attention
+                                    <>
+                                        <div className="h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
+                                        <div>
+                                            <p className="mb-1.5 font-mono text-[9px] uppercase tracking-[0.18em]" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                                                Pending · {staffAttentionPending.length}
                                             </p>
+                                            <ul className="space-y-0.5">
+                                                {staffAttentionPending.slice(0, 3).map((a) => (
+                                                    <li key={a.id}>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => { setDexoBootstrap(buildDexoStaffAttentionBootstrap(a)); switchRoom('dexo'); }}
+                                                            className="group flex w-full items-center justify-between gap-3 rounded-lg py-1.5 text-left transition"
+                                                        >
+                                                            <span className="min-w-0 flex-1 truncate text-[12px]" style={{ color: THEME.text.secondary }}>
+                                                                {a.title}
+                                                            </span>
+                                                            <span className="shrink-0 text-[10px] font-medium opacity-0 transition-opacity group-hover:opacity-100" style={{ color: '#7456ff' }}>
+                                                                Ask Dexo →
+                                                            </span>
+                                                        </button>
+                                                    </li>
+                                                ))}
+                                            </ul>
                                         </div>
-                                        <ul className="space-y-1.5">
-                                            {staffAttentionPending.slice(0, 3).map((a) => (
-                                                <li key={a.id} className="flex items-start justify-between gap-3">
-                                                    <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
-                                                        <span className="font-medium" style={{ color: THEME.text.primary }}>{a.title}</span>
-                                                        {' — '}{a.message.slice(0, 80)}{a.message.length > 80 ? '…' : ''}
-                                                    </p>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => { setDexoBootstrap(buildDexoStaffAttentionBootstrap(a)); switchRoom('dexo'); }}
-                                                        className="shrink-0 text-[10px] font-semibold underline-offset-2 hover:underline"
-                                                        style={{ color: THEME.accent.info }}
-                                                    >
-                                                        Ask Dexo
-                                                    </button>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
+                                    </>
                                 )}
                             </div>
 
