@@ -16,6 +16,7 @@ import { DeskSyncSidebarControls } from '@/components/ui/DeskSyncSidebarControls
 type Props = {
     onLogout: () => void;
     onNewVenture: () => void;
+    onUpgrade?: () => void;
     onNavigate?: () => void;
     variant?: 'floating' | 'flush';
     desktopWorkspaceStrip?: boolean;
@@ -26,6 +27,7 @@ type Props = {
 export function LeftRail({
     onLogout,
     onNewVenture,
+    onUpgrade,
     onNavigate,
     onToggleIntel,
 }: Props) {
@@ -211,7 +213,7 @@ export function LeftRail({
                 <div className="mt-auto shrink-0 border-t border-[var(--border)] px-3 pb-4 pt-3 space-y-2">
                     <SectionGuideRailButton />
                     <div className="flex justify-center">
-                        <TokenDisplay compact showCosts={false} />
+                        <TokenDisplay compact showCosts={false} onRequestUpgrade={onUpgrade} />
                     </div>
                     {!isLoaded ? (
                         <div className="h-9" aria-hidden />
