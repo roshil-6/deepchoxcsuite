@@ -58,7 +58,7 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
 
     return (
         <div
-            className="flex h-full min-h-0 w-full flex-col bg-transparent text-[var(--text-primary)] pb-[calc(3.75rem+env(safe-area-inset-bottom,0px))] lg:pb-0"
+            className="flex h-full min-h-0 w-full flex-col bg-transparent text-[var(--text-primary)] pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] lg:pb-0"
         >
             {/* Mobile Header */}
             <header
@@ -146,22 +146,23 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
                                 animate={{ x: 0 }}
                                 exit={{ x: -320 }}
                                 transition={{ type: 'spring', stiffness: 360, damping: 34 }}
-                                className="fixed inset-y-3 left-3 z-[70] flex h-[calc(100%-1.5rem)] w-[min(20rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-[1.5rem] border border-[var(--border)] lg:hidden"
+                                className="fixed inset-y-2 left-2 z-[70] flex h-[calc(100%-1rem)] w-[min(20rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-[1.35rem] border border-[var(--border)] lg:hidden"
                                 style={{
-                                    background: 'rgba(20,20,22,0.97)',
+                                    background: 'rgba(18,18,22,0.98)',
                                     boxShadow: 'var(--shadow-panel)',
-                                    backdropFilter: 'blur(10px)',
-                                    WebkitBackdropFilter: 'blur(10px)',
+                                    backdropFilter: 'blur(12px)',
+                                    WebkitBackdropFilter: 'blur(12px)',
                                 }}
                             >
-                                    <div className="flex shrink-0 items-center justify-end p-3">
+                                    <div className="flex shrink-0 items-center justify-between border-b border-[var(--border)] px-4 py-3">
+                                        <span className="font-sans text-[13px] font-semibold text-[var(--text-primary)]">Navigation</span>
                                         <button
                                             type="button"
                                             onClick={() => setMobileNav(false)}
-                                            className="rounded-xl p-2 text-[var(--text-secondary)] transition-colors hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]"
+                                            className="flex h-9 w-9 items-center justify-center rounded-xl text-[var(--text-secondary)] transition-colors hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]"
                                             aria-label="Close"
                                         >
-                                            <X className="h-5 w-5" />
+                                            <X className="h-4 w-4" />
                                         </button>
                                     </div>
                                     <div className="min-h-0 flex-1 overflow-hidden">

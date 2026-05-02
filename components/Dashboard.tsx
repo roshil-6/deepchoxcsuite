@@ -1051,16 +1051,16 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
 
             {/* HEADER */}
             <header className="sticky top-0 z-40 border-b backdrop-blur-xl" style={{ background: 'rgba(30,30,30,0.88)', borderColor: THEME.border.subtle }}>
-                <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-                    <div className="flex items-center gap-4">
+                <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 sm:px-6 py-3 sm:py-4">
+                    <div className="flex items-center gap-2 sm:gap-4 min-w-0">
                         <div
-                            className="flex h-10 w-10 items-center justify-center rounded-xl"
+                            className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl"
                             style={{ background: 'rgba(116,86,255,0.10)' }}
                         >
-                            <LayoutDashboard className="h-5 w-5" style={{ color: THEME.accent.secondary }} />
+                            <LayoutDashboard className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: THEME.accent.secondary }} />
                         </div>
-                        <div>
-                            <h1 className="text-xl font-semibold tracking-tight" style={{ color: THEME.text.primary }}>
+                        <div className="min-w-0">
+                            <h1 className="text-base sm:text-xl font-semibold tracking-tight truncate" style={{ color: THEME.text.primary }}>
                                 {activeProject.name}
                             </h1>
                             <div className="flex items-center gap-3 text-xs" style={{ color: THEME.text.tertiary }}>
@@ -1106,13 +1106,13 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                 </div>
 
                 {/* TAB NAVIGATION */}
-                <div className="mx-auto max-w-7xl px-6">
-                    <div className="flex gap-1">
+                <div className="mx-auto max-w-7xl px-3 sm:px-6">
+                    <div className="flex gap-0.5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                         {dashboardTabs.map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className="relative px-4 py-3 text-sm font-medium transition-colors"
+                                className="relative shrink-0 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-medium transition-colors"
                                 style={{ color: activeTab === tab.id ? THEME.text.primary : THEME.text.muted }}
                             >
                                 {tab.label}
@@ -1129,7 +1129,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
             </header>
 
             {/* MAIN CONTENT */}
-            <main className="mx-auto max-w-7xl px-6 py-8">
+            <main className="mx-auto max-w-7xl px-3 sm:px-6 py-4 sm:py-8">
                 {/* CONTEXTUAL HINTS */}
                 <div className="mb-4 space-y-2">
                     <GuideHint

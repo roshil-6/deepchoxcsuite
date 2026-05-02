@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Sparkles, LayoutGrid, Layers, Menu } from 'lucide-react';
+import { Sparkles, LayoutGrid, Layers, MessageSquare, Menu } from 'lucide-react';
 import { useOffice } from '@/lib/OfficeContext';
 
 type Props = {
@@ -9,9 +9,10 @@ type Props = {
 };
 
 const BOTTOM_NAV = [
-    { room: 'dexo'      as const, icon: Sparkles,    label: 'Dexo'     },
-    { room: 'dashboard' as const, icon: LayoutGrid,   label: 'Overview' },
-    { room: 'desks_hub' as const, icon: Layers,       label: 'Desks'    },
+    { room: 'dexo'              as const, icon: Sparkles,       label: 'Dexo'      },
+    { room: 'dashboard'         as const, icon: LayoutGrid,     label: 'Overview'  },
+    { room: 'desks_hub'         as const, icon: Layers,         label: 'Desks'     },
+    { room: 'personal_assistant' as const, icon: MessageSquare, label: 'Assistant' },
 ] as const;
 
 export function MobileBottomNav({ onOpenMore }: Props) {
@@ -23,9 +24,15 @@ export function MobileBottomNav({ onOpenMore }: Props) {
     };
 
     return (
-        <div
-            className="fixed inset-x-0 bottom-0 z-50 flex items-start justify-around border-t border-[var(--border)] px-1 lg:hidden"
-            style={{ background: 'rgba(14,14,17,0.95)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        <nav
+            aria-label="Mobile navigation"
+            className="fixed inset-x-0 bottom-0 z-50 flex items-start justify-around border-t border-[var(--border)] px-0.5 lg:hidden"
+            style={{
+                background: 'rgba(12,12,15,0.97)',
+                backdropFilter: 'blur(14px)',
+                WebkitBackdropFilter: 'blur(14px)',
+                paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+            }}
         >
             {BOTTOM_NAV.map(({ room, icon: Icon, label }) => {
                 const active = activeRoom === room;
@@ -34,17 +41,20 @@ export function MobileBottomNav({ onOpenMore }: Props) {
                         key={room}
                         type="button"
                         onClick={() => go(room)}
-                        className={`flex flex-1 flex-col items-center gap-1 pt-2.5 pb-2 transition-colors ${
+                        aria-label={label}
+                        aria-current={active ? 'page' : undefined}
+                        className={`flex flex-1 flex-col items-center gap-1 pt-2.5 pb-1.5 transition-colors ${
                             active ? 'text-[#9d88ff]' : 'text-[var(--muted)] hover:text-[var(--text-secondary)]'
                         }`}
                     >
                         <div className="relative">
-                            <Icon className="h-5 w-5" strokeWidth={active ? 2 : 1.75} />
+                            {/* Active pill indicator above icon */}
                             {active && (
-                                <span className="absolute -bottom-1 left-1/2 h-0.5 w-3 -translate-x-1/2 rounded-full bg-[#9d88ff]" />
+                                <span className="absolute -top-1 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-[#9d88ff]" />
                             )}
+                            <Icon className="h-[1.2rem] w-[1.2rem]" strokeWidth={active ? 2.1 : 1.7} />
                         </div>
-                        <span className={`font-sans text-[10px] font-medium leading-none ${active ? 'text-[#9d88ff]' : ''}`}>
+                        <span className={`font-sans text-[9px] leading-none ${active ? 'font-semibold text-[#9d88ff]' : 'font-medium'}`}>
                             {label}
                         </span>
                     </button>
@@ -55,11 +65,12 @@ export function MobileBottomNav({ onOpenMore }: Props) {
             <button
                 type="button"
                 onClick={onOpenMore}
-                className="flex flex-1 flex-col items-center gap-1 pt-2.5 pb-2 text-[var(--muted)] transition-colors hover:text-[var(--text-secondary)]"
+                aria-label="More navigation options"
+                className="flex flex-1 flex-col items-center gap-1 pt-2.5 pb-1.5 text-[var(--muted)] transition-colors hover:text-[var(--text-secondary)]"
             >
-                <Menu className="h-5 w-5" strokeWidth={1.75} />
-                <span className="font-sans text-[10px] font-medium leading-none">More</span>
+                <Menu className="h-[1.2rem] w-[1.2rem]" strokeWidth={1.7} />
+                <span className="font-sans text-[9px] font-medium leading-none">More</span>
             </button>
-        </div>
+        </nav>
     );
 }

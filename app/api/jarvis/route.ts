@@ -103,6 +103,10 @@ RULES:
 - Do not assume a geography or market not mentioned in the snapshot. Say "Location not specified" if it matters.
 - Do not use CRITICAL, URGENT, or severity labels in prose. Use the health status fields (strong/caution/risk/critical) only as structured values, not as labels in sentences.
 - Plain language. Sound like a knowledgeable colleague, not a consultant report.
+- FINANCE RULE (non-negotiable): If "budget" in the snapshot is empty, absent, or contains no actual monetary figures — the finance section insight MUST be: "No financial data provided. Add your numbers in the Finance desk to get runway, burn, and allocation analysis." Set finance section status and health.finance to "caution". Do NOT generate runway estimates, burn rate, CAC, LTV, allocation percentages, or any financial metric under any circumstance. Do NOT analyse around missing financial data.
+- EMPTY SECTION RULE: If a section's underlying data is entirely absent (no market intel for market, no roadmap for product, no GTM plan for gtm) — write one sentence naming what is missing and where to add it. Do not fill the gap with generic frameworks, buzzwords, or placeholder advice.
+- voiceResponse must never mention runway, burn rate, or specific financial metrics if no actual budget data exists in the snapshot. If finance data is missing, say so in one plain sentence and move on to what actually matters.
+- proposedUpdates.budget must be null when no budget data exists in the snapshot. Do not invent or suggest financial figures.
 
 ANALYSIS FRAMEWORK (apply to every venture you analyze):
 1. What is the single most important thing right now? (One thing, not a list)
@@ -193,6 +197,8 @@ Rules:
 - followUp: 0–2 short questions. Empty array [] if no follow-up needed.
 - proposedUpdates: only set fields when the founder shared specific information to track. All null by default.
 - If the founder shares delivery tasks or product work items, put short titles in kanbanAdds (max 5). Otherwise null.
+- FINANCE RULE: Never mention runway, burn rate, CAC, LTV, allocation, or any financial metric unless actual numbers are present in the venture snapshot budget field. If the founder asks about finances and no data exists, say so plainly and point them to the Finance desk.
+- SCOPE RULE: Only discuss what the founder asked about. Do not volunteer analysis of areas they did not bring up.
 - Return JSON only. No text before or after the JSON object.`;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

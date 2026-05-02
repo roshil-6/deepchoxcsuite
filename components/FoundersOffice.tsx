@@ -98,61 +98,63 @@ export function FoundersOffice() {
         <div className={`flex flex-col h-full overflow-y-auto custom-scrollbar transition-colors duration-700 font-sans ${deepWorkMode ? 'bg-black text-white' : 'bg-zinc-950 text-zinc-100'}`}>
 
             {/* Header Section */}
-            <header className="px-10 py-12 border-b border-zinc-900 bg-zinc-950/50 backdrop-blur-md sticky top-0 z-20">
-                <div className="max-w-6xl mx-auto flex justify-between items-end">
-                    <div>
-                        <h5 className="text-xs font-bold uppercase tracking-widest mb-2 text-zinc-500">
-                            {currentTime.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
-                        </h5>
-                        <h1 className="text-4xl font-extrabold tracking-tight mb-2 text-white">
-                            Good Morning, Founder.
-                        </h1>
-                        <p className="text-lg font-medium text-zinc-400">
-                            Workspace view — <span className="text-zinc-300">no critical alerts</span> surfaced here. Capacity and financial figures below are{' '}
-                            <span className="font-semibold text-zinc-300">illustrative placeholders</span>, not live telemetry.
-                        </p>
-                    </div>
-
-                    <div className="flex items-center gap-6">
-                        <div className="text-right hidden md:block">
-                            <div className="text-3xl font-bold font-mono tracking-tight text-white">
-                                {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </div>
-                            <div className="text-xs font-bold uppercase tracking-wide text-zinc-600">
-                                Local Time
-                            </div>
+            <header className="px-4 py-5 sm:px-6 sm:py-7 lg:px-10 lg:py-10 border-b border-zinc-900 bg-zinc-950/50 backdrop-blur-md sticky top-0 z-20">
+                <div className="max-w-6xl mx-auto">
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                            <h5 className="text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1.5 text-zinc-500">
+                                {currentTime.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
+                            </h5>
+                            <h1 className="text-xl sm:text-2xl lg:text-4xl font-extrabold tracking-tight mb-1.5 text-white leading-tight">
+                                Good Morning, Founder.
+                            </h1>
+                            <p className="text-xs sm:text-sm lg:text-base font-medium text-zinc-400 max-w-xl leading-relaxed">
+                                Workspace view — <span className="text-zinc-300">no critical alerts</span> surfaced here. Figures below are{' '}
+                                <span className="font-semibold text-zinc-300">illustrative placeholders</span>, not live telemetry.
+                            </p>
                         </div>
-                        <button
-                            onClick={() => toggleDeepWork(!deepWorkMode)}
-                            className={`group relative overflow-hidden rounded-2xl px-6 py-4 transition-all shadow-lg border ${deepWorkMode
-                                ? 'bg-zinc-900 border-zinc-800 hover:border-violet-500/50'
-                                : 'bg-zinc-900 border-zinc-800 hover:border-indigo-500/50'
-                                }`}
-                        >
-                            <div className="relative z-10 flex items-center gap-3">
-                                <div className={`p-2 rounded-lg ${deepWorkMode ? 'bg-black text-violet-400' : 'bg-black text-indigo-400'}`}>
-                                    <Zap className="w-5 h-5" />
+
+                        <div className="flex items-center gap-3 sm:gap-5 shrink-0">
+                            <div className="text-right hidden sm:block">
+                                <div className="text-xl sm:text-2xl lg:text-3xl font-bold font-mono tracking-tight text-white">
+                                    {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </div>
-                                <div className="text-left">
-                                    <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
-                                        Focus Mode
-                                    </div>
-                                    <div className="text-sm font-bold text-white">
-                                        {deepWorkMode ? 'Active Protocol' : 'Standard Ops'}
-                                    </div>
+                                <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-600">
+                                    Local Time
                                 </div>
                             </div>
-                        </button>
+                            <button
+                                onClick={() => toggleDeepWork(!deepWorkMode)}
+                                className={`group relative overflow-hidden rounded-xl sm:rounded-2xl px-3 py-2 sm:px-5 sm:py-3 transition-all shadow-lg border ${deepWorkMode
+                                    ? 'bg-zinc-900 border-zinc-800 hover:border-violet-500/50'
+                                    : 'bg-zinc-900 border-zinc-800 hover:border-indigo-500/50'
+                                    }`}
+                            >
+                                <div className="relative z-10 flex items-center gap-2">
+                                    <div className={`p-1.5 sm:p-2 rounded-lg ${deepWorkMode ? 'bg-black text-violet-400' : 'bg-black text-indigo-400'}`}>
+                                        <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
+                                    </div>
+                                    <div className="text-left hidden xs:block">
+                                        <div className="text-[9px] font-bold uppercase tracking-widest text-zinc-500">
+                                            Focus
+                                        </div>
+                                        <div className="text-xs sm:text-sm font-bold text-white">
+                                            {deepWorkMode ? 'Active' : 'Standard'}
+                                        </div>
+                                    </div>
+                                </div>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </header>
 
             {/* Main Dashboard Content */}
-            <main className="flex-1 px-10 py-10">
-                <div className="max-w-6xl mx-auto space-y-10">
+            <main className="flex-1 px-4 py-5 sm:px-6 sm:py-7 lg:px-10 lg:py-10">
+                <div className="max-w-6xl mx-auto space-y-6 sm:space-y-10">
 
                     {/* Key metrics — labeled demo so numbers are not mistaken for real KPIs */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6">
                         {[
                             { label: 'Runway', value: '—', hint: 'Demo', icon: Activity },
                             { label: 'Burn rate', value: '—', hint: 'Demo', icon: TrendingUp },
@@ -161,31 +163,31 @@ export function FoundersOffice() {
                         ].map((stat, idx) => (
                             <div
                                 key={idx}
-                                className="p-6 rounded-2xl border border-zinc-900 bg-zinc-900/40 transition-all hover:-translate-y-1 hover:border-zinc-700 hover:bg-zinc-900/60 shadow-lg"
+                                className="p-3 sm:p-6 rounded-xl sm:rounded-2xl border border-zinc-900 bg-zinc-900/40 transition-all hover:-translate-y-1 hover:border-zinc-700 hover:bg-zinc-900/60 shadow-lg"
                                 title="Placeholder — connect your data source for real KPIs"
                             >
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className="p-2.5 rounded-xl bg-black border border-zinc-800 text-zinc-400">
-                                        <stat.icon className="w-5 h-5" />
+                                <div className="flex justify-between items-start mb-3 sm:mb-4">
+                                    <div className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-black border border-zinc-800 text-zinc-400">
+                                        <stat.icon className="w-4 h-4 sm:w-5 sm:h-5" />
                                     </div>
-                                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border border-zinc-800 bg-zinc-950 text-zinc-500">
+                                    <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full border border-zinc-800 bg-zinc-950 text-zinc-500">
                                         {stat.hint}
                                     </span>
                                 </div>
                                 <div>
-                                    <div className="text-xs font-bold uppercase tracking-wider mb-1 text-zinc-500">{stat.label}</div>
-                                    <div className="text-2xl font-extrabold tracking-tight text-zinc-500">{stat.value}</div>
+                                    <div className="text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-0.5 sm:mb-1 text-zinc-500">{stat.label}</div>
+                                    <div className="text-xl sm:text-2xl font-extrabold tracking-tight text-zinc-500">{stat.value}</div>
                                 </div>
                             </div>
                         ))}
                     </div>
 
                     {/* Central Visualization Section */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
 
                         {/* Main Chart Card */}
-                        <div className="lg:col-span-2 p-8 rounded-3xl border border-zinc-900 bg-zinc-900/30 shadow-xl">
-                            <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-start mb-8">
+                        <div className="lg:col-span-2 p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-3xl border border-zinc-900 bg-zinc-900/30 shadow-xl">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start mb-5 sm:mb-8">
                                 <div>
                                     <p className="text-[10px] font-bold uppercase tracking-widest text-amber-500/90 mb-1">Demo visualization</p>
                                     <h3 className="text-lg font-bold text-white">Sample focus &amp; energy curve</h3>
@@ -339,7 +341,7 @@ export function FoundersOffice() {
                         </div>
 
                         {/* Side Activity Card */}
-                        <div className="p-8 rounded-3xl border border-zinc-900 bg-zinc-900/30 flex flex-col shadow-xl">
+                        <div className="p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-3xl border border-zinc-900 bg-zinc-900/30 flex flex-col shadow-xl">
                             <div className="mb-6">
                                 <p className="text-[10px] font-bold uppercase tracking-widest text-amber-500/90 mb-1">Sample copy</p>
                                 <h3 className="text-lg font-bold text-white">Intelligence feed (examples)</h3>

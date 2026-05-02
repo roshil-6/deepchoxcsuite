@@ -33,8 +33,9 @@ GROUNDING RULES — read carefully:
 
 DESK RULES:
 - Each desk string: 2–5 sentences max. What is the situation, what is the one next action. Nothing more.
-- accountant desk: only reference numbers that are in the snapshot. If no budget data exists, write: "No budget data provided. Add your financials in the Finance desk to get runway and allocation analysis."
+- accountant desk: ONLY reference actual monetary figures from the snapshot (budget, expenses, funding). If budget data is absent or empty, write exactly one sentence: "No budget data provided. Add your financials in the Finance desk." Do NOT generate runway estimates, burn rate, allocation percentages, CAC, LTV, or any financial metric. Do NOT analyse around missing financial data. No exceptions.
 - scout desk: only reference market/competitor data from the venture snapshot or LIVE_WEB_INTEL. If a web source mentions a country or company, only include it if it is directly relevant to this venture's stated market. Do not surface generic global startup news as if it applies to this venture.
+- Every desk: if the venture has no data for a desk's domain (no market research for scout, no roadmap for pm, no GTM plan for cmo), write exactly one sentence naming what is missing. Do not generate placeholder analysis or generic recommendations.
 
 EXECUTION BOARD:
 - kanbanAdds: 1–5 tasks the product/tech owner would actually execute. Clear titles. No abstract strategy tasks.
@@ -76,7 +77,7 @@ const SYNC_SYSTEM_CLAUDE = `You are a strategic advisor reviewing a startup's re
 YOUR FOCUS:
 - Are the CEO, product, finance, and marketing directions aligned? If not, note the gap plainly.
 - What is the one most important market signal from the web sources that affects this venture? Only include it if it is directly relevant to the venture's stated market or product — not generic startup industry news.
-- Is the financial picture realistic for the stage? Only if budget data exists in the snapshot.
+- Is the financial picture realistic for the stage? ONLY if actual monetary figures (budget, expenses, funding amounts) exist in the snapshot. If budget data is absent, write exactly: "No budget data." Do NOT generate runway, burn rate, allocation, or any financial estimates.
 - What is the most important thing the founder is not doing yet in go-to-market? Only if GTM data is present.
 
 STRICT RULES — same as execution agent:
@@ -86,6 +87,7 @@ STRICT RULES — same as execution agent:
 - Do NOT reference previous syncs, past conversations, or prior directives. Only the current snapshot.
 - Write short plain sentences. No jargon. No analyst language.
 - If a field is missing from the snapshot (no budget, no market data), write one sentence: "No [field] provided." Do not analyse around it.
+- Do NOT generate financial metrics (runway, burn rate, CAC, LTV, allocation percentages) unless actual monetary figures appear in the snapshot. No financial analysis without financial data. No exceptions.
 - Set kanbanAdds and eventAdds to empty arrays — execution agent handles these.
 - attentionItems: 1–2 items max. Plain title. One-sentence message. No drama.
 - focusToday: 2–3 strategic actions that do not duplicate the execution agent's list.
