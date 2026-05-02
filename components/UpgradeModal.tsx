@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Check, Infinity } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useUser } from '@clerk/nextjs';
@@ -27,10 +27,14 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
     const pricingRegion = usePricingRegion();
     const PRO_BILLING = getProBillingAmounts();
 
-    if (!open) return null;
+    // If they just became Pro (webhook + tab focus reload), close the modal.
+    // Must be in a useEffect — calling onClose() during render is a React violation
+    // that causes "Cannot update a component while rendering a different component".
+    useEffect(() => {
+        if (isPaidPro && awaitingPayment) onClose();
+    }, [isPaidPro, awaitingPayment, onClose]);
 
-    // If they just became Pro (webhook + tab focus reload), close the modal
-    if (isPaidPro && awaitingPayment) { onClose(); }
+    if (!open) return null;
 
     const payOnRazorpay = () => {
         const opened = openRazorpayPaymentPage('monthly', user?.id);

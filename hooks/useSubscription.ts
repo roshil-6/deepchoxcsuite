@@ -110,8 +110,14 @@ export function useSubscription(): SubscriptionState {
         localStorage.setItem(PLAN_STORAGE_KEY, 'free');
         setPlanId('free');
         emitSubscriptionChanged();
-        // Persist to Clerk so the downgrade survives a refresh
-        void fetch('/api/user/downgrade', { method: 'POST' }).catch(() => { /* non-fatal */ });
+        // Persist to Clerk so the downgrade survives a refresh.
+        // If the call fails, roll back the optimistic update — otherwise Clerk still
+        // holds 'pro' and will silently re-grant Pro on the next page load.
+        void fetch('/api/user/downgrade', { method: 'POST' }).catch(() => {
+            localStorage.setItem(PLAN_STORAGE_KEY, 'pro');
+            setPlanId('pro');
+            emitSubscriptionChanged();
+        });
     }, []);
 
     return {

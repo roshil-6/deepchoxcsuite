@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Coins, Crown, AlertTriangle, Sparkles, Zap } from 'lucide-react';
+import { Coins, Crown, AlertTriangle, Zap } from 'lucide-react';
 import { useTokens } from '@/lib/tokens/useTokens';
 import { formatTokens, TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 import { openRazorpayPaymentPageWithFallback } from '@/lib/razorpayPaymentLink';
