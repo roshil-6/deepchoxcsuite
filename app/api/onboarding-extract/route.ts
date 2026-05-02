@@ -4,6 +4,12 @@ import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rateLimit'
 
 const SYSTEM = `You are helping founders onboard into a venture workspace. From the user's text (notes, pitch paste, voice transcript, or document text), extract structured fields.
 
+RULES:
+- Only extract information that is stated or clearly implied in the text. Do not invent details.
+- If a field is not inferable from the text, use an empty string "".
+- Do not assume a geography, country, or market unless the text mentions one explicitly.
+- Do not add market size estimates, industry trends, or context not present in the input.
+
 Return ONE JSON object only (no markdown fence) with exactly these keys:
 - projectName: string (concise venture name)
 - strategicIntent: string (2–4 sentences: what they are building, for whom, why now, what success looks like in 6–12 months — empty if not inferable)
@@ -14,7 +20,7 @@ Return ONE JSON object only (no markdown fence) with exactly these keys:
 - timeline: string — MUST be exactly one of: "Q1 (Early Stage)", "Q2 (Launch)", "Q3 (Growth)", "12+ Months" (pick best fit)
 - resources: string (team, capital, assets mentioned — or empty)
 - valueProposition: string (why it matters — or empty)
-- challenges: string (risks/blockers — or empty)
+- challenges: string (specific blockers or risks mentioned — or empty)
 
 Use empty string "" for anything not inferable. Keep each field under 800 characters.`;
 
