@@ -1050,7 +1050,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
             })()}
 
             {/* HEADER */}
-            <header className="sticky top-0 z-40 border-b backdrop-blur-xl" style={{ background: 'rgba(30,30,30,0.88)', borderColor: THEME.border.subtle }}>
+            <header className="border-b" style={{ background: 'rgba(22,22,26,0.95)', borderColor: THEME.border.subtle }}>
                 <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 sm:px-6 py-3 sm:py-4">
                     <div className="flex items-center gap-2 sm:gap-4 min-w-0">
                         <div
@@ -1129,9 +1129,9 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
             </header>
 
             {/* MAIN CONTENT */}
-            <main className="mx-auto max-w-7xl px-3 sm:px-6 py-4 sm:py-8">
+            <main className="mx-auto max-w-7xl px-3 sm:px-6 py-4 sm:py-5">
                 {/* CONTEXTUAL HINTS */}
-                <div className="mb-4 space-y-2">
+                <div className="mb-3 flex flex-col gap-2">
                     <GuideHint
                         id="dash-no-strategy"
                         when={!hasIntent && !narrativeRich}
@@ -1152,7 +1152,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
 
                 {/* OVERVIEW TAB */}
                 {activeTab === 'overview' && (
-                    <div className="space-y-5">
+                    <div className="flex flex-col gap-4">
 
                         {/* ── DEXO RESEARCH GUIDE ── */}
 
@@ -1446,12 +1446,9 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 >
                                     <Cpu className="h-7 w-7" style={{ color: THEME.accent.primary }} />
                                 </div>
-                                <div className="max-w-xs">
-                                    <h3 className="text-base font-semibold" style={{ color: THEME.text.primary }}>Dexo Research Guide</h3>
-                                    <p className="mt-1 text-[10px] font-semibold uppercase tracking-wider" style={{ color: THEME.text.muted }}>Source: Staff Sync · 5 desks</p>
-                                    <p className="mt-2 text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
-                                        Run Staff Sync to activate your AI team. Each desk researches a functional area and Dexo guides you through what was found and how to act on it.
-                                    </p>
+                                <div>
+                                    <h3 className="text-sm font-semibold" style={{ color: THEME.text.primary }}>Dexo Research Guide</h3>
+                                    <p className="mt-0.5 text-[10px]" style={{ color: THEME.text.muted }}>Run Staff Sync to activate all 5 desks</p>
                                 </div>
                                 <button
                                     onClick={() => runAgentStaffSync()}
@@ -1522,7 +1519,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         </div>
 
                         {/* ── VENTURE CONTEXT + COMMAND CENTER ── */}
-                        <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
+                        <div className="grid gap-3 sm:gap-4 lg:grid-cols-[1fr_300px]">
                             {/* LEFT — Research context */}
                             <div
                                 className="flex flex-col gap-4 overflow-hidden rounded-2xl border p-5"
@@ -1823,9 +1820,6 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             className="overflow-hidden rounded-2xl border"
                             style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
                         >
-                            <div className="border-b px-5 py-3.5" style={{ borderColor: THEME.border.subtle }}>
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>AI Tools</p>
-                            </div>
                             <div className="grid grid-cols-3 divide-x sm:grid-cols-5" style={{ borderColor: THEME.border.subtle }}>
                                 {DASH_AI_TOOLS.map(({ label, desc, url, Logo, color }) => (
                                     <a
@@ -1856,9 +1850,6 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             className="overflow-hidden rounded-2xl border"
                             style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
                         >
-                            <div className="border-b px-5 py-3.5" style={{ borderColor: THEME.border.subtle }}>
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>Workspace</p>
-                            </div>
                             <div className="grid grid-cols-2 divide-x divide-y sm:grid-cols-3 lg:grid-cols-6">
                                 {([
                                     { id: 'ceo', label: 'CEO', sub: 'Strategy', icon: Lightbulb, color: THEME.chart.violet, room: 'ceo' as const },
@@ -1916,7 +1907,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                 )}
 
                 {activeTab === 'dexo_daily' && (
-                    <div className="space-y-6">
+                    <div className="flex flex-col gap-4">
                         <DexoOpsPanel activeProject={activeProject} />
                         <DexoDailyBriefPanel activeProject={activeProject} autoRunPulse />
                     </div>
@@ -2003,35 +1994,16 @@ function PortfolioView({
                 </div>
             </header>
 
-            <main className="mx-auto max-w-7xl space-y-12 px-6 py-8">
+            <main className="mx-auto max-w-7xl flex flex-col gap-8 px-3 sm:px-6 py-4 sm:py-6">
 
-                {/* ════════════════════════════════════════════════════════
-                    § A  MORNING INTELLIGENCE BRIEF
-                         Daily Tavily-backed web research per venture.
-                         Read the headline, check the sources, then open
-                         the venture to discuss findings with Dexo.
-                ════════════════════════════════════════════════════════ */}
+                {/* ── Morning Intel Brief ── */}
                 <section>
-                    {/* Section title row */}
-                    <div className="mb-6 flex items-start gap-4 border-b pb-5" style={{ borderColor: THEME.border.subtle }}>
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[12px] font-bold" style={{ background: 'rgba(6,182,212,0.12)', color: '#22d3ee' }}>A</div>
-                        <div className="flex-1 min-w-0">
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                                <h2 className="text-[15px] font-semibold tracking-tight" style={{ color: THEME.text.primary }}>Morning Intelligence Brief</h2>
-                                <span className="rounded-full border px-2.5 py-0.5 text-[10px] font-medium" style={{ borderColor: 'rgba(6,182,212,0.2)', color: '#22d3ee' }}>Powered by Tavily · refreshed daily</span>
-                            </div>
-                            <div className="mt-1.5 space-y-1">
-                                <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
-                                    Dexo searched the web for each venture and returned real headlines with verified source links — live market intelligence, not AI-generated summaries.
-                                </p>
-                                <p className="text-[11px]" style={{ color: THEME.text.muted }}>
-                                    <span className="font-semibold" style={{ color: THEME.text.primary }}>Source:</span>{' '}Tavily live web search · runs daily per venture · every card links to the original article
-                                </p>
-                                <p className="text-[11px] font-medium" style={{ color: THEME.accent.info }}>
-                                    → Click any source link to read the article. Open a venture card to discuss the findings with Dexo.
-                                </p>
-                            </div>
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: '#22d3ee' }}>Daily Intel</span>
+                            <span className="text-sm font-semibold" style={{ color: THEME.text.primary }}>Morning Intelligence Brief</span>
                         </div>
+                        <span className="rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider" style={{ borderColor: 'rgba(6,182,212,0.25)', color: '#22d3ee' }}>Tavily · live</span>
                     </div>
                     <PortfolioDailyIntelSection allProjects={allProjects} onOpenVenture={setActiveProject} />
                     {allProjects.length === 0 && (
@@ -2054,47 +2026,25 @@ function PortfolioView({
                     )}
                 </section>
 
-                {/* ════════════════════════════════════════════════════════
-                    § B  AI RESEARCH DESK BRIEFING
-                         What each AI staff member independently researched
-                         and concluded during the last Staff Sync.
-                         Each desk covers a distinct functional area —
-                         click "Open desk" to continue the research thread.
-                ════════════════════════════════════════════════════════ */}
+                {/* ── AI Research Desk Briefing ── */}
                 {leadingVenture?.agentStaffSnapshot && (
                     <section>
-                        <div className="mb-6 flex items-start gap-4 border-b pb-5" style={{ borderColor: THEME.border.subtle }}>
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[12px] font-bold" style={{ background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}>B</div>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex flex-wrap items-center justify-between gap-2">
-                                    <h2 className="text-[15px] font-semibold tracking-tight" style={{ color: THEME.text.primary }}>
-                                        AI Research Desk Briefing
-                                        <span className="ml-2 text-[12px] font-normal" style={{ color: THEME.text.muted }}>— {leadingVenture.name}</span>
-                                    </h2>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-[10px]" style={{ color: THEME.text.muted }}>
-                                            Synced {new Date(leadingVenture.agentStaffSnapshot.at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
-                                        </span>
-                                        <button
-                                            onClick={() => setActiveProject(leadingVenture)}
-                                            className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-semibold transition-all hover:opacity-80"
-                                            style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.10)', color: THEME.accent.primary }}
-                                        >
-                                            <Sparkles className="h-3 w-3" /> Full briefing
-                                        </button>
-                                    </div>
-                                </div>
-                                <div className="mt-1.5 space-y-1">
-                                    <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
-                                        Six AI specialists each researched a separate part of your business and wrote their own conclusions. Each card shows exactly what that desk found.
-                                    </p>
-                                    <p className="text-[11px]" style={{ color: THEME.text.muted }}>
-                                        <span className="font-semibold" style={{ color: THEME.text.primary }}>Source:</span>{' '}Last Staff Sync for {leadingVenture.name} · {new Date(leadingVenture.agentStaffSnapshot.at).toLocaleDateString(undefined, { dateStyle: 'medium' })} · generated from your venture data and AI analysis
-                                    </p>
-                                    <p className="text-[11px] font-medium" style={{ color: THEME.accent.info }}>
-                                        → Read the finding. Click "Open desk →" to continue the research or ask follow-up questions directly.
-                                    </p>
-                                </div>
+                        <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
+                            <div className="flex items-center gap-2 min-w-0">
+                                <span className="text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: THEME.accent.primary }}>Desk Research</span>
+                                <span className="text-sm font-semibold truncate" style={{ color: THEME.text.primary }}>{leadingVenture.name}</span>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                                <span className="text-[10px]" style={{ color: THEME.text.muted }}>
+                                    {new Date(leadingVenture.agentStaffSnapshot.at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+                                </span>
+                                <button
+                                    onClick={() => setActiveProject(leadingVenture)}
+                                    className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-semibold transition-all hover:opacity-80"
+                                    style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.10)', color: THEME.accent.primary }}
+                                >
+                                    <Sparkles className="h-3 w-3" /> Full briefing
+                                </button>
                             </div>
                         </div>
 
@@ -2183,38 +2133,17 @@ function PortfolioView({
                     </section>
                 )}
 
-                {/* ════════════════════════════════════════════════════════
-                    § C  DECISION QUEUE
-                         Signals your AI team flagged that need your input.
-                         These are not notifications — each item is a
-                         specific finding that requires a human decision.
-                         "Discuss →" opens Dexo for that venture directly.
-                ════════════════════════════════════════════════════════ */}
+                {/* ── Decision Queue ── */}
                 {(allAttentionItems.length > 0 || focusLines.length > 0) && (
                     <section>
-                        <div className="mb-6 flex items-start gap-4 border-b pb-5" style={{ borderColor: THEME.border.subtle }}>
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[12px] font-bold" style={{ background: 'rgba(245,158,11,0.12)', color: '#f59e0b' }}>C</div>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex flex-wrap items-center justify-between gap-2">
-                                    <h2 className="text-[15px] font-semibold tracking-tight" style={{ color: THEME.text.primary }}>Decision Queue</h2>
-                                    {allAttentionItems.length > 0 && (
-                                        <span className="rounded-full border px-2.5 py-0.5 text-[10px] font-semibold" style={{ borderColor: 'rgba(245,158,11,0.3)', background: 'rgba(245,158,11,0.10)', color: '#f59e0b' }}>
-                                            {allAttentionItems.length} item{allAttentionItems.length !== 1 ? 's' : ''} need your call
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="mt-1.5 space-y-1">
-                                    <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
-                                        Specific risks, opportunities, and open questions your AI team raised that need a human decision — not automated alerts, these are real research findings.
-                                    </p>
-                                    <p className="text-[11px]" style={{ color: THEME.text.muted }}>
-                                        <span className="font-semibold" style={{ color: THEME.text.primary }}>Source:</span>{' '}Auto-flagged by AI desks during Staff Sync · the colored badge shows which desk raised each item and why it was escalated
-                                    </p>
-                                    <p className="text-[11px] font-medium" style={{ color: THEME.accent.info }}>
-                                        → Click "Discuss →" on any item to open Dexo for that venture and build a concrete plan together.
-                                    </p>
-                                </div>
-                            </div>
+                        <div className="mb-4 flex items-center gap-3 flex-wrap">
+                            <span className="text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: '#f59e0b' }}>Decisions</span>
+                            <span className="text-sm font-semibold" style={{ color: THEME.text.primary }}>Decision Queue</span>
+                            {allAttentionItems.length > 0 && (
+                                <span className="rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider" style={{ borderColor: 'rgba(245,158,11,0.3)', background: 'rgba(245,158,11,0.10)', color: '#f59e0b' }}>
+                                    {allAttentionItems.length} pending
+                                </span>
+                            )}
                         </div>
 
                         <div className="grid gap-5 lg:grid-cols-[1fr_340px]">
@@ -2222,12 +2151,9 @@ function PortfolioView({
                             {/* Flagged signals */}
                             {allAttentionItems.length > 0 && (
                                 <div className="overflow-hidden rounded-2xl border" style={{ borderColor: 'rgba(245,158,11,0.25)' }}>
-                                    <div className="flex items-start gap-2.5 border-b px-5 py-3.5" style={{ borderColor: 'rgba(245,158,11,0.15)', background: 'rgba(245,158,11,0.06)' }}>
-                                        <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" style={{ color: '#f59e0b' }} />
-                                        <div>
-                                            <p className="text-[12px] font-semibold" style={{ color: '#f59e0b' }}>Signals flagged for your decision</p>
-                                            <p className="text-[10px]" style={{ color: 'rgba(245,158,11,0.7)' }}>Each badge shows which AI desk raised it · left border color = desk type</p>
-                                        </div>
+                                    <div className="flex items-center gap-2 border-b px-4 py-3" style={{ borderColor: 'rgba(245,158,11,0.15)', background: 'rgba(245,158,11,0.06)' }}>
+                                        <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: '#f59e0b' }} />
+                                        <span className="text-[11px] font-semibold" style={{ color: '#f59e0b' }}>Flagged for your decision</span>
                                     </div>
                                     <div>
                                         {allAttentionItems.map((a: any) => {
@@ -2280,17 +2206,10 @@ function PortfolioView({
                             {/* Dexo's recommended actions today */}
                             {focusLines.length > 0 && (
                                 <div className="flex flex-col overflow-hidden rounded-2xl border" style={{ borderColor: THEME.border.subtle }}>
-                                    <div className="flex items-start gap-2.5 border-b px-5 py-3.5" style={{ borderColor: THEME.border.subtle, background: 'rgba(116,86,255,0.05)' }}>
-                                        <Target className="h-4 w-4 mt-0.5 shrink-0" style={{ color: THEME.accent.primary }} />
-                                        <div>
-                                            <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>Dexo's Recommended Actions</p>
-                                            <p className="text-[10px] mt-0.5" style={{ color: THEME.text.muted }}>
-                                                What your AI co-founder thinks you should do today for <span style={{ color: THEME.accent.primary }}>{leadingVenture?.name ?? 'your venture'}</span> — ordered by priority
-                                            </p>
-                                            <p className="text-[10px] mt-0.5" style={{ color: THEME.text.muted }}>
-                                                <span className="font-semibold" style={{ color: THEME.text.secondary }}>Source:</span> Synthesised from latest Staff Sync across all desks
-                                            </p>
-                                        </div>
+                                    <div className="flex items-center gap-2 border-b px-4 py-3" style={{ borderColor: THEME.border.subtle, background: 'rgba(116,86,255,0.05)' }}>
+                                        <Target className="h-3.5 w-3.5 shrink-0" style={{ color: THEME.accent.primary }} />
+                                        <span className="text-[11px] font-semibold" style={{ color: THEME.text.primary }}>Dexo&apos;s focus picks</span>
+                                        <span className="ml-auto text-[10px]" style={{ color: THEME.text.muted }}>{leadingVenture?.name ?? 'venture'}</span>
                                     </div>
                                     <ol className="flex-1 divide-y" style={{ borderColor: THEME.border.subtle }}>
                                         {focusLines.slice(0, 7).map((line, i) => (
@@ -2313,36 +2232,18 @@ function PortfolioView({
                     </section>
                 )}
 
-                {/* ════════════════════════════════════════════════════════
-                    § D  VENTURE WORKSPACES
-                         State of each workspace + desk research coverage.
-                         Click any venture to open it. Coverage bar shows
-                         how many AI desks have active research for it.
-                ════════════════════════════════════════════════════════ */}
+                {/* ── Venture Workspaces ── */}
                 <section>
-                    <div className="mb-6 flex items-start gap-4 border-b pb-5" style={{ borderColor: THEME.border.subtle }}>
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[12px] font-bold" style={{ background: 'rgba(16,185,129,0.12)', color: THEME.chart.emerald }}>D</div>
-                        <div className="flex-1 min-w-0">
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                                <h2 className="text-[15px] font-semibold tracking-tight" style={{ color: THEME.text.primary }}>Venture Workspaces</h2>
-                                {onNewVenture && (
-                                    <button onClick={onNewVenture} className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold hover:opacity-80" style={{ background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}>
-                                        <Sparkles className="h-3 w-3" /> New venture
-                                    </button>
-                                )}
-                            </div>
-                            <div className="mt-1.5 space-y-1">
-                                <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
-                                    Every workspace your AI co-founder is actively working on. Desk coverage tells you how thoroughly each venture has been researched — 5/5 means all functional areas are briefed.
-                                </p>
-                                <p className="text-[11px]" style={{ color: THEME.text.muted }}>
-                                    <span className="font-semibold" style={{ color: THEME.text.primary }}>Source:</span>{' '}Your venture data + Staff Sync results · coverage updates automatically after each sync
-                                </p>
-                                <p className="text-[11px] font-medium" style={{ color: THEME.accent.info }}>
-                                    → Click any venture to enter it. Use the coverage sidebar to jump to any under-researched desk.
-                                </p>
-                            </div>
+                    <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: THEME.chart.emerald }}>Workspaces</span>
+                            <span className="text-sm font-semibold" style={{ color: THEME.text.primary }}>Venture Workspaces</span>
                         </div>
+                        {onNewVenture && (
+                            <button onClick={onNewVenture} className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold hover:opacity-80" style={{ background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}>
+                                <Sparkles className="h-3 w-3" /> New venture
+                            </button>
+                        )}
                     </div>
                     <div className="grid gap-5 lg:grid-cols-[1fr_280px]">
                         {/* Venture cards grid */}
@@ -2459,29 +2360,15 @@ function PortfolioView({
                     </div>
                 </section>
 
-                {/* ════════════════════════════════════════════════════════
-                    § E  AI TOOLS DIRECTORY + WORKSPACE NAVIGATOR
-                         Quick-launch AI tools and jump to any desk room.
-                ════════════════════════════════════════════════════════ */}
+                {/* ── Tools & Workspace Navigator ── */}
                 <section>
-                    <div className="mb-6 flex items-start gap-4 border-b pb-5" style={{ borderColor: THEME.border.subtle }}>
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[12px] font-bold" style={{ background: 'rgba(255,255,255,0.07)', color: THEME.text.secondary }}>E</div>
-                        <div>
-                            <h2 className="text-[15px] font-semibold tracking-tight" style={{ color: THEME.text.primary }}>Tools &amp; Workspace Navigator</h2>
-                            <div className="mt-1.5 space-y-1">
-                                <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
-                                    External AI tools for manual research, and instant navigation to any AI desk room across all your ventures.
-                                </p>
-                                <p className="text-[11px] font-medium" style={{ color: THEME.accent.info }}>
-                                    → Use AI tools to research manually. Click any desk button to jump straight into that room and continue AI-driven research.
-                                </p>
-                            </div>
-                        </div>
+                    <div className="mb-4 flex items-center gap-2">
+                        <span className="text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: THEME.text.muted }}>Tools</span>
+                        <span className="text-sm font-semibold" style={{ color: THEME.text.primary }}>Workspace Navigator</span>
                     </div>
-                    <div className="space-y-5">
+                    <div className="flex flex-col gap-4">
                         {/* AI Tools row */}
                         <div>
-                            <p className="mb-2.5 text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: THEME.text.muted }}>AI Tools Directory</p>
                             <div className="overflow-hidden rounded-2xl border" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
                                 <div className="grid grid-cols-3 sm:grid-cols-5">
                                     {DASH_AI_TOOLS.map(({ label, desc, url, Logo, color }) => (
@@ -2556,13 +2443,13 @@ function AnalyticsTab({
     switchRoom,
 }: any) {
     return (
-        <div className="space-y-6">
-            <div className="grid gap-6 lg:grid-cols-2">
+        <div className="flex flex-col gap-4">
+            <div className="grid gap-4 lg:grid-cols-2">
                 {/* PHASE STATUS */}
-                <Card className="p-6">
+                <Card className="p-5">
                     <SectionHeader
                         title="Phase Status"
-                        subtitle="Timeline distribution across phases"
+                        subtitle="Timeline distribution"
                     />
                     {phasePieData.length > 0 ? (
                         <div className="h-72 min-h-[288px] min-w-0">
@@ -2597,10 +2484,10 @@ function AnalyticsTab({
                 </Card>
 
                 {/* PRIORITY COMPLETION */}
-                <Card className="p-6">
+                <Card className="p-5">
                     <SectionHeader
                         title="Priority Completion"
-                        subtitle="Open vs completed priorities"
+                        subtitle="Open vs completed"
                     />
                     {priorityPieData.length > 0 ? (
                         <div className="h-72 min-h-[288px] min-w-0">
@@ -2731,7 +2618,7 @@ function ActivityTab({ systemLogs, chartUid }: any) {
     }, [systemLogs]);
 
     return (
-        <div className="space-y-6">
+        <div className="flex flex-col gap-4">
             {/* ACTIVITY CHART */}
             <Card className="p-6">
                 <SectionHeader title="Activity by Source" />
