@@ -80,7 +80,9 @@ export function TokenDisplay({ compact = false, showCosts = false, onRequestUpgr
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     if (onRequestUpgrade) onRequestUpgrade();
-                                    else if (!openRazorpayPaymentPageWithFallback()) tokens.upgradeToPro();
+                                    else if (!openRazorpayPaymentPageWithFallback()) {
+                                        alert('Payment is not configured yet. Contact support to upgrade.');
+                                    }
                                 }}
                                 className="rounded bg-white/[0.08] px-2 py-0.5 text-[10px] text-[var(--text)] transition-colors hover:bg-white/[0.12]"
                             >
@@ -180,7 +182,9 @@ export function TokenConfirmButton({
         return (
             <button
                 onClick={() => {
-                    if (!openRazorpayPaymentPageWithFallback()) tokens.upgradeToPro();
+                    if (!openRazorpayPaymentPageWithFallback()) {
+                        alert('Payment is not configured yet. Contact support to upgrade.');
+                    }
                 }}
                 className={`${className} opacity-60`}
             >
