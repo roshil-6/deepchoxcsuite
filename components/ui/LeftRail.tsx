@@ -2,14 +2,13 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Plus, LogOut, Sparkles, LogIn, UserPlus, Home } from 'lucide-react';
+import { Plus, LogOut, LogIn, UserPlus, Home } from 'lucide-react';
 import { useAuth } from '@clerk/nextjs';
 import { useOffice } from '@/lib/OfficeContext';
 import { getAllProjects } from '@/lib/db';
 import { StaffNotificationCenter } from '@/components/StaffNotificationCenter';
 import { APP_NAV_GROUPS, WORKSPACE_TITLES, type AppNavRoom } from '@/components/ui/appNav';
 import { DailySyncBanner } from '@/components/DailySyncBanner';
-import { useSubscription } from '@/hooks/useSubscription';
 import { TokenDisplay } from '@/components/tokens/TokenDisplay';
 import { SectionGuideRailButton } from '@/components/SectionGuideCoach';
 import { DeskSyncSidebarControls } from '@/components/ui/DeskSyncSidebarControls';
@@ -17,7 +16,6 @@ import { DeskSyncSidebarControls } from '@/components/ui/DeskSyncSidebarControls
 type Props = {
     onLogout: () => void;
     onNewVenture: () => void;
-    onUpgrade?: () => void;
     onNavigate?: () => void;
     variant?: 'floating' | 'flush';
     desktopWorkspaceStrip?: boolean;
@@ -28,12 +26,10 @@ type Props = {
 export function LeftRail({
     onLogout,
     onNewVenture,
-    onUpgrade,
     onNavigate,
     onToggleIntel,
 }: Props) {
     const { activeRoom, switchRoom, activeProject, setActiveProject, setAllProjects, allProjects } = useOffice();
-    const { isPro } = useSubscription();
     const { isSignedIn, isLoaded } = useAuth();
 
     React.useEffect(() => {
@@ -215,18 +211,8 @@ export function LeftRail({
                 <div className="mt-auto shrink-0 border-t border-[var(--border)] px-3 pb-4 pt-3 space-y-2">
                     <SectionGuideRailButton />
                     <div className="flex justify-center">
-                        <TokenDisplay compact showCosts={false} onRequestUpgrade={onUpgrade ? () => onUpgrade() : undefined} />
+                        <TokenDisplay compact showCosts={false} />
                     </div>
-                    {!isPro && (
-                        <button
-                            type="button"
-                            onClick={() => onUpgrade?.()}
-                            className="flex h-9 w-full items-center justify-center gap-1.5 rounded-md border border-[rgba(116,86,255,0.25)] bg-[rgba(116,86,255,0.07)] font-sans text-[12px] font-medium text-[#9d88ff] transition hover:border-[rgba(116,86,255,0.4)] hover:bg-[rgba(116,86,255,0.12)] hover:text-[#c4b5fd]"
-                        >
-                            <Sparkles className="h-3.5 w-3.5" aria-hidden />
-                            Upgrade to Pro
-                        </button>
-                    )}
                     {!isLoaded ? (
                         <div className="h-9" aria-hidden />
                     ) : !isSignedIn ? (
