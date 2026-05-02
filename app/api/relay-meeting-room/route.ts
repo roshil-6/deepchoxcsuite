@@ -83,6 +83,7 @@ export async function POST(req: Request) {
             'llama3',
             { responseJsonObject: true, temperature: 0.35 }
         );
+        const providerLabel = `${(raw as { provider?: string }).provider === 'openai' ? 'OpenAI · ' : 'Groq · '}${raw.model}`;
         const text = raw.message?.content || '{}';
         let parsed: { intro?: string; steps?: unknown };
         try {
@@ -104,7 +105,7 @@ export async function POST(req: Request) {
                 intro: heuristic.intro,
                 steps: heuristic.steps,
                 message: 'Model returned no usable steps — using built-in plan.',
-                model: 'Llama 3.3 70B (Groq)',
+                model: providerLabel,
             });
         }
 
@@ -113,7 +114,7 @@ export async function POST(req: Request) {
             source: 'ai',
             intro: intro || heuristic.intro,
             steps,
-            model: 'Llama 3.3 70B (Groq)',
+            model: providerLabel,
         });
     } catch (e) {
         console.error('relay-meeting-room', e);

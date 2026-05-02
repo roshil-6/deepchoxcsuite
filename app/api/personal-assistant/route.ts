@@ -105,6 +105,7 @@ If the request is best handled as a research_report or pinpoint_probe workflow, 
     }
 
     const raw = await chatWithAI(msgs, 'llama3', { responseJsonObject: true, temperature: 0.4 });
+    const providerLabel = `${(raw as { provider?: string }).provider === 'openai' ? 'OpenAI · ' : 'Groq · '}${raw.model}`;
     const text = raw.message?.content || '{}';
     let parsed: { reply?: string; followUpOptions?: unknown; updates?: unknown };
     try {
@@ -135,7 +136,7 @@ If the request is best handled as a research_report or pinpoint_probe workflow, 
       updates,
       followUpOptions,
       workflow,
-      model: 'Llama 3.3 70B (Groq)',
+      model: providerLabel,
     });
   } catch (e) {
     console.error('personal-assistant', e);

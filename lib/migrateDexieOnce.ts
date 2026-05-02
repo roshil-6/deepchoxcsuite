@@ -33,16 +33,29 @@ export async function runDexieMigrationIfNeeded(): Promise<void> {
       localStorage.setItem(FLAG, '1');
       return;
     }
+    let allOk = true;
     for (const row of rows) {
-      await fetch('/api/ventures/import-legacy', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-deepchox-session': session,
-        },
-        body: JSON.stringify({ project: row }),
-      });
+      try {
+        const res = await fetch('/api/ventures/import-legacy', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-deepchox-session': session,
+          },
+          body: JSON.stringify({ project: row }),
+        });
+        // fetch does not throw on 4xx/5xx — check status explicitly.
+        // Treat 409/403 (already exists / owned elsewhere) as acceptable.
+        if (!res.ok && res.status !== 409 && res.status !== 403) {
+          allOk = false;
+        }
+      } catch {
+        allOk = false;
+      }
     }
+    // Only mark as migrated and delete local DB when every row succeeded.
+    // If any import failed, leave the flag unset so the next page load retries.
+    if (!allOk) return;
     localStorage.setItem(FLAG, '1');
     try {
       const Dexie = (await import('dexie')).default;
