@@ -6,7 +6,6 @@ import {
     getUserTier,
     spendTokens,
     getTokenStats,
-    setUserTier,
     type UserTier,
     type TokenState,
     TOKEN_COSTS,
@@ -20,52 +19,43 @@ export interface UseTokensReturn {
     tokensRemaining: number;
     tokensUsedToday: number;
     dailyLimit: number;
-    
+
     // Computed
     isPro: boolean;
     isFree: boolean;
     stats: ReturnType<typeof getTokenStats>;
-    
+
     // Actions
     spend: (cost: number, action: string) => { success: boolean; message?: string };
     canAfford: (cost: number) => boolean;
     previewCost: (cost: number) => string;
-    upgradeToPro: () => void;
-    downgradeToFree: () => void; // For testing
     refresh: () => void;
 }
 
 export function useTokens(): UseTokensReturn {
     const [state, setState] = useState<TokenState>(() => getTokenState());
-    
-    // Refresh state from localStorage
+
     const refresh = useCallback(() => {
         setState(getTokenState());
     }, []);
-    
-    // Initial load and periodic refresh (for day changes)
+
     useEffect(() => {
         refresh();
-        
-        // Check for day changes every minute
         const interval = setInterval(refresh, 60000);
         return () => clearInterval(interval);
     }, [refresh]);
-    
-    // Listen for storage changes (multi-tab sync)
+
     useEffect(() => {
         const handleStorage = (e: StorageEvent) => {
             if (
                 e.key === 'dexo-token-state' ||
                 e.key === 'dexo-user-tier' ||
-                e.key === 'deepchox_plan' ||
-                e.key === 'deepchox_trial_start'
+                e.key === 'deepchox_plan'
             ) {
                 refresh();
             }
         };
         const sameTab = () => refresh();
-
         window.addEventListener('storage', handleStorage);
         window.addEventListener('deepchox-subscription-changed', sameTab);
         return () => {
@@ -73,41 +63,17 @@ export function useTokens(): UseTokensReturn {
             window.removeEventListener('deepchox-subscription-changed', sameTab);
         };
     }, [refresh]);
-    
-    // Spend tokens wrapper
+
     const spend = useCallback((cost: number, action: string) => {
         const result = spendTokens(cost, action);
         setState(result.state);
-        return {
-            success: result.success,
-            message: result.message,
-        };
+        return { success: result.success, message: result.message };
     }, []);
-    
-    // Can afford check
-    const checkAfford = useCallback((cost: number) => {
-        return canAfford(cost);
-    }, [state]);
-    
-    // Preview cost
-    const preview = useCallback((cost: number) => {
-        return previewCost(cost);
-    }, [state]);
-    
-    // Tier management
-    const upgradeToPro = useCallback(() => {
-        setUserTier('pro');
-        refresh();
-    }, [refresh]);
-    
-    const downgradeToFree = useCallback(() => {
-        setUserTier('free');
-        refresh();
-    }, [refresh]);
-    
-    // Computed stats
+
+    const checkAfford = useCallback((cost: number) => canAfford(cost), [state]);
+    const preview = useCallback((cost: number) => previewCost(cost), [state]);
     const stats = useMemo(() => getTokenStats(), [state]);
-    
+
     return {
         tier: state.tier,
         tokensRemaining: state.tokensRemaining,
@@ -119,8 +85,6 @@ export function useTokens(): UseTokensReturn {
         spend,
         canAfford: checkAfford,
         previewCost: preview,
-        upgradeToPro,
-        downgradeToFree,
         refresh,
     };
 }
@@ -130,7 +94,6 @@ export function useTokens(): UseTokensReturn {
 export function useTokenCost(action: keyof typeof TOKEN_COSTS) {
     const cost = TOKEN_COSTS[action];
     const tokens = useTokens();
-    
     return {
         cost,
         canAfford: tokens.canAfford(cost),

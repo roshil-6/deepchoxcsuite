@@ -1,12 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Check, Zap, Infinity } from 'lucide-react';
+import { X, Check, Infinity } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useUser } from '@clerk/nextjs';
 import { FREE_DAILY_TOKENS } from '@/lib/tokens/tokenSystem';
 import {
-    BILLING_CONFIG,
     formatRegionalDualLine,
     formatRegionalPricePair,
     getProBillingAmounts,
@@ -21,7 +20,7 @@ interface UpgradeModalProps {
 }
 
 export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
-    const { isPaidPro, isInTrial, hasUsedTrial, trialDaysLeft, trialHoursLeft, startTrial, deactivatePro } = useSubscription();
+    const { isPaidPro, deactivatePro } = useSubscription();
     const { user } = useUser();
     const [awaitingPayment, setAwaitingPayment] = useState(false);
     const [checking, setChecking] = useState(false);
@@ -32,8 +31,6 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
 
     // If they just became Pro (webhook + tab focus reload), close the modal
     if (isPaidPro && awaitingPayment) { onClose(); }
-
-    const trialLabel = trialHoursLeft < 24 ? `${trialHoursLeft}h` : `${trialDaysLeft} day${trialDaysLeft !== 1 ? 's' : ''}`;
 
     const payOnRazorpay = () => {
         const opened = openRazorpayPaymentPage('monthly', user?.id);
@@ -78,16 +75,6 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                     </button>
                 </div>
 
-                {/* Trial active banner */}
-                {isInTrial && (
-                    <div className="flex shrink-0 items-center gap-2 border-b border-zinc-800/80 bg-orange-950/25 px-5 py-2.5 sm:px-6">
-                        <Zap className="h-3.5 w-3.5 shrink-0 text-orange-400" aria-hidden />
-                        <p className="text-xs text-zinc-300">
-                            <span className="font-semibold text-white">{trialLabel}</span>
-                            {' '}left in your trial — upgrade to keep full access
-                        </p>
-                    </div>
-                )}
 
                 {/* Body */}
                 <div className="flex-1 overflow-y-auto">
@@ -134,7 +121,7 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                                     </button>
                                 ) : (
                                     <div className="mt-6 rounded-xl border border-zinc-800/60 bg-zinc-900/60 py-2.5 text-center text-[12px] text-zinc-500">
-                                        {isInTrial ? 'Trial active' : 'Current plan'}
+                                        Current plan
                                     </div>
                                 )}
                             </div>
@@ -218,44 +205,6 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                                     <Check className="h-3.5 w-3.5 text-zinc-400" aria-hidden />
                                     <span className="text-sm font-medium text-zinc-300">You are on Co-Founder Pro</span>
                                 </div>
-                            ) : isInTrial ? (
-                                <>
-                                    <button
-                                        type="button"
-                                        onClick={payOnRazorpay}
-                                        className="w-full rounded-xl bg-[var(--accent)] py-3 text-sm font-semibold text-white transition hover:brightness-110 active:scale-[0.98]"
-                                    >
-                                        Upgrade to Pro — keep full access
-                                    </button>
-                                    <p className="text-center text-[11px] text-zinc-600">
-                                        {trialLabel} left in trial · cancel anytime
-                                    </p>
-                                </>
-                            ) : !hasUsedTrial ? (
-                                <>
-                                    <button
-                                        type="button"
-                                        onClick={() => { startTrial(); onClose(); }}
-                                        className="w-full rounded-xl bg-[var(--accent)] py-3 text-sm font-semibold text-white transition hover:brightness-110 active:scale-[0.98]"
-                                    >
-                                        Start 3-day free trial
-                                    </button>
-                                    <p className="text-center text-[11px] text-zinc-600">
-                                        No card required · full Pro access · expires after {BILLING_CONFIG.plans.pro.trialDays} days
-                                    </p>
-                                    <div className="flex items-center gap-3 py-1">
-                                        <div className="h-px flex-1 bg-zinc-800" />
-                                        <span className="text-[10px] text-zinc-700">or pay now</span>
-                                        <div className="h-px flex-1 bg-zinc-800" />
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={payOnRazorpay}
-                                        className="w-full rounded-xl border border-zinc-700 py-2.5 text-xs font-medium text-zinc-400 transition hover:border-zinc-500 hover:text-white"
-                                    >
-                                        {`Pay now — ${formatRegionalDualLine(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 })} /mo`}
-                                    </button>
-                                </>
                             ) : (
                                 <>
                                     <button

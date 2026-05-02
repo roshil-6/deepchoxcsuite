@@ -1,10 +1,10 @@
 import { readSubscriptionIsPro, PLAN_STORAGE_KEY, emitSubscriptionChanged } from '@/lib/subscriptionLocal';
 
 /**
- * Suite token / credit meter (client-side, demo).
+ * Suite token / credit meter (client-side).
  *
  * Free: shared daily pool used by Dexo, desks, PA, Jarvis, Scout intel, etc.
- * Pro or active trial (see `subscriptionLocal`): unlimited — no deductions.
+ * Pro (paid, via Razorpay webhook → Clerk metadata): unlimited — no deductions.
  */
 
 export type UserTier = 'free' | 'pro';
