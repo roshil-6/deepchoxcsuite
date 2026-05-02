@@ -24,7 +24,6 @@ export const BILLING_CONFIG = {
             name: 'Co-Founder Pro',
             monthlyInr: 350,
             yearlyInr: 3499,
-            trialDays: 3,
             gateway: {
                 productKey: 'cofounder-pro',
                 monthlyLookupKey: 'deepchox_pro_monthly',

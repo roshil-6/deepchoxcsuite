@@ -63,6 +63,16 @@ export function useSubscription(): SubscriptionState {
         };
     }, [clerkLoaded, user]);
 
+    /** When Clerk confirms no session, clear any stale Pro from localStorage. */
+    useEffect(() => {
+        if (!clerkLoaded || user) return;
+        if (typeof window !== 'undefined' && localStorage.getItem(PLAN_STORAGE_KEY) === 'pro') {
+            localStorage.setItem(PLAN_STORAGE_KEY, 'free');
+            setPlanId('free');
+            emitSubscriptionChanged();
+        }
+    }, [clerkLoaded, user]);
+
     /** When Clerk loads, align localStorage with publicMetadata (source of truth after sync). */
     useEffect(() => {
         if (!clerkLoaded || !user) return;
@@ -96,9 +106,12 @@ export function useSubscription(): SubscriptionState {
     );
 
     const deactivatePro = useCallback(() => {
+        // Optimistic local clear
         localStorage.setItem(PLAN_STORAGE_KEY, 'free');
         setPlanId('free');
         emitSubscriptionChanged();
+        // Persist to Clerk so the downgrade survives a refresh
+        void fetch('/api/user/downgrade', { method: 'POST' }).catch(() => { /* non-fatal */ });
     }, []);
 
     return {
