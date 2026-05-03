@@ -38,7 +38,14 @@ export async function POST(req: Request) {
         .update(rawBody)
         .digest('hex');
 
-    if (!crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature))) {
+    // timingSafeEqual throws if buffers differ in length — guard explicitly.
+    const expectedBuf = Buffer.from(expected, 'hex');
+    const signatureBuf = Buffer.from(signature, 'hex');
+    const signatureValid =
+        signatureBuf.length === expectedBuf.length &&
+        crypto.timingSafeEqual(expectedBuf, signatureBuf);
+
+    if (!signatureValid) {
         console.warn('[razorpay-webhook] invalid signature — possible spoofed request');
         return NextResponse.json({ ok: false, error: 'invalid_signature' }, { status: 400 });
     }
@@ -81,11 +88,13 @@ export async function POST(req: Request) {
         return NextResponse.json({ ok: true, warning: 'no_user_id_in_notes' });
     }
 
-    // Upgrade the user in Clerk.
+    // Upgrade the user in Clerk — merge into existing metadata to avoid wiping other keys.
     try {
         const client = await clerkClient();
+        const existing = await client.users.getUser(userId);
+        const prevMeta = (existing.publicMetadata ?? {}) as Record<string, unknown>;
         await client.users.updateUser(userId, {
-            publicMetadata: { deepchoxPlan: 'pro' },
+            publicMetadata: { ...prevMeta, deepchoxPlan: 'pro' },
         });
         console.log('[razorpay-webhook] upgraded user to Pro', { userId, paymentId });
         return NextResponse.json({ ok: true, upgraded: true });

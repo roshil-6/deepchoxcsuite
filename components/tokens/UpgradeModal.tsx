@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { 
-    Crown, 
-    X, 
-    Check, 
-    Infinity, 
-    Zap, 
-    Sparkles, 
+import {
+    Crown,
+    X,
+    Check,
+    Infinity,
+    Zap,
+    Sparkles,
     Lock,
     AlertTriangle,
     ArrowRight
@@ -40,13 +40,13 @@ export function UpgradeModal({ isOpen, onClose, triggerReason }: UpgradeModalPro
     const proBilling = getProBillingAmounts();
     const hasRazorpay = getRazorpayPaymentLinkUrl(selectedPlan) !== null;
 
+    // Close if user upgraded to Pro — must be in useEffect, not render body
+    useEffect(() => {
+        if (isOpen && tokens.isPro) onClose();
+    }, [isOpen, tokens.isPro, onClose]);
+
     if (!isOpen || typeof window === 'undefined') return null;
-    
-    // Close if user is already pro
-    if (tokens.isPro) {
-        onClose();
-        return null;
-    }
+    if (tokens.isPro) return null;
     
     const modalContent = (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">

@@ -2,13 +2,7 @@
 
 import React, { useState, useEffect, useId, useMemo } from 'react';
 import { useOffice } from '@/lib/OfficeContext';
-import {
-    Zap,
-    TrendingUp,
-    Activity,
-    Target,
-    Clock,
-} from 'lucide-react';
+import { Zap, TrendingUp, Activity, Target, Clock } from 'lucide-react';
 import {
     ComposedChart,
     Area,
@@ -18,7 +12,6 @@ import {
     XAxis,
     YAxis,
     CartesianGrid,
-    Legend,
     ReferenceLine,
 } from 'recharts';
 
@@ -33,36 +26,32 @@ type DemoTooltipProps = {
 
 function DemoMomentumTooltip({ active, label, payload }: DemoTooltipProps) {
     if (!active || !payload?.length) return null;
-    const pick = (key: string) =>
-        payload.find((p) => p.dataKey === key || String(p.name) === key);
+    const pick = (key: string) => payload.find((p) => p.dataKey === key || String(p.name) === key);
     const focus = pick('focus');
     const energy = pick('energy');
     return (
-        <div className="min-w-[200px] rounded-xl border border-zinc-700/90 bg-zinc-950/98 px-4 py-3 shadow-2xl shadow-black/50 backdrop-blur-md">
-            <p className="mb-3 border-b border-zinc-800 pb-2 font-mono text-[11px] font-semibold tabular-nums text-zinc-300">{label}</p>
-            <div className="space-y-2.5">
+        <div className="min-w-[160px] rounded-xl border border-zinc-700/90 bg-zinc-950/98 px-3 py-2.5 shadow-2xl shadow-black/50 backdrop-blur-md">
+            <p className="mb-2 border-b border-zinc-800 pb-1.5 font-mono text-[10px] font-semibold tabular-nums text-zinc-300">{label}</p>
+            <div className="flex flex-col gap-1.5">
                 {focus != null && (
-                    <div className="flex items-center justify-between gap-8">
-                        <span className="flex items-center gap-2 text-xs text-zinc-400">
-                            <span className="h-2.5 w-2.5 rounded-full shadow-[0_0_8px_rgba(129,140,248,0.6)]" style={{ background: FOCUS }} />
+                    <div className="flex items-center justify-between gap-6">
+                        <span className="flex items-center gap-1.5 text-[11px] text-zinc-400">
+                            <span className="h-2 w-2 rounded-full" style={{ background: FOCUS }} />
                             Focus
                         </span>
-                        <span className="font-mono text-sm font-semibold tabular-nums text-zinc-100">{focus.value ?? 0}</span>
+                        <span className="font-mono text-xs font-semibold tabular-nums text-zinc-100">{focus.value ?? 0}</span>
                     </div>
                 )}
                 {energy != null && (
-                    <div className="flex items-center justify-between gap-8">
-                        <span className="flex items-center gap-2 text-xs text-zinc-400">
-                            <span className="h-2.5 w-2.5 rounded-full shadow-[0_0_8px_rgba(232,121,249,0.5)]" style={{ background: ENERGY }} />
+                    <div className="flex items-center justify-between gap-6">
+                        <span className="flex items-center gap-1.5 text-[11px] text-zinc-400">
+                            <span className="h-2 w-2 rounded-full" style={{ background: ENERGY }} />
                             Energy
                         </span>
-                        <span className="font-mono text-sm font-semibold tabular-nums text-zinc-100">{energy.value ?? 0}</span>
+                        <span className="font-mono text-xs font-semibold tabular-nums text-zinc-100">{energy.value ?? 0}</span>
                     </div>
                 )}
             </div>
-            <p className="mt-3 border-t border-zinc-800/80 pt-2 text-[9px] leading-relaxed text-zinc-600">
-                Demo index 0–100 · static sample, not live data
-            </p>
         </div>
     );
 }
@@ -95,291 +84,153 @@ export function FoundersOffice() {
     }, [focusData]);
 
     return (
-        <div className={`flex flex-col h-full overflow-y-auto custom-scrollbar transition-colors duration-700 font-sans ${deepWorkMode ? 'bg-black text-white' : 'bg-zinc-950 text-zinc-100'}`}>
+        <div
+            className={`flex flex-col gap-4 p-4 sm:gap-5 sm:p-5 lg:p-6 font-sans transition-colors duration-700 ${
+                deepWorkMode ? 'bg-black text-white' : 'bg-zinc-950 text-zinc-100'
+            }`}
+        >
+            {/* ── Top bar: date · time · focus mode ── */}
+            <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                        {currentTime.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' })}
+                    </span>
+                    <span className="text-zinc-700 hidden sm:inline">·</span>
+                    <span className="font-mono text-sm font-bold tabular-nums text-zinc-300 hidden sm:inline">
+                        {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                </div>
 
-            {/* Header Section */}
-            <header className="px-10 py-12 border-b border-zinc-900 bg-zinc-950/50 backdrop-blur-md sticky top-0 z-20">
-                <div className="max-w-6xl mx-auto flex justify-between items-end">
-                    <div>
-                        <h5 className="text-xs font-bold uppercase tracking-widest mb-2 text-zinc-500">
-                            {currentTime.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
-                        </h5>
-                        <h1 className="text-4xl font-extrabold tracking-tight mb-2 text-white">
-                            Good Morning, Founder.
-                        </h1>
-                        <p className="text-lg font-medium text-zinc-400">
-                            Workspace view — <span className="text-zinc-300">no critical alerts</span> surfaced here. Capacity and financial figures below are{' '}
-                            <span className="font-semibold text-zinc-300">illustrative placeholders</span>, not live telemetry.
-                        </p>
+                <button
+                    onClick={() => toggleDeepWork(!deepWorkMode)}
+                    className={`flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all ${
+                        deepWorkMode
+                            ? 'border-violet-500/40 bg-violet-500/10 text-violet-300'
+                            : 'border-zinc-800 bg-zinc-900 text-zinc-400 hover:border-indigo-500/40 hover:text-indigo-300'
+                    }`}
+                >
+                    <Zap className="h-3.5 w-3.5" />
+                    {deepWorkMode ? 'Focus: on' : 'Focus'}
+                </button>
+            </div>
+
+            {/* ── KPI strip ── */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+                {[
+                    { label: 'Runway', icon: Activity },
+                    { label: 'Burn rate', icon: TrendingUp },
+                    { label: 'Active users', icon: Target },
+                    { label: 'System health', icon: Clock },
+                ].map((stat, idx) => (
+                    <div
+                        key={idx}
+                        className="flex items-center gap-3 rounded-xl border border-zinc-900 bg-zinc-900/40 px-3 py-3 sm:px-4"
+                        title="Placeholder — connect your data source for real KPIs"
+                    >
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-black border border-zinc-800 text-zinc-500">
+                            <stat.icon className="h-3.5 w-3.5" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[9px] font-bold uppercase tracking-wider text-zinc-600">{stat.label}</p>
+                            <p className="text-base font-extrabold tracking-tight text-zinc-600 tabular-nums">—</p>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* ── Main grid: chart + feed ── */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
+
+                {/* Chart */}
+                <div className="lg:col-span-2 rounded-2xl border border-zinc-900 bg-zinc-900/30 p-4 sm:p-5">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                            <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-amber-500/80">Demo</span>
+                            <span className="text-xs font-semibold text-zinc-300">Focus &amp; energy</span>
+                        </div>
+                        <div className="flex items-baseline gap-2">
+                            <span className="font-mono text-sm font-semibold text-indigo-300 tabular-nums">{focusSummary.focusAvg}</span>
+                            <span className="text-zinc-700 text-xs">/</span>
+                            <span className="font-mono text-sm font-semibold text-fuchsia-300 tabular-nums">{focusSummary.energyAvg}</span>
+                            <span className="text-[10px] text-zinc-600">avg</span>
+                        </div>
                     </div>
 
-                    <div className="flex items-center gap-6">
-                        <div className="text-right hidden md:block">
-                            <div className="text-3xl font-bold font-mono tracking-tight text-white">
-                                {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </div>
-                            <div className="text-xs font-bold uppercase tracking-wide text-zinc-600">
-                                Local Time
-                            </div>
-                        </div>
-                        <button
-                            onClick={() => toggleDeepWork(!deepWorkMode)}
-                            className={`group relative overflow-hidden rounded-2xl px-6 py-4 transition-all shadow-lg border ${deepWorkMode
-                                ? 'bg-zinc-900 border-zinc-800 hover:border-violet-500/50'
-                                : 'bg-zinc-900 border-zinc-800 hover:border-indigo-500/50'
-                                }`}
-                        >
-                            <div className="relative z-10 flex items-center gap-3">
-                                <div className={`p-2 rounded-lg ${deepWorkMode ? 'bg-black text-violet-400' : 'bg-black text-indigo-400'}`}>
-                                    <Zap className="w-5 h-5" />
-                                </div>
-                                <div className="text-left">
-                                    <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
-                                        Focus Mode
-                                    </div>
-                                    <div className="text-sm font-bold text-white">
-                                        {deepWorkMode ? 'Active Protocol' : 'Standard Ops'}
-                                    </div>
-                                </div>
-                            </div>
-                        </button>
+                    <div
+                        className="relative h-[min(280px,44vh)] min-h-[200px] w-full overflow-hidden rounded-xl border border-zinc-800/60 bg-[radial-gradient(ellipse_120%_80%_at_50%_-20%,rgba(99,102,241,0.10),transparent_50%)] select-none touch-manipulation"
+                        role="img"
+                        aria-label="Demo chart: focus and energy indices by time of day"
+                    >
+                        <ResponsiveContainer width="100%" height="100%" minHeight={200}>
+                            <ComposedChart data={focusData} margin={{ top: 20, right: 8, left: 0, bottom: 4 }}>
+                                <defs>
+                                    <linearGradient id={`${chartUid}-focusFill`} x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor={FOCUS} stopOpacity={0.40} />
+                                        <stop offset="50%" stopColor={FOCUS} stopOpacity={0.08} />
+                                        <stop offset="100%" stopColor={FOCUS} stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="4 8" vertical={false} stroke="#3c4043" strokeOpacity={0.7} />
+                                <ReferenceLine y={50} stroke="#3f3f46" strokeDasharray="6 6" strokeOpacity={0.8} />
+                                <XAxis dataKey="time" axisLine={false} tickLine={false} tickMargin={10} tick={{ fill: '#a1a1aa', fontSize: 10 }} />
+                                <YAxis axisLine={false} tickLine={false} domain={[0, 100]} ticks={[0, 50, 100]} width={28} tick={{ fill: '#71717a', fontSize: 10 }} />
+                                <Tooltip
+                                    content={<DemoMomentumTooltip />}
+                                    cursor={{ stroke: '#52525b', strokeWidth: 1, strokeDasharray: '4 4', fill: 'rgba(24,24,27,0.4)' }}
+                                    animationDuration={150}
+                                    wrapperStyle={{ outline: 'none' }}
+                                />
+                                <Area type="natural" dataKey="focus" name="focus" stroke={FOCUS} strokeWidth={2.5} fill={`url(#${chartUid}-focusFill)`} fillOpacity={1} dot={false} activeDot={{ r: 5, stroke: '#1e1e1e', strokeWidth: 2, fill: FOCUS }} isAnimationActive animationDuration={900} animationEasing="ease-out" />
+                                <Line type="natural" dataKey="energy" name="energy" stroke={ENERGY} strokeWidth={2.5} dot={false} activeDot={{ r: 4, stroke: '#1e1e1e', strokeWidth: 2, fill: ENERGY }} isAnimationActive animationDuration={1100} animationEasing="ease-out" />
+                            </ComposedChart>
+                        </ResponsiveContainer>
+                    </div>
+
+                    <div className="mt-2 flex items-center gap-4">
+                        <span className="flex items-center gap-1.5 text-[10px] text-zinc-600">
+                            <span className="h-2 w-2 rounded-full" style={{ background: FOCUS }} />Focus
+                        </span>
+                        <span className="flex items-center gap-1.5 text-[10px] text-zinc-600">
+                            <span className="h-2 w-2 rounded-full" style={{ background: ENERGY }} />Energy
+                        </span>
+                        <span className="text-[10px] text-zinc-700 ml-auto">0–100 demo index</span>
                     </div>
                 </div>
-            </header>
 
-            {/* Main Dashboard Content */}
-            <main className="flex-1 px-10 py-10">
-                <div className="max-w-6xl mx-auto space-y-10">
+                {/* Intelligence feed */}
+                <div className="rounded-2xl border border-zinc-900 bg-zinc-900/30 p-4 sm:p-5 flex flex-col gap-4">
+                    <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-zinc-300">Intel feed</span>
+                        <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-amber-500/80">Sample</span>
+                    </div>
 
-                    {/* Key metrics — labeled demo so numbers are not mistaken for real KPIs */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div className="flex flex-col gap-4">
                         {[
-                            { label: 'Runway', value: '—', hint: 'Demo', icon: Activity },
-                            { label: 'Burn rate', value: '—', hint: 'Demo', icon: TrendingUp },
-                            { label: 'Active users', value: '—', hint: 'Demo', icon: Target },
-                            { label: 'System health', value: '—', hint: 'Demo', icon: Zap },
-                        ].map((stat, idx) => (
-                            <div
-                                key={idx}
-                                className="p-6 rounded-2xl border border-zinc-900 bg-zinc-900/40 transition-all hover:-translate-y-1 hover:border-zinc-700 hover:bg-zinc-900/60 shadow-lg"
-                                title="Placeholder — connect your data source for real KPIs"
-                            >
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className="p-2.5 rounded-xl bg-black border border-zinc-800 text-zinc-400">
-                                        <stat.icon className="w-5 h-5" />
-                                    </div>
-                                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border border-zinc-800 bg-zinc-950 text-zinc-500">
-                                        {stat.hint}
-                                    </span>
-                                </div>
-                                <div>
-                                    <div className="text-xs font-bold uppercase tracking-wider mb-1 text-zinc-500">{stat.label}</div>
-                                    <div className="text-2xl font-extrabold tracking-tight text-zinc-500">{stat.value}</div>
+                            { title: 'Competitor signal', time: 'demo', type: 'alert' as const },
+                            { title: 'Milestone reached', time: 'demo', type: 'success' as const },
+                            { title: 'Ops signal', time: 'demo', type: 'info' as const },
+                        ].map((item, i) => (
+                            <div key={i} className="flex items-center gap-3 group">
+                                <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+                                    item.type === 'alert' ? 'bg-rose-500' : item.type === 'success' ? 'bg-violet-500' : 'bg-indigo-500'
+                                }`} />
+                                <div className="min-w-0 flex-1">
+                                    <p className="truncate text-[12px] font-medium text-zinc-200">{item.title}</p>
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-600">{item.time}</span>
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    {/* Central Visualization Section */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-                        {/* Main Chart Card */}
-                        <div className="lg:col-span-2 p-8 rounded-3xl border border-zinc-900 bg-zinc-900/30 shadow-xl">
-                            <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-start mb-8">
-                                <div>
-                                    <p className="text-[10px] font-bold uppercase tracking-widest text-amber-500/90 mb-1">Demo visualization</p>
-                                    <h3 className="text-lg font-bold text-white">Sample focus &amp; energy curve</h3>
-                                    <p className="text-sm font-medium text-zinc-500 mt-1 max-w-xl">
-                                        Static sample data for layout only — not real-time team output, biometrics, or energy telemetry.
-                                    </p>
-                                </div>
-                                <div
-                                    className="flex bg-black rounded-lg p-1 border border-zinc-800 shrink-0 opacity-60"
-                                    title="Time ranges are not wired — demo only"
-                                    aria-label="Time range controls (disabled, demo)"
-                                >
-                                    {['12H', '24H', '7D'].map((period) => (
-                                        <button
-                                            key={period}
-                                            type="button"
-                                            disabled
-                                            className="px-3 py-1 text-xs font-bold text-zinc-600 rounded-md cursor-not-allowed"
-                                        >
-                                            {period}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="mb-4 flex flex-wrap items-center gap-4 rounded-2xl border border-zinc-800/80 bg-gradient-to-br from-zinc-950/90 via-black/40 to-zinc-950/80 px-4 py-3">
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Sample avg</span>
-                                    <span className="font-mono text-lg font-semibold tabular-nums text-indigo-300">{focusSummary.focusAvg}</span>
-                                    <span className="text-zinc-600">/</span>
-                                    <span className="font-mono text-lg font-semibold tabular-nums text-fuchsia-300">{focusSummary.energyAvg}</span>
-                                </div>
-                                <span className="text-[10px] text-zinc-600">Focus · Energy (demo indices)</span>
-                            </div>
-
-                            <div
-                                className="relative h-[min(360px,52vh)] min-h-[280px] w-full touch-manipulation overflow-hidden rounded-2xl border border-zinc-800/60 bg-[radial-gradient(ellipse_120%_80%_at_50%_-20%,rgba(99,102,241,0.12),transparent_50%)] [-webkit-tap-highlight-color:transparent] select-none"
-                                role="img"
-                                aria-label="Demo chart: sample focus index as area and energy index as line, 0 to 100 by time of day"
-                            >
-                                <ResponsiveContainer width="100%" height="100%" minHeight={280} minWidth={0}>
-                                    <ComposedChart
-                                        data={focusData}
-                                        margin={{ top: 28, right: 12, left: 0, bottom: 8 }}
-                                    >
-                                        <defs>
-                                            <linearGradient id={`${chartUid}-focusFill`} x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor={FOCUS} stopOpacity={0.45} />
-                                                <stop offset="45%" stopColor={FOCUS} stopOpacity={0.12} />
-                                                <stop offset="100%" stopColor={FOCUS} stopOpacity={0} />
-                                            </linearGradient>
-                                        </defs>
-                                        <CartesianGrid
-                                            strokeDasharray="4 8"
-                                            vertical={false}
-                                            stroke="#3c4043"
-                                            strokeOpacity={0.85}
-                                        />
-                                        <ReferenceLine
-                                            y={50}
-                                            stroke="#3f3f46"
-                                            strokeDasharray="6 6"
-                                            strokeOpacity={0.9}
-                                        />
-                                        <XAxis
-                                            dataKey="time"
-                                            axisLine={false}
-                                            tickLine={false}
-                                            tickMargin={12}
-                                            tick={{ fill: '#a1a1aa', fontSize: 11, fontWeight: 500 }}
-                                            dy={4}
-                                        />
-                                        <YAxis
-                                            axisLine={false}
-                                            tickLine={false}
-                                            domain={[0, 100]}
-                                            ticks={[0, 25, 50, 75, 100]}
-                                            width={36}
-                                            tick={{ fill: '#71717a', fontSize: 10, fontWeight: 500 }}
-                                            tickFormatter={(v) => `${v}`}
-                                        />
-                                        <Tooltip
-                                            content={<DemoMomentumTooltip />}
-                                            // Recharts default cursor rectangle uses a light fill if `fill` is omitted — reads as a white flash on dark UI.
-                                            cursor={{
-                                                stroke: '#52525b',
-                                                strokeWidth: 1,
-                                                strokeDasharray: '4 4',
-                                                fill: 'rgba(24, 24, 27, 0.45)',
-                                            }}
-                                            animationDuration={200}
-                                            wrapperStyle={{ outline: 'none' }}
-                                        />
-                                        <Legend
-                                            verticalAlign="top"
-                                            align="right"
-                                            iconType="circle"
-                                            iconSize={8}
-                                            wrapperStyle={{ paddingBottom: 8, fontSize: '11px', fontWeight: 600 }}
-                                            formatter={(value) => (
-                                                <span className="text-zinc-400">{value === 'focus' ? 'Focus (area)' : 'Energy (line)'}</span>
-                                            )}
-                                        />
-                                        <Area
-                                            type="natural"
-                                            dataKey="focus"
-                                            name="focus"
-                                            stroke={FOCUS}
-                                            strokeWidth={2.5}
-                                            fill={`url(#${chartUid}-focusFill)`}
-                                            fillOpacity={1}
-                                            dot={false}
-                                            activeDot={{
-                                                r: 6,
-                                                stroke: '#1e1e1e',
-                                                strokeWidth: 2,
-                                                fill: FOCUS,
-                                            }}
-                                            isAnimationActive
-                                            animationDuration={900}
-                                            animationEasing="ease-out"
-                                        />
-                                        <Line
-                                            type="natural"
-                                            dataKey="energy"
-                                            name="energy"
-                                            stroke={ENERGY}
-                                            strokeWidth={2.75}
-                                            dot={false}
-                                            activeDot={{
-                                                r: 5,
-                                                stroke: '#1e1e1e',
-                                                strokeWidth: 2,
-                                                fill: ENERGY,
-                                            }}
-                                            isAnimationActive
-                                            animationDuration={1100}
-                                            animationEasing="ease-out"
-                                        />
-                                    </ComposedChart>
-                                </ResponsiveContainer>
-                            </div>
-                            <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-zinc-600">
-                                <span className="inline-flex items-center gap-1.5">
-                                    <span className="h-px w-4 border-t border-dashed border-zinc-600" aria-hidden />
-                                    Mid reference at 50
-                                </span>
-                                <span className="text-zinc-700">·</span>
-                                Y-axis is a 0–100 demo index only — not measured output or biometrics.
-                            </p>
-                        </div>
-
-                        {/* Side Activity Card */}
-                        <div className="p-8 rounded-3xl border border-zinc-900 bg-zinc-900/30 flex flex-col shadow-xl">
-                            <div className="mb-6">
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-amber-500/90 mb-1">Sample copy</p>
-                                <h3 className="text-lg font-bold text-white">Intelligence feed (examples)</h3>
-                                <p className="text-xs text-zinc-500 mt-1">Fictional items to show layout — not live intel from your stack.</p>
-                            </div>
-
-                            <div className="flex-1 space-y-6">
-                                {[
-                                    { title: 'Example: competitor', desc: 'Sample headline — replace with real alerts when connected', time: 'demo', type: 'alert' },
-                                    { title: 'Example: milestone', desc: 'Sample headline — not your revenue data', time: 'demo', type: 'success' },
-                                    { title: 'Example: ops signal', desc: 'Sample headline — not your infrastructure', time: 'demo', type: 'info' },
-                                ].map((item, i) => (
-                                    <div key={i} className="flex gap-4 group">
-                                        <div className={`w-2 h-full shrink-0 rounded-full opacity-70 transition-opacity group-hover:opacity-100 ${item.type === 'alert' ? 'bg-rose-500' : item.type === 'success' ? 'bg-violet-500' : 'bg-indigo-500'}`} />
-                                        <div>
-                                            <h4 className="text-sm font-bold text-zinc-200 group-hover:text-white transition-colors">{item.title}</h4>
-                                            <p className="text-xs text-zinc-500 font-medium leading-relaxed mt-1 group-hover:text-zinc-400 transition-colors">
-                                                {item.desc}
-                                            </p>
-                                            <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-wider mt-2 block">
-                                                {item.time}
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <button
-                                type="button"
-                                disabled
-                                className="w-full py-4 rounded-xl text-sm font-bold mt-6 cursor-not-allowed bg-zinc-950 text-zinc-600 border border-zinc-800"
-                                title="No live feed connected yet"
-                            >
-                                Connect data for real intelligence
-                            </button>
-                        </div>
-                    </div>
-
+                    <button
+                        type="button"
+                        disabled
+                        className="mt-auto w-full rounded-xl border border-zinc-800 bg-zinc-950 py-2.5 text-xs font-bold text-zinc-600 cursor-not-allowed"
+                    >
+                        Connect data
+                    </button>
                 </div>
-            </main>
+            </div>
         </div>
     );
 }

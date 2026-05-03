@@ -1,10 +1,10 @@
 import { readSubscriptionIsPro, PLAN_STORAGE_KEY, emitSubscriptionChanged } from '@/lib/subscriptionLocal';
 
 /**
- * Suite token / credit meter (client-side, demo).
+ * Suite token / credit meter (client-side).
  *
  * Free: shared daily pool used by Dexo, desks, PA, Jarvis, Scout intel, etc.
- * Pro or active trial (see `subscriptionLocal`): unlimited — no deductions.
+ * Pro (paid, via Razorpay webhook → Clerk metadata): unlimited — no deductions.
  */
 
 export type UserTier = 'free' | 'pro';
@@ -124,16 +124,15 @@ function saveTokenState(state: TokenState): void {
 }
 
 /**
- * Save user tier
+ * Internal: sync token state tier when subscription changes externally.
+ * Do NOT call this to grant Pro — use the Razorpay webhook → Clerk flow.
  */
-export function setUserTier(tier: UserTier): void {
+export function syncTokenTier(): void {
     if (typeof window === 'undefined') return;
     try {
-        localStorage.setItem(TIER_STORAGE_KEY, tier);
-        localStorage.setItem(PLAN_STORAGE_KEY, tier === 'pro' ? 'pro' : 'free');
-        const newState = createDefaultState(tier);
+        const effectiveTier: UserTier = readSubscriptionIsPro() ? 'pro' : 'free';
+        const newState = createDefaultState(effectiveTier);
         saveTokenState(newState);
-        emitSubscriptionChanged();
     } catch {
         // Ignore storage errors
     }

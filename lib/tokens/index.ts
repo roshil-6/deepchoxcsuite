@@ -2,7 +2,7 @@
 
 export {
     getTokenState,
-    setUserTier,
+    syncTokenTier,
     getUserTier,
     canAfford,
     spendTokens,

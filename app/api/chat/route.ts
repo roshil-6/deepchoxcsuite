@@ -60,8 +60,11 @@ export async function POST(req: Request) {
       }
     }
 
-    // Claude Haiku — second priority when ANTHROPIC_API_KEY is set (also fallback from OpenAI failure)
-    if (anthropicKey && !openaiKey) {
+    // Claude Haiku — second priority when Anthropic key is set.
+    // Also acts as fallback when OpenAI failed and fell through above.
+    // NOTE: the old `!openaiKey` guard was wrong — it prevented Claude from
+    // ever being used as a fallback when both keys are present.
+    if (anthropicKey) {
       try {
         const out = await chatWithClaude(messages);
         return NextResponse.json({ ...out, model: `Claude · ${out.model}` });

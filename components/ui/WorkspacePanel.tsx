@@ -29,7 +29,7 @@ export function WorkspacePanel({
                     : 'shrink-0'
             } ${
                 reserveBottom
-                    ? 'pb-[max(6.5rem,calc(5.5rem+env(safe-area-inset-bottom)))] sm:pb-[max(7.5rem,calc(6.5rem+env(safe-area-inset-bottom)))] lg:pb-[max(8rem,calc(7rem+env(safe-area-inset-bottom)))]'
+                    ? 'pb-[max(7rem,calc(6rem+env(safe-area-inset-bottom)))] sm:pb-[max(7.5rem,calc(6.5rem+env(safe-area-inset-bottom)))] lg:pb-[max(8rem,calc(7rem+env(safe-area-inset-bottom)))]'
                     : ''
             }`}
         >

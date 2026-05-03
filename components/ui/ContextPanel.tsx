@@ -207,12 +207,12 @@ export function ContextPanel({
                         </div>
                     ) : null}
 
-                    <div className="flex shrink-0 items-center justify-between gap-2 border-b border-[var(--border)] px-4 py-3 lg:hidden">
-                        <span className="text-sm font-medium text-[var(--text)]">Intelligence</span>
+                    <div className="flex shrink-0 items-center justify-between gap-2 border-b border-[var(--border)] px-4 py-3.5 lg:hidden">
+                        <span className="text-sm font-semibold text-[var(--text)]">Intelligence</span>
                         <button
                             type="button"
                             onClick={onCloseMobile}
-                            className="rounded-lg px-2 py-1 text-xs text-[var(--muted)] hover:bg-[var(--accent-soft)]"
+                            className="flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] px-3 py-1.5 text-xs font-medium text-[var(--muted)] hover:bg-[var(--accent-soft)] hover:text-[var(--text)]"
                         >
                             Close
                         </button>

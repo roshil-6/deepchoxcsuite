@@ -74,7 +74,7 @@ export function DeskShell({
                     </div>
                 </div>
                 {tabs ? (
-                    <div className="ml-5 mt-4 flex flex-wrap gap-1.5 pt-1">{tabs}</div>
+                    <div className="mt-3 sm:mt-4 flex flex-wrap gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar pt-0.5">{tabs}</div>
                 ) : null}
             </header>
 
