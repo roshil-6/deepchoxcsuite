@@ -182,7 +182,7 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
                     {/* Main Workspace */}
                     <WorkspacePanel
                         reserveBottom={Boolean(bottomBar)}
-                        fillViewport={activeRoom === 'dexo' || activeRoom === 'personal_assistant'}
+                        fillViewport={['dexo', 'personal_assistant', 'reports', 'intelligence_diary', 'wargame', 'vc_gauntlet', 'suite_intelligence', 'ceo', 'pm', 'accountant', 'scout', 'cmo'].includes(activeRoom)}
                         roomKey={activeRoom}
                     >
                         <motion.div
@@ -191,7 +191,7 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.3, ease: 'easeOut' }}
                             className={
-                                activeRoom === 'dexo' || activeRoom === 'personal_assistant'
+                                ['dexo', 'personal_assistant', 'reports', 'intelligence_diary', 'wargame', 'vc_gauntlet', 'suite_intelligence', 'ceo', 'pm', 'accountant', 'scout', 'cmo'].includes(activeRoom)
                                     ? 'flex min-h-0 min-w-0 flex-1 flex-col'
                                     : 'flex min-h-full flex-col'
                             }

@@ -166,7 +166,7 @@ export function ReportsLibrary() {
                             </div>
                         </div>
                     </header>
-                    <div className="custom-scrollbar flex min-h-0 flex-1 flex-col overflow-hidden px-4 pb-4 pt-3 sm:px-6">
+                    <div className="relative min-h-0 flex-1 px-4 pb-4 pt-3 sm:px-6">
                         <textarea
                             value={expandedWriter === 'journal' ? notes : directives}
                             onChange={(e) =>
@@ -181,7 +181,7 @@ export function ReportsLibrary() {
                             }
                             autoFocus
                             spellCheck
-                            className="min-h-0 flex-1 w-full resize-none rounded-xl border border-white/[0.1] bg-brand-bg px-4 py-4 text-[15px] leading-[1.75] text-brand-text placeholder:text-brand-muted outline-none transition focus:border-white/[0.2] focus:ring-1 focus:ring-white/10 sm:text-base"
+                            className="absolute inset-x-4 inset-y-3 resize-none rounded-xl border border-white/[0.1] bg-brand-bg px-4 py-4 text-[15px] leading-[1.75] text-brand-text placeholder:text-brand-muted outline-none transition focus:border-white/[0.2] focus:ring-1 focus:ring-white/10 sm:inset-x-6 sm:text-base custom-scrollbar"
                         />
                     </div>
                 </div>
