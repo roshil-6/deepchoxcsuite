@@ -1,10 +1,6 @@
 'use client';
 
 import { useOffice } from '@/lib/OfficeContext';
-import { StrategyNotebook } from './workspaces/StrategyNotebook';
-import { ProductKanban } from './workspaces/ProductKanban';
-import { FinancialLedger } from './workspaces/FinancialLedger';
-import { ScoutTerminal } from './workspaces/ScoutTerminal';
 import { CalendarView } from './CalendarView';
 import { Dashboard } from './Dashboard';
 import { ReportsLibrary } from './ReportsLibrary';
@@ -19,6 +15,7 @@ import { OperationalDesk } from './OperationalDesk';
 import { IntelligenceDiary } from './IntelligenceDiary';
 import { CsuiteIntelligenceGuide } from './CsuiteIntelligenceGuide';
 import { RoomChrome } from './RoomChrome';
+import { DeskChat } from './workspaces/DeskChat';
 import { getWorkspaceShellTheme } from '@/lib/roomThemes';
 import { WORKSPACE_TITLES } from '@/components/ui/appNav';
 import { User } from 'lucide-react';
@@ -69,35 +66,15 @@ export function WorkspaceStage({
             case 'suite_intelligence':
                 return <CsuiteIntelligenceGuide />;
             case 'ceo':
-                return (
-                    <OperationalDesk>
-                        <StrategyNotebook />
-                    </OperationalDesk>
-                );
+                return <DeskChat deskId="ceo" />;
             case 'pm':
-                return (
-                    <OperationalDesk>
-                        <ProductKanban />
-                    </OperationalDesk>
-                );
+                return <DeskChat deskId="pm" />;
             case 'accountant':
-                return (
-                    <OperationalDesk>
-                        <FinancialLedger />
-                    </OperationalDesk>
-                );
+                return <DeskChat deskId="accountant" />;
             case 'scout':
-                return (
-                    <OperationalDesk>
-                        <ScoutTerminal />
-                    </OperationalDesk>
-                );
+                return <DeskChat deskId="scout" />;
             case 'cmo':
-                return (
-                    <OperationalDesk>
-                        <PitchDeckForge />
-                    </OperationalDesk>
-                );
+                return <DeskChat deskId="cmo" />;
             default:
                 return <Dashboard onNewVenture={onNewVenture} />;
         }
