@@ -761,15 +761,18 @@ export function DexoRoom() {
                     ) : null}
                     
                     {/* ── Tab row ── */}
-                    <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.06] pb-4">
-                        <div className="flex flex-wrap items-center gap-1">
+                    <div className="mb-6 flex items-center justify-between gap-2">
+                        <div
+                            className="flex items-center gap-0.5 rounded-full p-[3px]"
+                            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+                        >
                             <button
                                 type="button"
                                 onClick={() => setView('chat')}
-                                className={`inline-flex items-center gap-1.5 rounded border px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.14em] transition-colors ${
+                                className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] font-medium transition-all duration-150 ${
                                     view === 'chat'
-                                        ? 'border-white/[0.18] bg-white/[0.08] text-white/80'
-                                        : 'border-white/[0.07] text-white/35 hover:border-white/[0.14] hover:text-white/60'
+                                        ? 'bg-white/[0.1] text-white/88 shadow-sm'
+                                        : 'text-white/32 hover:text-white/60'
                                 }`}
                             >
                                 <MessageSquarePlus className="h-3 w-3" />
@@ -779,26 +782,26 @@ export function DexoRoom() {
                                 <button
                                     type="button"
                                     onClick={() => { overviewNudgeShownRef.current = true; setView('overview'); }}
-                                    className={`relative inline-flex items-center gap-1.5 rounded border px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.14em] transition-colors ${
+                                    className={`relative flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] font-medium transition-all duration-150 ${
                                         view === 'overview'
-                                            ? 'border-white/[0.18] bg-white/[0.08] text-white/80'
-                                            : 'border-white/[0.07] text-white/35 hover:border-white/[0.14] hover:text-white/60'
+                                            ? 'bg-white/[0.1] text-white/88 shadow-sm'
+                                            : 'text-white/32 hover:text-white/60'
                                     }`}
                                 >
                                     <Activity className="h-3 w-3" />
                                     Overview
                                     {!overviewNudgeShownRef.current && view !== 'overview' && (
-                                        <span className="absolute -right-0.5 -top-0.5 h-1.5 w-1.5 rounded-full bg-blue-400" />
+                                        <span className="absolute right-1.5 top-1 h-1.5 w-1.5 rounded-full bg-blue-400" />
                                     )}
                                 </button>
                             )}
                             <button
                                 type="button"
                                 onClick={() => setView('daily')}
-                                className={`inline-flex items-center gap-1.5 rounded border px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.14em] transition-colors ${
+                                className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] font-medium transition-all duration-150 ${
                                     view === 'daily'
-                                        ? 'border-white/[0.18] bg-white/[0.08] text-white/80'
-                                        : 'border-white/[0.07] text-white/35 hover:border-white/[0.14] hover:text-white/60'
+                                        ? 'bg-white/[0.1] text-white/88 shadow-sm'
+                                        : 'text-white/32 hover:text-white/60'
                                 }`}
                             >
                                 <BarChart2 className="h-3 w-3" />
@@ -809,9 +812,9 @@ export function DexoRoom() {
                                     type="button"
                                     onClick={resetConversation}
                                     disabled={loading || !activeProject?.id}
-                                    className="inline-flex items-center gap-1.5 rounded border border-white/[0.07] px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-white/25 transition-colors hover:border-white/[0.14] hover:text-white/50 disabled:opacity-40"
+                                    className="rounded-full px-3 py-1.5 text-[11px] text-white/20 transition hover:text-white/50 disabled:opacity-25"
                                 >
-                                    New chat
+                                    New
                                 </button>
                             )}
                         </div>
@@ -820,48 +823,45 @@ export function DexoRoom() {
 
                     {/* ── Mode hint ── */}
                     {view === 'chat' && activePriorityId && MODE_HINTS[activePriorityId] && (
-                        <div className="-mt-1 mb-4 flex items-start gap-2 border-l border-white/[0.08] pl-3">
-                            <p className="font-sans text-[11.5px] leading-snug text-white/35">
-                                {MODE_HINTS[activePriorityId]}
-                            </p>
-                        </div>
+                        <p className="-mt-2 mb-5 text-[12px] leading-relaxed text-white/24">
+                            {MODE_HINTS[activePriorityId]}
+                        </p>
                     )}
 
                     {/* ── Overview Panel ── */}
                     {view === 'overview' && currentReport && (
-                        <div className="space-y-px pb-28">
-                            {/* Summary header */}
-                            <div className="border border-white/[0.07] bg-white/[0.02] p-4 rounded-lg mb-4">
-                                <div className="flex items-center gap-2 mb-3">
+                        <div className="flex flex-col gap-8 pb-28">
+                            {/* Summary */}
+                            <div>
+                                <div className="mb-2 flex items-center gap-2">
                                     <DexoAvatar size="xs" state="idle" pulse={false} />
-                                    <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/30">Dexo · Venture Overview</span>
-                                    <span className="font-mono text-[8px] text-white/20">· Updates as you chat</span>
+                                    <span className="text-[10px] uppercase tracking-[0.2em] text-white/22">Venture Overview · updates as you chat</span>
                                 </div>
-                                <p className="text-[15px] font-semibold leading-snug text-white/90">{currentReport.headline}</p>
-                                <p className="mt-1.5 text-[13px] leading-relaxed text-white/55">{currentReport.summary}</p>
+                                <p className="text-[18px] font-semibold leading-snug text-white/90">{currentReport.headline}</p>
+                                <p className="mt-2 text-[13.5px] leading-relaxed text-white/50">{currentReport.summary}</p>
                             </div>
 
-                            {/* Section breakdown — numbered panels */}
+                            {/* Section breakdown */}
                             {currentReport.sections.filter(s => s.insight?.trim()).length > 0 && (
-                                <div className="space-y-px">
+                                <div className="flex flex-col gap-5">
                                     {currentReport.sections.filter(s => s.insight?.trim()).map((s, i) => (
-                                        <div key={s.desk} className="border border-white/[0.07] bg-white/[0.02] p-4 first:rounded-t-lg last:rounded-b-lg">
-                                            <div className="flex items-baseline gap-3 mb-2.5">
-                                                <span className="font-mono text-[9px] text-white/20 shrink-0">{String(i + 1).padStart(2, '0')}</span>
-                                                <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/40">{s.title}</span>
+                                        <div key={s.desk}>
+                                            <div className="mb-2 flex items-center gap-2.5">
+                                                <span className="text-[10px] text-white/18">{String(i + 1).padStart(2, '0')}</span>
+                                                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/40">{s.title}</span>
                                             </div>
                                             <ul className="space-y-1.5 pl-7">
                                                 {s.insight.split(/(?<=[.!?])\s+/).filter(b => b.trim().length > 8).map((b, bi) => (
-                                                    <li key={bi} className="flex items-start gap-2 text-[13px] leading-snug text-white/65">
-                                                        <span className="mt-[5px] h-[3px] w-[3px] shrink-0 rounded-full bg-white/25" />
+                                                    <li key={bi} className="flex items-start gap-2.5 text-[13px] leading-relaxed text-white/60">
+                                                        <span className="mt-[7px] h-[3px] w-[3px] shrink-0 rounded-full bg-white/20" />
                                                         {b.trim()}
                                                     </li>
                                                 ))}
                                             </ul>
                                             {s.action?.trim() ? (
-                                                <div className="mt-3 flex items-start gap-2 pl-7 pt-2 border-t border-white/[0.05]">
-                                                    <ArrowRight className="mt-[2px] h-3 w-3 shrink-0 text-blue-400/60" aria-hidden />
-                                                    <p className="text-[12px] font-medium leading-snug text-blue-300/80">{s.action}</p>
+                                                <div className="mt-2.5 flex items-start gap-2 pl-7">
+                                                    <ArrowRight className="mt-[3px] h-3 w-3 shrink-0 text-blue-400/50" aria-hidden />
+                                                    <p className="text-[12.5px] leading-snug text-blue-300/70">{s.action}</p>
                                                 </div>
                                             ) : null}
                                         </div>
@@ -871,28 +871,28 @@ export function DexoRoom() {
 
                             {/* Risks */}
                             {currentReport.risks.filter(r => r.detail?.trim()).length > 0 && (
-                                <div className="mt-4 space-y-px">
-                                    <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/25 mb-2">Risk Register</p>
-                                    {currentReport.risks.map((r, i) => (
-                                        <div key={i} className="border border-amber-500/[0.12] bg-amber-500/[0.03] p-4 first:rounded-t-lg last:rounded-b-lg">
-                                            <div className="flex items-center gap-2 mb-1.5">
-                                                <span className="font-mono text-[8px] uppercase tracking-[0.15em] text-amber-400/60">⚠ {r.label}</span>
-                                                <span className="font-mono text-[8px] text-amber-400/30">({r.level})</span>
+                                <div>
+                                    <p className="mb-3 text-[10px] uppercase tracking-[0.18em] text-white/22">Risk register</p>
+                                    <div className="flex flex-col gap-3">
+                                        {currentReport.risks.map((r, i) => (
+                                            <div key={i}>
+                                                <p className="mb-1 text-[11px] font-medium text-amber-400/60">⚠ {r.label} <span className="text-amber-400/30">· {r.level}</span></p>
+                                                <p className="text-[13px] leading-relaxed text-white/55">{r.detail}</p>
                                             </div>
-                                            <p className="text-[13px] leading-snug text-white/60">{r.detail}</p>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
                             )}
 
                             {/* Recommended moves */}
                             {currentReport.nextActions.filter(a => a.action?.trim()).length > 0 && (
-                                <div className="mt-4 border border-white/[0.07] bg-white/[0.02] rounded-lg p-4">
-                                    <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/25 mb-3">Recommended Moves</p>
-                                    <ul className="space-y-2">
+                                <div>
+                                    <p className="mb-3 text-[10px] uppercase tracking-[0.18em] text-white/22">Recommended moves</p>
+                                    <ul className="flex flex-col gap-2.5">
                                         {currentReport.nextActions.slice(0, 4).map((a, i) => (
-                                            <li key={i} className="flex items-start gap-3 text-[13px] text-white/60">
-                                                <span className="mt-[2px] shrink-0 rounded border border-white/[0.08] px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-wider text-white/30">{a.desk}</span>
+                                            <li key={i} className="flex items-start gap-3 text-[13px] text-white/58">
+                                                <span className="mt-[2px] shrink-0 rounded-full px-2 py-0.5 text-[9px] uppercase tracking-wider text-white/28"
+                                                    style={{ background: 'rgba(255,255,255,0.05)' }}>{a.desk}</span>
                                                 {a.action}
                                             </li>
                                         ))}
@@ -903,7 +903,7 @@ export function DexoRoom() {
                             <button
                                 type="button"
                                 onClick={() => setView('chat')}
-                                className="mt-4 inline-flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.15em] text-white/25 transition hover:text-white/50"
+                                className="self-start text-[11px] text-white/22 transition hover:text-white/50"
                             >
                                 ← Back to chat
                             </button>
@@ -920,143 +920,94 @@ export function DexoRoom() {
                     {/* ── Chat / Analysis view ── */}
                     {view === 'chat' && (
                     <>
-                    {/* ── Co-founder header ── */}
-                    <div className="mb-5 border-b border-white/[0.06] pb-4">
-                        {/* Identity row */}
-                        <div className="mb-3 flex items-center gap-3">
-                            <DexoAvatar
-                                state={
-                                    orbState === 'loading'    ? 'thinking'  :
-                                    orbState === 'listening'  ? 'listening' :
-                                    orbState === 'speaking'   ? 'speaking'  :
-                                    orbState === 'thinking'   ? 'thinking'  : 'idle'
-                                }
-                                size="lg"
-                                pulse
-                                className="shrink-0"
-                            />
-                            <div className="min-w-0">
-                                <div className="flex items-center gap-2">
-                                    <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/35">DEXO</span>
-                                    <span className="rounded border border-white/[0.08] px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.18em] text-white/30">AI Co-Founder</span>
-                                    {(isSpeaking || isListening) && (
-                                        <span className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.15em] ${
-                                            isListening ? 'border-rose-500/30 text-rose-400/80' : 'border-emerald-500/30 text-emerald-400/80'
-                                        }`}>
-                                            <WaveBars active />
-                                            {isListening ? 'Listening' : 'Speaking'}
-                                        </span>
-                                    )}
-                                </div>
-                                <h1 className="mt-1 font-sans text-[16px] font-semibold leading-tight tracking-tight text-white/90">
+                    {/* ── Identity header ── */}
+                    <div className="mb-7 flex items-center gap-3.5">
+                        <DexoAvatar
+                            state={
+                                orbState === 'loading'    ? 'thinking'  :
+                                orbState === 'listening'  ? 'listening' :
+                                orbState === 'speaking'   ? 'speaking'  :
+                                orbState === 'thinking'   ? 'thinking'  : 'idle'
+                            }
+                            size="md"
+                            pulse
+                            className="shrink-0"
+                        />
+                        <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <h1 className="text-[15px] font-semibold leading-tight tracking-tight text-white/90">
                                     {activeProject?.name ?? 'Dexo'}
                                 </h1>
-                                <p className="mt-0.5 font-sans text-[12.5px] text-white/45">
-                                    Tell me what&apos;s on your mind.
-                                </p>
+                                {(isSpeaking || isListening) && (
+                                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-medium ${
+                                        isListening
+                                            ? 'bg-rose-500/10 text-rose-400'
+                                            : 'bg-emerald-500/10 text-emerald-400'
+                                    }`}>
+                                        <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse" />
+                                        {isListening ? 'Listening' : 'Speaking'}
+                                    </span>
+                                )}
                             </div>
-                        </div>
-
-                        {voiceError && (
-                            <div className="mb-2 flex items-center gap-2 rounded border border-white/[0.08] px-3 py-2 font-sans text-[11px] text-white/40">
-                                <AlertTriangle className="h-3 w-3 shrink-0" />
-                                {voiceError}
-                            </div>
-                        )}
-
-                        {/* Voice control row */}
-                        <div className="flex flex-wrap items-center gap-1">
-                            <button
-                                type="button"
-                                onClick={() => setHandsFree((h) => !h)}
-                                title="After Dexo speaks, mic opens automatically"
-                                className={`inline-flex items-center gap-1.5 rounded border px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.12em] transition-all ${
-                                    handsFree
-                                        ? 'border-blue-500/40 bg-blue-500/[0.08] text-blue-400/90'
-                                        : 'border-white/[0.08] text-white/30 hover:border-white/[0.14] hover:text-white/55'
-                                }`}
-                            >
-                                <AudioLines className="h-3 w-3" />
-                                {handsFree ? 'Conversation · On' : 'Conversation'}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setIsMuted((m) => !m)}
-                                className="inline-flex items-center gap-1.5 rounded border border-white/[0.08] px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-white/30 transition hover:border-white/[0.14] hover:text-white/55"
-                            >
-                                {isMuted ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
-                                {isMuted ? 'Unmute' : 'Mute'}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setShowVoiceSettings(true)}
-                                className="inline-flex items-center gap-1.5 rounded border border-white/[0.08] px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-white/30 transition hover:border-white/[0.14] hover:text-white/55"
-                                title={`Voice: ${voicePreset}`}
-                            >
-                                <Settings2 className="h-3 w-3" />
-                                Voice
-                            </button>
-                            {(isSpeaking || isListening) && (
-                                <button
-                                    type="button"
-                                    onClick={isSpeaking ? stopSpeaking : stopListening}
-                                    className="inline-flex items-center gap-1.5 rounded border border-white/[0.08] px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-rose-400/60 transition hover:border-rose-500/30 hover:text-rose-400"
-                                >
-                                    <Square className="h-2.5 w-2.5" />
-                                    Stop
-                                </button>
-                            )}
+                            <p className="mt-0.5 text-[12px] text-white/28">Tell me what&apos;s on your mind.</p>
                         </div>
                     </div>
+                    {voiceError && (
+                        <div className="mb-4 flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-[11px] text-white/35"
+                            style={{ background: 'rgba(255,255,255,0.04)' }}>
+                            <AlertTriangle className="h-3 w-3 shrink-0" />
+                            {voiceError}
+                        </div>
+                    )}
 
                     {convo.length > 0 && (
                         <div className="pb-28">
-                            <div className="space-y-1">
+                            <div className="flex flex-col gap-5">
                                 {convo.map((msg) => {
                                     const isUser = msg.role === 'user';
                                     const isInterrupted = msg.text === '— interrupted —';
-                                    return (
-                                        <div
-                                            key={msg.id}
-                                            className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} py-1`}
-                                        >
-                                            {/* Label row */}
-                                            {!isInterrupted && (
-                                                <div className={`mb-1 flex items-center gap-2 ${isUser ? 'flex-row-reverse' : ''}`}>
-                                                    {!isUser && <DexoAvatar size="xs" state="idle" pulse={false} />}
-                                                    <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/25">
-                                                        {isUser ? 'You' : 'Dexo'}
-                                                    </span>
+
+                                    if (isInterrupted) {
+                                        return (
+                                            <div key={msg.id}>
+                                                <p className="border-l-2 border-white/10 pl-3 text-[11px] italic text-white/18">— interrupted —</p>
+                                            </div>
+                                        );
+                                    }
+
+                                    if (isUser) {
+                                        return (
+                                            <div key={msg.id} className="flex justify-end">
+                                                <div
+                                                    className="max-w-[82%] sm:max-w-[72%] rounded-2xl rounded-br-sm px-4 py-2.5 text-[13.5px] leading-relaxed text-white/85"
+                                                    style={{ background: 'rgba(255,255,255,0.08)' }}
+                                                >
+                                                    {msg.text}
                                                 </div>
-                                            )}
+                                            </div>
+                                        );
+                                    }
 
-                                            <div
-                                                className={`max-w-[88%] sm:max-w-[78%] ${
-                                                    isInterrupted
-                                                        ? 'border-l-2 border-white/[0.1] pl-3 italic text-white/25 text-[12px]'
-                                                        : isUser
-                                                          ? 'rounded-lg rounded-tr-sm border border-white/[0.1] bg-white/[0.06] px-3.5 py-2.5 text-[13.5px] text-white/85'
-                                                          : 'rounded-lg rounded-tl-sm border border-white/[0.07] bg-white/[0.03] px-3.5 py-2.5 text-[13.5px] text-white/80'
-                                                }`}
-                                            >
-                                                <p className="whitespace-pre-wrap leading-relaxed">{msg.text}</p>
-
-                                                {/* Speak toggle — Dexo messages only */}
-                                                {!isUser && !isInterrupted && (
-                                                    <div className="mt-2 flex items-center gap-1">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => isSpeaking ? stopSpeaking() : speakJarvis(msg.text)}
-                                                            className="inline-flex items-center gap-1 rounded border border-white/[0.07] px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.12em] text-white/25 transition hover:border-white/[0.14] hover:text-white/50"
-                                                            title={isSpeaking ? 'Stop speaking' : 'Read aloud'}
-                                                        >
-                                                            {isSpeaking
-                                                                ? <><VolumeX className="h-2.5 w-2.5" /> Stop</>
-                                                                : <><Volume2 className="h-2.5 w-2.5" /> Speak</>
-                                                            }
-                                                        </button>
-                                                    </div>
-                                                )}
+                                    // AI message — raw text, no box
+                                    return (
+                                        <div key={msg.id} className="flex flex-col items-start gap-2">
+                                            <div className="flex items-center gap-2">
+                                                <DexoAvatar size="xs" state="idle" pulse={false} />
+                                                <span className="text-[9px] uppercase tracking-[0.2em] text-white/22">Dexo</span>
+                                            </div>
+                                            <div className="w-full pl-8">
+                                                <p className="text-[14px] leading-[1.75] text-white/78 whitespace-pre-wrap">{msg.text}</p>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => isSpeaking ? stopSpeaking() : speakJarvis(msg.text)}
+                                                    className="mt-2 inline-flex items-center gap-1 text-[10px] text-white/18 transition hover:text-white/45"
+                                                    title={isSpeaking ? 'Stop speaking' : 'Read aloud'}
+                                                >
+                                                    {isSpeaking
+                                                        ? <><VolumeX className="h-2.5 w-2.5" /> Stop</>
+                                                        : <><Volume2 className="h-2.5 w-2.5" /> Speak</>
+                                                    }
+                                                </button>
                                             </div>
                                         </div>
                                     );
@@ -1064,28 +1015,18 @@ export function DexoRoom() {
 
                                 {/* Overview ready nudge */}
                                 {currentReport && !loading && convo.some(m => m.role === 'dexo') && (
-                                    <div className="flex flex-col items-start py-1">
-                                        <div className="mb-1 flex items-center gap-2">
-                                            <DexoAvatar size="xs" state="idle" pulse={false} />
-                                            <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/25">Dexo</span>
-                                        </div>
-                                        <div className="max-w-[88%] rounded-lg rounded-tl-sm border border-white/[0.07] bg-white/[0.03] px-3.5 py-3 sm:max-w-[78%]">
-                                            <p className="font-mono text-[8px] uppercase tracking-[0.18em] text-blue-400/70">Overview ready</p>
-                                            <p className="mt-1.5 text-[13px] leading-snug text-white/75">
-                                                {currentReport.headline}
-                                            </p>
-                                            <p className="mt-1 text-[11px] text-white/35">
-                                                Breakdown built from your chat — sharpens as we talk.
-                                            </p>
-                                            <button
-                                                type="button"
-                                                onClick={() => { overviewNudgeShownRef.current = true; setView('overview'); }}
-                                                className="mt-2.5 inline-flex items-center gap-1.5 rounded border border-white/[0.12] bg-white/[0.05] px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-white/60 transition hover:border-white/[0.2] hover:bg-white/[0.09] hover:text-white/85"
-                                            >
-                                                <Activity className="h-3 w-3" />
-                                                See full overview
-                                            </button>
-                                        </div>
+                                    <div className="flex flex-col items-start gap-2 pl-8">
+                                        <p className="text-[11px] uppercase tracking-[0.14em] text-blue-400/50">Overview ready</p>
+                                        <p className="text-[13px] leading-snug text-white/68">{currentReport.headline}</p>
+                                        <button
+                                            type="button"
+                                            onClick={() => { overviewNudgeShownRef.current = true; setView('overview'); }}
+                                            className="mt-1 inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] text-white/50 transition hover:text-white/80"
+                                            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)' }}
+                                        >
+                                            <Activity className="h-3 w-3" />
+                                            See full overview
+                                        </button>
                                     </div>
                                 )}
 
@@ -1093,7 +1034,7 @@ export function DexoRoom() {
                                 {!loading && convo.length > 0 && convo[convo.length - 1]?.role === 'dexo' && (() => {
                                     const chips = MODE_QUICK_REPLIES[activePriorityId ?? ''] ?? MODE_QUICK_REPLIES.all;
                                     return chips.length > 0 ? (
-                                        <div className="flex flex-wrap gap-1.5 pt-2 pl-6">
+                                        <div className="flex flex-wrap gap-2 pl-8 pt-1">
                                             {chips.map((reply) => (
                                                 <button
                                                     key={reply}
@@ -1103,9 +1044,12 @@ export function DexoRoom() {
                                                         setConvo(prev => [...prev, { role: 'user', text: reply, id: uid }]);
                                                         void run('converse', reply);
                                                     }}
-                                                    className="flex items-center gap-1.5 rounded border border-white/[0.09] bg-white/[0.03] px-3 py-1.5 font-sans text-[11.5px] text-white/45 transition hover:border-white/[0.16] hover:bg-white/[0.06] hover:text-white/75"
+                                                    className="rounded-full px-3.5 py-1.5 text-[12px] text-white/38 transition-all hover:text-white/70"
+                                                    style={{
+                                                        background: 'rgba(255,255,255,0.04)',
+                                                        border: '1px solid rgba(255,255,255,0.08)',
+                                                    }}
                                                 >
-                                                    <ArrowRight className="h-3 w-3 shrink-0 opacity-50" />
                                                     {reply}
                                                 </button>
                                             ))}
@@ -1115,17 +1059,19 @@ export function DexoRoom() {
 
                                 {/* Typing indicator */}
                                 {loading && convo[convo.length - 1]?.role === 'user' && (
-                                    <div className="flex flex-col items-start py-1">
-                                        <div className="mb-1 flex items-center gap-2">
+                                    <div className="flex flex-col items-start gap-2">
+                                        <div className="flex items-center gap-2">
                                             <DexoAvatar size="xs" state="thinking" pulse={false} />
-                                            <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/25">Dexo</span>
+                                            <span className="text-[9px] uppercase tracking-[0.2em] text-white/22">Dexo</span>
                                         </div>
-                                        <div className="rounded-lg rounded-tl-sm border border-white/[0.07] bg-white/[0.03] px-3.5 py-2.5">
-                                            <div className="flex items-center gap-1.5">
-                                                <span className="h-1 w-1 rounded-full bg-white/25 animate-bounce [animation-delay:0ms]" />
-                                                <span className="h-1 w-1 rounded-full bg-white/25 animate-bounce [animation-delay:150ms]" />
-                                                <span className="h-1 w-1 rounded-full bg-white/25 animate-bounce [animation-delay:300ms]" />
-                                            </div>
+                                        <div className="pl-8 flex items-center gap-1.5 py-1">
+                                            {[0, 1, 2].map((i) => (
+                                                <span
+                                                    key={i}
+                                                    className="h-[5px] w-[5px] rounded-full bg-white/25 animate-bounce"
+                                                    style={{ animationDelay: `${i * 150}ms` }}
+                                                />
+                                            ))}
                                         </div>
                                     </div>
                                 )}
@@ -1141,71 +1087,69 @@ export function DexoRoom() {
 
             {/* ── Input strip ── */}
             <div className="relative z-10 shrink-0">
-                {/* Fade gradient from transparent → room bg, so content scrolls under it cleanly */}
-                <div className="pointer-events-none absolute inset-x-0 -top-10 h-10 bg-gradient-to-t from-[rgba(14,14,16,0.72)] to-transparent" />
-                <div className="border-t border-[var(--border)] bg-[rgba(14,14,16,0.72)] backdrop-blur-md px-4 pb-4 pt-3">
+                <div className="pointer-events-none absolute inset-x-0 -top-16 h-16 bg-gradient-to-t from-[rgba(12,12,14,0.95)] to-transparent" />
+                <div
+                    className="px-4 pb-5 pt-3"
+                    style={{ background: 'rgba(12,12,14,0.97)', borderTop: '1px solid rgba(255,255,255,0.05)' }}
+                >
                     <div className="mx-auto max-w-[660px] space-y-2">
 
                         {/* Listening indicator */}
                         {isListening && (
                             <div className="flex items-center gap-2.5 px-1">
-                                <span className="flex h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
-                                <div className="flex flex-1 items-end gap-[3px] h-4">
-                                    {[...Array(10)].map((_, i) => (
+                                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-rose-500 animate-pulse" />
+                                <div className="flex flex-1 items-end gap-[3px] h-3.5">
+                                    {[...Array(14)].map((_, i) => (
                                         <span
                                             key={i}
-                                            className="w-[3px] rounded-full bg-rose-500/50 animate-pulse"
-                                            style={{ height: `${6 + Math.random() * 14}px`, animationDelay: `${i * 80}ms` }}
+                                            className="w-[2px] rounded-full bg-rose-500/40 animate-pulse"
+                                            style={{ height: `${5 + Math.sin(i * 0.9) * 8}px`, animationDelay: `${i * 55}ms` }}
                                         />
                                     ))}
                                 </div>
-                                <span className="font-sans text-[11px] font-medium text-rose-400">Listening</span>
+                                <span className="text-[11px] font-medium text-rose-400/80">Listening</span>
                             </div>
                         )}
 
                         {/* Interim transcript */}
                         {voiceInterimTranscript && (
-                            <p className="truncate px-1 font-sans text-[12px] italic text-white/40">
+                            <p className="truncate px-1 text-[12px] italic text-white/28">
                                 {voiceInterimTranscript}
                             </p>
                         )}
 
-                        {/* Input box */}
+                        {/* Main input */}
                         <div
-                            className={`flex items-end gap-2 rounded-lg border px-3 py-2.5 transition-colors duration-200 ${
-                                isListening
-                                    ? 'border-rose-500/30 bg-rose-500/[0.03]'
-                                    : isSpeaking
-                                      ? 'border-emerald-500/25 bg-emerald-500/[0.02]'
-                                      : isProcessing
-                                        ? 'border-blue-500/25 bg-blue-500/[0.02]'
-                                        : 'border-white/[0.1] bg-white/[0.03] focus-within:border-white/[0.18]'
+                            className={`flex items-end gap-2 rounded-2xl px-3 py-3 transition-all duration-200 ${
+                                isListening   ? 'shadow-[0_0_0_1.5px_rgba(244,63,94,0.35)]' :
+                                isSpeaking    ? 'shadow-[0_0_0_1.5px_rgba(16,185,129,0.3)]' :
+                                isProcessing  ? 'shadow-[0_0_0_1.5px_rgba(99,102,241,0.3)]' :
+                                'focus-within:shadow-[0_0_0_1.5px_rgba(255,255,255,0.14)]'
                             }`}
+                            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
                         >
                             {/* Mic button */}
-                            <div className="relative">
+                            <div className="relative shrink-0">
                                 {isListening && (
-                                    <span className="absolute inset-0 rounded-full animate-ping bg-rose-500/20" />
+                                    <span className="absolute inset-0 rounded-full animate-ping bg-rose-500/15" />
                                 )}
                                 <button
                                     type="button"
                                     onClick={onMicClick}
                                     title={isListening ? 'Stop listening' : isSpeaking ? 'Interrupt' : 'Voice input'}
-                                    className={`relative flex h-9 w-9 shrink-0 items-center justify-center rounded-md border transition-colors duration-200 ${
-                                        isListening
-                                            ? 'border-rose-500/50 bg-rose-500/[0.15] text-rose-400'
-                                            : isSpeaking
-                                              ? 'border-emerald-500/30 bg-emerald-500/[0.08] text-emerald-400'
-                                              : isProcessing
-                                                ? 'border-blue-500/30 bg-blue-500/[0.08] text-blue-400'
-                                                : 'border-white/[0.08] text-white/30 hover:border-white/[0.16] hover:text-white/60'
+                                    className={`relative flex h-8 w-8 items-center justify-center rounded-full transition-colors duration-200 ${
+                                        isListening   ? 'bg-rose-500/15 text-rose-400' :
+                                        isSpeaking    ? 'bg-emerald-500/10 text-emerald-400' :
+                                        isProcessing  ? 'bg-indigo-500/10 text-indigo-400' :
+                                        'text-white/28 hover:bg-white/[0.07] hover:text-white/60'
                                     }`}
                                 >
                                     {isListening ? (
                                         <div className="flex items-end gap-[2px]">
-                                            <span className="h-2.5 w-[3px] rounded-full bg-current animate-pulse" />
-                                            <span className="h-3.5 w-[3px] rounded-full bg-current animate-pulse [animation-delay:80ms]" />
-                                            <span className="h-2 w-[3px] rounded-full bg-current animate-pulse [animation-delay:160ms]" />
+                                            {[8, 12, 8].map((h, i) => (
+                                                <span key={i} className="w-[2px] rounded-full bg-current animate-pulse"
+                                                    style={{ height: `${h}px`, animationDelay: `${i * 80}ms` }} />
+                                            ))}
                                         </div>
                                     ) : isSpeaking ? (
                                         <Volume2 className="h-4 w-4" />
@@ -1215,7 +1159,7 @@ export function DexoRoom() {
                                 </button>
                             </div>
 
-                            {/* Text input */}
+                            {/* Textarea */}
                             <textarea
                                 ref={inputRef}
                                 value={inputText}
@@ -1226,31 +1170,78 @@ export function DexoRoom() {
                                     isListening   ? 'Speak now…'
                                     : isProcessing  ? 'Thinking…'
                                     : isSpeaking    ? 'Dexo is speaking…'
-                                    : loading       ? (activePriorityId ? (MODE_LOADING_TEXT[activePriorityId] ?? 'Analyzing your venture…') : 'Analyzing your venture…')
+                                    : loading       ? (activePriorityId ? (MODE_LOADING_TEXT[activePriorityId] ?? 'Analyzing…') : 'Analyzing…')
                                     : 'Message Dexo…'
                                 }
-                                className="min-h-[38px] min-w-0 flex-1 resize-none border-none bg-transparent px-1.5 py-2 font-sans text-[14px] leading-[1.45] text-[var(--text-primary)] placeholder:text-[var(--muted)] focus:outline-none focus:ring-0"
+                                className="min-h-[32px] min-w-0 flex-1 resize-none border-none bg-transparent py-1 text-[14px] leading-[1.5] text-white/85 placeholder:text-white/20 focus:outline-none focus:ring-0"
                                 style={{ maxHeight: '160px', overflowY: 'auto' }}
                             />
 
-                            {/* Send / Stop button */}
-                            {isSpeaking ? (
+                            {/* Right-side controls: hands-free · mute · send/stop */}
+                            <div className="flex shrink-0 items-center gap-1">
                                 <button
                                     type="button"
-                                    onClick={stopSpeaking}
-                                    title="Stop speaking"
-                                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-rose-400 transition hover:bg-rose-500/10"
+                                    onClick={() => setHandsFree((h) => !h)}
+                                    title={handsFree ? 'Hands-free on — turn off' : 'Enable hands-free conversation'}
+                                    className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
+                                        handsFree ? 'bg-blue-500/15 text-blue-400' : 'text-white/20 hover:text-white/50'
+                                    }`}
                                 >
-                                    <Square className="h-4 w-4 fill-current" />
+                                    <AudioLines className="h-3.5 w-3.5" />
                                 </button>
-                            ) : (
                                 <button
                                     type="button"
-                                    onClick={handleSend}
-                                    disabled={!inputText.trim() || loading}
-                                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-white/[0.15] bg-white/[0.08] text-white/70 transition-colors hover:border-white/[0.25] hover:bg-white/[0.13] hover:text-white disabled:opacity-20"
+                                    onClick={() => setIsMuted((m) => !m)}
+                                    title={isMuted ? 'Unmute Dexo' : 'Mute Dexo'}
+                                    className="flex h-7 w-7 items-center justify-center rounded-full text-white/20 transition-colors hover:text-white/50"
                                 >
-                                    <Send className="h-4 w-4" />
+                                    {isMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+                                </button>
+
+                                {isSpeaking ? (
+                                    <button
+                                        type="button"
+                                        onClick={stopSpeaking}
+                                        title="Stop speaking"
+                                        className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-500/15 text-rose-400 transition hover:bg-rose-500/25"
+                                    >
+                                        <Square className="h-3.5 w-3.5 fill-current" />
+                                    </button>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={handleSend}
+                                        disabled={!inputText.trim() || loading}
+                                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-all disabled:opacity-20"
+                                        style={{
+                                            background: inputText.trim() && !loading ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)',
+                                            color: inputText.trim() && !loading ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.3)',
+                                        }}
+                                    >
+                                        <Send className="h-3.5 w-3.5" />
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Voice settings micro-link */}
+                        <div className="flex items-center justify-between px-1">
+                            <button
+                                type="button"
+                                onClick={() => setShowVoiceSettings(true)}
+                                className="inline-flex items-center gap-1 text-[10px] text-white/15 transition hover:text-white/38"
+                                title={`Voice: ${voicePreset}`}
+                            >
+                                <Settings2 className="h-2.5 w-2.5" />
+                                Voice · {voicePreset}
+                            </button>
+                            {(isSpeaking || isListening) && (
+                                <button
+                                    type="button"
+                                    onClick={isSpeaking ? stopSpeaking : stopListening}
+                                    className="text-[10px] text-rose-400/45 transition hover:text-rose-400/80"
+                                >
+                                    Stop
                                 </button>
                             )}
                         </div>
