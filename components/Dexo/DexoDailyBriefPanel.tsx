@@ -127,39 +127,244 @@ function parseBodyMd(bodyMd: string): { intro: string; sections: ParsedSection[]
   return { intro, sections };
 }
 
-// ─── Section card ─────────────────────────────────────────────────────────────
+// ─── Particle CSS (injected once) ────────────────────────────────────────────
+const PARTICLE_CSS = `
+@keyframes dp-float-a { 0%,100%{transform:translate(0,0) scale(1);opacity:0.35} 50%{transform:translate(8px,-10px) scale(1.2);opacity:0.7} }
+@keyframes dp-float-b { 0%,100%{transform:translate(0,0) scale(1);opacity:0.25} 50%{transform:translate(-9px,8px) scale(1.15);opacity:0.6} }
+@keyframes dp-float-c { 0%,100%{transform:translate(0,0) scale(1);opacity:0.2}  50%{transform:translate(6px,9px) scale(1.1);opacity:0.5} }
+@keyframes dp-float-d { 0%,100%{transform:translate(0,0) scale(1);opacity:0.15} 50%{transform:translate(-5px,-7px) scale(1.1);opacity:0.4} }
+@keyframes dp-float-e { 0%,100%{transform:translate(0,0) scale(1);opacity:0.1} 50%{transform:translate(10px,-5px) scale(1.25);opacity:0.35} }
+@keyframes dp-pulse    { 0%,100%{opacity:0.6} 50%{opacity:1} }
+`;
+let dpCssInjected = false;
+function injectDpCss() {
+  if (dpCssInjected || typeof document === 'undefined') return;
+  dpCssInjected = true;
+  const el = document.createElement('style');
+  el.textContent = PARTICLE_CSS;
+  document.head.appendChild(el);
+}
+
+// ─── Section theme map ────────────────────────────────────────────────────────
+type SectionTheme = {
+  accent: string;      // rgba
+  glow: string;        // rgba for radial glow
+  badge: string;       // text label color
+  border: string;
+  bg: string;
+  moveBg: string;
+  moveBorder: string;
+  moveText: string;
+};
+
+function getSectionTheme(title: string, isRisk?: boolean): SectionTheme {
+  const t = title.toLowerCase();
+  if (isRisk || t.includes('risk')) {
+    return {
+      accent: 'rgba(251,191,36,0.75)',
+      glow: 'rgba(251,191,36,0.18)',
+      badge: 'rgba(251,191,36,0.65)',
+      border: 'rgba(251,191,36,0.12)',
+      bg: 'rgba(251,191,36,0.025)',
+      moveBg: 'rgba(251,191,36,0.06)',
+      moveBorder: 'rgba(251,191,36,0.18)',
+      moveText: 'rgba(253,230,138,0.9)',
+    };
+  }
+  if (t.includes('market') || t.includes('competitor') || t.includes('landscape')) {
+    return {
+      accent: 'rgba(56,189,248,0.75)',
+      glow: 'rgba(56,189,248,0.15)',
+      badge: 'rgba(56,189,248,0.65)',
+      border: 'rgba(56,189,248,0.1)',
+      bg: 'rgba(56,189,248,0.02)',
+      moveBg: 'rgba(56,189,248,0.06)',
+      moveBorder: 'rgba(56,189,248,0.2)',
+      moveText: 'rgba(125,211,252,0.9)',
+    };
+  }
+  if (t.includes('product') || t.includes('build') || t.includes('deliver')) {
+    return {
+      accent: 'rgba(167,139,250,0.75)',
+      glow: 'rgba(167,139,250,0.15)',
+      badge: 'rgba(167,139,250,0.65)',
+      border: 'rgba(167,139,250,0.1)',
+      bg: 'rgba(167,139,250,0.02)',
+      moveBg: 'rgba(167,139,250,0.06)',
+      moveBorder: 'rgba(167,139,250,0.2)',
+      moveText: 'rgba(196,181,253,0.9)',
+    };
+  }
+  if (t.includes('financ') || t.includes('revenue') || t.includes('runway') || t.includes('capital')) {
+    return {
+      accent: 'rgba(52,211,153,0.75)',
+      glow: 'rgba(52,211,153,0.15)',
+      badge: 'rgba(52,211,153,0.65)',
+      border: 'rgba(52,211,153,0.1)',
+      bg: 'rgba(52,211,153,0.02)',
+      moveBg: 'rgba(52,211,153,0.06)',
+      moveBorder: 'rgba(52,211,153,0.2)',
+      moveText: 'rgba(110,231,183,0.9)',
+    };
+  }
+  if (t.includes('growth') || t.includes('narr') || t.includes('brand') || t.includes('market')) {
+    return {
+      accent: 'rgba(251,113,133,0.75)',
+      glow: 'rgba(251,113,133,0.15)',
+      badge: 'rgba(251,113,133,0.65)',
+      border: 'rgba(251,113,133,0.1)',
+      bg: 'rgba(251,113,133,0.02)',
+      moveBg: 'rgba(251,113,133,0.06)',
+      moveBorder: 'rgba(251,113,133,0.2)',
+      moveText: 'rgba(253,164,175,0.9)',
+    };
+  }
+  // Default: violet/indigo
+  return {
+    accent: 'rgba(129,140,248,0.75)',
+    glow: 'rgba(129,140,248,0.15)',
+    badge: 'rgba(129,140,248,0.65)',
+    border: 'rgba(129,140,248,0.1)',
+    bg: 'rgba(129,140,248,0.02)',
+    moveBg: 'rgba(34,211,238,0.05)',
+    moveBorder: 'rgba(34,211,238,0.2)',
+    moveText: 'rgba(103,232,249,0.9)',
+  };
+}
+
+const PARTICLE_ANIMS = ['dp-float-a','dp-float-b','dp-float-c','dp-float-d','dp-float-e'];
+const PARTICLE_POS = [
+  { top: '12%',  right: '8%'  },
+  { top: '55%',  right: '14%' },
+  { top: '78%',  right: '4%'  },
+  { top: '30%',  right: '22%' },
+  { top: '88%',  right: '18%' },
+];
+
+// ─── Section card — particle design ──────────────────────────────────────────
 function SectionCard({ section, index }: { section: ParsedSection; index: number }) {
+  React.useEffect(() => { injectDpCss(); }, []);
+  const theme = getSectionTheme(section.title, section.isRisk);
+  const durations = [4.2, 5.8, 3.9, 6.4, 5.1];
+
   return (
-    <div className={`border p-4 ${section.isRisk ? 'border-amber-500/[0.12] bg-amber-500/[0.02]' : 'border-white/[0.07] bg-white/[0.02]'} first:rounded-t-lg last:rounded-b-lg`}>
-      <div className="flex items-baseline gap-3 mb-2.5">
-        {section.isRisk ? (
-          <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-amber-400/60">⚠ Risk</span>
-        ) : (
-          <>
-            <span className="font-mono text-[9px] text-white/20 shrink-0">{String(index + 1).padStart(2, '0')}</span>
-            <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/40">{section.title}</span>
-          </>
+    <div
+      className="relative overflow-hidden rounded-2xl p-5 sm:p-6"
+      style={{ background: theme.bg, border: `1px solid ${theme.border}` }}
+    >
+      {/* ── Radial glow ── */}
+      <div
+        className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full blur-3xl"
+        style={{ background: theme.glow, opacity: 0.6 }}
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute -bottom-8 -left-8 h-32 w-32 rounded-full blur-2xl"
+        style={{ background: theme.glow, opacity: 0.25 }}
+        aria-hidden
+      />
+
+      {/* ── Floating particles ── */}
+      {PARTICLE_POS.map((pos, i) => (
+        <span
+          key={i}
+          className="pointer-events-none absolute rounded-full"
+          aria-hidden
+          style={{
+            ...pos,
+            width: i % 2 === 0 ? '4px' : '3px',
+            height: i % 2 === 0 ? '4px' : '3px',
+            background: theme.accent,
+            animation: `${PARTICLE_ANIMS[i]} ${durations[i]}s ${i * 0.7}s ease-in-out infinite`,
+            boxShadow: `0 0 6px ${theme.accent}`,
+          }}
+        />
+      ))}
+
+      {/* ── Ghost number ── */}
+      {!section.isRisk && (
+        <span
+          className="pointer-events-none absolute bottom-3 right-4 select-none font-black leading-none"
+          aria-hidden
+          style={{
+            fontSize: '72px',
+            color: theme.accent,
+            opacity: 0.06,
+            fontVariantNumeric: 'tabular-nums',
+          }}
+        >
+          {String(index + 1).padStart(2, '0')}
+        </span>
+      )}
+
+      {/* ── Header row ── */}
+      <div className="relative mb-4 flex items-center gap-3">
+        {/* Animated dot */}
+        <span
+          className="h-2 w-2 shrink-0 rounded-full"
+          style={{
+            background: theme.accent,
+            boxShadow: `0 0 8px ${theme.accent}`,
+            animation: 'dp-pulse 2.4s ease-in-out infinite',
+          }}
+          aria-hidden
+        />
+        <span
+          className="font-mono text-[9px] uppercase tracking-[0.22em]"
+          style={{ color: theme.badge }}
+        >
+          {section.isRisk ? '⚠ Key risks' : section.title}
+        </span>
+        <div className="flex-1 h-px" style={{ background: `linear-gradient(to right, ${theme.border}, transparent)` }} aria-hidden />
+        {!section.isRisk && (
+          <span
+            className="font-mono text-[10px] font-black tabular-nums"
+            style={{ color: theme.accent, opacity: 0.4 }}
+          >
+            {String(index + 1).padStart(2, '0')}
+          </span>
         )}
-        {section.isRisk && <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-amber-400/50">{section.title}</span>}
       </div>
 
+      {/* ── Bullets ── */}
       {section.bullets.length > 0 && (
-        <ul className="space-y-1.5 pl-7">
+        <ul className="relative space-y-3">
           {section.bullets.map((b, i) => (
-            <li key={i} className="flex items-start gap-2 text-[13px] leading-snug text-white/60">
-              <span className={`mt-[5px] h-[3px] w-[3px] shrink-0 rounded-full ${section.isRisk ? 'bg-amber-400/50' : 'bg-white/25'}`} />
-              {b}
+            <li key={i} className="flex items-start gap-3">
+              <span
+                className="mt-[7px] h-[4px] w-[4px] shrink-0 rounded-full"
+                style={{
+                  background: theme.accent,
+                  boxShadow: `0 0 4px ${theme.accent}`,
+                  flexShrink: 0,
+                }}
+                aria-hidden
+              />
+              <span className="text-[13px] leading-relaxed text-white/70">{b}</span>
             </li>
           ))}
         </ul>
       )}
 
-      {section.move ? (
-        <div className="mt-3 flex items-start gap-2 pl-7 pt-2.5 border-t border-white/[0.05]">
-          <ArrowRight className="mt-[2px] h-3 w-3 shrink-0 text-blue-400/60" aria-hidden />
-          <p className="text-[12px] font-medium leading-snug text-blue-300/80">{section.move}</p>
+      {/* ── Move row ── */}
+      {section.move && (
+        <div
+          className="relative mt-4 flex items-start gap-3 rounded-xl px-4 py-3"
+          style={{
+            background: theme.moveBg,
+            border: `1px solid ${theme.moveBorder}`,
+          }}
+        >
+          <ArrowRight
+            className="mt-[2px] h-3.5 w-3.5 shrink-0"
+            style={{ color: theme.moveText }}
+            aria-hidden
+          />
+          <p className="text-[12.5px] font-medium leading-snug" style={{ color: theme.moveText }}>
+            {section.move}
+          </p>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }
@@ -393,12 +598,12 @@ export function DexoDailyBriefPanel({
 
           {/* Headline + intro */}
           {(todayRow.headline || parsed.intro) && (
-            <div className="border-l-2 border-white/[0.08] pl-4">
+            <div>
               {todayRow.headline && (
-                <p className="text-[14px] font-semibold leading-snug text-white/85">{todayRow.headline}</p>
+                <p className="text-[17px] font-semibold leading-snug text-white/90">{todayRow.headline}</p>
               )}
               {parsed.intro && (
-                <p className="mt-1.5 text-[13px] leading-relaxed text-white/50">{parsed.intro}</p>
+                <p className="mt-2 text-[13px] leading-relaxed text-white/45">{parsed.intro}</p>
               )}
             </div>
           )}
@@ -406,8 +611,8 @@ export function DexoDailyBriefPanel({
           {/* ── Breakdown sections ── */}
           {parsed.sections.length > 0 && (
             <div>
-              <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/25 mb-2">Breakdown</p>
-              <div className="space-y-px">
+              <p className="font-mono text-[8px] uppercase tracking-[0.22em] text-white/20 mb-3">Breakdown</p>
+              <div className="flex flex-col gap-3">
                 {parsed.sections.map((section, i) => (
                   <SectionCard key={section.title} section={section} index={i} />
                 ))}
@@ -417,15 +622,15 @@ export function DexoDailyBriefPanel({
 
           {/* ── Dexo follow-up questions ── */}
           {parseFollowUp(todayRow.followUpJson).length > 0 && (
-            <div className="border border-white/[0.07] bg-white/[0.02] rounded-lg p-4">
+            <div className="pt-2">
               <div className="flex items-center gap-2 mb-3">
                 <DexoAvatar size="xs" state="idle" pulse={false} />
                 <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/30">Dexo wants to know</span>
               </div>
-              <ul className="space-y-2">
+              <ul className="space-y-2.5">
                 {parseFollowUp(todayRow.followUpJson).map((q) => (
-                  <li key={q} className="flex items-start gap-2.5 text-[13px] text-white/55">
-                    <ArrowRight className="mt-[3px] h-3 w-3 shrink-0 text-white/20" />
+                  <li key={q} className="flex items-start gap-3 text-[13px] text-white/55">
+                    <span className="mt-[7px] h-[3px] w-[3px] shrink-0 rounded-full bg-white/20" />
                     {q}
                   </li>
                 ))}
@@ -436,18 +641,18 @@ export function DexoDailyBriefPanel({
           {/* ── Web sources ── */}
           {parseSources(todayRow.sourcesJson).length > 0 ? (
             <div>
-              <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/25 mb-2">Sources</p>
-              <div className="border border-white/[0.07] rounded-lg overflow-hidden">
-                {parseSources(todayRow.sourcesJson).map((s, idx, arr) => (
+              <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/25 mb-3">Sources</p>
+              <div className="flex flex-col gap-1">
+                {parseSources(todayRow.sourcesJson).map((s) => (
                   <a
                     key={s.url}
                     href={s.url}
                     target="_blank"
                     rel="noreferrer"
-                    className={`flex items-center gap-3 px-4 py-2.5 text-[12px] transition hover:bg-white/[0.04] ${idx < arr.length - 1 ? 'border-b border-white/[0.05]' : ''}`}
+                    className="group flex items-center gap-2.5 rounded-xl px-3 py-2 text-[12px] transition hover:bg-white/[0.04]"
                   >
-                    <ExternalLink className="h-3 w-3 shrink-0 text-white/20" aria-hidden />
-                    <span className="min-w-0 flex-1 truncate text-white/55 hover:text-white/80">{s.title}</span>
+                    <ExternalLink className="h-3 w-3 shrink-0 text-white/15 group-hover:text-white/35" aria-hidden />
+                    <span className="min-w-0 flex-1 truncate text-white/40 group-hover:text-white/70">{s.title}</span>
                   </a>
                 ))}
               </div>

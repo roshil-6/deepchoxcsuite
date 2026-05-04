@@ -34,7 +34,6 @@ function loadHistory(projectId: number | undefined, deskId: DeskId): ChatMsg[] {
 function saveHistory(projectId: number | undefined, deskId: DeskId, msgs: ChatMsg[]): void {
     if (typeof window === 'undefined') return;
     try {
-        // keep last 80 messages
         localStorage.setItem(storageKey(projectId, deskId), JSON.stringify(msgs.slice(-80)));
     } catch { /* quota */ }
 }
@@ -43,8 +42,8 @@ function saveHistory(projectId: number | undefined, deskId: DeskId, msgs: ChatMs
 
 type DeskConfig = {
     Icon: LucideIcon;
+    accentRgb: string;
     accentClass: string;
-    dotClass: string;
     label: string;
     domain: string;
 };
@@ -52,87 +51,125 @@ type DeskConfig = {
 const DESK_CONFIG: Record<DeskId, DeskConfig> = {
     ceo: {
         Icon: Target,
+        accentRgb: '167,139,250',
         accentClass: 'text-violet-400',
-        dotClass: 'bg-violet-500',
         label: 'Strategy & direction',
         domain: 'Narrative · Phases · Priorities',
     },
     pm: {
         Icon: ClipboardList,
+        accentRgb: '56,189,248',
         accentClass: 'text-sky-400',
-        dotClass: 'bg-sky-500',
         label: 'Product & delivery',
         domain: 'Roadmap · Execution board · Shipping',
     },
     accountant: {
         Icon: Calculator,
+        accentRgb: '52,211,153',
         accentClass: 'text-emerald-400',
-        dotClass: 'bg-emerald-500',
         label: 'Finance & runway',
         domain: 'Burn · Capital · Funding readiness',
     },
     scout: {
         Icon: ScanSearch,
+        accentRgb: '251,191,36',
         accentClass: 'text-amber-400',
-        dotClass: 'bg-amber-500',
         label: 'Market & landscape',
         domain: 'Competitors · Trends · Signals',
     },
     cmo: {
         Icon: Megaphone,
+        accentRgb: '251,113,133',
         accentClass: 'text-rose-400',
-        dotClass: 'bg-rose-500',
         label: 'Growth & narrative',
         domain: 'GTM · Messaging · Positioning',
     },
 };
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// ─── Typing animation ─────────────────────────────────────────────────────────
 
-function TypingDots() {
+function TypingDots({ accentRgb }: { accentRgb: string }) {
     return (
-        <span className="inline-flex items-end gap-[3px]">
+        <div className="flex items-center gap-1.5 py-1">
             {[0, 1, 2].map((i) => (
                 <span
                     key={i}
-                    className="h-[5px] w-[5px] rounded-full bg-[var(--text-secondary)] opacity-70"
-                    style={{ animation: `bounce 1.2s ${i * 0.18}s infinite` }}
+                    className="h-[5px] w-[5px] rounded-full"
+                    style={{
+                        background: `rgba(${accentRgb}, 0.6)`,
+                        animation: `dc-bounce 1.3s ${i * 0.2}s ease-in-out infinite`,
+                    }}
                 />
             ))}
-            <style>{`@keyframes bounce { 0%,60%,100% { transform:translateY(0) } 30% { transform:translateY(-5px) } }`}</style>
-        </span>
+            <style>{`@keyframes dc-bounce { 0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)} }`}</style>
+        </div>
     );
 }
 
-function UserBubble({ content }: { content: string }) {
+// ─── Message bubbles ──────────────────────────────────────────────────────────
+
+function UserMsg({ content }: { content: string }) {
     return (
         <div className="flex justify-end">
-            <div className="max-w-[80%] rounded-2xl rounded-tr-sm bg-[var(--accent)] px-4 py-2.5 text-[13px] leading-relaxed text-white">
+            <p
+                className="max-w-[78%] rounded-2xl rounded-br-sm px-4 py-2.5 text-[13.5px] leading-[1.65] text-white/90"
+                style={{ background: 'rgba(255,255,255,0.07)' }}
+            >
                 {content}
-            </div>
+            </p>
         </div>
     );
 }
 
-function AssistantBubble({ content, accentClass }: { content: string; accentClass: string }) {
+function AssistantMsg({ content, accentRgb }: { content: string; accentRgb: string }) {
+    // Split paragraphs for clean rendering
+    const paras = content.split(/\n\n+/).filter(Boolean);
     return (
-        <div className="flex gap-2.5">
-            <div className={`mt-0.5 h-2 w-2 shrink-0 rounded-full ${accentClass.replace('text-', 'bg-')} self-start translate-y-[6px]`} />
-            <div className="min-w-0 flex-1 text-[13px] leading-relaxed text-[var(--text-primary)] whitespace-pre-wrap">
-                {content}
-            </div>
+        <div className="space-y-3 pr-8 sm:pr-16">
+            {paras.map((para, i) => {
+                const lines = para.split('\n');
+                const isList = lines.some((l) => l.startsWith('- ') || l.startsWith('• ') || /^\d+\.\s/.test(l));
+                if (isList) {
+                    return (
+                        <ul key={i} className="space-y-1.5 pl-0">
+                            {lines.map((line, j) => {
+                                const isItem = line.startsWith('- ') || line.startsWith('• ');
+                                const isNum = /^\d+\.\s/.test(line);
+                                if (isItem || isNum) {
+                                    return (
+                                        <li key={j} className="flex items-start gap-2.5 text-[13.5px] leading-[1.65] text-white/80">
+                                            <span
+                                                className="mt-[7px] h-[4px] w-[4px] shrink-0 rounded-full"
+                                                style={{ background: `rgba(${accentRgb},0.7)` }}
+                                            />
+                                            <span>{line.replace(/^[-•]\s|^\d+\.\s/, '')}</span>
+                                        </li>
+                                    );
+                                }
+                                return (
+                                    <li key={j} className="text-[13.5px] leading-[1.65] text-white/80 list-none">{line}</li>
+                                );
+                            })}
+                        </ul>
+                    );
+                }
+                return (
+                    <p key={i} className="text-[13.5px] leading-[1.75] text-white/80">
+                        {para}
+                    </p>
+                );
+            })}
         </div>
     );
 }
 
-// ─── Main DeskChat ────────────────────────────────────────────────────────────
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export function DeskChat({ deskId }: { deskId: DeskId }) {
     const { activeProject, patchActiveProject, persistActiveProject } = useOffice();
     const cfg = DESK_CONFIG[deskId];
     const staff = RESEARCH_STAFF[deskId];
     const quickStarts = DESK_QUICK_STARTS[deskId];
-
     const projectId = activeProject?.id;
 
     const [messages, setMessages] = useState<ChatMsg[]>(() => loadHistory(projectId, deskId));
@@ -144,19 +181,16 @@ export function DeskChat({ deskId }: { deskId: DeskId }) {
     const bottomRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    // Reload when project changes
     useEffect(() => {
         setMessages(loadHistory(projectId, deskId));
         setFollowUps([]);
         setError(null);
     }, [projectId, deskId]);
 
-    // Auto-scroll on new messages
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, loading]);
 
-    // Auto-resize textarea
     const resizeTextarea = useCallback(() => {
         const el = textareaRef.current;
         if (!el) return;
@@ -184,11 +218,7 @@ export function DeskChat({ deskId }: { deskId: DeskId }) {
             const res = await fetch('/api/desk-chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    deskId,
-                    project: activeProject,
-                    conversation: convo,
-                }),
+                body: JSON.stringify({ deskId, project: activeProject, conversation: convo }),
             });
 
             const data = (await res.json()) as {
@@ -198,12 +228,9 @@ export function DeskChat({ deskId }: { deskId: DeskId }) {
                 deskSummary?: string;
                 updates?: PersonalAssistantUpdates;
                 error?: string;
-                fallbackReply?: string;
             };
 
-            if (!data.ok) {
-                throw new Error(data.error ?? 'Desk AI error');
-            }
+            if (!data.ok) throw new Error(data.error ?? 'Desk AI error');
 
             const reply = data.reply ?? 'Got it.';
             const aiMsg: ChatMsg = { id: crypto.randomUUID(), role: 'assistant', content: reply, ts: Date.now() };
@@ -211,24 +238,17 @@ export function DeskChat({ deskId }: { deskId: DeskId }) {
             setMessages(finalMsgs);
             saveHistory(projectId, deskId, finalMsgs);
 
-            if (data.followUpOptions?.length) {
-                setFollowUps(data.followUpOptions);
-            }
+            if (data.followUpOptions?.length) setFollowUps(data.followUpOptions);
 
-            // Patch venture with updates + desk summary
             if (activeProject) {
-                let updatedProject = { ...activeProject };
-
-                // Apply content updates (strategy, budget, etc.)
+                let updated = { ...activeProject };
                 if (data.updates && Object.keys(data.updates).length > 0) {
-                    updatedProject = mergeProjectWithPAUpdates(updatedProject, data.updates);
+                    updated = mergeProjectWithPAUpdates(updated, data.updates);
                 }
-
-                // Save desk summary to agentStaffSnapshot for main Dexo
                 if (data.deskSummary) {
-                    const prev = updatedProject.agentStaffSnapshot;
-                    updatedProject = {
-                        ...updatedProject,
+                    const prev = updated.agentStaffSnapshot;
+                    updated = {
+                        ...updated,
                         agentStaffSnapshot: {
                             at: Date.now(),
                             summary: prev?.summary ?? '',
@@ -243,13 +263,10 @@ export function DeskChat({ deskId }: { deskId: DeskId }) {
                         },
                     };
                 }
-
-                // Only persist if something actually changed
-                const hasUpdates = data.updates && Object.keys(data.updates).length > 0;
-                const hasSummary = Boolean(data.deskSummary);
-                if (hasUpdates || hasSummary) {
-                    patchActiveProject(updatedProject);
-                    await persistActiveProject(updatedProject);
+                const changed = (data.updates && Object.keys(data.updates).length > 0) || Boolean(data.deskSummary);
+                if (changed) {
+                    patchActiveProject(updated);
+                    await persistActiveProject(updated);
                 }
             }
         } catch (err) {
@@ -275,97 +292,114 @@ export function DeskChat({ deskId }: { deskId: DeskId }) {
     const isEmpty = messages.length === 0 && !loading;
 
     return (
-        <div className="flex min-h-0 w-full flex-1 flex-col bg-[var(--bg-card)]">
+        <div className="flex min-h-0 w-full flex-1 flex-col" style={{ background: 'rgba(12,12,16,0.98)' }}>
 
-            {/* ── Header ── */}
-            <div className="shrink-0 border-b border-[var(--border)] bg-[var(--bg-card)] px-4 py-3 sm:px-5">
-                <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                        <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-elevated)] ${cfg.accentClass}`}>
-                            <cfg.Icon className="h-4 w-4" />
-                        </div>
-                        <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                                <span className="text-[13px] font-semibold text-[var(--text-primary)] leading-none">
-                                    {cfg.label}
-                                </span>
-                                {activeProject?.name && (
-                                    <>
-                                        <span className="text-[var(--text-tertiary)]">·</span>
-                                        <span className="truncate text-[11px] text-[var(--text-secondary)]">
-                                            {activeProject.name}
-                                        </span>
-                                    </>
-                                )}
-                            </div>
-                            <p className="mt-0.5 text-[10px] text-[var(--text-tertiary)] tracking-wide">
-                                {cfg.domain}
-                            </p>
-                        </div>
+            {/* ── Minimal header ── */}
+            <div
+                className="shrink-0 flex items-center justify-between gap-3 px-5 py-3.5 sm:px-6"
+                style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}
+            >
+                <div className="flex items-center gap-3 min-w-0">
+                    <div
+                        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${cfg.accentClass}`}
+                        style={{ background: `rgba(${cfg.accentRgb},0.1)` }}
+                    >
+                        <cfg.Icon className="h-3.5 w-3.5" strokeWidth={1.75} />
                     </div>
-                    {messages.length > 0 && (
-                        <button
-                            type="button"
-                            onClick={clearHistory}
-                            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[var(--text-tertiary)] transition-colors hover:bg-[var(--accent-soft)] hover:text-[var(--text-secondary)]"
-                            title="Clear conversation"
-                        >
-                            <RotateCcw className="h-3.5 w-3.5" />
-                        </button>
-                    )}
+                    <div className="min-w-0">
+                        <span className="text-[13px] font-semibold text-white/85 leading-none">{cfg.label}</span>
+                        {activeProject?.name && (
+                            <span className="ml-2 text-[11px] text-white/25">· {activeProject.name}</span>
+                        )}
+                        <p className="mt-0.5 text-[10px] tracking-wide" style={{ color: `rgba(${cfg.accentRgb},0.5)` }}>
+                            {cfg.domain}
+                        </p>
+                    </div>
                 </div>
+                {messages.length > 0 && (
+                    <button
+                        type="button"
+                        onClick={clearHistory}
+                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-white/20 transition-colors hover:bg-white/[0.05] hover:text-white/50"
+                        title="Clear conversation"
+                    >
+                        <RotateCcw className="h-3.5 w-3.5" />
+                    </button>
+                )}
             </div>
 
-            {/* ── Message thread ── */}
-            <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5">
+            {/* ── Messages ── */}
+            <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-5 py-6 sm:px-8">
                 {isEmpty ? (
-                    // Empty state
-                    <div className="flex h-full flex-col items-center justify-center gap-6 py-8">
-                        <div className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--bg-elevated)] ${cfg.accentClass} ring-1 ring-[var(--border)]`}>
-                            <cfg.Icon className="h-6 w-6" />
+                    // ── Empty state ──
+                    <div className="flex h-full flex-col items-center justify-center gap-8 pb-8">
+                        <div className="text-center">
+                            <div
+                                className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl ${cfg.accentClass}`}
+                                style={{
+                                    background: `radial-gradient(circle at 40% 40%, rgba(${cfg.accentRgb},0.15), rgba(${cfg.accentRgb},0.04))`,
+                                    boxShadow: `0 0 40px rgba(${cfg.accentRgb},0.12)`,
+                                }}
+                            >
+                                <cfg.Icon className="h-7 w-7" strokeWidth={1.5} />
+                            </div>
+                            <p className="text-[13px] leading-relaxed text-white/50 max-w-xs mx-auto">
+                                {staff.deskHelp}
+                            </p>
                         </div>
-                        <div className="text-center max-w-xs">
-                            <p className="text-sm font-medium text-[var(--text-primary)]">{staff.deskHelp}</p>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-sm">
+                        <div className="flex flex-wrap justify-center gap-2 max-w-md">
                             {quickStarts.map((q) => (
                                 <button
                                     key={q}
                                     type="button"
                                     onClick={() => sendMessage(q)}
-                                    className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] px-3 py-2.5 text-left text-[12px] text-[var(--text-secondary)] transition-colors hover:border-[var(--accent)]/30 hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]"
+                                    className="rounded-full px-3.5 py-1.5 text-[12px] text-white/50 transition-colors hover:text-white/80"
+                                    style={{
+                                        background: 'rgba(255,255,255,0.04)',
+                                        border: '1px solid rgba(255,255,255,0.07)',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        (e.currentTarget as HTMLButtonElement).style.background = `rgba(${cfg.accentRgb},0.08)`;
+                                        (e.currentTarget as HTMLButtonElement).style.borderColor = `rgba(${cfg.accentRgb},0.2)`;
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.04)';
+                                        (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,0.07)';
+                                    }}
                                 >
                                     {q}
                                 </button>
                             ))}
                         </div>
                         {!activeProject && (
-                            <p className="text-[11px] text-[var(--text-tertiary)]">
-                                Select a venture to begin
-                            </p>
+                            <p className="text-[11px] text-white/20">Select a venture to begin</p>
                         )}
                     </div>
                 ) : (
-                    <div className="flex flex-col gap-4">
-                        {messages.map((msg) =>
-                            msg.role === 'user' ? (
-                                <UserBubble key={msg.id} content={msg.content} />
-                            ) : (
-                                <AssistantBubble key={msg.id} content={msg.content} accentClass={cfg.accentClass} />
-                            ),
-                        )}
-                        {loading && (
-                            <div className="flex gap-2.5">
-                                <div className={`mt-0.5 h-2 w-2 shrink-0 rounded-full ${cfg.dotClass} self-start translate-y-[6px] opacity-60`} />
-                                <div className="text-[13px] text-[var(--text-secondary)] py-0.5">
-                                    <TypingDots />
+                    <div className="mx-auto max-w-2xl flex flex-col gap-6">
+                        {messages.map((msg, idx) => {
+                            const isUser = msg.role === 'user';
+                            const prevRole = idx > 0 ? messages[idx - 1].role : null;
+                            const isGrouped = prevRole === msg.role;
+                            return (
+                                <div key={msg.id} className={isGrouped ? '-mt-2' : ''}>
+                                    {isUser ? (
+                                        <UserMsg content={msg.content} />
+                                    ) : (
+                                        <AssistantMsg content={msg.content} accentRgb={cfg.accentRgb} />
+                                    )}
                                 </div>
-                            </div>
+                            );
+                        })}
+
+                        {/* Typing indicator */}
+                        {loading && (
+                            <TypingDots accentRgb={cfg.accentRgb} />
                         )}
+
+                        {/* Error */}
                         {error && (
-                            <div className="rounded-xl border border-red-500/20 bg-red-500/5 px-3 py-2.5 text-[12px] text-red-400">
-                                {error}
-                            </div>
+                            <p className="text-[12px] text-red-400/70">{error}</p>
                         )}
                         <div ref={bottomRef} />
                     </div>
@@ -374,13 +408,17 @@ export function DeskChat({ deskId }: { deskId: DeskId }) {
 
             {/* ── Follow-up pills ── */}
             {followUps.length > 0 && !loading && (
-                <div className="shrink-0 flex flex-wrap gap-1.5 px-4 pb-2 sm:px-5">
+                <div className="shrink-0 flex flex-wrap gap-2 px-5 pb-2 sm:px-8">
                     {followUps.map((opt) => (
                         <button
                             key={opt}
                             type="button"
                             onClick={() => { setFollowUps([]); sendMessage(opt); }}
-                            className="rounded-full border border-[var(--border)] bg-[var(--bg-card)] px-3 py-1.5 text-[11px] text-[var(--text-secondary)] transition-colors hover:border-[var(--accent)]/40 hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]"
+                            className="rounded-full px-3.5 py-1.5 text-[11px] text-white/50 transition-colors hover:text-white/75"
+                            style={{
+                                background: `rgba(${cfg.accentRgb},0.06)`,
+                                border: `1px solid rgba(${cfg.accentRgb},0.18)`,
+                            }}
                         >
                             {opt}
                         </button>
@@ -388,35 +426,47 @@ export function DeskChat({ deskId }: { deskId: DeskId }) {
                 </div>
             )}
 
-            {/* ── Input bar ── */}
-            <div className="shrink-0 border-t border-[var(--border)] bg-[var(--bg-card)] px-3 py-3 sm:px-4">
-                <div className="flex items-end gap-2 rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] px-3 py-2 transition-colors focus-within:border-[var(--accent)]/40">
+            {/* ── Input ── */}
+            <div
+                className="shrink-0 px-4 pb-4 pt-2 sm:px-6"
+                style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}
+            >
+                <div
+                    className="mx-auto flex max-w-2xl items-end gap-2 rounded-2xl px-4 py-3 transition-colors"
+                    style={{
+                        background: 'rgba(255,255,255,0.04)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                    }}
+                >
                     <textarea
                         ref={textareaRef}
                         rows={1}
                         value={input}
                         onChange={(e) => { setInput(e.target.value); resizeTextarea(); }}
                         onKeyDown={handleKeyDown}
-                        placeholder={activeProject ? `Ask ${cfg.label.toLowerCase()}…` : 'Select a venture first'}
+                        placeholder={activeProject ? `Message ${cfg.label.toLowerCase()}…` : 'Select a venture first'}
                         disabled={!activeProject || loading}
-                        className="min-h-0 flex-1 resize-none bg-transparent text-[13px] leading-relaxed text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] outline-none disabled:opacity-50"
+                        className="min-h-0 flex-1 resize-none bg-transparent text-[13.5px] leading-relaxed text-white/85 placeholder:text-white/20 outline-none disabled:opacity-40"
                         style={{ maxHeight: '120px' }}
                     />
                     <button
                         type="button"
                         onClick={() => sendMessage(input)}
                         disabled={!input.trim() || loading || !activeProject}
-                        className="mb-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--accent)] text-white transition-opacity disabled:opacity-30"
+                        className="mb-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-xl transition-all disabled:opacity-25"
+                        style={{
+                            background: `rgba(${cfg.accentRgb},0.9)`,
+                        }}
                     >
                         {loading ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            <Loader2 className="h-3.5 w-3.5 animate-spin text-black/80" />
                         ) : (
-                            <ArrowUp className="h-3.5 w-3.5" />
+                            <ArrowUp className="h-3.5 w-3.5 text-black/80" />
                         )}
                     </button>
                 </div>
-                <p className="mt-1.5 text-center text-[10px] text-[var(--text-tertiary)]">
-                    Enter to send · Shift+Enter for new line · Updates save to your venture
+                <p className="mt-1.5 text-center text-[10px] text-white/15">
+                    Enter · Updates save to venture
                 </p>
             </div>
         </div>
