@@ -16,6 +16,7 @@ import { IntelligenceDiary } from './IntelligenceDiary';
 import { CsuiteIntelligenceGuide } from './CsuiteIntelligenceGuide';
 import { RoomChrome } from './RoomChrome';
 import { DeskChat } from './workspaces/DeskChat';
+import { DexoResearchRoom } from './DexoResearchRoom';
 import { getWorkspaceShellTheme } from '@/lib/roomThemes';
 import { WORKSPACE_TITLES } from '@/components/ui/appNav';
 import { User } from 'lucide-react';
@@ -65,6 +66,8 @@ export function WorkspaceStage({
                 return <DexoRoom />;
             case 'suite_intelligence':
                 return <CsuiteIntelligenceGuide />;
+            case 'dexo_daily':
+                return <DexoResearchRoom />;
             case 'ceo':
                 return <DeskChat deskId="ceo" />;
             case 'pm':
