@@ -81,6 +81,17 @@ export const APP_NAV_GROUPS: NavGroup[] = [
         ],
     },
     {
+        id: 'research',
+        label: 'RESEARCH STAFF',
+        items: [
+            { room: 'ceo',        label: 'Strategy',  short: 'Strategy',  icon: Briefcase  },
+            { room: 'pm',         label: 'Product',   short: 'Product',   icon: Cpu        },
+            { room: 'accountant', label: 'Finance',   short: 'Finance',   icon: BarChart3  },
+            { room: 'scout',      label: 'Market',    short: 'Market',    icon: LineChart  },
+            { room: 'cmo',        label: 'Growth',    short: 'Growth',    icon: Rocket     },
+        ],
+    },
+    {
         id: 'tools',
         label: 'TOOLS',
         items: [
