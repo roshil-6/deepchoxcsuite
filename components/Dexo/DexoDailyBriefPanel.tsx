@@ -503,216 +503,179 @@ export function DexoDailyBriefPanel({
     : null;
 
   return (
-    <div className="space-y-5">
-      {/* ── Header ── */}
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-white/[0.06] pb-4">
+    <div className="flex flex-col gap-8">
+
+      {/* ── Top bar: label + actions ── */}
+      <div className="flex items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/25">Dexo</span>
-            <span className="font-mono text-[8px] text-white/15">·</span>
-            <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/25">Daily Research</span>
-          </div>
-          <h2 className="text-[15px] font-semibold text-white/85">Venture Breakdown</h2>
-          <p className="mt-0.5 text-[12px] text-white/35">
-            Live web pass + AI analysis — point by point.
-          </p>
+          <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-white/20">Dexo · Daily Research</p>
+          <h2 className="mt-1 text-[22px] font-semibold leading-tight tracking-tight text-white/85">
+            Venture breakdown
+          </h2>
         </div>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
             onClick={() => void runPulse(true)}
             disabled={pulsing}
-            className="inline-flex items-center gap-1.5 rounded border border-white/[0.1] bg-white/[0.05] px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-white/50 transition hover:border-white/[0.18] hover:bg-white/[0.09] hover:text-white/80 disabled:opacity-40"
+            className="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[11px] text-white/40 transition hover:bg-white/[0.05] hover:text-white/65 disabled:opacity-30"
           >
             <RefreshCw className={`h-3 w-3 ${pulsing ? 'animate-spin' : ''}`} aria-hidden />
-            {pulsing ? 'Researching…' : 'Run today'}
-          </button>
-          <button
-            type="button"
-            onClick={() => void load()}
-            disabled={loadingList}
-            className="inline-flex items-center gap-1.5 rounded border border-white/[0.08] px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-white/30 transition hover:border-white/[0.14] hover:text-white/55 disabled:opacity-40"
-          >
-            Reload
+            {pulsing ? 'Running…' : 'Run'}
           </button>
         </div>
       </div>
 
-      {/* ── Alerts ── */}
-      {proRequired ? (
-        <div className="rounded border border-white/[0.08] bg-white/[0.03] px-4 py-3">
-          <p className="font-mono text-[9px] uppercase tracking-[0.15em] text-white/45">Pro required</p>
-          <p className="mt-1 text-[12px] text-white/40">
-            Daily research with live web pass is a Pro feature.
-          </p>
-        </div>
-      ) : error ? (
-        <div className="rounded border border-amber-500/[0.15] bg-amber-500/[0.04] px-4 py-3 font-sans text-[12px] text-amber-200/70">{error}</div>
-      ) : null}
-
-      {loadingList && reports.length === 0 ? (
-        <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.15em] text-white/25">
+      {/* ── State messages ── */}
+      {proRequired && (
+        <p className="text-[13px] text-white/35">
+          Daily research is a Pro feature.
+        </p>
+      )}
+      {error && !proRequired && (
+        <p className="text-[13px] text-amber-300/60">{error}</p>
+      )}
+      {loadingList && reports.length === 0 && (
+        <div className="flex items-center gap-2 text-white/20">
           <RefreshCw className="h-3 w-3 animate-spin" />
-          Loading…
+          <span className="font-mono text-[9px] uppercase tracking-[0.15em]">Loading…</span>
         </div>
-      ) : null}
-
+      )}
       {pulsing && (
-        <div className="flex items-center gap-3 rounded border border-white/[0.07] bg-white/[0.03] px-4 py-3">
-          <RefreshCw className="h-3.5 w-3.5 animate-spin text-white/30" />
-          <div>
-            <p className="font-mono text-[9px] uppercase tracking-[0.15em] text-white/45">Researching…</p>
-            <p className="text-[11px] text-white/30">Running web search and building your breakdown.</p>
-          </div>
+        <div className="flex items-center gap-2.5 text-white/30">
+          <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+          <span className="text-[13px]">Running web research…</span>
         </div>
       )}
 
       {/* ── Today's report ── */}
       {todayRow && parsed ? (
-        <div className="space-y-5">
-          {/* Report meta row */}
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col gap-8">
+
+          {/* Meta */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <DexoAvatar size="xs" state="idle" pulse={false} className="shrink-0" />
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/30">Dexo</span>
-              <span className="font-mono text-[8px] text-white/15">·</span>
-              <span className="font-mono text-[8px] text-white/25">{todayRow.reportDay}</span>
-              {todayRow.researchQuery && (
-                <span className="inline-flex items-center gap-1 rounded border border-white/[0.07] px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.1em] text-white/25">
-                  <Globe className="h-2.5 w-2.5" />
-                  Web pass
-                </span>
-              )}
-              {todayRow.userApprovedAt ? (
-                <span className="inline-flex items-center gap-1 rounded border border-emerald-500/[0.2] px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.1em] text-emerald-400/60">
-                  <CheckCircle2 className="h-2.5 w-2.5" />
-                  Applied
-                </span>
-              ) : hasPendingUpdates(todayRow.pendingProposedUpdates) ? (
-                <span className="inline-flex items-center gap-1 rounded border border-amber-500/[0.2] px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.1em] text-amber-400/60">
-                  Suggestions ready
-                </span>
-              ) : null}
-            </div>
+            <span className="font-mono text-[9px] text-white/25">{todayRow.reportDay}</span>
+            {todayRow.researchQuery && (
+              <span className="flex items-center gap-1 font-mono text-[9px] text-white/20">
+                <Globe className="h-2.5 w-2.5" aria-hidden />
+                web pass
+              </span>
+            )}
+            {todayRow.userApprovedAt && (
+              <span className="flex items-center gap-1 font-mono text-[9px] text-emerald-400/50">
+                <CheckCircle2 className="h-2.5 w-2.5" />
+                applied
+              </span>
+            )}
+            {!todayRow.userApprovedAt && hasPendingUpdates(todayRow.pendingProposedUpdates) && (
+              <span className="font-mono text-[9px] text-amber-400/50">suggestions ready</span>
+            )}
           </div>
 
           {/* Headline + intro */}
           {(todayRow.headline || parsed.intro) && (
-            <div>
+            <div className="flex flex-col gap-2">
               {todayRow.headline && (
-                <p className="text-[17px] font-semibold leading-snug text-white/90">{todayRow.headline}</p>
+                <h3 className="text-[19px] font-semibold leading-snug text-white/88">
+                  {todayRow.headline}
+                </h3>
               )}
               {parsed.intro && (
-                <p className="mt-2 text-[13px] leading-relaxed text-white/45">{parsed.intro}</p>
+                <p className="text-[14px] leading-[1.75] text-white/40">{parsed.intro}</p>
               )}
             </div>
           )}
 
           {/* ── Breakdown sections ── */}
           {parsed.sections.length > 0 && (
-            <div>
-              <p className="font-mono text-[8px] uppercase tracking-[0.22em] text-white/20 mb-3">Breakdown</p>
-              <div className="flex flex-col gap-3">
-                {parsed.sections.map((section, i) => (
-                  <SectionCard key={section.title} section={section} index={i} />
-                ))}
-              </div>
+            <div className="flex flex-col gap-3">
+              {parsed.sections.map((section, i) => (
+                <SectionCard key={section.title} section={section} index={i} />
+              ))}
             </div>
           )}
 
-          {/* ── Dexo follow-up questions ── */}
+          {/* ── Follow-up questions ── */}
           {parseFollowUp(todayRow.followUpJson).length > 0 && (
-            <div className="pt-2">
-              <div className="flex items-center gap-2 mb-3">
-                <DexoAvatar size="xs" state="idle" pulse={false} />
-                <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/30">Dexo wants to know</span>
-              </div>
-              <ul className="space-y-2.5">
+            <div className="flex flex-col gap-3">
+              <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/18">Dexo wants to know</p>
+              <ul className="flex flex-col gap-2.5">
                 {parseFollowUp(todayRow.followUpJson).map((q) => (
-                  <li key={q} className="flex items-start gap-3 text-[13px] text-white/55">
-                    <span className="mt-[7px] h-[3px] w-[3px] shrink-0 rounded-full bg-white/20" />
-                    {q}
+                  <li key={q} className="flex items-start gap-3">
+                    <span className="mt-[8px] h-[3px] w-[3px] shrink-0 rounded-full bg-white/15" />
+                    <span className="text-[13px] leading-relaxed text-white/45">{q}</span>
                   </li>
                 ))}
               </ul>
             </div>
           )}
 
-          {/* ── Web sources ── */}
-          {parseSources(todayRow.sourcesJson).length > 0 ? (
-            <div>
-              <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/25 mb-3">Sources</p>
-              <div className="flex flex-col gap-1">
+          {/* ── Sources ── */}
+          {parseSources(todayRow.sourcesJson).length > 0 && (
+            <div className="flex flex-col gap-2">
+              <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/18">Sources</p>
+              <div className="flex flex-col gap-0.5">
                 {parseSources(todayRow.sourcesJson).map((s) => (
                   <a
                     key={s.url}
                     href={s.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="group flex items-center gap-2.5 rounded-xl px-3 py-2 text-[12px] transition hover:bg-white/[0.04]"
+                    className="group flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-[12px] transition hover:bg-white/[0.03]"
                   >
-                    <ExternalLink className="h-3 w-3 shrink-0 text-white/15 group-hover:text-white/35" aria-hidden />
-                    <span className="min-w-0 flex-1 truncate text-white/40 group-hover:text-white/70">{s.title}</span>
+                    <ExternalLink className="h-3 w-3 shrink-0 text-white/12 group-hover:text-white/30" aria-hidden />
+                    <span className="min-w-0 truncate text-white/35 group-hover:text-white/60">{s.title}</span>
                   </a>
                 ))}
               </div>
             </div>
-          ) : (
-            <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-white/20">
-              No sources — set TAVILY_API_KEY for live web research
-            </p>
           )}
 
-          {/* ── Apply suggested updates ── */}
+          {/* ── Apply suggestions ── */}
           {hasPendingUpdates(todayRow.pendingProposedUpdates) && !todayRow.userApprovedAt && (
-            <div className="flex flex-col gap-3 rounded border border-white/[0.1] bg-white/[0.03] p-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <Zap className="h-3 w-3 shrink-0 text-white/40" aria-hidden />
-                  <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-white/40">Dexo has suggestions</span>
-                </div>
-                {pendingHint && (
-                  <p className="text-[12px] text-white/35">{pendingHint}</p>
-                )}
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-[12px] text-white/35">
+                  <Zap className="mr-1 inline h-3 w-3 text-white/30" aria-hidden />
+                  {pendingHint ?? 'Dexo has venture updates ready'}
+                </p>
               </div>
               <button
                 type="button"
                 disabled={applyId === todayRow.id}
                 onClick={() => void onApply(todayRow)}
-                className="shrink-0 rounded border border-white/[0.14] bg-white/[0.07] px-4 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-white/65 transition hover:border-white/[0.22] hover:bg-white/[0.12] hover:text-white/90 disabled:opacity-40"
+                className="shrink-0 rounded-xl px-4 py-1.5 text-[11px] text-white/50 transition hover:bg-white/[0.06] hover:text-white/80 disabled:opacity-30"
               >
                 {applyId === todayRow.id ? 'Applying…' : 'Apply to venture'}
               </button>
             </div>
           )}
         </div>
+
       ) : !loadingList && !pulsing ? (
-        <div className="flex items-start gap-3 border border-white/[0.07] bg-white/[0.02] rounded-lg p-4">
-          <DexoAvatar size="sm" state="idle" pulse={false} className="mt-0.5 shrink-0" />
-          <div>
-            <p className="text-[13px] font-medium text-white/65">No research yet for today.</p>
-            <p className="mt-1 text-[12px] text-white/35">
-              Hit <strong className="text-white/55">Run today</strong> — Dexo will run a web pass and build your breakdown.
-            </p>
-          </div>
+        <div className="flex flex-col gap-3">
+          <p className="text-[14px] text-white/50">No research yet for today.</p>
+          <p className="text-[13px] text-white/30">
+            Hit Run above — Dexo will do a web pass and build your breakdown.
+          </p>
         </div>
       ) : null}
 
       {/* ── Earlier days ── */}
       {reports.length > 1 && (
-        <div>
-          <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/25 mb-2">Earlier reports</p>
-          <div className="border border-white/[0.07] rounded-lg overflow-hidden">
+        <div className="flex flex-col gap-2">
+          <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/18">Earlier</p>
+          <div className="flex flex-col gap-1">
             {reports
               .filter((r) => r.id !== todayRow?.id)
               .slice(0, 12)
-              .map((r, idx, arr) => (
-                <div
-                  key={r.id}
-                  className={`flex items-center gap-3 px-4 py-2.5 ${idx < arr.length - 1 ? 'border-b border-white/[0.05]' : ''}`}
-                >
-                  <span className="shrink-0 font-mono text-[9px] text-white/25">{r.reportDay}</span>
-                  <span className="min-w-0 flex-1 truncate text-[12px] text-white/45">{r.headline ?? r.summary.slice(0, 100)}</span>
+              .map((r) => (
+                <div key={r.id} className="flex items-baseline gap-3 py-1">
+                  <span className="shrink-0 font-mono text-[9px] text-white/20">{r.reportDay}</span>
+                  <span className="min-w-0 truncate text-[12px] text-white/35">
+                    {r.headline ?? r.summary?.slice(0, 100)}
+                  </span>
                 </div>
               ))}
           </div>

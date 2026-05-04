@@ -12,6 +12,7 @@ import {
     Sparkles,
     Notebook,
     Layers,
+    Globe,
 } from 'lucide-react';
 import { RESEARCH_STAFF, sidebarPrimaryLabel } from '@/lib/researchStaffLabels';
 
@@ -26,6 +27,7 @@ export type AppNavRoom =
     | 'calendar'
     | 'reports'
     | 'dexo'
+    | 'dexo_daily'
     | 'intelligence_diary'
     | 'suite_intelligence'
     | 'desks_hub';
@@ -52,6 +54,7 @@ export const APP_NAV_ITEMS: NavItemDef[] = [
     { room: 'dexo',               label: 'Dexo',                                           short: 'Dexo',      icon: Sparkles   },
     { room: 'dashboard',          label: rail('Executive overview'),                        short: 'Overview',  icon: LayoutGrid },
     { room: 'desks_hub',          label: 'AI Desks',                                        short: 'Desks',     icon: Layers     },
+    { room: 'dexo_daily',         label: 'Daily research',                                  short: 'Research',  icon: Globe      },
     { room: 'ceo',                label: rail(RESEARCH_STAFF.ceo.navTitle),                 short: 'Strategy',  icon: Briefcase  },
     { room: 'pm',                 label: rail(RESEARCH_STAFF.pm.navTitle),                  short: 'Product',   icon: Cpu        },
     { room: 'accountant',         label: rail(RESEARCH_STAFF.accountant.navTitle),          short: 'Finance',   icon: BarChart3  },
@@ -69,7 +72,8 @@ export const APP_NAV_GROUPS: NavGroup[] = [
         id: 'primary',
         label: null,
         items: [
-            { room: 'dexo', label: 'Dexo', short: 'Dexo', icon: Sparkles },
+            { room: 'dexo',       label: 'Dexo',            short: 'Dexo',     icon: Sparkles },
+            { room: 'dexo_daily', label: 'Daily research',  short: 'Research', icon: Globe    },
         ],
     },
     {
@@ -114,6 +118,7 @@ export const WORKSPACE_TITLES: Record<string, string> = {
     calendar:            'Calendar',
     suite_intelligence:  'AI team network',
     dexo:                'Dexo',
+    dexo_daily:          'Daily research',
     reports:             'Knowledge base',
     intelligence_diary:  'Neural diary',
     desks_hub:           'AI Desks',
