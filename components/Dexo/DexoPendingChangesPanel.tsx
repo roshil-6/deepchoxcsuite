@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -25,7 +25,7 @@ function parsePatch(raw: unknown): DexoPatchContract | null {
 
 /**
  * Floating approvals dock: review Dexo-suggested venture patches (Approve / Reject only).
- * Render once from OfficeShell — no mode selector; chat + manual edits stay the two paths.
+ * Render once from OfficeShell â€” no mode selector; chat + manual edits stay the two paths.
  */
 export function DexoPendingChangesFloating({ activeProject }: { activeProject: Project }) {
   const { updateProjectField } = useOffice();
@@ -35,7 +35,7 @@ export function DexoPendingChangesFloating({ activeProject }: { activeProject: P
   const [expanded, setExpanded] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // ── Drag state ──────────────────────────────────────────────────────────
+  // â”€â”€ Drag state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const panelRef = useRef<HTMLDivElement>(null);
   const dragState = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null); // null = use CSS default (bottom-right)
@@ -171,8 +171,8 @@ export function DexoPendingChangesFloating({ activeProject }: { activeProject: P
     >
       <div className="pointer-events-auto flex w-full max-w-[min(100%,340px)] flex-col gap-1.5 self-center md:self-end">
         {!expanded ? (
-          /* ── Collapsed pill (compact, light) ── */
-          <div className="group flex items-center gap-2 rounded-xl border border-white/[0.07] bg-white/[0.04] px-2.5 py-2 shadow-[0_4px_24px_rgba(0,0,0,0.2)] backdrop-blur-md transition hover:border-white/[0.1] hover:bg-white/[0.06]">
+          /* â”€â”€ Collapsed pill (compact, light) â”€â”€ */
+          <div className="group flex items-center gap-2 rounded-xl border border-white/[0.07] bg-white/[0.04] px-2.5 py-2 shadow-[0_4px_24px_rgba(0,0,0,0.2)] transition hover:border-white/[0.1] hover:bg-white/[0.06]">
             <div
               className="shrink-0 cursor-grab touch-none text-[var(--text-tertiary)] opacity-60 hover:opacity-100 active:cursor-grabbing"
               onPointerDown={onDragStart}
@@ -203,8 +203,8 @@ export function DexoPendingChangesFloating({ activeProject }: { activeProject: P
             <ChevronUp className="h-3.5 w-3.5 shrink-0 text-[var(--text-tertiary)] opacity-60 group-hover:opacity-90" />
           </div>
         ) : (
-          /* ── Expanded panel ── */
-          <div className="max-h-[min(65vh,440px)] overflow-hidden rounded-xl border border-white/[0.08] bg-[rgba(18,18,20,0.78)] shadow-[0_12px_40px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+          /* â”€â”€ Expanded panel â”€â”€ */
+          <div className="max-h-[min(65vh,440px)] overflow-hidden rounded-xl border border-white/[0.08] bg-[#111117] shadow-[0_12px_40px_rgba(0,0,0,0.35)]">
             <div className="flex items-start gap-2 border-b border-white/[0.06] px-3 py-2.5">
               {/* Drag handle for expanded state */}
               <div
@@ -223,7 +223,7 @@ export function DexoPendingChangesFloating({ activeProject }: { activeProject: P
               <div className="min-w-0 flex-1">
                 <h3 className="text-xs font-semibold text-[var(--text-primary)]">Review suggestions</h3>
                 <p className="mt-0.5 text-[10px] leading-snug text-[var(--text-muted)]">
-                  Approve or dismiss. Details stay here — not repeated in chat.
+                  Approve or dismiss. Details stay here â€” not repeated in chat.
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-1">
@@ -266,13 +266,13 @@ export function DexoPendingChangesFloating({ activeProject }: { activeProject: P
                           {row.summary || 'Suggested venture update'}
                         </p>
                         <p className="mt-0.5 text-[9px] text-[var(--text-tertiary)]">
-                          {new Date(row.createdAt).toLocaleString()} · {row.source}
-                          {row.model ? ` · ${row.model}` : ''}
+                          {new Date(row.createdAt).toLocaleString()} Â· {row.source}
+                          {row.model ? ` Â· ${row.model}` : ''}
                         </p>
                         {labels.length > 0 ? (
                           <p className="mt-1.5 text-[10px] text-[var(--text-secondary)]">
                             <span className="text-[var(--text-muted)]">Touches: </span>
-                            {labels.join(' · ')}
+                            {labels.join(' Â· ')}
                           </p>
                         ) : null}
                         <div className="mt-2 flex flex-wrap gap-1.5">
@@ -290,7 +290,7 @@ export function DexoPendingChangesFloating({ activeProject }: { activeProject: P
                             disabled={busyId === row.id}
                             className="rounded-md px-2 py-1 text-[10px] font-semibold disabled:opacity-50 transition" style={{ background: 'rgba(255,255,255,0.10)', color: '#f2f2f5', border: '1px solid rgba(255,255,255,0.14)' }}
                           >
-                            {busyId === row.id ? 'Applying…' : 'Approve'}
+                            {busyId === row.id ? 'Applyingâ€¦' : 'Approve'}
                           </button>
                         </div>
                       </li>
@@ -306,4 +306,5 @@ export function DexoPendingChangesFloating({ activeProject }: { activeProject: P
     document.body
   );
 }
+
 

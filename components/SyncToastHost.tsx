@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -85,7 +85,7 @@ export function SyncToastHost() {
           bottom: 'max(5.5rem, calc(0.75rem + env(safe-area-inset-bottom)))',
         }}
       >
-        <div className="executive-panel-strong flex flex-col gap-2 rounded-2xl border border-white/[0.08] px-3 py-3 shadow-[0_12px_40px_rgba(0,0,0,0.45)] backdrop-blur-xl sm:px-4">
+        <div className="executive-panel-strong flex flex-col gap-2 rounded-2xl border border-white/[0.08] px-3 py-3 shadow-[0_12px_40px_rgba(0,0,0,0.45)] sm:px-4">
           <div className="flex items-start gap-3">
             <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand-teal" aria-hidden />
             <div className="min-w-0 flex-1">
@@ -117,3 +117,4 @@ export function SyncToastHost() {
     </>
   );
 }
+

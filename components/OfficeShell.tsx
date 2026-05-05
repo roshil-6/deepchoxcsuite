@@ -2,37 +2,15 @@
 
 import React from 'react';
 import { useOffice } from '@/lib/OfficeContext';
-import { NOISE_DATA_URL } from '@/lib/noiseTexture';
 import { EyeOff } from 'lucide-react';
 import { DexoPendingChangesFloating } from '@/components/Dexo/DexoPendingChangesPanel';
-import DarkVeil from '@/components/DarkVeil';
 
 export function OfficeShell({ children }: { children: React.ReactNode }) {
     const { systemState, toggleDeepWork, activeProject } = useOffice();
 
     return (
-        <div className={`relative h-screen w-full overflow-hidden bg-transparent font-sans text-[var(--text)] transition-all duration-700 ${systemState.isDeepWork ? 'brightness-95 saturate-75' : ''
-            }`}>
-            {/* DarkVeil WebGL — screen blend: dark CPPN pixels = invisible,
-                bright coloured streaks become visible against the dark shell */}
-            <div
-                className="pointer-events-none fixed inset-0 z-0"
-                style={{ mixBlendMode: 'screen', opacity: 0.9 }}
-                aria-hidden
-            >
-                <DarkVeil
-                    speed={0.25}
-                    hueShift={30}
-                    noiseIntensity={0.015}
-                    warpAmount={0.35}
-                    resolutionScale={0.5}
-                />
-            </div>
-
-            <div
-                className="pointer-events-none absolute inset-0 z-[1] opacity-[0.02]"
-                style={{ backgroundImage: `url("${NOISE_DATA_URL}")`, mixBlendMode: 'multiply' }}
-            />
+        <div className={`relative h-screen w-full overflow-hidden font-sans text-[var(--text)] transition-all duration-700 ${systemState.isDeepWork ? 'brightness-95 saturate-75' : ''
+            }`} style={{ background: '#0d0d10' }}>
 
             {/* Deep Work Focus Overlay (Pure Black) */}
             <div className={`absolute inset-0 z-50 pointer-events-none bg-black transition-opacity duration-1000 ${systemState.isDeepWork ? 'opacity-80' : 'opacity-0'}`} />

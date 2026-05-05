@@ -150,7 +150,7 @@ export function OrgStructureBuilder() {
         <div className="flex h-full bg-brand-bg text-brand-text">
             {/* Main Canvas */}
             <div className="flex-1 flex flex-col min-w-0 border-r border-zinc-900">
-                <div className="p-6 border-b border-brand-border flex items-center justify-between bg-brand-panel/80 backdrop-blur-xl">
+                <div className="p-6 border-b border-brand-border flex items-center justify-between bg-[#111117]">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 text-indigo-500">
                             <Network className="w-5 h-5" />
@@ -281,7 +281,7 @@ export function OrgStructureBuilder() {
 
             {/* AI Modal */}
             {showAiModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
                     <div className="w-[400px] bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl">
                         <div className="flex items-center gap-3 mb-6">
                             <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400">
@@ -333,4 +333,5 @@ function Bot({ className }: { className?: string }) {
         </svg>
     );
 }
+
 

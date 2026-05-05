@@ -117,7 +117,7 @@ export function AICompanion({
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
                         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                        className="mb-2 w-[300px] rounded-2xl rounded-br-sm border border-white/[0.06] p-4 shadow-2xl backdrop-blur-xl"
+                        className="mb-2 w-[300px] rounded-2xl rounded-br-sm border border-white/[0.06] p-4 shadow-2xl"
                         style={{
                             background: 'linear-gradient(145deg, rgba(28,28,31,0.98), rgba(18,18,21,0.98))',
                         }}
@@ -440,4 +440,5 @@ export function AICompanionExpanded({
         </motion.div>
     );
 }
+
 

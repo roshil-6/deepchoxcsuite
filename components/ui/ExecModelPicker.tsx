@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { createPortal } from 'react-dom';
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
@@ -8,12 +8,12 @@ import { EXEC_CHAT_MODEL_OPTIONS, type ExecChatModelId } from '@/lib/deskConstan
 type Props = {
     value: string;
     onChange: (id: ExecChatModelId) => void;
-    /** Menu opens upward — use when the trigger sits on the bottom row of a composer */
+    /** Menu opens upward â€” use when the trigger sits on the bottom row of a composer */
     menuAbove?: boolean;
 };
 
 /**
- * Compact model switcher (Claude / Gemini / Cursor–style pill).
+ * Compact model switcher (Claude / Gemini / Cursorâ€“style pill).
  * Full option list with blurbs in the popover only.
  * Menu is portaled with fixed positioning so parent overflow-hidden does not clip it.
  */
@@ -129,7 +129,7 @@ export function ExecModelPicker({ value, onChange, menuAbove }: Props) {
                           role="listbox"
                           aria-labelledby={triggerId}
                           style={menuStyle}
-                          className="rounded-xl border border-white/[0.1] bg-[#141518]/98 p-1 shadow-[0_12px_48px_rgba(0,0,0,0.55)] ring-1 ring-white/[0.05] backdrop-blur-xl"
+                          className="rounded-xl border border-white/[0.1] bg-[#141518]/98 p-1 shadow-[0_12px_48px_rgba(0,0,0,0.55)] ring-1 ring-white/[0.05]"
                       >
                           {EXEC_CHAT_MODEL_OPTIONS.map((opt) => {
                               const isSelected = opt.id === active.id;
@@ -169,3 +169,4 @@ export function ExecModelPicker({ value, onChange, menuAbove }: Props) {
         </div>
     );
 }
+
