@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useOffice, AgentRole } from '@/lib/OfficeContext';
@@ -193,9 +193,9 @@ export function ChiefOfStaff() {
                         {/* Delegation Card */}
                         {msg.delegation && (
                             <div className="ml-2 mt-2 p-4 bg-black/40 backdrop-blur-md rounded-2xl border border-zinc-700/50 w-[300px] animate-in zoom-in-95 duration-500 shadow-2xl relative overflow-hidden group">
-                                <div className="absolute top-0 right-0 w-20 h-20 rounded-full bg-violet-500/5 -mr-10 -mt-10 pointer-events-none" />
+                                <div className="absolute top-0 right-0 w-20 h-20 rounded-full bg-white/[0.05] -mr-10 -mt-10 pointer-events-none" />
                                 <div className="relative z-10">
-                                    <div className="text-[10px] uppercase tracking-widest text-violet-400 font-bold mb-3 flex items-center gap-2">
+                                    <div className="text-[10px] uppercase tracking-widest text-white/70 font-bold mb-3 flex items-center gap-2">
                                         <CheckCircle2 className="w-4 h-4" />
                                         Task Distributed
                                     </div>
@@ -258,3 +258,4 @@ export function ChiefOfStaff() {
         </div>
     );
 }
+

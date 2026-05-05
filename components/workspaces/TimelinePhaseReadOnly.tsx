@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import type { PhaseStatus, StrategyPhase } from '@/lib/strategyDoc';
@@ -6,7 +6,7 @@ import { Clock } from 'lucide-react';
 
 function formatRange(start: string, end: string) {
     if (!start?.trim() && !end?.trim()) return '';
-    if (start && end) return `${start} → ${end}`;
+    if (start && end) return `${start} â†’ ${end}`;
     return start || end || '';
 }
 
@@ -14,7 +14,7 @@ function StatusPill({ status }: { status?: PhaseStatus }) {
     const s = status || 'planned';
     if (s === 'done') {
         return (
-            <span className="rounded-full border border-violet-500/35 bg-violet-950/40 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-200/90">
+            <span className="rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/55">
                 Done
             </span>
         );
@@ -55,7 +55,7 @@ export function TimelinePhaseReadOnly({
                     st === 'in_progress'
                         ? 'mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-orange-400 ring-2 ring-orange-500/25'
                         : st === 'done'
-                          ? 'mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-violet-500 ring-2 ring-violet-500/20'
+                          ? 'mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-white/08 ring-2 ring-white/10'
                           : 'mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full border border-zinc-500 bg-zinc-800';
                 return (
                     <li key={p.id} className="relative flex gap-3 pb-4 last:pb-0">
@@ -89,3 +89,4 @@ export function TimelinePhaseReadOnly({
         </ul>
     );
 }
+

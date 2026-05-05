@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 /**
- * Strategy plan canvas — draggable steps, explicit linking, bendable edges.
+ * Strategy plan canvas â€” draggable steps, explicit linking, bendable edges.
  * Uses Pointer Events + refs for stable drag (avoids listener churn when parent re-renders each move).
  */
 
@@ -191,7 +191,7 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
         wrapRef.current?.scrollBy({ left: dx, top: dy, behavior: 'smooth' });
     }, []);
 
-    /** Armed source for explicit “Connect” → click target */
+    /** Armed source for explicit â€œConnectâ€ â†’ click target */
     const [linkFrom, setLinkFrom] = useState<string | null>(null);
     const [linkHover, setLinkHover] = useState<string | null>(null);
 
@@ -482,7 +482,7 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
     const isEmpty = nodes.length === 0;
     const linkActive = Boolean(linkFrom);
     const ee = Boolean(edgeToEdge);
-    /** Planning-room mirror: no nested card chrome — one surface with the parent panel */
+    /** Planning-room mirror: no nested card chrome â€” one surface with the parent panel */
     const mirror = Boolean(readOnly);
 
     return (
@@ -623,7 +623,7 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
                         className={`inline-flex h-8 items-center gap-1 rounded-lg border px-2 text-[10px] font-medium transition ${
                             holdPanMode
                                 ? mirror
-                                    ? 'border-violet-500/45 bg-violet-500/15 text-violet-100'
+                                    ? 'border-white/10 bg-white/[0.05] text-white/70'
                                     : 'border-teal-500/50 bg-teal-950/50 text-teal-200'
                                 : mirror
                                   ? 'border-[var(--border)] bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)]'
@@ -703,7 +703,7 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
                 <p
                     className={`ml-auto hidden text-[10px] sm:block ${mirror ? 'text-[var(--text-secondary)]' : 'text-zinc-600'}`}
                 >
-                    Ctrl / ⌘ + scroll to zoom
+                    Ctrl / âŒ˜ + scroll to zoom
                 </p>
             </div>
 
@@ -714,7 +714,7 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
                     holdPanMode ? (canvasPanning ? 'cursor-grabbing' : 'cursor-grab') : ''
                 } ${
                     mirror
-                        ? 'rounded-xl border-0 ring-1 ring-inset ring-violet-500/10'
+                        ? 'rounded-xl border-0 ring-1 ring-inset ring-white/10'
                         : ee
                           ? `rounded-none border-0 ${linkActive ? 'ring-1 ring-inset ring-teal-600/25' : ''}`
                           : `rounded-lg border ${linkActive ? 'border-teal-600/40' : 'border-zinc-700'}`
@@ -742,7 +742,7 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
                     className="pointer-events-none absolute inset-0 opacity-[0.22]"
                     style={{
                         backgroundImage: mirror
-                            ? `linear-gradient(rgba(167,139,250,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(167,139,250,0.07) 1px, transparent 1px)`
+                            ? `linear-gradient(rgba(255,255,255,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.07) 1px, transparent 1px)`
                             : `linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)`,
                         backgroundSize: '32px 32px',
                     }}
@@ -794,7 +794,7 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
                                     : armed
                                       ? 'border-teal-500/70'
                                       : isTarget
-                                        ? 'border-violet-500/60'
+                                        ? 'border-white/10'
                                         : ''
                             }`}
                             style={{ left: n.x, top: n.y, width: NODE_W, minHeight: NODE_BOX_H }}
@@ -850,7 +850,7 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
                                                 }`}
                                             >
                                                 <Link2 className="h-3 w-3" aria-hidden />
-                                                {armed ? 'Tap target…' : 'Connect'}
+                                                {armed ? 'Tap targetâ€¦' : 'Connect'}
                                             </button>
                                             <button
                                                 type="button"
@@ -961,7 +961,7 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
                                 className={`min-w-0 truncate ${mirror ? 'text-[var(--text-primary)]' : 'text-zinc-300'}`}
                             >
                                 {nodeById(e.from)?.label || e.from}
-                                <span className={`mx-1 ${mirror ? 'text-[var(--text-secondary)]' : 'text-zinc-600'}`}>→</span>
+                                <span className={`mx-1 ${mirror ? 'text-[var(--text-secondary)]' : 'text-zinc-600'}`}>â†’</span>
                                 {nodeById(e.to)?.label || e.to}
                             </span>
                             {!readOnly && (
@@ -981,3 +981,4 @@ export function StrategyFlowCanvas({ nodes, edges, onChange, readOnly, expanded,
         </div>
     );
 }
+

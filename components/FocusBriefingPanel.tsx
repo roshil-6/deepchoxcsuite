@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Loader2, Mic, Square, Sparkles, Volume2 } from 'lucide-react';
@@ -218,12 +218,12 @@ export function FocusBriefingPanel({
     return (
         <div
             className="mt-4 rounded-xl border px-3 py-3 sm:px-4 sm:py-4"
-            style={{ borderColor: theme.border.default, background: 'rgba(139,92,246,0.06)' }}
+            style={{ borderColor: theme.border.default, background: 'rgba(255,255,255,0.07)' }}
         >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                     <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: theme.text.muted }}>
-                        Hear &amp; read · what to focus
+                        Hear &amp; read Â· what to focus
                     </p>
                     <p className="mt-1 text-sm font-medium" style={{ color: theme.text.primary }}>
                         AI focus briefing
@@ -250,10 +250,10 @@ export function FocusBriefingPanel({
                     onClick={() => void generateAi()}
                     className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-white transition disabled:opacity-45"
                     style={{ background: `linear-gradient(135deg, ${theme.accent.secondary}, #6d28d9)` }}
-                    title={!hasRichContext ? 'Thin context — run staff sync for a stronger briefing' : undefined}
+                    title={!hasRichContext ? 'Thin context â€” run staff sync for a stronger briefing' : undefined}
                 >
                     {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <Sparkles className="h-3.5 w-3.5" aria-hidden />}
-                    {loading ? 'Analyzing…' : 'Generate briefing'}
+                    {loading ? 'Analyzingâ€¦' : 'Generate briefing'}
                 </button>
                 <button
                     type="button"
@@ -290,7 +290,7 @@ export function FocusBriefingPanel({
 
             {hasVenture && !hasRichContext ? (
                 <p className="mt-2 text-xs" style={{ color: theme.text.muted }}>
-                    Run a staff sync or add strategy notes for a richer briefing — you can still try Generate with thin data.
+                    Run a staff sync or add strategy notes for a richer briefing â€” you can still try Generate with thin data.
                 </p>
             ) : null}
 
@@ -327,3 +327,4 @@ export function FocusBriefingPanel({
         </div>
     );
 }
+

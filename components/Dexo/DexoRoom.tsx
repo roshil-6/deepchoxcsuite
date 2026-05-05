@@ -240,7 +240,7 @@ function DexoParticleMark({ state = 'idle' }: { state?: DmkState }) {
         state === 'thinking'  ? '245,158,11' :
         state === 'speaking'  ? '16,185,129' :
         state === 'listening' ? '244,63,94'  :
-        '139,92,246';
+        '148,163,184';
     const DOTS = [
         { a: 'dmk-a', d: '2.0s', dl: '0s',    x: '32%', y: '35%', r: 2.5 },
         { a: 'dmk-b', d: '2.7s', dl: '0.45s', x: '60%', y: '52%', r: 2   },
@@ -890,7 +890,7 @@ export function DexoRoom() {
                                 <div className="mb-2 flex items-center gap-2">
                                     <span
                                         className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-[10px] font-bold"
-                                        style={{ background: 'rgba(139,92,246,0.13)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.22)' }}
+                                        style={{ background: 'rgba(255,255,255,0.06)', color: '#f2f2f5', border: '1px solid rgba(255,255,255,0.12)' }}
                                     >D</span>
                                     <span className="text-[10px] uppercase tracking-[0.2em] text-white/22">Venture Overview · updates as you chat</span>
                                 </div>

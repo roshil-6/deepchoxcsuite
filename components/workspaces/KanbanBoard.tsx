@@ -12,7 +12,7 @@ export function KanbanBoard() {
     const columns = [
         { id: 'todo',     title: 'Backlog',      icon: <Target       className="h-3.5 w-3.5 text-[var(--muted)]" /> },
         { id: 'progress', title: 'In progress',  icon: <Clock        className="h-3.5 w-3.5 text-indigo-400" /> },
-        { id: 'done',     title: 'Done',          icon: <CheckCircle2 className="h-3.5 w-3.5 text-violet-400" /> },
+        { id: 'done',     title: 'Done',          icon: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" /> },
     ];
 
     const allTasks = product?.roadmap?.flatMap((phase: any) =>

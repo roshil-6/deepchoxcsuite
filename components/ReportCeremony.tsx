@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { useOffice } from '@/lib/OfficeContext';
@@ -39,7 +39,7 @@ export function ReportCeremony({ onClose }: { onClose: () => void }) {
         // Brand Header
         doc.setTextColor(black[0], black[1], black[2]);
         doc.setFontSize(10);
-        doc.text("northROSC LABS · Deepchox — STRATEGIC REPORT", 20, 15);
+        doc.text("northROSC LABS Â· Deepchox â€” STRATEGIC REPORT", 20, 15);
         doc.text(`CONFIDENTIAL // ${new Date().toLocaleDateString()}`, 150, 15);
 
         // Title
@@ -103,8 +103,8 @@ export function ReportCeremony({ onClose }: { onClose: () => void }) {
                         style={{ backgroundImage: `url("${NOISE_DATA_URL}")` }}
                     />
                     {step === 'done' ? (
-                        <div className="w-16 h-16 bg-violet-500/20 rounded-full flex items-center justify-center shadow-lg animate-in zoom-in border border-violet-500/50">
-                            <CheckCircle2 className="w-8 h-8 text-violet-500" />
+                        <div className="w-16 h-16 bg-white/[0.05] rounded-full flex items-center justify-center shadow-lg animate-in zoom-in border border-white/10">
+                            <CheckCircle2 className="w-8 h-8 text-white/70" />
                         </div>
                     ) : (
                         <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center shadow-inner border border-white/5">
@@ -163,7 +163,7 @@ export function ReportCeremony({ onClose }: { onClose: () => void }) {
                                 <motion.div
                                     animate={{ left: ["-100%", "100%"] }}
                                     transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
-                                    className="absolute top-0 bottom-0 w-1/2 bg-violet-500"
+                                    className="absolute top-0 bottom-0 w-1/2 bg-white/08"
                                 />
                             </div>
                             <p className="text-xs text-zinc-600 mt-4 font-mono">Zero-Data Policy: Report generated client-side.</p>
@@ -179,7 +179,7 @@ export function ReportCeremony({ onClose }: { onClose: () => void }) {
                             </p>
                             <button
                                 onClick={onClose}
-                                className="w-full py-4 bg-violet-500 text-white rounded-xl font-bold uppercase tracking-widest hover:bg-violet-400 transition-all shadow-lg flex items-center justify-center gap-2"
+                                className="w-full py-4 bg-white/08 text-white rounded-xl font-bold uppercase tracking-widest hover:bg-white/08 transition-all shadow-lg flex items-center justify-center gap-2"
                             >
                                 Return to Office
                             </button>
@@ -190,3 +190,4 @@ export function ReportCeremony({ onClose }: { onClose: () => void }) {
         </div>
     );
 }
+

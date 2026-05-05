@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useCallback } from 'react';
 import { Upload, File, X, CheckCircle } from 'lucide-react';
@@ -138,9 +138,9 @@ export function FileDropZone({ onFilesUploaded }: FileDropZoneProps) {
                     {uploadedFiles.map((fileName, index) => (
                         <div
                             key={index}
-                            className="flex animate-in slide-in-from-bottom-2 items-center gap-3 rounded-lg border border-violet-500/20 bg-violet-500/10 p-3"
+                            className="flex animate-in slide-in-from-bottom-2 items-center gap-3 rounded-lg border border-white/10 bg-white/[0.05] p-3"
                         >
-                            <CheckCircle className="h-4 w-4 flex-shrink-0 text-violet-400" />
+                            <CheckCircle className="h-4 w-4 flex-shrink-0 text-white/70" />
                             <File className="w-4 h-4 text-office-espresso/60 flex-shrink-0" />
                             <span className="text-sm text-office-espresso font-medium flex-1 truncate">
                                 {fileName}
@@ -152,3 +152,4 @@ export function FileDropZone({ onFilesUploaded }: FileDropZoneProps) {
         </div>
     );
 }
+

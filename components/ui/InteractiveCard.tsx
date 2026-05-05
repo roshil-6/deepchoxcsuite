@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
@@ -94,7 +94,7 @@ export function ExpandableCard({
             animate={{
                 y: isHovered && !isExpanded ? -2 : 0,
                 boxShadow: isHovered
-                    ? '0 16px 36px -18px rgba(116,86,255,0.18), 0 2px 6px rgba(0,0,0,0.35)'
+                    ? '0 16px 36px -18px rgba(255,255,255,0.07), 0 2px 6px rgba(0,0,0,0.35)'
                     : '0 1px 2px rgba(0,0,0,0.28)',
             }}
             transition={{ duration: 0.25 }}
@@ -190,3 +190,4 @@ export function HoverRevealCard({
         </div>
     );
 }
+

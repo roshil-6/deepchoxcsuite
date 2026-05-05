@@ -185,14 +185,14 @@ function getSectionTheme(title: string, isRisk?: boolean): SectionTheme {
   }
   if (t.includes('product') || t.includes('build') || t.includes('deliver')) {
     return {
-      accent: 'rgba(167,139,250,0.75)',
-      glow: 'rgba(167,139,250,0.15)',
-      badge: 'rgba(167,139,250,0.65)',
-      border: 'rgba(167,139,250,0.1)',
-      bg: 'rgba(167,139,250,0.02)',
-      moveBg: 'rgba(167,139,250,0.06)',
-      moveBorder: 'rgba(167,139,250,0.2)',
-      moveText: 'rgba(196,181,253,0.9)',
+      accent: 'rgba(148,163,184,0.75)',
+      glow: 'rgba(148,163,184,0.10)',
+      badge: 'rgba(148,163,184,0.65)',
+      border: 'rgba(255,255,255,0.07)',
+      bg: 'rgba(255,255,255,0.02)',
+      moveBg: 'rgba(255,255,255,0.05)',
+      moveBorder: 'rgba(255,255,255,0.10)',
+      moveText: 'rgba(242,242,245,0.9)',
     };
   }
   if (t.includes('financ') || t.includes('revenue') || t.includes('runway') || t.includes('capital')) {

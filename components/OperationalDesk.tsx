@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -177,7 +177,7 @@ function StaffAttentionBanner({
                                                 setDexoBootstrap(buildDexoStaffAttentionBootstrap(w));
                                                 switchRoom('dexo');
                                             }}
-                                            className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-violet-400/35 bg-violet-500/15 px-3 py-1.5 text-[11px] font-semibold tracking-wide text-violet-100 shadow-[0_1px_0_rgba(255,255,255,0.06)] transition hover:border-violet-400/55 hover:bg-violet-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/45"
+                                            className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.05] px-3 py-1.5 text-[11px] font-semibold tracking-wide text-white/70 shadow-[0_1px_0_rgba(255,255,255,0.06)] transition hover:border-white/10 hover:bg-white/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/10"
                                         >
                                             <Sparkles className="h-3.5 w-3.5 opacity-90" strokeWidth={2.25} aria-hidden />
                                             Set up now
@@ -244,4 +244,5 @@ export function OperationalDesk({ children }: { children: React.ReactNode }) {
         </div>
     );
 }
+
 

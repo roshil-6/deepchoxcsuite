@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { Database, Bot, ArrowRight, ExternalLink, Network } from 'lucide-react';
@@ -137,12 +137,12 @@ export function SuiteIntelligenceNeuralFlow({
                 </div>
             ) : (
                 <p className="rounded-md border border-dashed border-brand-border/40 bg-brand-bg/30 px-2.5 py-1.5 text-[10px] text-brand-muted">
-                    Run <strong className="text-brand-text">Sync AI staff</strong> for the pipeline strip (snapshot → model → merge).
+                    Run <strong className="text-brand-text">Sync AI staff</strong> for the pipeline strip (snapshot â†’ model â†’ merge).
                 </p>
             )}
 
             <p className={`${isFull ? 'text-[11px]' : 'text-[10px]'} leading-snug text-brand-muted/80`}>
-                <span className="text-brand-muted">Map:</span> venture → sync API → lanes → screens. One sync refreshes all desk briefs.
+                <span className="text-brand-muted">Map:</span> venture â†’ sync API â†’ lanes â†’ screens. One sync refreshes all desk briefs.
             </p>
 
             <div
@@ -154,7 +154,7 @@ export function SuiteIntelligenceNeuralFlow({
                     className="pointer-events-none absolute inset-0 opacity-[0.35]"
                     style={{
                         backgroundImage: `radial-gradient(circle at 20% 30%, rgba(161,161,170,0.07) 0%, transparent 45%),
-              radial-gradient(circle at 80% 70%, rgba(139,92,246,0.06) 0%, transparent 40%),
+              radial-gradient(circle at 80% 70%, rgba(255,255,255,0.07) 0%, transparent 40%),
               linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
               linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)`,
                         backgroundSize: '100% 100%, 100% 100%, 24px 24px, 24px 24px',
@@ -165,7 +165,7 @@ export function SuiteIntelligenceNeuralFlow({
                 <div className="relative z-[1] mb-2 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-brand-muted">
                     <Network className="h-3.5 w-3.5 shrink-0 text-zinc-400" aria-hidden />
                     <span className="text-[10px] font-semibold uppercase tracking-[0.12em]">Neural suite map</span>
-                    <span className="text-[9px] text-brand-muted/75">— brief · fields · links</span>
+                    <span className="text-[9px] text-brand-muted/75">â€” brief Â· fields Â· links</span>
                 </div>
 
                 <div
@@ -227,18 +227,18 @@ export function SuiteIntelligenceNeuralFlow({
                             ref={ref(SUITE_INTELLIGENCE_API_NODE.id)}
                             className={`mt-2 w-full max-w-lg rounded-2xl border px-4 py-4 sm:px-5 ${
                                 agentSyncRunning
-                                    ? 'animate-pulse border-violet-400/35 bg-violet-950/25'
-                                    : 'border-violet-500/25 bg-violet-950/15'
+                                    ? 'animate-pulse border-white/10 bg-white/[0.05]'
+                                    : 'border-white/10 bg-white/[0.05]'
                             }`}
                         >
                             <div className="flex items-start gap-3">
-                                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-violet-500/30 bg-violet-950/40">
-                                    <Bot className="h-5 w-5 text-violet-300" aria-hidden />
+                                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05]">
+                                    <Bot className="h-5 w-5 text-white/70" aria-hidden />
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <p className="font-mono text-[11px] font-semibold text-violet-200/95">{SUITE_INTELLIGENCE_API_NODE.title}</p>
-                                    <p className="mt-1 text-[11px] text-violet-200/70">{SUITE_INTELLIGENCE_API_NODE.subtitle}</p>
-                                    <ul className="mt-2 space-y-1.5 border-t border-violet-500/15 pt-2 text-[10px] leading-relaxed text-violet-100/75">
+                                    <p className="font-mono text-[11px] font-semibold text-white/55">{SUITE_INTELLIGENCE_API_NODE.title}</p>
+                                    <p className="mt-1 text-[11px] text-white/55">{SUITE_INTELLIGENCE_API_NODE.subtitle}</p>
+                                    <ul className="mt-2 space-y-1.5 border-t border-white/10 pt-2 text-[10px] leading-relaxed text-white/55">
                                         {SUITE_INTELLIGENCE_API_NODE.detailLines.map((line, idx) => (
                                             <li key={idx} className="pl-1">
                                                 {line}
@@ -252,7 +252,7 @@ export function SuiteIntelligenceNeuralFlow({
                         {/* Role columns + surfaces */}
                         <div className="mt-5 w-full">
                             <p className="mx-auto mb-3 max-w-xl text-center text-[9px] font-medium uppercase tracking-[0.14em] text-brand-muted/90">
-                                Officer lanes · tap to open
+                                Officer lanes Â· tap to open
                             </p>
                             <div className="grid grid-cols-1 gap-5 lg:grid-cols-5 lg:gap-2.5">
                                 {SUITE_ROLE_FLOW_COLUMNS.map((col) => (
@@ -262,7 +262,7 @@ export function SuiteIntelligenceNeuralFlow({
                                             className="flex min-h-[9.5rem] flex-col rounded-lg border border-brand-border/70 bg-brand-bg/85 px-2.5 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
                                         >
                                             <p className="text-[10px] font-semibold uppercase tracking-wide text-zinc-400">
-                                                Desk · {col.agentSyncDeskKey}
+                                                Desk Â· {col.agentSyncDeskKey}
                                             </p>
                                             <p className="mt-2 text-[12px] font-semibold leading-snug text-brand-text">{col.fullTitle}</p>
                                             <p className="mt-2 text-[10px] leading-relaxed text-brand-muted">{col.aiDelivers}</p>
@@ -273,7 +273,7 @@ export function SuiteIntelligenceNeuralFlow({
                                                 <ul className="mt-1 space-y-1 text-[9px] leading-snug text-brand-muted">
                                                     {col.dataBindings.map((b) => (
                                                         <li key={b} className="break-words">
-                                                            · {b}
+                                                            Â· {b}
                                                         </li>
                                                     ))}
                                                 </ul>
@@ -317,3 +317,4 @@ export function SuiteIntelligenceNeuralFlow({
         </div>
     );
 }
+

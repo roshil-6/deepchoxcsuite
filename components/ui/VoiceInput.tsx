@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -430,7 +430,7 @@ export function SpeakButton({ text, className = '' }: SpeakButtonProps) {
             onClick={() => (isSpeaking ? stop() : speak(text))}
             className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all ${
                 isSpeaking
-                    ? 'bg-[#8B5CF6]/20 text-[#8B5CF6] animate-pulse'
+                    ? 'bg-[#94a3b8]/20 text-[#94a3b8] animate-pulse'
                     : 'bg-white/[0.04] text-[#71717A] hover:bg-white/[0.08] hover:text-[#FAFAFA]'
             } ${className}`}
             title={isSpeaking ? 'Stop speaking' : 'Read aloud'}
@@ -443,3 +443,4 @@ export function SpeakButton({ text, className = '' }: SpeakButtonProps) {
         </button>
     );
 }
+

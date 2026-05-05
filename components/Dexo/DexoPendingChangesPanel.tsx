@@ -183,7 +183,7 @@ export function DexoPendingChangesFloating({ activeProject }: { activeProject: P
             >
               <GripHorizontal className="h-3.5 w-3.5" />
             </div>
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-300/70 ring-1 ring-violet-400/15">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg" style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.10)' }}>
               <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
             </div>
             <button
@@ -217,7 +217,7 @@ export function DexoPendingChangesFloating({ activeProject }: { activeProject: P
               >
                 <GripHorizontal className="h-3.5 w-3.5" />
               </div>
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-300/70 ring-1 ring-violet-400/12">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.10)' }}>
                 <ShieldCheck className="h-4 w-4" aria-hidden />
               </div>
               <div className="min-w-0 flex-1">
@@ -288,7 +288,7 @@ export function DexoPendingChangesFloating({ activeProject }: { activeProject: P
                             type="button"
                             onClick={() => void onApply(row)}
                             disabled={busyId === row.id}
-                            className="rounded-md bg-violet-600/80 px-2 py-1 text-[10px] font-semibold text-white/95 hover:bg-violet-600 disabled:opacity-50"
+                            className="rounded-md px-2 py-1 text-[10px] font-semibold disabled:opacity-50 transition" style={{ background: 'rgba(255,255,255,0.10)', color: '#f2f2f5', border: '1px solid rgba(255,255,255,0.14)' }}
                           >
                             {busyId === row.id ? 'Applying…' : 'Approve'}
                           </button>
