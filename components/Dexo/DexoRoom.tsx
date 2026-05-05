@@ -216,6 +216,63 @@ function WaveBars({ active, color = 'bg-[var(--accent)]' }: { active: boolean; c
     );
 }
 
+// ─── Particle mark (replaces avatar in chat messages) ────────────────────────
+
+const DMK_CSS = `
+@keyframes dmk-a{0%,100%{transform:translate(0,0) scale(1);opacity:.45}50%{transform:translate(5px,-5px) scale(1.3);opacity:1}}
+@keyframes dmk-b{0%,100%{transform:translate(0,0) scale(1);opacity:.45}50%{transform:translate(-5px,4px) scale(1.3);opacity:1}}
+@keyframes dmk-c{0%,100%{transform:translate(0,0) scale(1);opacity:.4}50%{transform:translate(4px,5px) scale(1.2);opacity:.95}}
+@keyframes dmk-d{0%,100%{transform:translate(0,0) scale(1);opacity:.35}50%{transform:translate(-4px,-5px) scale(1.15);opacity:.85}}
+@keyframes dmk-e{0%,100%{transform:translate(0,0) scale(1);opacity:.3}50%{transform:translate(3px,3px) scale(1.1);opacity:.7}}
+`;
+let dmkCssInjected = false;
+function injectDmkCss() {
+    if (dmkCssInjected || typeof document === 'undefined') return;
+    const s = document.createElement('style'); s.textContent = DMK_CSS;
+    document.head.appendChild(s); dmkCssInjected = true;
+}
+
+type DmkState = 'idle' | 'thinking' | 'speaking' | 'listening';
+
+function DexoParticleMark({ state = 'idle' }: { state?: DmkState }) {
+    injectDmkCss();
+    const rgb =
+        state === 'thinking'  ? '245,158,11' :
+        state === 'speaking'  ? '16,185,129' :
+        state === 'listening' ? '244,63,94'  :
+        '139,92,246';
+    const DOTS = [
+        { a: 'dmk-a', d: '2.0s', dl: '0s',    x: '32%', y: '35%', r: 2.5 },
+        { a: 'dmk-b', d: '2.7s', dl: '0.45s', x: '60%', y: '52%', r: 2   },
+        { a: 'dmk-c', d: '2.3s', dl: '0.8s',  x: '46%', y: '64%', r: 1.5 },
+        { a: 'dmk-d', d: '2.9s', dl: '0.25s', x: '56%', y: '28%', r: 1.5 },
+        { a: 'dmk-e', d: '1.8s', dl: '1.05s', x: '26%', y: '56%', r: 1.5 },
+    ];
+    return (
+        <div
+            className="relative shrink-0 overflow-hidden rounded-full"
+            style={{
+                width: 20, height: 20,
+                background: `rgba(${rgb},0.10)`,
+                border: `1px solid rgba(${rgb},0.25)`,
+            }}
+        >
+            {DOTS.map((p, i) => (
+                <span
+                    key={i}
+                    className="absolute rounded-full"
+                    style={{
+                        width: p.r, height: p.r,
+                        left: p.x, top: p.y,
+                        background: `rgba(${rgb},0.9)`,
+                        animation: `${p.a} ${p.d} ${p.dl} ease-in-out infinite`,
+                    }}
+                />
+            ))}
+        </div>
+    );
+}
+
 // ─── Voice hook replaced by useDexoConversationalVoice from lib/useDexoConversationalVoice ─────
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -834,7 +891,10 @@ export function DexoRoom() {
                             {/* Summary */}
                             <div>
                                 <div className="mb-2 flex items-center gap-2">
-                                    <DexoAvatar size="xs" state="idle" pulse={false} />
+                                    <span
+                                        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-[10px] font-bold"
+                                        style={{ background: 'rgba(139,92,246,0.13)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.22)' }}
+                                    >D</span>
                                     <span className="text-[10px] uppercase tracking-[0.2em] text-white/22">Venture Overview · updates as you chat</span>
                                 </div>
                                 <p className="text-[18px] font-semibold leading-snug text-white/90">{currentReport.headline}</p>
@@ -991,8 +1051,8 @@ export function DexoRoom() {
                                     // AI message — raw text, no box
                                     return (
                                         <div key={msg.id} className="flex flex-col items-start gap-2">
-                                            <div className="flex items-center gap-2">
-                                                <DexoAvatar size="xs" state="idle" pulse={false} />
+                                            <div className="flex items-center gap-1.5">
+                                                <DexoParticleMark state="idle" />
                                                 <span className="text-[9px] uppercase tracking-[0.2em] text-white/22">Dexo</span>
                                             </div>
                                             <div className="w-full pl-8">
@@ -1060,8 +1120,8 @@ export function DexoRoom() {
                                 {/* Typing indicator */}
                                 {loading && convo[convo.length - 1]?.role === 'user' && (
                                     <div className="flex flex-col items-start gap-2">
-                                        <div className="flex items-center gap-2">
-                                            <DexoAvatar size="xs" state="thinking" pulse={false} />
+                                        <div className="flex items-center gap-1.5">
+                                            <DexoParticleMark state="thinking" />
                                             <span className="text-[9px] uppercase tracking-[0.2em] text-white/22">Dexo</span>
                                         </div>
                                         <div className="pl-8 flex items-center gap-1.5 py-1">

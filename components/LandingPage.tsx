@@ -8,6 +8,7 @@ import { formatRegionalPricePair, getProBillingAmounts } from '@/lib/billingConf
 import { usePricingRegion } from '@/hooks/usePricingRegion';
 import { SITE_HERO_H1, SITE_HERO_LEAD, SITE_PULL_QUOTE, SITE_TAGLINE_SHORT } from '@/lib/siteSeo';
 import { LandingClerkAuth, LANDING_SIGN_IN_HREF, LANDING_SIGN_UP_HREF } from '@/components/LandingClerkAuth';
+import { FaultyTerminal } from '@/components/FaultyTerminal';
 
 /** @deprecated Hero is Clerk sign-in; kept for older imports / env docs. */
 export const LANDING_HERO_VIDEO_DEFAULT = '/landing-hero-demo.mp4';
@@ -23,16 +24,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
     const PRO_BILLING = getProBillingAmounts();
 
     const [isVisible, setIsVisible] = useState(false);
-    /** Normalized pointer 0–100 for CSS-driven background parallax */
-    const [bgPointer, setBgPointer] = useState({ x: 50, y: 32 });
     const pricingRef = useRef<HTMLElement>(null);
-
-    const handleBgPointer = (e: React.PointerEvent<HTMLDivElement>) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / Math.max(rect.width, 1)) * 100;
-        const y = ((e.clientY - rect.top) / Math.max(rect.height, 1)) * 100;
-        setBgPointer({ x, y });
-    };
 
     useEffect(() => {
         setIsVisible(true);
@@ -42,48 +34,43 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
         onContinueGuest();
     };
 
-    const px = bgPointer.x - 50;
-    const py = bgPointer.y - 50;
-
     return (
-        <div
-            className="relative z-[100] min-h-screen bg-[#030304] text-white"
-            onPointerMove={handleBgPointer}
-        >
-            {/* Dot grid + blobs + gradient — pointer-reactive (no canvas overlay) */}
-            <div className="pointer-events-none absolute inset-0 z-0">
+        <div className="relative z-[100] min-h-screen bg-[#030304] text-white">
+
+            {/* ── FaultyTerminal WebGL background ── */}
+            <div className="pointer-events-none fixed inset-0 z-0" aria-hidden>
+                <FaultyTerminal
+                    scale={1.5}
+                    gridMul={[2, 1]}
+                    digitSize={1.2}
+                    timeScale={0.22}
+                    scanlineIntensity={0.4}
+                    glitchAmount={0.35}
+                    flickerAmount={0.35}
+                    noiseAmp={1}
+                    chromaticAberration={0}
+                    dither={0}
+                    curvature={0.06}
+                    tint="#8b7fe8"
+                    mouseReact={true}
+                    mouseStrength={0.35}
+                    pageLoadAnimation={true}
+                    brightness={0.38}
+                />
+                {/* Dark vignette overlay — keeps content readable */}
                 <div
                     className="absolute inset-0"
                     style={{
-                        background: `radial-gradient(ellipse 88% 68% at ${bgPointer.x}% ${bgPointer.y}%, #101014 0%, #050506 42%, #000000 100%)`,
+                        background: 'radial-gradient(ellipse 110% 80% at 50% 50%, rgba(3,3,6,0.42) 0%, rgba(3,3,6,0.82) 75%, rgba(3,3,6,0.97) 100%)',
                     }}
                 />
-                {/* Subtle violet from top-left — soft gradients only, no blur orbs */}
+                {/* Soft violet top-left atmosphere */}
                 <div
                     className="absolute inset-0"
-                    aria-hidden
                     style={{
-                        background:
-                            'radial-gradient(ellipse 70% 52% at 0% 0%, rgba(124, 58, 237, 0.11) 0%, transparent 50%), linear-gradient(158deg, rgba(91, 33, 182, 0.06) 0%, transparent 36%)',
+                        background: 'radial-gradient(ellipse 60% 40% at 0% 0%, rgba(99,60,220,0.08) 0%, transparent 55%)',
                     }}
                 />
-                <div
-                    className="absolute inset-0 opacity-[0.68]"
-                    style={{
-                        backgroundImage: 'radial-gradient(circle at center, #71717a 1px, transparent 1.05px)',
-                        backgroundSize: '28px 28px',
-                        backgroundPosition: `${px * -0.45}px ${py * -0.45}px`,
-                    }}
-                />
-                <div
-                    className="absolute inset-0 overflow-hidden"
-                    style={{
-                        transform: `translate(${px * 0.65}px, ${py * 0.5}px)`,
-                    }}
-                >
-                    <div className="absolute -right-[10%] bottom-[0%] h-[min(480px,60vh)] w-[min(480px,60vw)] rounded-full bg-sky-900/42 blur-[100px]" />
-                    <div className="absolute left-1/2 top-[60%] h-[40vh] w-[80%] -translate-x-1/2 rounded-full bg-zinc-700/22 blur-[80px]" />
-                </div>
             </div>
 
             <div
@@ -256,7 +243,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                         </div>
 
                         <p className="mt-16 max-w-3xl text-left font-sans text-[16px] leading-[1.75] text-zinc-500 sm:text-[17px] lg:mt-20">
-                            The grid shifts subtly with your cursor.{' '}
+                            Move your cursor across the screen.{' '}
                             <Link
                                 href="/guide"
                                 className="font-bold text-zinc-300 underline decoration-zinc-600 underline-offset-[7px] transition hover:text-white"

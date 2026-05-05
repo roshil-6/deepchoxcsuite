@@ -260,18 +260,14 @@ function Card({ children, className = '', interactive = false, onClick, id }: Ca
             onClick={onClick}
             id={id}
             className={`
-                relative overflow-hidden rounded-2xl border
+                relative overflow-hidden rounded-xl border
                 ${interactive ? 'cursor-pointer' : ''}
-                transition-all duration-300 ease-out
-                ${isHovered && interactive ? 'translate-y-[-2px]' : ''}
+                transition-colors duration-150
                 ${className}
             `}
             style={{
-                background: `linear-gradient(180deg, ${THEME.bg.elevated} 0%, ${THEME.bg.tertiary} 100%)`,
-                borderColor: isHovered && interactive ? THEME.border.strong : THEME.border.default,
-                boxShadow: isHovered && interactive
-                    ? '0 12px 32px rgba(0,0,0,0.4), 0 4px 8px rgba(0,0,0,0.2)'
-                    : '0 4px 16px rgba(0,0,0,0.2)',
+                background: isHovered && interactive ? 'rgba(255,255,255,0.045)' : 'rgba(255,255,255,0.025)',
+                borderColor: isHovered && interactive ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.08)',
             }}
         >
             {children}
@@ -316,7 +312,7 @@ function MetricCard({
             className="transition-all duration-500 ease-out"
             style={{
                 opacity: entered ? 1 : 0,
-                transform: entered ? 'translateY(0)' : 'translateY(12px)',
+                transform: entered ? 'translateY(0)' : 'translateY(8px)',
             }}
         >
             <Card interactive className="p-5 group/metric">
