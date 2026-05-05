@@ -266,8 +266,8 @@ function Card({ children, className = '', interactive = false, onClick, id }: Ca
                 ${className}
             `}
             style={{
-                background: isHovered && interactive ? 'rgba(255,255,255,0.045)' : 'rgba(255,255,255,0.025)',
-                borderColor: isHovered && interactive ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.08)',
+                background: isHovered && interactive ? '#201f28' : '#19181f',
+                borderColor: isHovered && interactive ? 'rgba(255,255,255,0.11)' : 'rgba(255,255,255,0.07)',
             }}
         >
             {children}
@@ -832,7 +832,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     return (
         <div
             className="min-h-screen w-full pb-24"
-            style={{ background: THEME.bg.primary }}
+            style={{ background: '#0d0d10' }}
         >
             {/* ── DEXO OVERVIEW GUIDE POP-UP ── renders directly on the page */}
             {showDexoWelcome && (() => {
@@ -1046,7 +1046,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
             })()}
 
             {/* HEADER */}
-            <header className="border-b" style={{ background: 'rgba(22,22,26,0.95)', borderColor: THEME.border.subtle }}>
+            <header className="border-b" style={{ background: '#111117', borderColor: 'rgba(255,255,255,0.07)' }}>
                 <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 sm:px-6 py-3 sm:py-4">
                     <div className="flex items-center gap-2 sm:gap-4 min-w-0">
                         <div
@@ -1108,14 +1108,14 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className="relative shrink-0 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-medium transition-colors"
-                                style={{ color: activeTab === tab.id ? THEME.text.primary : THEME.text.muted }}
+                                className="relative shrink-0 px-3 sm:px-4 py-2.5 sm:py-3 text-[13px] sm:text-[14px] font-medium transition-colors"
+                                style={{ color: activeTab === tab.id ? '#f2f2f5' : '#8c8c9e' }}
                             >
                                 {tab.label}
                                 {activeTab === tab.id && (
                                     <div
-                                        className="absolute bottom-0 left-0 right-0 h-0.5"
-                                        style={{ background: THEME.accent.primary }}
+                                        className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full"
+                                        style={{ background: '#f2f2f5' }}
                                     />
                                 )}
                             </button>
@@ -1241,13 +1241,13 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
 
                         {activeProject.agentStaffSnapshot ? (
                             <div
-                                className="overflow-hidden rounded-2xl border"
-                                style={{ borderColor: 'rgba(116,86,255,0.18)', background: 'rgba(12,12,16,0.85)' }}
+                                className="overflow-hidden rounded-xl border"
+                                style={{ borderColor: 'rgba(255,255,255,0.07)', background: '#19181f' }}
                             >
                                 {/* Section header */}
                                 <div
                                     className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-4 sm:px-6"
-                                    style={{ borderColor: 'rgba(116,86,255,0.10)', background: 'linear-gradient(135deg, rgba(116,86,255,0.10) 0%, rgba(116,86,255,0.04) 100%)' }}
+                                    style={{ borderColor: 'rgba(255,255,255,0.07)', background: '#1c1b24' }}
                                 >
                                     <div className="flex min-w-0 items-center gap-3">
                                         <div
@@ -1297,7 +1297,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 </div>
 
                                 {/* Desk cards — 1 col mobile, 2 col sm+ */}
-                                <div className="grid gap-px bg-[rgba(255,255,255,0.04)] sm:grid-cols-2">
+                                <div className="grid gap-px sm:grid-cols-2" style={{ background: 'rgba(255,255,255,0.05)' }}>
                                     {([
                                         { key: 'ceo',        label: 'Strategic Direction', role: 'CEO',             sub: 'Vision · positioning · strategy',       snap: activeProject.agentStaffSnapshot.desks.ceo,        color: THEME.chart.violet,  room: 'ceo'        as const, icon: Lightbulb },
                                         { key: 'scout',      label: 'Market Intelligence', role: 'Scout',           sub: 'Competitors · trends · opportunities',  snap: activeProject.agentStaffSnapshot.desks.scout,      color: THEME.chart.blue,    room: 'scout'      as const, icon: Globe     },
@@ -1307,7 +1307,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     ] as const).map(({ key, label, role, sub, snap, color, room, icon: DeskIcon }) => {
                                         const hasSnap = !!snap?.trim();
                                         return (
-                                            <div key={key} className="flex flex-col bg-[rgba(14,14,18,0.97)] p-4 sm:p-5">
+                                            <div key={key} className="flex flex-col p-4 sm:p-5" style={{ background: '#19181f' }}>
                                                 {/* Card header row */}
                                                 <div className="flex items-start justify-between gap-2">
                                                     <div className="flex min-w-0 items-center gap-2.5">

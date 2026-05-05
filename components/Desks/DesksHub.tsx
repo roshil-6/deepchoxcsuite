@@ -1,27 +1,36 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
     TrendingUp,
     Package,
     DollarSign,
     Radar,
     Megaphone,
-    ArrowUpRight,
     Sparkles,
+    Search,
+    Check,
+    ChevronDown,
+    Plus,
 } from 'lucide-react';
 import { useOffice } from '@/lib/OfficeContext';
+
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 type DeskConfig = {
     room: 'ceo' | 'pm' | 'accountant' | 'scout' | 'cmo';
     label: string;
     role: string;
     description: string;
-    question: string;
     Icon: React.ElementType;
     iconColor: string;
     iconBg: string;
+    tag?: string;
 };
+
+type FilterId = 'all' | 'active' | 'available';
+
+// ── Desk data ─────────────────────────────────────────────────────────────────
 
 const DESKS: DeskConfig[] = [
     {
@@ -29,186 +38,321 @@ const DESKS: DeskConfig[] = [
         label: 'Strategy',
         role: 'CEO Desk',
         description: 'Brand vision, competitive positioning, market strategy, and leadership direction.',
-        question: 'Where are we going and why?',
         Icon: TrendingUp,
-        iconColor: 'rgba(139,92,246,0.9)',
-        iconBg: 'rgba(139,92,246,0.12)',
+        iconColor: '#a78bfa',
+        iconBg: 'rgba(139,92,246,0.18)',
+        tag: 'Core',
     },
     {
         room: 'pm',
         label: 'Product',
         role: 'PM Desk',
         description: 'Roadmap planning, sprint goals, feature prioritisation, and shipping velocity.',
-        question: 'What are we building and when?',
         Icon: Package,
-        iconColor: 'rgba(56,189,248,0.9)',
-        iconBg: 'rgba(56,189,248,0.10)',
+        iconColor: '#38bdf8',
+        iconBg: 'rgba(56,189,248,0.14)',
+        tag: 'Core',
     },
     {
         room: 'accountant',
         label: 'Finance',
         role: 'Finance Desk',
         description: 'Budget planning, burn rate, cash flow projections, and scenario modelling.',
-        question: 'How long can we run and at what cost?',
         Icon: DollarSign,
-        iconColor: 'rgba(52,211,153,0.9)',
-        iconBg: 'rgba(52,211,153,0.10)',
+        iconColor: '#34d399',
+        iconBg: 'rgba(52,211,153,0.14)',
+        tag: 'Core',
     },
     {
         room: 'scout',
         label: 'Market',
         role: 'Scout Desk',
         description: 'Competitor mapping, market sizing, customer intelligence, and trend signals.',
-        question: "What's happening in our market right now?",
         Icon: Radar,
-        iconColor: 'rgba(245,158,11,0.9)',
-        iconBg: 'rgba(245,158,11,0.10)',
+        iconColor: '#fbbf24',
+        iconBg: 'rgba(245,158,11,0.14)',
+        tag: 'Core',
     },
     {
         room: 'cmo',
         label: 'Marketing',
         role: 'CMO Desk',
         description: 'Brand narrative, campaign strategy, content direction, and go-to-market execution.',
-        question: 'How do we reach and convert the right people?',
         Icon: Megaphone,
-        iconColor: 'rgba(244,63,94,0.9)',
-        iconBg: 'rgba(244,63,94,0.10)',
+        iconColor: '#f87171',
+        iconBg: 'rgba(244,63,94,0.14)',
+        tag: 'Core',
     },
 ];
 
-// ── Card component ────────────────────────────────────────────────────────────
+// ── Pill filter ───────────────────────────────────────────────────────────────
 
-function DeskCard({ desk, onClick }: { desk: DeskConfig; onClick: () => void }) {
+function FilterPill({
+    active,
+    onClick,
+    children,
+}: {
+    active: boolean;
+    onClick: () => void;
+    children: React.ReactNode;
+}) {
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            className="inline-flex items-center rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-all duration-150"
+            style={
+                active
+                    ? {
+                          background: '#f2f2f5',
+                          color: '#0d0d10',
+                          border: '1px solid transparent',
+                      }
+                    : {
+                          background: 'transparent',
+                          color: '#8c8c9e',
+                          border: '1px solid rgba(255,255,255,0.10)',
+                      }
+            }
+        >
+            {children}
+        </button>
+    );
+}
+
+// ── Connector card (Perplexity style: icon left, text right) ──────────────────
+
+function DeskCard({
+    desk,
+    active,
+    onClick,
+}: {
+    desk: DeskConfig;
+    active: boolean;
+    onClick: () => void;
+}) {
     const Icon = desk.Icon;
     return (
         <button
             type="button"
             onClick={onClick}
-            className="group flex flex-col items-start gap-3.5 rounded-xl p-4 text-left transition-colors duration-150"
+            className="group relative flex items-start gap-3.5 rounded-xl p-4 text-left transition-all duration-150"
             style={{
-                background: 'rgba(255,255,255,0.025)',
-                border: '1px solid rgba(255,255,255,0.08)',
+                background: '#19181f',
+                border: '1px solid rgba(255,255,255,0.07)',
             }}
             onMouseEnter={(e) => {
-                const el = e.currentTarget;
-                el.style.background = 'rgba(255,255,255,0.045)';
-                el.style.borderColor = 'rgba(255,255,255,0.14)';
+                e.currentTarget.style.background = '#201f28';
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)';
             }}
             onMouseLeave={(e) => {
-                const el = e.currentTarget;
-                el.style.background = 'rgba(255,255,255,0.025)';
-                el.style.borderColor = 'rgba(255,255,255,0.08)';
+                e.currentTarget.style.background = '#19181f';
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)';
             }}
         >
-            {/* Top row: icon + arrow */}
-            <div className="flex w-full items-start justify-between">
-                <div
-                    className="flex h-9 w-9 items-center justify-center rounded-lg"
-                    style={{ background: desk.iconBg }}
-                >
-                    <Icon className="h-4 w-4" style={{ color: desk.iconColor }} strokeWidth={1.75} />
-                </div>
-                <ArrowUpRight
-                    className="h-3.5 w-3.5 text-white/18 transition-all duration-150 group-hover:text-white/50 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                    strokeWidth={1.75}
-                />
+            {/* Active checkmark — top right */}
+            {active && (
+                <span className="absolute right-3 top-3 flex h-4 w-4 items-center justify-center rounded-full" style={{ background: 'rgba(34,197,94,0.15)' }}>
+                    <Check className="h-2.5 w-2.5" style={{ color: '#22c55e' }} strokeWidth={2.5} />
+                </span>
+            )}
+
+            {/* Icon square */}
+            <div
+                className="mt-0.5 flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl"
+                style={{ background: desk.iconBg }}
+            >
+                <Icon className="h-5 w-5" style={{ color: desk.iconColor }} strokeWidth={1.75} />
             </div>
 
             {/* Text */}
-            <div className="min-w-0 flex-1">
-                <p className="text-[13.5px] font-semibold leading-tight text-white/82 transition-colors group-hover:text-white/95">
+            <div className="min-w-0 flex-1 pr-5">
+                <p className="text-[14px] font-semibold leading-snug text-white/90 group-hover:text-white transition-colors">
                     {desk.label}
                 </p>
-                <p className="mt-0.5 text-[10px] uppercase tracking-[0.14em] text-white/28">{desk.role}</p>
-                <p className="mt-2.5 text-[12px] leading-relaxed text-white/38 transition-colors group-hover:text-white/52">
+                <p
+                    className="mt-1 text-[12.5px] leading-relaxed"
+                    style={{ color: '#8c8c9e' }}
+                >
                     {desk.description}
                 </p>
-                <p className="mt-2 text-[11px] italic text-white/22">{desk.question}</p>
             </div>
         </button>
     );
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
+// ── Main ─────────────────────────────────────────────────────────────────────
 
 export function DesksHub() {
     const { switchRoom, activeProject } = useOffice();
+    const [filter, setFilter] = useState<FilterId>('all');
+    const [query, setQuery] = useState('');
+
+    const hasSnap = !!activeProject?.agentStaffSnapshot;
+
+    const filtered = DESKS.filter((d) => {
+        const matchesQuery =
+            !query ||
+            d.label.toLowerCase().includes(query.toLowerCase()) ||
+            d.description.toLowerCase().includes(query.toLowerCase());
+        if (!matchesQuery) return false;
+        if (filter === 'active') return hasSnap;
+        if (filter === 'available') return !hasSnap;
+        return true;
+    });
 
     return (
-        <div className="py-2">
+        <div className="min-h-full pb-16" style={{ background: '#0d0d10' }}>
 
-            {/* Header */}
-            <div className="mb-6">
-                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/25">
-                    Workspace · AI Team
-                </p>
-                <h1 className="text-[18px] font-semibold leading-tight text-white/90">
-                    {activeProject?.name ? `${activeProject.name} — AI Team` : 'AI Team'}
-                </h1>
-                <p className="mt-1 text-[13px] leading-relaxed text-white/38">
-                    Each desk is a specialist AI for one dimension of your venture. Pick one to run a full analysis or continue a session.
-                </p>
+            {/* ── Page header ── */}
+            <div className="flex flex-wrap items-start justify-between gap-4 pb-5 pt-1">
+                <div>
+                    <h1 className="text-[22px] font-semibold leading-tight text-white/95">
+                        AI Desks
+                    </h1>
+                    <p className="mt-1 text-[13.5px]" style={{ color: '#8c8c9e' }}>
+                        Connect specialist AI to each dimension of your venture
+                    </p>
+                </div>
+
+                {/* Search */}
+                <div
+                    className="flex items-center gap-2 rounded-full px-3.5 py-2"
+                    style={{
+                        background: '#19181f',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        minWidth: '200px',
+                    }}
+                >
+                    <Search className="h-3.5 w-3.5 shrink-0" style={{ color: '#5c5c6e' }} strokeWidth={1.75} />
+                    <input
+                        type="text"
+                        placeholder="Search all desks"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        className="min-w-0 flex-1 bg-transparent text-[13px] text-white/80 placeholder:text-[#5c5c6e] focus:outline-none"
+                    />
+                </div>
             </div>
 
-            {/* ── Desk grid ── */}
-            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-                {DESKS.map((desk) => (
-                    <DeskCard key={desk.room} desk={desk} onClick={() => switchRoom(desk.room)} />
-                ))}
+            {/* ── Filter row ── */}
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-1.5">
+                    <FilterPill active={filter === 'all'} onClick={() => setFilter('all')}>
+                        All
+                    </FilterPill>
+                    <FilterPill active={filter === 'active'} onClick={() => setFilter('active')}>
+                        Active
+                    </FilterPill>
+                    <FilterPill active={filter === 'available'} onClick={() => setFilter('available')}>
+                        Available
+                    </FilterPill>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <button
+                        type="button"
+                        className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-all"
+                        style={{ background: '#19181f', border: '1px solid rgba(255,255,255,0.08)', color: '#8c8c9e' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.14)'; e.currentTarget.style.color = '#f2f2f5'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#8c8c9e'; }}
+                    >
+                        All types
+                        <ChevronDown className="h-3.5 w-3.5" strokeWidth={1.75} />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => switchRoom('dexo')}
+                        className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-all"
+                        style={{ background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.25)', color: '#a78bfa' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(139,92,246,0.18)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(139,92,246,0.12)'; }}
+                    >
+                        <Plus className="h-3.5 w-3.5" strokeWidth={2} />
+                        Ask Dexo
+                    </button>
+                </div>
             </div>
 
-            {/* ── Dexo featured card ── */}
-            <div className="mt-4">
+            {/* ── "Included with your plan" section ── */}
+            <section className="mb-6">
+                <p
+                    className="mb-3 text-[13px] font-medium"
+                    style={{ color: '#8c8c9e' }}
+                >
+                    {activeProject?.name ? `${activeProject.name} — included desks` : 'Included with your plan'}
+                </p>
+
+                {filtered.length === 0 ? (
+                    <div
+                        className="flex items-center justify-center rounded-xl py-10 text-[13px]"
+                        style={{ border: '1px dashed rgba(255,255,255,0.07)', color: '#5c5c6e' }}
+                    >
+                        No desks match your filter
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+                        {filtered.map((desk) => (
+                            <DeskCard
+                                key={desk.room}
+                                desk={desk}
+                                active={hasSnap}
+                                onClick={() => switchRoom(desk.room)}
+                            />
+                        ))}
+                    </div>
+                )}
+            </section>
+
+            {/* ── Divider ── */}
+            <div className="my-6 h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
+
+            {/* ── AI Co-Founder section ── */}
+            <section>
+                <p className="mb-3 text-[13px] font-medium" style={{ color: '#8c8c9e' }}>
+                    AI Co-Founder
+                </p>
                 <button
                     type="button"
                     onClick={() => switchRoom('dexo')}
-                    className="group flex w-full items-center gap-4 rounded-xl p-4 text-left transition-colors duration-150"
-                    style={{
-                        background: 'rgba(139,92,246,0.05)',
-                        border: '1px solid rgba(139,92,246,0.18)',
-                    }}
+                    className="group relative flex w-full items-start gap-3.5 rounded-xl p-4 text-left transition-all duration-150"
+                    style={{ background: '#19181f', border: '1px solid rgba(255,255,255,0.07)' }}
                     onMouseEnter={(e) => {
-                        const el = e.currentTarget;
-                        el.style.background = 'rgba(139,92,246,0.09)';
-                        el.style.borderColor = 'rgba(139,92,246,0.30)';
+                        e.currentTarget.style.background = '#201f28';
+                        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)';
                     }}
                     onMouseLeave={(e) => {
-                        const el = e.currentTarget;
-                        el.style.background = 'rgba(139,92,246,0.05)';
-                        el.style.borderColor = 'rgba(139,92,246,0.18)';
+                        e.currentTarget.style.background = '#19181f';
+                        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)';
                     }}
                 >
                     {/* Icon */}
                     <div
-                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-                        style={{ background: 'rgba(139,92,246,0.14)' }}
+                        className="mt-0.5 flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl"
+                        style={{ background: 'rgba(139,92,246,0.18)' }}
                     >
-                        <Sparkles className="h-4 w-4 text-violet-400" strokeWidth={1.75} />
+                        <Sparkles className="h-5 w-5 text-violet-400" strokeWidth={1.75} />
                     </div>
 
                     {/* Content */}
                     <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                            <p className="text-[13.5px] font-semibold text-white/88">Dexo</p>
+                            <p className="text-[14px] font-semibold leading-snug text-white/90 group-hover:text-white transition-colors">
+                                Dexo
+                            </p>
                             <span
-                                className="rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.14em]"
-                                style={{ background: 'rgba(139,92,246,0.15)', color: 'rgba(167,139,250,0.85)' }}
+                                className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em]"
+                                style={{ background: 'rgba(139,92,246,0.14)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.22)' }}
                             >
-                                AI Co-founder
+                                Co-Founder
                             </span>
                         </div>
-                        <p className="mt-0.5 text-[12px] leading-relaxed text-white/38 transition-colors group-hover:text-white/55">
+                        <p className="mt-1 text-[12.5px] leading-relaxed" style={{ color: '#8c8c9e' }}>
                             Full-stack AI partner — synthesises every desk, runs daily research, and adapts to your current priority.
                         </p>
                     </div>
-
-                    {/* Arrow */}
-                    <ArrowUpRight
-                        className="h-3.5 w-3.5 shrink-0 text-violet-400/40 transition-all duration-150 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-violet-400/70"
-                        strokeWidth={1.75}
-                    />
                 </button>
-            </div>
+            </section>
 
         </div>
     );
