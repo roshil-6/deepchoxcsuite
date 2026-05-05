@@ -46,12 +46,19 @@ export function DeskShell({
 
     return (
         <div
-            className={`executive-panel flex min-h-0 w-full min-w-0 flex-col overflow-hidden bg-[var(--bg-elevated)] transition-all duration-300 ease-out ${className ?? ''}`}
-            style={{ opacity: entered ? 1 : 0, transform: entered ? 'translateY(0)' : 'translateY(6px)' }}
+            className={`flex min-h-0 w-full min-w-0 flex-col overflow-hidden transition-all duration-300 ease-out ${className ?? ''}`}
+            style={{
+                opacity: entered ? 1 : 0,
+                transform: entered ? 'translateY(0)' : 'translateY(6px)',
+                background: 'rgba(255,255,255,0.02)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '0.875rem',
+            }}
         >
             {/* ── Desk header ── */}
             <header
-                className={`shrink-0 border-b border-[var(--border)] bg-[var(--bg-card)] px-5 py-4 sm:px-6 sm:py-5 ${headerClassName ?? ''}`}
+                className={`shrink-0 border-b px-5 py-4 sm:px-6 sm:py-5 ${headerClassName ?? ''}`}
+                style={{ borderColor: 'rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}
             >
                 <div className="flex items-start gap-3">
                     <div className={`mt-1 h-10 w-1 shrink-0 rounded-full ${headerSpineClassName}`} aria-hidden />
@@ -117,17 +124,19 @@ export function DeskTabButton({
         <button
             type={type}
             onClick={onClick}
-            className={`relative inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-medium transition-all duration-200 ${
-                ghost ? 'border-0' : 'border'
+            className={`relative inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors duration-150 ${
+                ghost ? 'border-0' : ''
             } ${
                 active
-                    ? ghost
-                        ? 'bg-[var(--accent-soft)] text-[var(--text)]'
-                        : 'border-[rgba(116,86,255,0.18)] bg-[var(--accent-soft)] text-[var(--text)]'
-                    : ghost
-                      ? 'bg-transparent text-[var(--muted)] hover:-translate-y-px hover:bg-[var(--accent-soft)] hover:text-[var(--text)]'
-                      : 'border-transparent bg-transparent text-[var(--muted)] hover:-translate-y-px hover:border-[var(--border)] hover:bg-[var(--accent-soft)] hover:text-[var(--text)]'
+                    ? 'text-white/90'
+                    : 'text-white/40 hover:text-white/65'
             } ${className ?? ''}`}
+            style={active ? {
+                background: 'rgba(139,92,246,0.08)',
+                border: '1px solid rgba(139,92,246,0.14)',
+            } : {
+                border: '1px solid transparent',
+            }}
         >
             {icon}
             {children}

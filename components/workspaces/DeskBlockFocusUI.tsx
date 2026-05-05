@@ -7,7 +7,7 @@ import { DeskChatThreadMount } from '@/components/DeskChatThreadSlotContext';
 export function DeskMsgUser({ children }: { children: React.ReactNode }) {
     return (
         <div className="flex justify-end">
-            <div className="max-w-[min(100%,34rem)] rounded-2xl rounded-br-md border border-white/[0.12] bg-zinc-800/90 px-3.5 py-2.5 text-left shadow-[0_4px_20px_rgba(0,0,0,0.25)] sm:px-4 sm:py-3">
+            <div className="max-w-[min(100%,34rem)] rounded-2xl rounded-br-sm border border-white/[0.09] bg-white/[0.07] px-3.5 py-2.5 text-left sm:px-4 sm:py-3">
                 {children}
             </div>
         </div>
@@ -75,7 +75,7 @@ export function DeskHubRow({
         <button
             type="button"
             onClick={onOpen}
-            className="flex w-full items-start gap-2 rounded-lg border border-white/[0.1] bg-zinc-900/55 px-3 py-2 text-left shadow-[0_2px_12px_rgba(0,0,0,0.2)] transition hover:border-white/[0.14] hover:bg-zinc-900/75 sm:gap-3 sm:px-3.5 sm:py-2.5"
+            className="flex w-full items-start gap-2 rounded-xl border border-white/[0.08] bg-white/[0.025] px-3 py-2.5 text-left transition-colors duration-150 hover:border-white/[0.13] hover:bg-white/[0.045] sm:gap-3 sm:px-3.5 sm:py-3"
         >
             <span className="min-w-0 flex-1">
                 <span className="block text-[13px] font-semibold leading-snug text-zinc-100">{title}</span>
