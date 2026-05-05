@@ -38,7 +38,7 @@ export function DeskShell({
     className,
     bodyFlush,
     bodyClassName,
-    headerSpineClassName = 'bg-[var(--accent)]/70',
+    headerSpineClassName = 'bg-white/20',
     headerClassName,
 }: DeskShellProps) {
     const [entered, setEntered] = useState(false);
@@ -50,38 +50,41 @@ export function DeskShell({
             style={{
                 opacity: entered ? 1 : 0,
                 transform: entered ? 'translateY(0)' : 'translateY(6px)',
-                background: 'rgba(255,255,255,0.02)',
-                border: '1px solid rgba(255,255,255,0.08)',
+                background: '#111117',
+                border: '1px solid rgba(255,255,255,0.07)',
                 borderRadius: '0.875rem',
             }}
         >
             {/* ── Desk header ── */}
             <header
-                className={`shrink-0 border-b px-5 py-4 sm:px-6 sm:py-5 ${headerClassName ?? ''}`}
-                style={{ borderColor: 'rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}
+                className={`shrink-0 px-5 py-4 sm:px-6 sm:py-5 ${headerClassName ?? ''}`}
+                style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: '#111117' }}
             >
                 <div className="flex items-start gap-3">
-                    <div className={`mt-1 h-10 w-1 shrink-0 rounded-full ${headerSpineClassName}`} aria-hidden />
+                    <div className={`mt-1 h-10 w-0.5 shrink-0 rounded-full ${headerSpineClassName}`} aria-hidden />
                     <div className="min-w-0 flex-1">
                         {eyebrow ? (
-                            <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--muted)]">
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: '#5c5c6e' }}>
                                 {eyebrow}
                             </p>
                         ) : null}
                         <h1
-                            className={`text-base font-semibold leading-snug tracking-tight text-[var(--text)] sm:text-[17px] ${eyebrow ? 'mt-1' : ''}`}
+                            className={`text-[16px] font-semibold leading-snug tracking-tight sm:text-[17px] ${eyebrow ? 'mt-1' : ''}`}
+                            style={{ color: '#f2f2f5' }}
                         >
                             {title}
                         </h1>
                         {description ? (
-                            <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-[var(--muted)]">
+                            <p className="mt-1.5 max-w-2xl text-[13px] leading-relaxed" style={{ color: '#8c8c9e' }}>
                                 {description}
                             </p>
                         ) : null}
                     </div>
                 </div>
                 {tabs ? (
-                    <div className="mt-3 sm:mt-4 flex flex-wrap gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar pt-0.5">{tabs}</div>
+                    <div className="mt-4 flex items-center gap-5 overflow-x-auto no-scrollbar" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '14px' }}>
+                        {tabs}
+                    </div>
                 ) : null}
             </header>
 
@@ -92,7 +95,7 @@ export function DeskShell({
 
             {/* ── Desk footer ── */}
             {footer ? (
-                <div className="shrink-0 border-t border-[var(--border)] bg-[var(--bg-card)] px-5 py-3 sm:px-6">
+                <div className="shrink-0 px-5 py-3 sm:px-6" style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: '#19181f' }}>
                     {footer}
                 </div>
             ) : null}
@@ -100,7 +103,7 @@ export function DeskShell({
     );
 }
 
-/** Tab control — text-first, low chrome */
+/** Tab control — flat text, no chrome, no box */
 export function DeskTabButton({
     active,
     onClick,
@@ -108,7 +111,7 @@ export function DeskTabButton({
     icon,
     type = 'button',
     className,
-    chroming = 'default',
+    chroming: _chroming = 'default',
 }: {
     active: boolean;
     onClick: () => void;
@@ -116,33 +119,19 @@ export function DeskTabButton({
     icon?: React.ReactNode;
     type?: 'button' | 'submit';
     className?: string;
-    /** `ghost` — no stroke (e.g. Relay header). */
     chroming?: 'default' | 'ghost';
 }) {
-    const ghost = chroming === 'ghost';
     return (
         <button
             type={type}
             onClick={onClick}
-            className={`relative inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors duration-150 ${
-                ghost ? 'border-0' : ''
-            } ${
-                active
-                    ? 'text-white/90'
-                    : 'text-white/40 hover:text-white/65'
-            } ${className ?? ''}`}
-            style={active ? {
-                background: 'rgba(139,92,246,0.08)',
-                border: '1px solid rgba(139,92,246,0.14)',
-            } : {
-                border: '1px solid transparent',
-            }}
+            className={`inline-flex items-center gap-1.5 text-[13px] font-medium transition-colors duration-150 ${className ?? ''}`}
+            style={{ color: active ? '#f2f2f5' : '#5c5c6e', padding: 0, background: 'none', border: 'none' }}
+            onMouseEnter={(e) => { if (!active) e.currentTarget.style.color = '#8c8c9e'; }}
+            onMouseLeave={(e) => { if (!active) e.currentTarget.style.color = '#5c5c6e'; }}
         >
             {icon}
             {children}
-            {active && (
-                <span className="absolute bottom-0 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full bg-[var(--accent)]" />
-            )}
         </button>
     );
 }

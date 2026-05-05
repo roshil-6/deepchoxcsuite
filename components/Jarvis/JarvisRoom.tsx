@@ -159,7 +159,7 @@ function JarvisOrb({ state, confidence }: { state: VoiceState | 'loading' | 'rea
 
     const ring =
         state === 'listening'  ? 'ring-4 ring-sky-400/60 shadow-[0_0_40px_rgba(56,189,248,0.25)]' :
-        state === 'speaking'   ? 'ring-4 ring-violet-400/60 shadow-[0_0_40px_rgba(167,139,250,0.25)]' :
+        state === 'speaking'   ? 'ring-4 ring-white/30 shadow-[0_0_40px_rgba(255,255,255,0.10)]' :
         state === 'loading'    ? 'ring-2 ring-white/20 shadow-[0_0_20px_rgba(255,255,255,0.05)]' :
         confidence === 'high'  ? 'ring-2 ring-emerald-500/40 shadow-[0_0_28px_rgba(16,185,129,0.12)]' :
         confidence === 'medium'? 'ring-2 ring-amber-500/35 shadow-[0_0_22px_rgba(245,158,11,0.10)]' :
@@ -167,7 +167,7 @@ function JarvisOrb({ state, confidence }: { state: VoiceState | 'loading' | 'rea
 
     const inner =
         state === 'listening'  ? 'bg-gradient-to-br from-sky-600/40 to-sky-400/20' :
-        state === 'speaking'   ? 'bg-gradient-to-br from-violet-600/40 to-violet-400/20' :
+        state === 'speaking'   ? 'bg-gradient-to-br from-zinc-600/40 to-zinc-400/20' :
         state === 'loading'    ? 'bg-gradient-to-br from-zinc-700/50 to-zinc-600/30 animate-pulse' :
                                  'bg-gradient-to-br from-zinc-800/60 to-zinc-700/30';
 

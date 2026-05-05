@@ -51,8 +51,8 @@ type DeskConfig = {
 const DESK_CONFIG: Record<DeskId, DeskConfig> = {
     ceo: {
         Icon: Target,
-        accentRgb: '167,139,250',
-        accentClass: 'text-violet-400',
+        accentRgb: '148,163,184',
+        accentClass: 'text-slate-400',
         label: 'Strategy & direction',
         domain: 'Narrative · Phases · Priorities',
     },

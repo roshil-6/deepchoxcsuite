@@ -8,7 +8,7 @@ import type { Project } from '@/lib/db';
 // ── Per-priority visual config ────────────────────────────────────────────────
 
 const PRIORITY_META: Record<string, { Icon: LucideIcon; rgb: string }> = {
-  vision:          { Icon: Eye,               rgb: '139,92,246'  },  // violet
+  vision:          { Icon: Eye,               rgb: '148,163,184' },  // slate
   market_research: { Icon: TrendingUp,         rgb: '56,189,248'  },  // sky
   execution:       { Icon: Zap,                rgb: '245,158,11'  },  // amber
   planning:        { Icon: Map,                rgb: '52,211,153'  },  // emerald
