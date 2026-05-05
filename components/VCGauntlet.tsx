@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useOffice, AgentRole } from '@/lib/OfficeContext';
@@ -134,7 +134,7 @@ export function VCGauntlet() {
                     <div className="text-xs uppercase font-bold text-red-500 mb-1">Fundability Score</div>
                     <div className="w-32 h-2 bg-red-950 rounded-full overflow-hidden border border-red-900">
                         <div
-                            className={`h-full transition-all duration-500 ${score > 75 ? 'bg-violet-500' : score > 40 ? 'bg-yellow-500' : 'bg-red-600'}`}
+                            className={`h-full transition-all duration-500 ${score > 75 ? 'bg-white/08' : score > 40 ? 'bg-yellow-500' : 'bg-red-600'}`}
                             style={{ width: `${score}%` }}
                         ></div>
                     </div>
@@ -162,7 +162,7 @@ export function VCGauntlet() {
                             {/* Rating Stamp */}
                             {msg.role === 'assistant' && msg.rating !== 'neutral' && (
                                 <div className={`absolute -right-4 -bottom-4 px-4 py-2 rounded-lg font-black text-xs uppercase tracking-widest rotate-[-5deg] border-2 shadow-xl ${msg.rating === 'pass'
-                                        ? 'border-violet-500 bg-violet-950 text-violet-300'
+                                        ? 'border-white/12 bg-white/08 text-white/70'
                                         : 'bg-red-900 text-red-400 border-red-500'
                                     }`}>
                                     {msg.rating === 'pass' ? 'VALID POINT' : 'WEAK ANSWER'}
@@ -196,3 +196,4 @@ export function VCGauntlet() {
         </div>
     );
 }
+

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useMemo, useState } from 'react';
 import type { PhaseStatus, StrategyPhase } from '@/lib/strategyDoc';
@@ -10,17 +10,17 @@ type Props = {
     projectName: string;
     phases: StrategyPhase[];
     onPhasesChange: (next: StrategyPhase[]) => void;
-    /** Narrow CEO sidebar — tighter chrome, full-width list */
+    /** Narrow CEO sidebar â€” tighter chrome, full-width list */
     variant?: 'page' | 'rail';
-    /** Use app-shell surfaces (Timeline room) — no inner dark canvas or duplicate “Timeline” chrome */
+    /** Use app-shell surfaces (Timeline room) â€” no inner dark canvas or duplicate â€œTimelineâ€ chrome */
     embedded?: boolean;
-    /** Planning room: parent already titles the section — compact toolbar only, no duplicate venture headline */
+    /** Planning room: parent already titles the section â€” compact toolbar only, no duplicate venture headline */
     planningStripOnly?: boolean;
 };
 
 function formatRange(start: string, end: string) {
     if (!start?.trim() && !end?.trim()) return '';
-    if (start && end) return `${start} → ${end}`;
+    if (start && end) return `${start} â†’ ${end}`;
     return start || end || '';
 }
 
@@ -135,7 +135,7 @@ export function TimelinePhaseSetter({
         }
         if (s === 'done') {
             return (
-                <span className="inline-flex items-center gap-1 rounded-full border border-violet-500/40 bg-violet-950/50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-400">
+                <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/70">
                     Done
                 </span>
             );
@@ -172,7 +172,7 @@ export function TimelinePhaseSetter({
             return <span className="h-3 w-3 shrink-0 rounded-full border-2 border-brand-border bg-brand-bg" />;
         }
         if (s === 'in_progress') return <span className={`h-3 w-3 shrink-0 rounded-full ${ceo.accentBg} ring-4 ring-orange-500/20`} />;
-        if (s === 'done') return <span className="h-3 w-3 shrink-0 rounded-full bg-violet-500 ring-4 ring-violet-500/15" />;
+        if (s === 'done') return <span className="h-3 w-3 shrink-0 rounded-full bg-white/08 ring-4 ring-white/10" />;
         return <span className="h-3 w-3 shrink-0 rounded-full border-2 border-zinc-500 bg-zinc-800" />;
     };
 
@@ -225,7 +225,7 @@ export function TimelinePhaseSetter({
                             <span
                                 className={
                                     embedded
-                                        ? 'rounded-lg border border-violet-500/20 bg-violet-500/[0.08] px-2.5 py-1 text-center text-[10px] font-semibold text-violet-200/95'
+                                        ? 'rounded-lg border border-white/10 bg-white/[0.05] px-2.5 py-1 text-center text-[10px] font-semibold text-white/55'
                                         : 'rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-center text-[11px] font-medium text-zinc-400'
                                 }
                             >
@@ -235,7 +235,7 @@ export function TimelinePhaseSetter({
                         <button
                             type="button"
                             onClick={addPhase}
-                            className={`inline-flex shrink-0 items-center justify-center rounded-md text-xs font-medium ${rail ? 'gap-1.5 bg-zinc-700 px-3 py-1.5 text-zinc-100 hover:bg-zinc-600' : embedded ? `gap-2 border border-violet-500/35 px-3 py-2 font-semibold uppercase tracking-wide ${ceo.accentBg} ${ceo.accentBgHover} text-brand-bg hover:text-brand-bg` : `gap-2 border border-white/15 px-4 py-2 font-bold uppercase tracking-wide shadow-md shadow-black/25 ${ceo.accentBg} ${ceo.accentBgHover} text-brand-bg hover:text-brand-bg`}`}
+                            className={`inline-flex shrink-0 items-center justify-center rounded-md text-xs font-medium ${rail ? 'gap-1.5 bg-zinc-700 px-3 py-1.5 text-zinc-100 hover:bg-zinc-600' : embedded ? `gap-2 border border-white/10 px-3 py-2 font-semibold uppercase tracking-wide ${ceo.accentBg} ${ceo.accentBgHover} text-brand-bg hover:text-brand-bg` : `gap-2 border border-white/15 px-4 py-2 font-bold uppercase tracking-wide shadow-md shadow-black/25 ${ceo.accentBg} ${ceo.accentBgHover} text-brand-bg hover:text-brand-bg`}`}
                         >
                             <Plus className={rail ? 'h-3.5 w-3.5' : 'h-4 w-4'} aria-hidden />
                             Add phase
@@ -245,9 +245,9 @@ export function TimelinePhaseSetter({
 
                 {embedded && !planningStrip ? (
                     <p className="mt-2 text-[10px] leading-relaxed text-[var(--text-secondary)]">
-                        <span className="tabular-nums text-[var(--text-primary)]">{stats.total}</span> total ·{' '}
-                        <span className="tabular-nums text-[var(--text-primary)]">{stats.done}</span> done ·{' '}
-                        <span className="tabular-nums text-violet-300/90">{stats.active}</span> active ·{' '}
+                        <span className="tabular-nums text-[var(--text-primary)]">{stats.total}</span> total Â·{' '}
+                        <span className="tabular-nums text-[var(--text-primary)]">{stats.done}</span> done Â·{' '}
+                        <span className="tabular-nums text-white/55">{stats.active}</span> active Â·{' '}
                         <span className="tabular-nums text-[var(--text-primary)]">{stats.planned}</span> planned
                     </p>
                 ) : !embedded ? (
@@ -264,7 +264,7 @@ export function TimelinePhaseSetter({
                             {stats.total} total
                         </span>
                         <span
-                            className={`rounded border border-zinc-700/60 bg-zinc-900/50 px-2 py-0.5 text-[10px] font-normal text-zinc-500 ${rail ? '' : 'rounded-full border-violet-500/30 bg-violet-950/25 px-3 py-1 font-semibold uppercase tracking-wide text-violet-400/90'}`}
+                            className={`rounded border border-zinc-700/60 bg-zinc-900/50 px-2 py-0.5 text-[10px] font-normal text-zinc-500 ${rail ? '' : 'rounded-full border-white/10 bg-white/[0.05] px-3 py-1 font-semibold uppercase tracking-wide text-white/55'}`}
                         >
                             {stats.done} done
                         </span>
@@ -282,7 +282,7 @@ export function TimelinePhaseSetter({
                 ) : null}
             </div>
 
-            {/* Timeline — embedded: no inner scroll; parent workspace scrolls as one column */}
+            {/* Timeline â€” embedded: no inner scroll; parent workspace scrolls as one column */}
             <div
                 className={`flex flex-col ${rail ? 'px-2 py-2 sm:px-3' : planningStrip ? 'px-4 pb-8 pt-1 sm:px-5' : embedded ? 'pb-8 pt-2' : 'px-4 py-6 sm:px-8'}`}
             >
@@ -358,11 +358,11 @@ export function TimelinePhaseSetter({
                                                     <input
                                                         value={p.title}
                                                         onChange={(e) => updatePhase(p.id, { title: e.target.value })}
-                                                        placeholder="Untitled phase — add a title"
+                                                        placeholder="Untitled phase â€” add a title"
                                                         className={`w-full border-0 bg-transparent text-base font-medium focus:outline-none focus:ring-0 ${embedded ? 'text-brand-text placeholder:text-brand-muted/60' : 'text-zinc-100 placeholder:text-zinc-600'}`}
                                                     />
                                                     <p className={`text-xs ${embedded ? 'text-brand-muted' : 'text-zinc-500'}`}>
-                                                        {range || 'Add timeframe…'}
+                                                        {range || 'Add timeframeâ€¦'}
                                                     </p>
                                                     <div className="flex flex-wrap gap-2 pt-1">
                                                         <input
@@ -372,7 +372,7 @@ export function TimelinePhaseSetter({
                                                             className={`rounded border px-2 py-1 text-xs ${embedded ? 'border-brand-border bg-brand-bg text-brand-text' : 'border-zinc-700 bg-zinc-900 text-zinc-300'}`}
                                                         />
                                                         <span className={`self-center ${embedded ? 'text-brand-muted' : 'text-zinc-600'}`}>
-                                                            →
+                                                            â†’
                                                         </span>
                                                         <input
                                                             type="date"
@@ -407,7 +407,7 @@ export function TimelinePhaseSetter({
                                                                     ? 'inline-flex items-center gap-1 rounded-md border border-zinc-600 bg-zinc-800/80 px-2 py-1 text-[10px] font-medium text-zinc-300 hover:bg-zinc-700/80 disabled:pointer-events-none disabled:opacity-35'
                                                                     : embedded
                                                                       ? 'inline-flex items-center gap-1 rounded-lg border border-brand-border bg-brand-panel px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-brand-text hover:bg-brand-input disabled:pointer-events-none disabled:opacity-35'
-                                                                      : 'inline-flex items-center gap-1 rounded-lg border border-violet-500/40 bg-violet-950/40 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-violet-200/95 hover:bg-violet-950/55 disabled:pointer-events-none disabled:opacity-35'
+                                                                      : 'inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/[0.05] px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-white/55 hover:bg-white/[0.05] disabled:pointer-events-none disabled:opacity-35'
                                                             }
                                                         >
                                                             <CheckCircle2
@@ -453,7 +453,7 @@ export function TimelinePhaseSetter({
                                                 <textarea
                                                     value={p.notes}
                                                     onChange={(e) => updatePhase(p.id, { notes: e.target.value })}
-                                                    placeholder="Describe what happens in this phase — milestones, deliverables…"
+                                                    placeholder="Describe what happens in this phase â€” milestones, deliverablesâ€¦"
                                                     rows={5}
                                                     className={`mt-3 w-full resize-y rounded-lg border p-3 text-sm leading-relaxed focus:outline-none ${rail ? 'border-zinc-700/80 bg-zinc-950/50 text-zinc-200 placeholder:text-zinc-600 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500/25' : embedded ? 'border-brand-border/80 bg-brand-bg text-brand-text placeholder:text-brand-muted/70 focus:border-brand-teal/35 focus:ring-1 focus:ring-brand-teal/15' : 'border-zinc-700/80 bg-[#0f0f10] text-zinc-200 placeholder:text-zinc-600 focus:border-orange-500/40 focus:ring-1 focus:ring-orange-500/30'}`}
                                                 />
@@ -479,3 +479,4 @@ export function TimelinePhaseSetter({
         </div>
     );
 }
+

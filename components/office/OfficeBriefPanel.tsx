@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import { ChevronDown } from 'lucide-react';
@@ -7,7 +7,7 @@ const OUTLINE = {
     teal: 'border-teal-500/35 bg-gradient-to-br from-teal-500/[0.06] to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
     amber: 'border-amber-500/35 bg-gradient-to-br from-amber-950/25 to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
     sky: 'border-sky-500/35 bg-gradient-to-br from-sky-500/[0.06] to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
-    violet: 'border-violet-500/35 bg-gradient-to-br from-violet-500/[0.06] to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
+    violet: 'border-white/10 bg-gradient-to-br from-violet-500/[0.06] to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
     zinc: 'border-zinc-500/35 bg-zinc-900/35 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
     emerald: 'border-emerald-500/35 bg-gradient-to-br from-emerald-500/[0.06] to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
 } as const;
@@ -58,3 +58,4 @@ export function OfficeBriefPanel({
         </details>
     );
 }
+

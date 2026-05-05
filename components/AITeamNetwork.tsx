@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -42,7 +42,7 @@ const TEAM_MEMBERS: TeamMember[] = [
         title: RESEARCH_STAFF.ceo.navTitle,
         subtitle: RESEARCH_STAFF.ceo.navHint,
         icon: <Briefcase className="h-5 w-5" />,
-        color: '#8B5CF6',
+        color: '#94a3b8',
         x: 50,
         y: 20,
         connections: ['pm', 'cmo', 'scout', 'dexo'],
@@ -122,7 +122,7 @@ const TEAM_MEMBERS: TeamMember[] = [
 ];
 
 const FLOW_TYPES: Record<string, { label: string; color: string; description: string }> = {
-    strategy: { label: 'Strategy Flow', color: '#8B5CF6', description: 'Direction and prioritization' },
+    strategy: { label: 'Strategy Flow', color: '#94a3b8', description: 'Direction and prioritization' },
     execution: { label: 'Execution Flow', color: '#3B82F6', description: 'Product delivery and roadmap' },
     finance: { label: 'Finance Flow', color: '#10B981', description: 'Runway and capital planning' },
     intel: { label: 'Intel Flow', color: '#F59E0B', description: 'Market and competitive intel' },
@@ -160,8 +160,8 @@ export function AITeamNetwork({ embedded = false }: { embedded?: boolean }) {
             {/* Header */}
             <div className={`flex items-center justify-between ${embedded ? 'mb-4' : 'mb-6'}`}>
                 <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-violet-500/25 bg-violet-500/[0.1] shadow-[0_0_24px_-6px_rgba(139,92,246,0.35)]">
-                        <Network className="h-5 w-5 text-violet-200" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] shadow-[0_0_24px_-6px_rgba(255,255,255,0.07)]">
+                        <Network className="h-5 w-5 text-white/70" />
                     </div>
                     <div>
                         <h3 className="text-sm font-semibold text-[var(--text-primary)]">AI team network</h3>
@@ -185,7 +185,7 @@ export function AITeamNetwork({ embedded = false }: { embedded?: boolean }) {
                     onClick={() => setActiveFlow(null)}
                     className={`rounded-lg border px-3 py-1.5 text-[11px] font-medium transition-all ${
                         activeFlow === null
-                            ? 'border-violet-500/35 bg-violet-500/[0.12] text-[var(--text-primary)]'
+                            ? 'border-white/10 bg-white/[0.05] text-[var(--text-primary)]'
                             : 'border-transparent text-[var(--text-secondary)] hover:border-[var(--border)] hover:bg-[var(--bg-elevated)]'
                     }`}
                 >
@@ -198,7 +198,7 @@ export function AITeamNetwork({ embedded = false }: { embedded?: boolean }) {
                         onClick={() => setActiveFlow(activeFlow === key ? null : key)}
                         className={`rounded-lg border px-3 py-1.5 text-[11px] font-medium transition-all flex items-center gap-1.5 ${
                             activeFlow === key
-                                ? 'border-violet-400/30 text-[var(--text-primary)]'
+                                ? 'border-white/10 text-[var(--text-primary)]'
                                 : 'border-transparent text-[var(--text-secondary)] hover:border-[var(--border)] hover:bg-[var(--bg-elevated)]'
                         }`}
                         style={{
@@ -213,14 +213,14 @@ export function AITeamNetwork({ embedded = false }: { embedded?: boolean }) {
 
             {/* Network Diagram */}
             <div
-                className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl border border-violet-500/15 bg-[var(--bg-primary)] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]"
+                className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl border border-white/10 bg-[var(--bg-primary)] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]"
             >
                 <div
                     className="pointer-events-none absolute inset-0 opacity-[0.5]"
                     aria-hidden
                     style={{
                         backgroundImage:
-                            'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(139,92,246,0.12), transparent 55%)',
+                            'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(255,255,255,0.07), transparent 55%)',
                     }}
                 />
                 {/* Grid Background */}
@@ -228,8 +228,8 @@ export function AITeamNetwork({ embedded = false }: { embedded?: boolean }) {
                     className="absolute inset-0 opacity-[0.04]"
                     style={{
                         backgroundImage: `
-                            linear-gradient(rgba(167,139,250,0.12) 1px, transparent 1px),
-                            linear-gradient(90deg, rgba(167,139,250,0.12) 1px, transparent 1px)
+                            linear-gradient(rgba(255,255,255,0.07) 1px, transparent 1px),
+                            linear-gradient(90deg, rgba(255,255,255,0.07) 1px, transparent 1px)
                         `,
                         backgroundSize: '40px 40px',
                     }}
@@ -267,7 +267,7 @@ export function AITeamNetwork({ embedded = false }: { embedded?: boolean }) {
                                     y1={`${member.y}%`}
                                     x2={`${conn.x}%`}
                                     y2={`${conn.y}%`}
-                                    stroke={isHighlighted ? member.color : 'rgba(167,139,250,0.12)'}
+                                    stroke={isHighlighted ? member.color : 'rgba(255,255,255,0.07)'}
                                     strokeWidth={isHighlighted ? 2 : 1}
                                     strokeDasharray={member.id === 'dexo' || connId === 'dexo' ? '0' : '4 4'}
                                     initial={{ pathLength: 0, opacity: 0 }}
@@ -311,13 +311,13 @@ export function AITeamNetwork({ embedded = false }: { embedded?: boolean }) {
                             <div
                                 className={`relative flex flex-col items-center gap-2 rounded-xl border p-3 transition-all ${
                                     isSelected
-                                        ? 'border-violet-400/35 shadow-[0_0_28px_-4px_rgba(139,92,246,0.35)]'
-                                        : 'border-[var(--border)] hover:border-violet-500/25'
+                                        ? 'border-white/10 shadow-[0_0_28px_-4px_rgba(255,255,255,0.07)]'
+                                        : 'border-[var(--border)] hover:border-white/10'
                                 }`}
                                 style={{
                                     background: isSelected
-                                        ? `linear-gradient(180deg, ${member.color}22, rgba(139,92,246,0.06))`
-                                        : 'linear-gradient(180deg, rgba(139,92,246,0.06), rgba(30,30,30,0.4))',
+                                        ? `linear-gradient(180deg, ${member.color}22, rgba(255,255,255,0.07))`
+                                        : 'linear-gradient(180deg, rgba(255,255,255,0.07), rgba(30,30,30,0.4))',
                                     boxShadow: isSelected ? `0 0 24px ${member.color}18` : undefined,
                                 }}
                             >
@@ -360,7 +360,7 @@ export function AITeamNetwork({ embedded = false }: { embedded?: boolean }) {
                     transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
                 >
                     <div
-                        className="h-24 w-24 rounded-full border border-dashed border-violet-500/25"
+                        className="h-24 w-24 rounded-full border border-dashed border-white/10"
                         style={{ borderRadius: '50%' }}
                     />
                 </motion.div>
@@ -373,7 +373,7 @@ export function AITeamNetwork({ embedded = false }: { embedded?: boolean }) {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        className="mt-4 rounded-xl border border-violet-500/18 bg-[var(--bg-card)]/90 p-4 shadow-[0_0_32px_-10px_rgba(139,92,246,0.2)]"
+                        className="mt-4 rounded-xl border border-white/10 bg-[var(--bg-card)]/90 p-4 shadow-[0_0_32px_-10px_rgba(255,255,255,0.07)]"
                     >
                         <div className="flex items-start justify-between">
                             <div className="flex items-center gap-3">
@@ -394,7 +394,7 @@ export function AITeamNetwork({ embedded = false }: { embedded?: boolean }) {
                             <button
                                 type="button"
                                 onClick={() => goToDesk(selectedData.id)}
-                                className="flex items-center gap-1.5 rounded-lg border border-violet-500/25 px-3 py-1.5 text-[11px] font-medium text-[var(--text-primary)] transition-colors hover:bg-violet-500/[0.12]"
+                                className="flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-[11px] font-medium text-[var(--text-primary)] transition-colors hover:bg-white/[0.05]"
                                 style={{ background: `${selectedData.color}12` }}
                             >
                                 Open Desk
@@ -420,7 +420,7 @@ export function AITeamNetwork({ embedded = false }: { embedded?: boolean }) {
                                             key={connId}
                                             type="button"
                                             onClick={() => setSelectedMember(connId)}
-                                            className="flex items-center gap-1.5 rounded-lg border border-[var(--border)] px-2 py-1 transition-colors hover:border-violet-500/25 hover:bg-violet-500/[0.06]"
+                                            className="flex items-center gap-1.5 rounded-lg border border-[var(--border)] px-2 py-1 transition-colors hover:border-white/10 hover:bg-white/[0.05]"
                                         >
                                             <span
                                                 className="h-1.5 w-1.5 rounded-full"
@@ -438,17 +438,17 @@ export function AITeamNetwork({ embedded = false }: { embedded?: boolean }) {
 
             {/* Network Stats */}
             <div className="mt-4 grid grid-cols-3 gap-3">
-                <div className="rounded-xl border border-violet-500/15 bg-[var(--bg-elevated)] p-3 text-center">
+                <div className="rounded-xl border border-white/10 bg-[var(--bg-elevated)] p-3 text-center">
                     <p className="text-lg font-semibold text-[var(--text-primary)]">{TEAM_MEMBERS.length}</p>
                     <p className="text-[10px] text-[var(--text-secondary)]">AI teammates</p>
                 </div>
-                <div className="rounded-xl border border-violet-500/15 bg-[var(--bg-elevated)] p-3 text-center">
+                <div className="rounded-xl border border-white/10 bg-[var(--bg-elevated)] p-3 text-center">
                     <p className="text-lg font-semibold text-[var(--text-primary)]">
                         {TEAM_MEMBERS.reduce((acc, m) => acc + m.connections.length, 0)}
                     </p>
                     <p className="text-[10px] text-[var(--text-secondary)]">Active links</p>
                 </div>
-                <div className="rounded-xl border border-violet-500/15 bg-[var(--bg-elevated)] p-3 text-center">
+                <div className="rounded-xl border border-white/10 bg-[var(--bg-elevated)] p-3 text-center">
                     <p className="text-lg font-semibold text-emerald-400/95">
                         {activeProject?.agentStaffSnapshot ? 'Synced' : 'Ready'}
                     </p>
@@ -458,3 +458,4 @@ export function AITeamNetwork({ embedded = false }: { embedded?: boolean }) {
         </div>
     );
 }
+

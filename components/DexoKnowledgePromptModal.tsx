@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -136,22 +136,22 @@ export function DexoKnowledgePromptModal() {
             aria-labelledby="dexo-gap-title"
         >
             <div
-                className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-[rgba(116,86,255,0.18)]"
+                className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-[rgba(255,255,255,0.07)]"
                 style={{
                     background: 'linear-gradient(160deg, #0d0b1a 0%, #09090f 100%)',
-                    boxShadow: '0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(116,86,255,0.08), inset 0 1px 0 rgba(255,255,255,0.04)',
+                    boxShadow: '0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.07), inset 0 1px 0 rgba(255,255,255,0.04)',
                 }}
             >
                 {/* Top accent line */}
-                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#7456ff]/60 to-transparent" aria-hidden />
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#f2f2f5]/60 to-transparent" aria-hidden />
 
-                {/* Avatar + question — speech-bubble layout */}
+                {/* Avatar + question â€” speech-bubble layout */}
                 <div className="flex gap-4 px-5 pt-5">
                     <DexoAvatar size="md" state="idle" pulse={false} className="mt-1 shrink-0" />
                     <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
                             <div>
-                                <span className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#7456ff]">Dexo</span>
+                                <span className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#f2f2f5]">Dexo</span>
                                 <span className="ml-2 font-sans text-[9px] font-semibold uppercase tracking-widest text-zinc-600">Co-Founder</span>
                             </div>
                             <button
@@ -164,7 +164,7 @@ export function DexoKnowledgePromptModal() {
                             </button>
                         </div>
                         {/* Speech bubble */}
-                        <div className="mt-2 rounded-2xl rounded-tl-sm border border-[rgba(116,86,255,0.12)] bg-[rgba(116,86,255,0.06)] px-4 py-3">
+                        <div className="mt-2 rounded-2xl rounded-tl-sm border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.07)] px-4 py-3">
                             <h2 id="dexo-gap-title" className="font-sans text-[15px] font-semibold leading-snug text-white">
                                 {currentGap.title}
                             </h2>
@@ -200,8 +200,8 @@ export function DexoKnowledgePromptModal() {
                             value={reply}
                             onChange={(e) => setReply(e.target.value)}
                             rows={4}
-                            placeholder="Share what you know — Dexo will save it to your venture record."
-                            className="w-full resize-y rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] px-4 py-3 font-sans text-[13px] leading-relaxed text-zinc-100 placeholder:text-zinc-600 focus:border-[rgba(116,86,255,0.35)] focus:outline-none focus:ring-1 focus:ring-[rgba(116,86,255,0.15)]"
+                            placeholder="Share what you know â€” Dexo will save it to your venture record."
+                            className="w-full resize-y rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] px-4 py-3 font-sans text-[13px] leading-relaxed text-zinc-100 placeholder:text-zinc-600 focus:border-[rgba(255,255,255,0.07)] focus:outline-none focus:ring-1 focus:ring-[rgba(255,255,255,0.07)]"
                         />
                     </label>
                     <div className="flex flex-wrap items-center justify-end gap-2 pt-1">
@@ -216,9 +216,9 @@ export function DexoKnowledgePromptModal() {
                             type="button"
                             disabled={saving || !reply.trim()}
                             onClick={() => void onSubmit()}
-                            className="rounded-xl bg-[#7456ff] px-5 py-2 font-sans text-[12px] font-semibold text-white shadow-[0_0_20px_rgba(116,86,255,0.35)] transition hover:bg-[#8a6fff] hover:shadow-[0_0_28px_rgba(116,86,255,0.5)] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
+                            className="rounded-xl bg-[#f2f2f5] px-5 py-2 font-sans text-[12px] font-semibold text-white shadow-[0_0_20px_rgba(255,255,255,0.07)] transition hover:bg-[#8a6fff] hover:shadow-[0_0_28px_rgba(255,255,255,0.07)] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
                         >
-                            {saving ? 'Saving…' : 'Save answer'}
+                            {saving ? 'Savingâ€¦' : 'Save answer'}
                         </button>
                     </div>
                 </div>
@@ -228,3 +228,4 @@ export function DexoKnowledgePromptModal() {
 
     return createPortal(portal, document.body);
 }
+

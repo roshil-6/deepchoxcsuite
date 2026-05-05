@@ -240,7 +240,7 @@ function DexoParticleMark({ state = 'idle' }: { state?: DmkState }) {
         state === 'thinking'  ? '245,158,11' :
         state === 'speaking'  ? '16,185,129' :
         state === 'listening' ? '244,63,94'  :
-        '139,92,246';
+        '148,163,184';
     const DOTS = [
         { a: 'dmk-a', d: '2.0s', dl: '0s',    x: '32%', y: '35%', r: 2.5 },
         { a: 'dmk-b', d: '2.7s', dl: '0.45s', x: '60%', y: '52%', r: 2   },
@@ -706,10 +706,10 @@ export function DexoRoom() {
                         <button
                             type="button"
                             onClick={() => setModePanelOpen(o => !o)}
-                            className="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-all"
-                            style={{ background: '#1c1b24', border: '1px solid rgba(255,255,255,0.09)', color: '#8c8c9e' }}
-                            onMouseEnter={(e) => { e.currentTarget.style.color = '#f2f2f5'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.16)'; }}
-                            onMouseLeave={(e) => { e.currentTarget.style.color = '#8c8c9e'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.09)'; }}
+                            className="flex items-center gap-1.5 text-[11px] font-medium transition-colors"
+                            style={{ color: '#5c5c6e', background: 'none', border: 'none' }}
+                            onMouseEnter={(e) => { e.currentTarget.style.color = '#8c8c9e'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.color = '#5c5c6e'; }}
                         >
                             <span className="text-xs leading-none">{activePriorityDef?.icon ?? '◎'}</span>
                             <span>{activePriorityDef?.label ?? 'Set focus'}</span>
@@ -821,60 +821,52 @@ export function DexoRoom() {
                     ) : null}
                     
                     {/* ── Tab row ── */}
-                    <div className="mb-6 flex items-center justify-between gap-2">
-                        <div
-                            className="flex items-center gap-1 rounded-full p-[3px]"
-                            style={{ background: '#19181f', border: '1px solid rgba(255,255,255,0.07)' }}
-                        >
-                            {/* Chat tab */}
+                    <div className="mb-6 flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-6">
                             <button
                                 type="button"
                                 onClick={() => setView('chat')}
-                                className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-all duration-150"
-                                style={view === 'chat'
-                                    ? { background: '#f2f2f5', color: '#0d0d10' }
-                                    : { color: '#8c8c9e' }}
+                                className="text-[13px] font-medium transition-colors duration-150"
+                                style={{ color: view === 'chat' ? '#f2f2f5' : '#5c5c6e' }}
+                                onMouseEnter={(e) => { if (view !== 'chat') e.currentTarget.style.color = '#8c8c9e'; }}
+                                onMouseLeave={(e) => { if (view !== 'chat') e.currentTarget.style.color = '#5c5c6e'; }}
                             >
-                                <MessageSquarePlus className="h-3 w-3" />
                                 Chat
                             </button>
-                            {/* Overview tab — only when there's a report */}
                             {currentReport && (
                                 <button
                                     type="button"
                                     onClick={() => { overviewNudgeShownRef.current = true; setView('overview'); }}
-                                    className="relative flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-all duration-150"
-                                    style={view === 'overview'
-                                        ? { background: '#f2f2f5', color: '#0d0d10' }
-                                        : { color: '#8c8c9e' }}
+                                    className="relative text-[13px] font-medium transition-colors duration-150"
+                                    style={{ color: view === 'overview' ? '#f2f2f5' : '#5c5c6e' }}
+                                    onMouseEnter={(e) => { if (view !== 'overview') e.currentTarget.style.color = '#8c8c9e'; }}
+                                    onMouseLeave={(e) => { if (view !== 'overview') e.currentTarget.style.color = '#5c5c6e'; }}
                                 >
-                                    <Activity className="h-3 w-3" />
                                     Overview
                                     {!overviewNudgeShownRef.current && view !== 'overview' && (
-                                        <span className="absolute right-1.5 top-1 h-1.5 w-1.5 rounded-full bg-blue-400" />
+                                        <span className="absolute -right-2 -top-1 h-1 w-1 rounded-full bg-white/40" />
                                     )}
                                 </button>
                             )}
-                            {/* Research tab */}
                             <button
                                 type="button"
                                 onClick={() => setView('daily')}
-                                className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-all duration-150"
-                                style={view === 'daily'
-                                    ? { background: '#f2f2f5', color: '#0d0d10' }
-                                    : { color: '#8c8c9e' }}
+                                className="text-[13px] font-medium transition-colors duration-150"
+                                style={{ color: view === 'daily' ? '#f2f2f5' : '#5c5c6e' }}
+                                onMouseEnter={(e) => { if (view !== 'daily') e.currentTarget.style.color = '#8c8c9e'; }}
+                                onMouseLeave={(e) => { if (view !== 'daily') e.currentTarget.style.color = '#5c5c6e'; }}
                             >
-                                <BarChart2 className="h-3 w-3" />
                                 Research
                             </button>
-                            {/* New (reset) */}
                             {view === 'chat' && (
                                 <button
                                     type="button"
                                     onClick={resetConversation}
                                     disabled={loading || !activeProject?.id}
-                                    className="rounded-full px-3 py-1.5 text-[12px] font-medium transition-all duration-150 disabled:opacity-25"
-                                    style={{ color: '#5c5c6e' }}
+                                    className="text-[13px] transition-colors duration-150 disabled:opacity-25"
+                                    style={{ color: '#3d3d4e' }}
+                                    onMouseEnter={(e) => { e.currentTarget.style.color = '#5c5c6e'; }}
+                                    onMouseLeave={(e) => { e.currentTarget.style.color = '#3d3d4e'; }}
                                 >
                                     New
                                 </button>
@@ -898,7 +890,7 @@ export function DexoRoom() {
                                 <div className="mb-2 flex items-center gap-2">
                                     <span
                                         className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-[10px] font-bold"
-                                        style={{ background: 'rgba(139,92,246,0.13)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.22)' }}
+                                        style={{ background: 'rgba(255,255,255,0.06)', color: '#f2f2f5', border: '1px solid rgba(255,255,255,0.12)' }}
                                     >D</span>
                                     <span className="text-[10px] uppercase tracking-[0.2em] text-white/22">Venture Overview · updates as you chat</span>
                                 </div>

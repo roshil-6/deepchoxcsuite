@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { ExternalLink, Globe, RefreshCw, Sparkles } from 'lucide-react';
@@ -100,7 +100,7 @@ export function PortfolioDailyIntelSection({
             </h2>
           </div>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--text-secondary)]">
-            Dexo pulls fresh web context via Tavily for each workspace—headlines, synthesis, and original sources. Open a
+            Dexo pulls fresh web context via Tavily for each workspaceâ€”headlines, synthesis, and original sources. Open a
             venture for the full daily brief tab.
           </p>
         </div>
@@ -119,11 +119,11 @@ export function PortfolioDailyIntelSection({
         {cards.map(({ project, report, error }) => {
           const sources = report ? parseSources(report.sourcesJson) : [];
           const summaryExcerpt =
-            report?.summary?.trim() && report.summary.length > 220 ? `${report.summary.slice(0, 217)}…` : report?.summary;
+            report?.summary?.trim() && report.summary.length > 220 ? `${report.summary.slice(0, 217)}â€¦` : report?.summary;
           return (
             <article
               key={project.id ?? project.name}
-              className="group relative overflow-hidden rounded-2xl border border-white/[0.09] bg-gradient-to-br from-[rgba(116,86,255,0.12)] via-[rgba(255,255,255,0.03)] to-[rgba(6,182,212,0.06)] p-[1px] shadow-[0_20px_50px_rgba(0,0,0,0.35)]"
+              className="group relative overflow-hidden rounded-2xl border border-white/[0.09] bg-gradient-to-br from-[rgba(255,255,255,0.07)] via-[rgba(255,255,255,0.03)] to-[rgba(6,182,212,0.06)] p-[1px] shadow-[0_20px_50px_rgba(0,0,0,0.35)]"
             >
               <div className="h-full rounded-[0.9rem] bg-[rgba(12,12,14,0.78)] p-4 backdrop-blur-xl">
                 <div className="flex items-start justify-between gap-2">
@@ -137,11 +137,11 @@ export function PortfolioDailyIntelSection({
                       </h3>
                     ) : (
                       <h3 className="mt-1 text-sm font-medium text-[var(--text-muted)]">
-                        {error ?? 'No brief yet — run Dexo daily pulse'}
+                        {error ?? 'No brief yet â€” run Dexo daily pulse'}
                       </h3>
                     )}
                   </div>
-                  <Sparkles className="h-4 w-4 shrink-0 text-violet-300/50" aria-hidden />
+                  <Sparkles className="h-4 w-4 shrink-0 text-white/55" aria-hidden />
                 </div>
 
                 {report ? (
@@ -169,7 +169,7 @@ export function PortfolioDailyIntelSection({
                             </a>
                             {s.snippet ? (
                               <p className="mt-0.5 pl-[1.125rem] text-[10px] leading-snug text-[var(--text-tertiary)]">
-                                {s.snippet.length > 120 ? `${s.snippet.slice(0, 117)}…` : s.snippet}
+                                {s.snippet.length > 120 ? `${s.snippet.slice(0, 117)}â€¦` : s.snippet}
                               </p>
                             ) : null}
                           </li>
@@ -179,7 +179,7 @@ export function PortfolioDailyIntelSection({
                       <p className="mt-3 text-[10px] text-[var(--text-tertiary)]">Sources processing or Tavily off.</p>
                     )}
                     <p className="mt-2 text-[10px] text-[var(--text-muted)]">
-                      {report.reportDay} · updated {new Date(report.updatedAt).toLocaleString()}
+                      {report.reportDay} Â· updated {new Date(report.updatedAt).toLocaleString()}
                     </p>
                   </>
                 ) : null}
@@ -188,7 +188,7 @@ export function PortfolioDailyIntelSection({
                   <button
                     type="button"
                     onClick={() => onOpenVenture(project)}
-                    className="mt-4 w-full rounded-lg border border-white/[0.08] py-2 text-[11px] font-medium text-[var(--text-secondary)] transition group-hover:border-violet-400/25 group-hover:text-[var(--text-primary)]"
+                    className="mt-4 w-full rounded-lg border border-white/[0.08] py-2 text-[11px] font-medium text-[var(--text-secondary)] transition group-hover:border-white/10 group-hover:text-[var(--text-primary)]"
                   >
                     Open venture
                   </button>
@@ -201,3 +201,4 @@ export function PortfolioDailyIntelSection({
     </section>
   );
 }
+

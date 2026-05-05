@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useOffice } from '@/lib/OfficeContext';
@@ -75,39 +75,39 @@ const ACTION_LABELS: Record<RecentAction['category'], string> = {
 const PM_FOCUS: Record<MainTool, { title: string; question: string; prompt: string }> = {
     board: {
         title: 'Execution board',
-        question: 'What’s on the board across backlog → done?',
+        question: 'Whatâ€™s on the board across backlog â†’ done?',
         prompt:
-            'PM desk · execution board. Use only this venture’s persisted `kanban` array (tasks: id, title, status ∈ todo | in_progress | next | completed, timestamp). Do not invent cards or statuses. If empty, say it is empty. Summarize workload by column and name concrete next moves from listed titles only.',
+            'PM desk Â· execution board. Use only this ventureâ€™s persisted `kanban` array (tasks: id, title, status âˆˆ todo | in_progress | next | completed, timestamp). Do not invent cards or statuses. If empty, say it is empty. Summarize workload by column and name concrete next moves from listed titles only.',
     },
     roadmap: {
         title: 'Roadmap brief',
         question: 'What does the saved roadmap narrative say?',
         prompt:
-            'PM desk · roadmap brief. Ground truth: `productPlan` serialized doc — fields `roadmapText` (string) and `intent` (string). If missing or whitespace-only, say nothing is saved. Do not infer roadmap from CEO strategy unless the user asks to compare; then label strategy as `strategy` field and roadmap as `productPlan.roadmapText` separately.',
+            'PM desk Â· roadmap brief. Ground truth: `productPlan` serialized doc â€” fields `roadmapText` (string) and `intent` (string). If missing or whitespace-only, say nothing is saved. Do not infer roadmap from CEO strategy unless the user asks to compare; then label strategy as `strategy` field and roadmap as `productPlan.roadmapText` separately.',
     },
     war: {
         title: 'War room',
-        question: 'What’s on the war room whiteboard?',
+        question: 'Whatâ€™s on the war room whiteboard?',
         prompt:
-            'PM desk · war room. Ground truth: `productPlan.warRoom` (sticky notes / sketch metadata stored in the product plan JSON). Describe only stickies and content that exist in that structure. If warRoom is empty or absent, say so. Do not fabricate workshop output.',
+            'PM desk Â· war room. Ground truth: `productPlan.warRoom` (sticky notes / sketch metadata stored in the product plan JSON). Describe only stickies and content that exist in that structure. If warRoom is empty or absent, say so. Do not fabricate workshop output.',
     },
     recent: {
         title: 'Recent actions',
         question: 'What recent actions are logged?',
         prompt:
-            'PM desk · recent actions. Ground truth: `productPlan.recentActions` — list of { id, category, title, detail, ts }. Newest-first in UI is typical; use the stored entries only. If the list is empty, state that. Do not invent ships, decisions, or meetings.',
+            'PM desk Â· recent actions. Ground truth: `productPlan.recentActions` â€” list of { id, category, title, detail, ts }. Newest-first in UI is typical; use the stored entries only. If the list is empty, state that. Do not invent ships, decisions, or meetings.',
     },
     planning: {
         title: 'Planning room',
         question: 'How does the strategy map line up with dated phases?',
         prompt:
-            'PM desk · planning room. Two read-only inputs: (1) CEO strategy flow from `strategy` via parseStrategy → flow nodes/edges shown here; (2) phase timeline from the same strategy doc (`phases`). Describe alignment or gaps using only those structures. If flow or phases are empty, say which is missing. Do not invent milestones.',
+            'PM desk Â· planning room. Two read-only inputs: (1) CEO strategy flow from `strategy` via parseStrategy â†’ flow nodes/edges shown here; (2) phase timeline from the same strategy doc (`phases`). Describe alignment or gaps using only those structures. If flow or phases are empty, say which is missing. Do not invent milestones.',
     },
     docs: {
         title: 'Desk documents',
         question: 'Which documents are on file for this venture?',
         prompt:
-            'PM desk · desk documents. Ground truth: top-level `deskDocuments` array on the venture — { id, title, category, body, createdAt }. Summarize titles/categories/dates from stored rows only. If empty, say no documents saved. Do not invent clients or meetings.',
+            'PM desk Â· desk documents. Ground truth: top-level `deskDocuments` array on the venture â€” { id, title, category, body, createdAt }. Summarize titles/categories/dates from stored rows only. If empty, say no documents saved. Do not invent clients or meetings.',
     },
 };
 
@@ -282,13 +282,13 @@ export function ProductKanban() {
             case 'board':
                 return (
                     <div className="flex min-h-[320px] flex-col">
-                        <p className="mb-2 text-[11px] text-brand-muted">Add work below — four columns: backlog → done.</p>
+                        <p className="mb-2 text-[11px] text-brand-muted">Add work below â€” four columns: backlog â†’ done.</p>
                         <div className="mb-3 flex flex-wrap items-center gap-2 border-b border-brand-border/50 pb-3">
                             <input
                                 value={newTitle}
                                 onChange={(e) => setNewTitle(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTask())}
-                                placeholder="New backlog item…"
+                                placeholder="New backlog itemâ€¦"
                                 className="min-w-[180px] flex-1 rounded-md border border-brand-border bg-brand-input px-3 py-2 text-sm text-brand-text placeholder:text-brand-muted"
                             />
                             <button
@@ -363,7 +363,7 @@ export function ProductKanban() {
                     <textarea
                         value={pd.roadmapText || ''}
                         onChange={(e) => setPd({ ...pd, roadmapText: e.target.value })}
-                        placeholder="Themes, bets, outcomes, and how you measure success…"
+                        placeholder="Themes, bets, outcomes, and how you measure successâ€¦"
                         rows={18}
                         className="w-full rounded-lg border border-brand-border bg-brand-input p-4 text-[15px] leading-relaxed text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand-teal/30"
                     />
@@ -435,13 +435,13 @@ export function ProductKanban() {
                 );
             case 'planning':
                 return (
-                    <div className="relative overflow-hidden rounded-2xl border border-violet-500/22 bg-[var(--bg-card)] shadow-[0_0_40px_-12px_rgba(139,92,246,0.22)]">
+                    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[var(--bg-card)] shadow-none">
                         <div
-                            className="pointer-events-none absolute -top-16 left-1/2 h-40 w-[min(100%,28rem)] -translate-x-1/2 rounded-full bg-violet-500/18 blur-3xl"
+                            className="pointer-events-none absolute -top-16 left-1/2 h-40 w-[min(100%,28rem)] -translate-x-1/2 rounded-full bg-white/[0.05] blur-3xl"
                             aria-hidden
                         />
                         <div className="relative border-b border-[var(--border)] px-4 py-3 sm:px-5">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-violet-300/85">Planning room</p>
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/55">Planning room</p>
                             <p className="mt-1.5 max-w-2xl text-[12px] leading-relaxed text-[var(--text-secondary)]">
                                 Scroll in <span className="font-medium text-[var(--text-primary)]">one column</span>: the CEO strategy map
                                 (read-only here), then the phase horizons you edit. Keep dates honest against what the map says you are
@@ -450,13 +450,13 @@ export function ProductKanban() {
                         </div>
                         <div className="relative bg-[var(--bg-elevated)]/20">
                             <section className="border-b border-[var(--border)] px-4 py-4 sm:px-5">
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-violet-300/80">
-                                    Strategy map · mirror from CEO desk
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/55">
+                                    Strategy map Â· mirror from CEO desk
                                 </p>
                                 <p className="mt-1 text-[10px] text-[var(--text-secondary)]">
                                     {ceoFlow.nodes.length > 0
-                                        ? `${ceoFlow.nodes.length} steps · ${ceoFlow.edges.length} links · edit the map on Strategy → Visualise your plan`
-                                        : 'Nothing mirrored yet — map the plan on the strategy desk first.'}
+                                        ? `${ceoFlow.nodes.length} steps Â· ${ceoFlow.edges.length} links Â· edit the map on Strategy â†’ Visualise your plan`
+                                        : 'Nothing mirrored yet â€” map the plan on the strategy desk first.'}
                                 </p>
                                 {ceoFlow.nodes.length === 0 ? (
                                     <p className="mt-4 rounded-xl border border-dashed border-[var(--border)] bg-[var(--bg-card)]/60 px-4 py-10 text-center text-[13px] leading-relaxed text-[var(--text-secondary)]">
@@ -475,16 +475,16 @@ export function ProductKanban() {
                                 )}
                             </section>
                             <div
-                                className="h-px bg-gradient-to-r from-transparent via-violet-400/25 to-transparent"
+                                className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"
                                 aria-hidden
                             />
                             <section className="min-h-0 overflow-hidden">
                                 <div className="border-b border-[var(--border)] px-4 py-2.5 sm:px-5">
-                                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-violet-300/80">
-                                        Phase horizons · editable on this venture
+                                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/55">
+                                        Phase horizons Â· editable on this venture
                                     </p>
                                     <p className="mt-0.5 text-[10px] text-[var(--text-secondary)]">
-                                        {strategyPhases.length} phase{strategyPhases.length === 1 ? '' : 's'} saved · align dates with the
+                                        {strategyPhases.length} phase{strategyPhases.length === 1 ? '' : 's'} saved Â· align dates with the
                                         map above
                                     </p>
                                 </div>
@@ -583,18 +583,18 @@ export function ProductKanban() {
                         </>
                     ) : (
                         <div className="space-y-3">
-                            <div className="relative overflow-hidden rounded-2xl border border-violet-500/20 bg-[var(--bg-card)] px-4 py-3 shadow-[0_0_32px_-10px_rgba(139,92,246,0.2)] sm:px-5 sm:py-4">
+                            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[var(--bg-card)] px-4 py-3 shadow-none sm:px-5 sm:py-4">
                                 <div
-                                    className="pointer-events-none absolute -right-8 -top-12 h-28 w-40 rounded-full bg-violet-500/12 blur-2xl"
+                                    className="pointer-events-none absolute -right-8 -top-12 h-28 w-40 rounded-full bg-white/[0.05] blur-2xl"
                                     aria-hidden
                                 />
                                 <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-violet-300/90">
-                                            Product &amp; delivery · pinned intent
+                                        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/55">
+                                            Product &amp; delivery Â· pinned intent
                                         </p>
                                         <p className="mt-1 text-[11px] leading-snug text-[var(--text-secondary)]">
-                                            One strip for what you ship next — not a second page. Blocks below open focused threads; this stays visible.
+                                            One strip for what you ship next â€” not a second page. Blocks below open focused threads; this stays visible.
                                         </p>
                                         <textarea
                                             value={pd.intent ?? ''}
@@ -602,13 +602,13 @@ export function ProductKanban() {
                                             onBlur={(e) => persistProduct({ ...pd, intent: e.target.value })}
                                             placeholder={intent}
                                             rows={2}
-                                            className="mt-2 w-full resize-none rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] p-3 text-[13px] leading-relaxed text-[var(--text-primary)] placeholder:text-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-violet)]/25"
+                                            className="mt-2 w-full resize-none rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] p-3 text-[13px] leading-relaxed text-[var(--text-primary)] placeholder:text-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-white/10"
                                         />
                                     </div>
                                     <button
                                         type="button"
                                         onClick={() => persistProduct(pd)}
-                                        className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-2.5 text-xs font-semibold text-[var(--text-primary)] transition hover:border-violet-500/35 hover:bg-violet-500/[0.08] sm:w-auto"
+                                        className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-2.5 text-xs font-semibold text-[var(--text-primary)] transition hover:border-white/10 hover:bg-white/[0.05] sm:w-auto"
                                     >
                                         {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
                                         Save product desk
@@ -626,7 +626,7 @@ export function ProductKanban() {
                                 <div className="max-w-[min(100%,26rem)] rounded-2xl rounded-bl-md border border-[var(--border)] bg-[var(--bg-elevated)]/80 px-3.5 py-2.5 text-left">
                                     <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">How this desk works</p>
                                     <p className="mt-1 text-[12px] leading-relaxed text-[var(--text-primary)]">
-                                        Pick a topic — each opens like a thread. Chat at the bottom follows that block until you go back.
+                                        Pick a topic â€” each opens like a thread. Chat at the bottom follows that block until you go back.
                                     </p>
                                 </div>
                             </div>
@@ -657,3 +657,4 @@ export function ProductKanban() {
         </div>
     );
 }
+

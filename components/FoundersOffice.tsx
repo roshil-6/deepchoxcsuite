@@ -105,8 +105,8 @@ export function FoundersOffice() {
                     onClick={() => toggleDeepWork(!deepWorkMode)}
                     className={`flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all ${
                         deepWorkMode
-                            ? 'border-violet-500/40 bg-violet-500/10 text-violet-300'
-                            : 'border-zinc-800 bg-zinc-900 text-zinc-400 hover:border-indigo-500/40 hover:text-indigo-300'
+                            ? 'border-white/20 bg-white/08 text-white/80'
+                            : 'border-white/08 bg-transparent text-zinc-400 hover:border-white/16 hover:text-zinc-200'
                     }`}
                 >
                     <Zap className="h-3.5 w-3.5" />
@@ -212,7 +212,7 @@ export function FoundersOffice() {
                         ].map((item, i) => (
                             <div key={i} className="flex items-center gap-3 group">
                                 <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-                                    item.type === 'alert' ? 'bg-rose-500' : item.type === 'success' ? 'bg-violet-500' : 'bg-indigo-500'
+                                    item.type === 'alert' ? 'bg-rose-500' : item.type === 'success' ? 'bg-white/50' : 'bg-white/30'
                                 }`} />
                                 <div className="min-w-0 flex-1">
                                     <p className="truncate text-[12px] font-medium text-zinc-200">{item.title}</p>

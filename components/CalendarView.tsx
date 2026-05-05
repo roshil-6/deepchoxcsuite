@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useOffice } from '@/lib/OfficeContext';
@@ -51,7 +51,7 @@ export function CalendarView() {
         [activeProject, updateStrategy]
     );
 
-    /** Calendar is venture-specific — only show events for the active venture. */
+    /** Calendar is venture-specific â€” only show events for the active venture. */
     const allEvents = useMemo(() => {
         if (!activeProject) return [];
         return (activeProject.events || []).map((e) => ({
@@ -162,7 +162,7 @@ export function CalendarView() {
         saveKanban(kanbanTasks.filter((t) => t.id !== id));
     };
 
-    /** Outline-led column accents (aligned with suite theme — no heavy tinted fills). */
+    /** Outline-led column accents (aligned with suite theme â€” no heavy tinted fills). */
     const columns = [
         { id: 'todo' as const, title: 'To do', bar: 'border-t-brand-border' },
         { id: 'in_progress' as const, title: 'In progress', bar: 'border-t-brand-teal/70' },
@@ -184,7 +184,7 @@ export function CalendarView() {
                     <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-brand-muted">
                         {section === 'schedule'
                             ? 'Month view and venture task board. Switch to Strategy phases to edit roadmap horizons and dates.'
-                            : 'Strategy phases tie to your venture strategy — same data as under Research strategy and direction. Calendar events stay under Schedule.'}
+                            : 'Strategy phases tie to your venture strategy â€” same data as under Research strategy and direction. Calendar events stay under Schedule.'}
                     </p>
                     {activeProject && !activeProject.id && section === 'schedule' && (
                         <p className="mt-1 max-w-xl text-[12px] text-amber-400/90">
@@ -280,7 +280,7 @@ export function CalendarView() {
                 )
             ) : null}
 
-            {/* Month grid — own scroll region; does not share height with Kanban */}
+            {/* Month grid â€” own scroll region; does not share height with Kanban */}
             {section === 'schedule' ? (
             <section className="shrink-0 flex flex-col rounded-xl border border-brand-border bg-brand-panel/70">
                 <div className="border-b border-brand-border px-3 py-2 sm:px-4">
@@ -317,7 +317,7 @@ export function CalendarView() {
                                     aria-current={isToday ? 'date' : undefined}
                                     className={`group relative flex min-h-[4.5rem] flex-col rounded-lg border p-1.5 transition-colors sm:min-h-[5rem] sm:p-2 ${
                                         isToday
-                                            ? 'border-brand-teal/55 bg-brand-teal/[0.12] shadow-[inset_0_0_0_1px_rgba(116,86,255,0.25)] hover:border-brand-teal/70 hover:bg-brand-teal/[0.16]'
+                                            ? 'border-brand-teal/55 bg-brand-teal/[0.12] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.07)] hover:border-brand-teal/70 hover:bg-brand-teal/[0.16]'
                                             : 'border-brand-border bg-brand-bg/80 hover:border-brand-teal/40 hover:bg-brand-input/30'
                                     }`}
                                 >
@@ -367,12 +367,12 @@ export function CalendarView() {
             </section>
             ) : null}
 
-            {/* Task board — fills remaining height; never overlays the calendar */}
+            {/* Task board â€” fills remaining height; never overlays the calendar */}
             {section === 'schedule' ? (
             <section className="flex shrink-0 flex-col gap-2 pb-4">
                 <div className="flex shrink-0 items-baseline justify-between gap-2">
                     <h2 className="text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-muted">Task board</h2>
-                    <span className="text-[10px] text-brand-muted">Venture kanban · {activeProject?.name ?? 'No venture'}</span>
+                    <span className="text-[10px] text-brand-muted">Venture kanban Â· {activeProject?.name ?? 'No venture'}</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
                     {columns.map((col) => (
@@ -479,7 +479,7 @@ export function CalendarView() {
                                     autoFocus
                                 />
                                 <p className="mt-1.5 text-[11px] text-brand-muted">
-                                    Type a title above — Save stays disabled until the field is not empty.
+                                    Type a title above â€” Save stays disabled until the field is not empty.
                                 </p>
                             </div>
 
@@ -529,3 +529,4 @@ export function CalendarView() {
         </div>
     );
 }
+

@@ -1,100 +1,96 @@
 'use client';
 
-import React from 'react';
-import Image from 'next/image';
+/**
+ * DexoAvatar — now renders the particle mark at any size.
+ * No photo, no glass, no glows. Pure animated dot cluster.
+ */
+
+import React, { useEffect } from 'react';
 
 export type AvatarState = 'idle' | 'thinking' | 'speaking' | 'listening';
-export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+export type AvatarSize  = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
-const SIZES: Record<AvatarSize, { px: number; cls: string }> = {
-    xs:  { px: 24,  cls: 'h-6 w-6'   },
-    sm:  { px: 32,  cls: 'h-8 w-8'   },
-    md:  { px: 48,  cls: 'h-12 w-12' },
-    lg:  { px: 80,  cls: 'h-20 w-20' },
-    xl:  { px: 112, cls: 'h-28 w-28' },
+const SIZE_PX: Record<AvatarSize, number> = {
+    xs: 18,
+    sm: 26,
+    md: 38,
+    lg: 56,
+    xl: 72,
 };
 
-const STATE_RING: Record<AvatarState, string> = {
-    idle:      'ring-[rgba(116,86,255,0.35)]  shadow-[0_0_18px_rgba(116,86,255,0.18)]',
-    thinking:  'ring-[rgba(245,158,11,0.45)]  shadow-[0_0_18px_rgba(245,158,11,0.2)]',
-    speaking:  'ring-[rgba(16,185,129,0.5)]   shadow-[0_0_22px_rgba(16,185,129,0.25)]',
-    listening: 'ring-[rgba(244,63,94,0.5)]    shadow-[0_0_22px_rgba(244,63,94,0.25)]',
+const STATE_RGB: Record<AvatarState, string> = {
+    idle:      '148,163,184',   // slate
+    thinking:  '245,158,11',    // amber
+    speaking:  '16,185,129',    // emerald
+    listening: '244,63,94',     // rose
 };
 
-const STATE_GLOW: Record<AvatarState, string> = {
-    idle:      'bg-[rgba(116,86,255,0.12)]',
-    thinking:  'bg-[rgba(245,158,11,0.1)]',
-    speaking:  'bg-[rgba(16,185,129,0.12)]',
-    listening: 'bg-[rgba(244,63,94,0.1)]',
-};
+// Five floating dots — positions as % of container
+const DOTS = [
+    { anim: 'dav-a', dur: '2.0s', delay: '0s',    x: '30%', y: '33%', scale: 0.26 },
+    { anim: 'dav-b', dur: '2.7s', delay: '0.45s', x: '58%', y: '50%', scale: 0.20 },
+    { anim: 'dav-c', dur: '2.3s', delay: '0.8s',  x: '44%', y: '63%', scale: 0.16 },
+    { anim: 'dav-d', dur: '2.9s', delay: '0.25s', x: '55%', y: '26%', scale: 0.16 },
+    { anim: 'dav-e', dur: '1.8s', delay: '1.05s', x: '24%', y: '55%', scale: 0.16 },
+];
 
-interface DexoAvatarProps {
-    state?: AvatarState;
-    size?: AvatarSize;
-    className?: string;
-    /** Pulse animation for active states */
-    pulse?: boolean;
+const CSS = `
+@keyframes dav-a{0%,100%{transform:translate(0,0) scale(1);opacity:.45}50%{transform:translate(5px,-5px) scale(1.3);opacity:1}}
+@keyframes dav-b{0%,100%{transform:translate(0,0) scale(1);opacity:.45}50%{transform:translate(-5px,4px) scale(1.3);opacity:1}}
+@keyframes dav-c{0%,100%{transform:translate(0,0) scale(1);opacity:.4} 50%{transform:translate(4px,5px)  scale(1.2);opacity:.95}}
+@keyframes dav-d{0%,100%{transform:translate(0,0) scale(1);opacity:.35}50%{transform:translate(-4px,-5px) scale(1.15);opacity:.85}}
+@keyframes dav-e{0%,100%{transform:translate(0,0) scale(1);opacity:.3} 50%{transform:translate(3px,3px)  scale(1.1);opacity:.7}}
+`;
+
+let injected = false;
+function injectCss() {
+    if (injected || typeof document === 'undefined') return;
+    const el = document.createElement('style');
+    el.textContent = CSS;
+    document.head.appendChild(el);
+    injected = true;
 }
 
-/**
- * Dexo's human-feel illustrated avatar.
- * Drop in anywhere — it reacts to the current AI state with a colored ring and ambient glow.
- *
- * Requires public/dexo-avatar.jpg
- *
- * xs / sm  → tight circle (chat bubbles, header dots)
- * md / lg / xl → rounded-2xl card so the full illustration is visible naturally.
- *
- * mix-blend-mode: multiply makes the white JPG background disappear on the dark UI.
- */
 export function DexoAvatar({
-    state = 'idle',
-    size = 'md',
+    state    = 'idle',
+    size     = 'md',
     className = '',
-    pulse = true,
-}: DexoAvatarProps) {
-    const { px, cls } = SIZES[size];
-    const ring = STATE_RING[state];
-    const glow = STATE_GLOW[state];
-    const shouldPulse = pulse && (state === 'listening' || state === 'thinking');
+    pulse    = true,         // kept for API compat — ignored (animation is always on)
+}: {
+    state?:     AvatarState;
+    size?:      AvatarSize;
+    className?: string;
+    pulse?:     boolean;
+}) {
+    useEffect(() => { injectCss(); }, []);
 
-    // Small sizes clip to a circle (for chat bubble slots).
-    // Larger sizes use a soft rounded-2xl card to show the full illustration.
-    const isSmall = size === 'xs' || size === 'sm';
-    const frameRadius = isSmall ? 'rounded-full' : 'rounded-2xl';
+    const px  = SIZE_PX[size];
+    const rgb = STATE_RGB[state];
 
     return (
-        <div className={`relative shrink-0 ${cls} ${className}`}>
-            {/* Soft ambient halo behind the image */}
-            <div
-                className={`pointer-events-none absolute -inset-2 rounded-full blur-xl opacity-70 transition-colors duration-500 ${glow} ${shouldPulse ? 'animate-pulse' : ''}`}
-                aria-hidden
-            />
-            {/* Avatar frame */}
-            <div
-                className={`relative overflow-hidden bg-zinc-100 ring-2 transition-all duration-500 ${frameRadius} ${ring}`}
-                style={{ width: px, height: px }}
-            >
-                <Image
-                    src="/dexo-avatar.jpg"
-                    alt="Dexo — your AI co-founder"
-                    width={px}
-                    height={px}
-                    className="h-full w-full object-cover object-top"
-                    priority
-                />
-            </div>
-            {/* State dot — bottom-right corner */}
-            {state !== 'idle' && (
+        <div
+            className={`relative shrink-0 overflow-hidden rounded-full ${className}`}
+            style={{
+                width:      px,
+                height:     px,
+                background: `rgba(${rgb},0.08)`,
+                border:     `1px solid rgba(${rgb},0.22)`,
+            }}
+        >
+            {DOTS.map((d, i) => (
                 <span
-                    className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-zinc-100 ${
-                        state === 'thinking'  ? 'bg-amber-400 animate-pulse' :
-                        state === 'speaking'  ? 'bg-emerald-400' :
-                        /* listening */         'bg-rose-500 animate-pulse'
-                    }`}
-                    aria-hidden
+                    key={i}
+                    className="absolute rounded-full"
+                    style={{
+                        width:     px * d.scale,
+                        height:    px * d.scale,
+                        left:      d.x,
+                        top:       d.y,
+                        background:`rgba(${rgb},0.9)`,
+                        animation: `${d.anim} ${d.dur} ${d.delay} ease-in-out infinite`,
+                    }}
                 />
-            )}
+            ))}
         </div>
     );
 }

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -236,7 +236,7 @@ ${fileContext}
       <div className="absolute top-4 left-0 right-0 z-20 px-4 flex justify-center">
         <header className="flex h-14 w-full min-w-[320px] max-w-4xl items-center justify-between rounded-full border border-[var(--border)] bg-[var(--bg-card)]/94 px-6 shadow-[var(--shadow-soft)] backdrop-blur-xl">
           <div className="flex items-center gap-4">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[rgba(116,86,255,0.18)] bg-[var(--accent-soft)] text-[var(--accent)]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[rgba(255,255,255,0.07)] bg-[var(--accent-soft)] text-[var(--accent)]">
               <Bot className="w-4 h-4" />
             </div>
             <div>
@@ -277,7 +277,7 @@ ${fileContext}
             <div key={idx} className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''} animate-in fade-in slide-in-from-bottom-2 duration-300 group`}>
               {/* Avatar */}
               <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border shadow-sm ${msg.role === 'user'
-                ? 'border-[rgba(116,86,255,0.18)] bg-[var(--accent-soft)] text-[var(--accent)]'
+                ? 'border-[rgba(255,255,255,0.07)] bg-[var(--accent-soft)] text-[var(--accent)]'
                 : 'border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-muted)]'
                 }`}>
                 {msg.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
@@ -286,8 +286,8 @@ ${fileContext}
               {/* Bubble */}
               <div className={`flex flex-col max-w-[85%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                 <div className={`rounded-3xl border px-6 py-4 text-sm font-medium leading-relaxed shadow-sm backdrop-blur-sm transition-all ${msg.role === 'user'
-                  ? 'rounded-tr-sm border-[rgba(116,86,255,0.18)] bg-[var(--accent-soft)] text-[var(--text-primary)] hover:border-[rgba(116,86,255,0.26)]'
-                  : 'rounded-tl-sm border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:border-[rgba(116,86,255,0.16)]'
+                  ? 'rounded-tr-sm border-[rgba(255,255,255,0.07)] bg-[var(--accent-soft)] text-[var(--text-primary)] hover:border-[rgba(255,255,255,0.07)]'
+                  : 'rounded-tl-sm border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:border-[rgba(255,255,255,0.07)]'
                   }`}>
                   <ReactMarkdown components={{
                     code: ({ node, inline, className, children, ...props }: any) => (
@@ -329,7 +329,7 @@ ${fileContext}
 
       {/* Input Area - Floating Capsule */}
       <div className="absolute bottom-6 left-0 right-0 px-4 flex justify-center z-20">
-        <div className="flex w-full max-w-3xl items-end gap-2 rounded-[2rem] border border-[var(--border)] bg-[var(--bg-card)]/95 p-2 shadow-[var(--shadow-panel)] backdrop-blur-xl transition-all hover:border-[var(--border-strong)] focus-within:border-[rgba(116,86,255,0.20)] focus-within:ring-4 focus-within:ring-[rgba(116,86,255,0.08)]">
+        <div className="flex w-full max-w-3xl items-end gap-2 rounded-[2rem] border border-[var(--border)] bg-[var(--bg-card)]/95 p-2 shadow-[var(--shadow-panel)] backdrop-blur-xl transition-all hover:border-[var(--border-strong)] focus-within:border-[rgba(255,255,255,0.07)] focus-within:ring-4 focus-within:ring-[rgba(255,255,255,0.07)]">
 
           <button
             onClick={() => document.getElementById('chat-upload')?.click()}
@@ -359,7 +359,7 @@ ${fileContext}
             onClick={() => handleSendMessage()}
             disabled={!inputValue.trim() || isLoading}
             className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${inputValue.trim() && !isLoading
-              ? 'bg-[var(--accent)] text-white shadow-lg shadow-[rgba(116,86,255,0.22)] hover:scale-110 hover:opacity-90'
+              ? 'bg-[var(--accent)] text-white shadow-lg shadow-[rgba(255,255,255,0.07)] hover:scale-110 hover:opacity-90'
               : 'cursor-not-allowed bg-[var(--bg-secondary)] text-[var(--text-muted)]'
               }`}
           >
@@ -370,3 +370,4 @@ ${fileContext}
     </div>
   );
 }
+

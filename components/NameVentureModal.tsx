@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
 import { X, ArrowRight, Check } from 'lucide-react';
@@ -88,7 +88,7 @@ export function NameVentureModal({
                     <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between">
                             <div>
-                                <span className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#7456ff]">Dexo</span>
+                                <span className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#f2f2f5]">Dexo</span>
                                 <span className="ml-2 font-sans text-[9px] font-semibold uppercase tracking-widest text-[var(--muted)]">AI Co-Founder</span>
                             </div>
                             <button
@@ -128,12 +128,12 @@ export function NameVentureModal({
                         <div
                             key={s}
                             className="h-[2px] flex-1 rounded-full transition-all duration-300"
-                            style={{ background: s <= step ? '#7456ff' : 'rgba(255,255,255,0.08)' }}
+                            style={{ background: s <= step ? '#f2f2f5' : 'rgba(255,255,255,0.08)' }}
                         />
                     ))}
                 </div>
 
-                {/* Step 1 — Name input */}
+                {/* Step 1 â€” Name input */}
                 {step === 1 && (
                     <div className="px-5 pb-5 pt-4">
                         <label htmlFor="venture-name-input" className="mb-1.5 block font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">
@@ -153,7 +153,7 @@ export function NameVentureModal({
                             }}
                             placeholder="e.g. Northwind Labs"
                             autoComplete="off"
-                            className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-3 font-sans text-[14px] text-[var(--text-primary)] placeholder:text-[var(--muted)] focus:border-[rgba(116,86,255,0.4)] focus:outline-none focus:ring-2 focus:ring-[rgba(116,86,255,0.12)]"
+                            className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-3 font-sans text-[14px] text-[var(--text-primary)] placeholder:text-[var(--muted)] focus:border-[rgba(255,255,255,0.07)] focus:outline-none focus:ring-2 focus:ring-[rgba(255,255,255,0.07)]"
                         />
                         <div className="mt-4 flex flex-wrap justify-end gap-2">
                             <button
@@ -167,7 +167,7 @@ export function NameVentureModal({
                                 type="button"
                                 onClick={handleNext}
                                 disabled={!canProceed}
-                                className="flex items-center gap-1.5 rounded-xl bg-[#7456ff] px-5 py-2.5 font-sans text-[13px] font-semibold text-white transition hover:bg-[#8a6fff] disabled:cursor-not-allowed disabled:opacity-50"
+                                className="flex items-center gap-1.5 rounded-xl bg-[#f2f2f5] px-5 py-2.5 font-sans text-[13px] font-semibold text-white transition hover:bg-[#8a6fff] disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 Next
                                 <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
@@ -176,7 +176,7 @@ export function NameVentureModal({
                     </div>
                 )}
 
-                {/* Step 2 — Focus selection */}
+                {/* Step 2 â€” Focus selection */}
                 {step === 2 && (
                     <div className="px-5 pb-5 pt-4">
                         <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
@@ -189,13 +189,13 @@ export function NameVentureModal({
                                         onClick={() => setSelectedPriority(isSelected ? undefined : p.id)}
                                         className={`group relative flex flex-col items-start gap-1 rounded-lg border px-3 py-2.5 text-left transition-colors ${
                                             isSelected
-                                                ? 'border-[rgba(116,86,255,0.4)] bg-[rgba(116,86,255,0.12)]'
-                                                : 'border-[var(--border)] bg-[var(--bg-elevated)] hover:border-[rgba(116,86,255,0.2)] hover:bg-[rgba(116,86,255,0.05)]'
+                                                ? 'border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.07)]'
+                                                : 'border-[var(--border)] bg-[var(--bg-elevated)] hover:border-[rgba(255,255,255,0.07)] hover:bg-[rgba(255,255,255,0.07)]'
                                         }`}
                                     >
                                         {isSelected && (
-                                            <span className="absolute right-2 top-2 flex h-3.5 w-3.5 items-center justify-center rounded-sm border border-[rgba(116,86,255,0.4)] bg-[rgba(116,86,255,0.2)]">
-                                                <Check className="h-2 w-2 text-[#c4b5fd]" strokeWidth={2.5} />
+                                            <span className="absolute right-2 top-2 flex h-3.5 w-3.5 items-center justify-center rounded-sm border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.07)]">
+                                                <Check className="h-2 w-2 text-[#94a3b8]" strokeWidth={2.5} />
                                             </span>
                                         )}
                                         <span className="font-mono text-[11px] leading-none text-[var(--muted)]">{p.icon}</span>
@@ -213,7 +213,7 @@ export function NameVentureModal({
                                 onClick={() => setStep(1)}
                                 className="rounded-xl border border-[var(--border)] bg-transparent px-4 py-2.5 font-sans text-[13px] font-medium text-[var(--text-secondary)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]"
                             >
-                                ← Back
+                                â† Back
                             </button>
                             <div className="flex items-center gap-2">
                                 <button
@@ -222,15 +222,15 @@ export function NameVentureModal({
                                     disabled={loading}
                                     className="rounded-xl border border-[var(--border)] bg-transparent px-4 py-2.5 font-sans text-[13px] font-medium text-[var(--text-secondary)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)] disabled:opacity-50"
                                 >
-                                    {loading ? 'Creating…' : 'Skip'}
+                                    {loading ? 'Creatingâ€¦' : 'Skip'}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={handleCreate}
                                     disabled={loading}
-                                    className="rounded-xl bg-[#7456ff] px-5 py-2.5 font-sans text-[13px] font-semibold text-white transition hover:bg-[#8a6fff] disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="rounded-xl bg-[#f2f2f5] px-5 py-2.5 font-sans text-[13px] font-semibold text-white transition hover:bg-[#8a6fff] disabled:cursor-not-allowed disabled:opacity-60"
                                 >
-                                    {loading ? 'Creating…' : "Let's build it →"}
+                                    {loading ? 'Creatingâ€¦' : "Let's build it â†’"}
                                 </button>
                             </div>
                         </div>
@@ -240,3 +240,4 @@ export function NameVentureModal({
         </div>
     );
 }
+

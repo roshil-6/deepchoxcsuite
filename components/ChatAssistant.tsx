@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useCallback, useState, useRef, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
@@ -32,9 +32,9 @@ import { useReadAloud } from '@/lib/useReadAloud';
 import { useTokens } from '@/lib/tokens/useTokens';
 import { TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 
-const VENTURE_THREAD_WELCOME_TITLE = 'Dexo · venture thread';
+const VENTURE_THREAD_WELCOME_TITLE = 'Dexo Â· venture thread';
 const VENTURE_THREAD_WELCOME_BODY =
-    "Same Dexo engine as the command center — strategy, files, and desk context in one thread. Use the bar below; read aloud on any reply when you want to listen.";
+    "Same Dexo engine as the command center â€” strategy, files, and desk context in one thread. Use the bar below; read aloud on any reply when you want to listen.";
 
 interface Message {
     id: string;
@@ -67,7 +67,7 @@ export function ChatAssistant({
     useExecutiveThread?: boolean;
     /** Strip outer card when wrapped in a parent shell (e.g. inline desk embed). */
     embedInShell?: boolean;
-    /** Called when user focuses composer or sends — e.g. expand minimized float. */
+    /** Called when user focuses composer or sends â€” e.g. expand minimized float. */
     onComposerInteract?: () => void;
 }) {
     const {
@@ -91,7 +91,7 @@ export function ChatAssistant({
         deskSectionFocus && deskSectionFocus.room === activeRoom
             ? deskSectionFocus.title
             : activeRoom === 'suite_intelligence' && suiteIntelOpenDesk
-              ? `Intelligence Suite · ${suiteIntelOpenDesk}`
+              ? `Intelligence Suite Â· ${suiteIntelOpenDesk}`
               : null;
 
     const [localMessages, setLocalMessages] = useState<Message[]>([]);
@@ -109,7 +109,7 @@ export function ChatAssistant({
     const { speak, stop, speakingKey } = useReadAloud();
 
     const isCeoSplit = variant === 'ceoSplit';
-    /** CEO strategy narrative: one continuous page — no floating thread panel; transcript renders in the desk body. */
+    /** CEO strategy narrative: one continuous page â€” no floating thread panel; transcript renders in the desk body. */
     const narrativeDocMode =
         isCeoSplit &&
         useExecutiveThread &&
@@ -121,7 +121,7 @@ export function ChatAssistant({
         if (narrativeDocMode) setFloatOpen(false);
     }, [narrativeDocMode]);
 
-    // Thread always floats above the message bar — never portals into desk sections
+    // Thread always floats above the message bar â€” never portals into desk sections
     const wantsBlockInlineThread = false;
     const focusAnchorsThread = false;
 
@@ -292,7 +292,7 @@ export function ChatAssistant({
 
             const deskSectionLine =
                 deskSectionFocus && deskSectionFocus.room === activeRoom
-                    ? `Desk block in focus: room "${deskSectionFocus.room}" · "${deskSectionFocus.title}" [id: ${deskSectionFocus.sectionId}]. Model instructions (ground answers in the venture fields in this message; do not invent facts): ${deskSectionFocus.prompt} Prioritize this block until the user presses Back or switches room.`
+                    ? `Desk block in focus: room "${deskSectionFocus.room}" Â· "${deskSectionFocus.title}" [id: ${deskSectionFocus.sectionId}]. Model instructions (ground answers in the venture fields in this message; do not invent facts): ${deskSectionFocus.prompt} Prioritize this block until the user presses Back or switches room.`
                     : activeRoom === 'suite_intelligence' && suiteIntelOpenDesk
                       ? `Intelligence Suite: user expanded the "${suiteIntelOpenDesk}" role row. Ground answers in agentStaffSnapshot.desks.${suiteIntelOpenDesk} and the venture record; do not invent facts.`
                       : 'Desk block in focus: none (general room).';
@@ -341,16 +341,16 @@ export function ChatAssistant({
                     ventureId: activeProject.id,
                     source: 'desk_chat',
                     model: 'Dexo',
-                    summary: `Dexo suggests: ${pending.join(' · ')}`,
+                    summary: `Dexo suggests: ${pending.join(' Â· ')}`,
                     patch,
                     updateProjectField,
                 });
                 if (!out.ok) {
                     assistantContent += `\n\n_Could not store or apply proposal (${out.error})._`;
                 } else if (out.applied) {
-                    assistantContent += `\n\n_Applied to your venture: ${pending.join(' · ')} (${out.mode} mode)._`;
+                    assistantContent += `\n\n_Applied to your venture: ${pending.join(' Â· ')} (${out.mode} mode)._`;
                 } else {
-                    assistantContent += `\n\n_Pending your approval: ${pending.join(' · ')}._`;
+                    assistantContent += `\n\n_Pending your approval: ${pending.join(' Â· ')}._`;
                 }
             }
 
@@ -379,7 +379,7 @@ export function ChatAssistant({
             const errMsg: Message = {
                 id: Date.now().toString(),
                 role: 'assistant',
-                content: 'Connection error. The AI team is temporarily unreachable — please try again.',
+                content: 'Connection error. The AI team is temporarily unreachable â€” please try again.',
                 timestamp: Date.now(),
             };
             if (useExecutiveThread) {
@@ -409,7 +409,7 @@ export function ChatAssistant({
 
     const isBottomDock = variant === 'bottomDock' || variant === 'aiOs';
     const isInlineDesk = variant === 'inlineDesk';
-    /** Shell context: floating bottom bar / desk embed — model menu opens upward */
+    /** Shell context: floating bottom bar / desk embed â€” model menu opens upward */
     const isDockChrome = isBottomDock || isInlineDesk || isCeoSplit;
     /** ChatGPT-style unified composer (wide, #2f2f2f pill, soft shadow) */
     const msgBarChatGpt = isDockChrome || isCeoSplit;
@@ -420,14 +420,14 @@ export function ChatAssistant({
     const threadBody = (
         <>
             {useExecutiveThread ? (
-                <div className="rounded-xl border border-violet-500/20 px-3.5 py-3 sm:px-4"
+                <div className="rounded-xl border border-white/10 px-3.5 py-3 sm:px-4"
                     style={{ 
                         background: 'linear-gradient(180deg, rgba(39,39,42,0.92) 0%, rgba(24,24,27,0.96) 100%)',
                         boxShadow: '0 4px 20px rgba(0,0,0,0.35)'
                     }}>
                     <div className="flex items-start gap-3">
                         <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-                            style={{ background: 'rgba(139,92,246,0.15)', color: '#A78BFA' }}>
+                            style={{ background: 'rgba(255,255,255,0.07)', color: '#94a3b8' }}>
                             <Sparkles className="h-4 w-4" aria-hidden />
                         </div>
                         <div className="min-w-0 flex-1">
@@ -483,8 +483,8 @@ export function ChatAssistant({
                                 <p className="text-[13px] leading-relaxed text-zinc-400">{chatTheme.emptyPrompt}</p>
                                 <p className="mt-3 text-[11px] text-zinc-600">
                                     {useExecutiveThread
-                                        ? 'Use the bar below — replies appear here (same thread as Assistant when on strategy desk).'
-                                        : 'Use the bar below — replies appear here.'}
+                                        ? 'Use the bar below â€” replies appear here (same thread as Assistant when on strategy desk).'
+                                        : 'Use the bar below â€” replies appear here.'}
                                 </p>
                             </div>
                         ) : (
@@ -495,8 +495,8 @@ export function ChatAssistant({
                                 <p className="max-w-sm text-[13px] leading-relaxed text-zinc-400">{chatTheme.emptyPrompt}</p>
                                 <p className="mt-4 text-[11px] text-zinc-600">
                                     {useExecutiveThread
-                                        ? 'Type below — same thread as the Assistant desk.'
-                                        : 'Type below — this thread is for this desk only.'}
+                                        ? 'Type below â€” same thread as the Assistant desk.'
+                                        : 'Type below â€” this thread is for this desk only.'}
                                 </p>
                                 {sidebarSectionLabel ? (
                                     <p className="mt-2 text-[11px] text-zinc-500">In context: {sidebarSectionLabel}</p>
@@ -611,7 +611,7 @@ export function ChatAssistant({
                             <span className="h-1.5 w-1.5 animate-pulse rounded-full [animation-delay:150ms]" style={{ background: 'var(--text-tertiary)' }} />
                             <span className="h-1.5 w-1.5 animate-pulse rounded-full [animation-delay:300ms]" style={{ background: 'var(--text-tertiary)' }} />
                         </span>
-                        <span className="ml-2 text-[12px]" style={{ color: 'var(--text-tertiary)' }}>Thinking…</span>
+                        <span className="ml-2 text-[12px]" style={{ color: 'var(--text-tertiary)' }}>Thinkingâ€¦</span>
                     </div>
                 </div>
             )}
@@ -646,7 +646,7 @@ export function ChatAssistant({
     const floatingThreadPanel = isCeoSplit && mounted && !narrativeDocMode
         ? createPortal(
             <>
-                {/* Pill toggle — visible when thread has messages but panel is closed */}
+                {/* Pill toggle â€” visible when thread has messages but panel is closed */}
                 {!floatOpen && messages.length > 0 && (
                     <button
                         type="button"
@@ -755,7 +755,7 @@ export function ChatAssistant({
                 <div className="flex shrink-0 items-baseline justify-between gap-2 border-b border-white/[0.04] px-1 py-2 sm:px-0">
                     <p className="min-w-0 text-[11px] leading-snug text-brand-muted/90">
                         <span className="text-brand-text/90">{currentAgent.name}</span>
-                        <span className="text-brand-muted"> · {currentAgent.title}</span>
+                        <span className="text-brand-muted"> Â· {currentAgent.title}</span>
                     </p>
                     <button
                         type="button"
@@ -820,7 +820,7 @@ export function ChatAssistant({
                         <div className="min-w-0">
                             <p className="text-[13px] leading-snug text-brand-text/90">
                                 <span className="font-medium text-white">{chatTheme.roleLabel}</span>
-                                <span className="text-brand-muted"> · </span>
+                                <span className="text-brand-muted"> Â· </span>
                                 <span className="text-[12px] text-brand-muted">{currentAgent.title}</span>
                             </p>
                             <p className="mt-1 text-[11px] leading-relaxed text-brand-muted">{chatTheme.subtitle}</p>
@@ -1033,3 +1033,4 @@ export function ChatAssistant({
         </div>
     );
 }
+

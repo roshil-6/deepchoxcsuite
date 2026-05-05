@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
@@ -37,7 +37,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
     return (
         <div className="relative z-[100] min-h-screen bg-[#030304] text-white">
 
-            {/* ── FaultyTerminal WebGL background ── */}
+            {/* â”€â”€ FaultyTerminal WebGL background â”€â”€ */}
             <div className="pointer-events-none fixed inset-0 z-0" aria-hidden>
                 <FaultyTerminal
                     scale={1.5}
@@ -57,7 +57,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                     pageLoadAnimation={true}
                     brightness={0.38}
                 />
-                {/* Dark vignette overlay — keeps content readable */}
+                {/* Dark vignette overlay â€” keeps content readable */}
                 <div
                     className="absolute inset-0"
                     style={{
@@ -78,7 +78,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                     isVisible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
                 }`}
             >
-                {/* Top bar — minimal wordmark + actions; full brand lives in hero */}
+                {/* Top bar â€” minimal wordmark + actions; full brand lives in hero */}
                 <header className="sticky top-0 z-30 bg-transparent">
                     <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-end gap-x-4 gap-y-3 px-5 py-3.5 sm:px-8 lg:px-12">
                         <nav
@@ -122,10 +122,10 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                     </div>
                 </header>
 
-                {/* Above-the-fold hero — Google AI Studio–style stack (fits in one viewport) */}
+                {/* Above-the-fold hero â€” Google AI Studioâ€“style stack (fits in one viewport) */}
                 <section className="flex min-h-[calc(100dvh-3.75rem)] shrink-0 flex-col items-center justify-center px-4 py-4 sm:px-6 sm:py-6 lg:px-10">
                     <div className="mx-auto flex w-full max-w-[min(100%,72rem)] flex-col items-center text-center lg:max-w-[min(100%,80rem)]">
-                        {/* Wordmark — no logo; neutral grey accent */}
+                        {/* Wordmark â€” no logo; neutral grey accent */}
                         <div className="flex w-full justify-center px-1">
                             <div className="flex w-full max-w-xl flex-col items-center text-center sm:max-w-2xl lg:max-w-3xl">
                                 {/* Company branding */}
@@ -141,7 +141,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                                         <span className="font-sans text-[clamp(2.25rem,13vw,8rem)] font-black tracking-[-0.025em] leading-[0.88] text-white">
                                             <span className="text-zinc-300/90">north</span><span className="text-brand-teal">ROSC</span>
                                         </span>
-                                        {/* LABS badge — separated by left border rule */}
+                                        {/* LABS badge â€” separated by left border rule */}
                                         <span className="mb-[0.1em] border-l-2 border-zinc-700 pl-3 font-sans text-[clamp(0.65rem,1.8vw,1rem)] font-black uppercase leading-tight tracking-[0.4em] text-zinc-500">
                                             LABS
                                         </span>
@@ -172,7 +172,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                             </div>
                         </div>
 
-                        {/* Auth — links to `/sign-in` & `/sign-up` (path routing; OAuth works reliably there) */}
+                        {/* Auth â€” links to `/sign-in` & `/sign-up` (path routing; OAuth works reliably there) */}
                         <div
                             id="landing-auth"
                             className="relative z-[35] mx-auto mt-6 w-full max-w-sm scroll-mt-28 sm:mt-7 sm:max-w-md"
@@ -223,11 +223,11 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                                 },
                                 {
                                     t: 'Actions',
-                                    d: 'Concrete suggestions for your venture — not only chat, but changes you can apply.',
+                                    d: 'Concrete suggestions for your venture â€” not only chat, but changes you can apply.',
                                 },
                                 {
                                     t: 'A full team',
-                                    d: 'Strategy, product, finance, GTM, and intel — one workspace, like a co-founding team.',
+                                    d: 'Strategy, product, finance, GTM, and intel â€” one workspace, like a co-founding team.',
                                 },
                             ].map(({ t, d }) => (
                                 <span
@@ -253,7 +253,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                         </p>
                 </section>
 
-                {/* ── Pricing ── */}
+                {/* â”€â”€ Pricing â”€â”€ */}
                 <section
                     id="pricing"
                     ref={pricingRef}
@@ -273,7 +273,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                             Your co-founding team. One flat price.
                         </h2>
                         <p className="mx-auto mt-3 max-w-lg font-sans text-[15px] leading-relaxed text-zinc-400">
-                            Start with everything — no card, no trial. Upgrade only when you want
+                            Start with everything â€” no card, no trial. Upgrade only when you want
                             to remove the daily AI limit and unlock research reports.
                         </p>
                     </div>
@@ -295,7 +295,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                                 Free
                             </p>
                             <p className="mt-2 font-sans text-[12.5px] text-zinc-500">
-                                Forever — no card, no catch
+                                Forever â€” no card, no catch
                             </p>
 
                             <div className="my-6 h-px bg-zinc-800/50" />
@@ -317,7 +317,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                                     </span>
                                     <span className="font-sans text-[13.5px] leading-relaxed text-zinc-400">
                                         <span className="font-medium text-zinc-200">{FREE_DAILY_TOKENS} AI tokens/day</span>
-                                        <span className="mt-0.5 block text-[12px] text-zinc-500">Shared across Dexo chat and analysis — resets at midnight</span>
+                                        <span className="mt-0.5 block text-[12px] text-zinc-500">Shared across Dexo chat and analysis â€” resets at midnight</span>
                                     </span>
                                 </li>
                             </ul>
@@ -327,7 +327,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                                 onClick={continueWithoutSigningIn}
                                 className="mt-7 w-full rounded-xl border border-zinc-700/70 bg-zinc-900/80 py-3.5 font-sans text-[14px] font-semibold text-zinc-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-all duration-200 hover:border-zinc-600 hover:bg-zinc-800 hover:text-white"
                             >
-                                Start building — free
+                                Start building â€” free
                             </button>
                             <p className="mt-3 text-center font-sans text-[11.5px] text-zinc-600">
                                 No sign-up required to explore
@@ -335,7 +335,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                         </div>
 
                         {/* Pro card */}
-                        <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-brand-teal/25 bg-gradient-to-b from-[#0d0b1a] via-[#0b0b16] to-black p-7 shadow-[0_0_0_1px_rgba(116,86,255,0.05),0_24px_60px_-20px_rgba(116,86,255,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-teal/40 hover:shadow-[0_0_0_1px_rgba(116,86,255,0.08),0_28px_70px_-18px_rgba(116,86,255,0.38)]">
+                        <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-brand-teal/25 bg-gradient-to-b from-[#0d0b1a] via-[#0b0b16] to-black p-7 shadow-[0_0_0_1px_rgba(255,255,255,0.07),0_24px_60px_-20px_rgba(255,255,255,0.07)] transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-teal/40 hover:shadow-[0_0_0_1px_rgba(255,255,255,0.07),0_28px_70px_-18px_rgba(255,255,255,0.07)]">
                             {/* Ambient glow blobs */}
                             <span className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-brand-teal/8 blur-3xl" aria-hidden />
                             <span className="pointer-events-none absolute -bottom-20 -left-12 h-44 w-44 rounded-full bg-[#8b74ff]/8 blur-3xl" aria-hidden />
@@ -379,10 +379,10 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                                         <Infinity className="mt-0.5 h-4 w-4 shrink-0 text-brand-teal/80" aria-hidden />
                                         <div>
                                             <p className="font-sans text-[13px] font-semibold leading-snug text-zinc-100">
-                                                Unlimited AI — no daily cap
+                                                Unlimited AI â€” no daily cap
                                             </p>
                                             <p className="mt-1.5 font-sans text-[12px] leading-relaxed text-zinc-400">
-                                                Dexo, analyses, and chat run freely — no meter, no resets.
+                                                Dexo, analyses, and chat run freely â€” no meter, no resets.
                                             </p>
                                         </div>
                                     </div>
@@ -398,14 +398,14 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                                         </div>
                                     </div>
                                     <p className="px-0.5 font-sans text-[12px] leading-relaxed text-zinc-500">
-                                        Everything in Founder — Pro just removes the ceiling.
+                                        Everything in Founder â€” Pro just removes the ceiling.
                                     </p>
                                 </div>
 
                                 {/* CTA */}
                                 <a
                                     href={LANDING_SIGN_UP_HREF}
-                                    className="group/btn relative mt-6 inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-b from-white to-zinc-100 py-3.5 font-sans text-[14px] font-bold text-zinc-900 shadow-[0_4px_24px_rgba(116,86,255,0.25),inset_0_1px_0_rgba(255,255,255,0.9)] transition-all duration-200 hover:shadow-[0_6px_32px_rgba(116,86,255,0.4)] active:scale-[0.98]"
+                                    className="group/btn relative mt-6 inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-b from-white to-zinc-100 py-3.5 font-sans text-[14px] font-bold text-zinc-900 shadow-[0_4px_24px_rgba(255,255,255,0.07),inset_0_1px_0_rgba(255,255,255,0.9)] transition-all duration-200 hover:shadow-[0_6px_32px_rgba(255,255,255,0.07)] active:scale-[0.98]"
                                 >
                                     <span
                                         className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-brand-teal/12 to-transparent transition-transform duration-700 group-hover/btn:translate-x-full"
@@ -413,7 +413,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                                     />
                                     <Sparkles className="relative h-4 w-4 shrink-0" aria-hidden />
                                     <span className="relative">
-                                        {`Upgrade to Pro — ${formatRegionalPricePair(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 }).primary}/mo`}
+                                        {`Upgrade to Pro â€” ${formatRegionalPricePair(PRO_BILLING.monthlyInr, pricingRegion, { usdDecimals: 0 }).primary}/mo`}
                                     </span>
                                 </a>
                                 <p className="mt-3 text-center font-sans text-[11.5px] text-zinc-600">
@@ -442,7 +442,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                         href="/guide"
                         className="font-sans text-[16px] font-semibold text-zinc-400 transition hover:text-zinc-100"
                     >
-                        Guide &amp; FAQ →
+                        Guide &amp; FAQ â†’
                     </Link>
                 </footer>
             </div>
@@ -450,5 +450,6 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
         </div>
     );
 }
+
 
 

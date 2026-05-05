@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import { useOffice } from '@/lib/OfficeContext';
@@ -14,28 +14,28 @@ export function LiveReportPreview({ onGeneratePDF }: LiveReportPreviewProps) {
   const sections = [
     {
       id: 'strategy',
-      icon: '🎯',
+      icon: 'ðŸŽ¯',
       title: 'Strategic Vision',
       subtitle: 'CEO Office',
       content: activeProject?.strategy
     },
     {
       id: 'product',
-      icon: '📋',
+      icon: 'ðŸ“‹',
       title: 'Product Roadmap',
       subtitle: 'Product Management',
       content: activeProject?.productPlan
     },
     {
       id: 'budget',
-      icon: '💰',
+      icon: 'ðŸ’°',
       title: 'Financial Projections',
       subtitle: 'Finance',
       content: activeProject?.budget
     },
     {
       id: 'market',
-      icon: '🔍',
+      icon: 'ðŸ”',
       title: 'Market Intelligence',
       subtitle: 'Business Scout',
       content: activeProject?.marketInsights
@@ -69,7 +69,7 @@ export function LiveReportPreview({ onGeneratePDF }: LiveReportPreviewProps) {
             </div>
             <span className="text-[10px] font-bold text-white/60">{completionPercentage}%</span>
           </div>
-          {isComplete && <div className="animate-in zoom-in spin-in rounded-full bg-violet-500/20 p-1 text-violet-400 duration-300"><CheckCircle className="w-5 h-5" /></div>}
+          {isComplete && <div className="animate-in zoom-in spin-in rounded-full bg-white/[0.05] p-1 text-white/70 duration-300"><CheckCircle className="w-5 h-5" /></div>}
         </div>
       </div>
 
@@ -119,7 +119,7 @@ export function LiveReportPreview({ onGeneratePDF }: LiveReportPreviewProps) {
 
           {/* Footer Watermark */}
           <div className="absolute bottom-12 left-0 right-0 text-center pointer-events-none">
-            <p className="text-[10px] text-slate-200 uppercase tracking-widest font-bold">Confidential • northROSC LABS · Deepchox</p>
+            <p className="text-[10px] text-slate-200 uppercase tracking-widest font-bold">Confidential â€¢ northROSC LABS Â· Deepchox</p>
           </div>
         </div>
 
@@ -148,3 +148,4 @@ export function LiveReportPreview({ onGeneratePDF }: LiveReportPreviewProps) {
     </div>
   );
 }
+

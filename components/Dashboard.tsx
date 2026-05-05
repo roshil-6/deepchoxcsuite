@@ -162,11 +162,11 @@ const THEME = {
         muted: 'var(--text-muted)',
     },
     accent: {
-        primary: 'var(--accent-violet)',
-        secondary: 'var(--accent-violet)',
-        tertiary: '#8b74ff',
-        info: '#7456ff',
-        warning: '#5f43df',
+        primary: 'rgba(255,255,255,0.75)',
+        secondary: 'rgba(255,255,255,0.55)',
+        tertiary: 'rgba(255,255,255,0.45)',
+        info: 'rgba(255,255,255,0.35)',
+        warning: 'rgba(255,255,255,0.25)',
     },
     border: {
         subtle: 'rgba(255,255,255,0.08)',
@@ -174,12 +174,12 @@ const THEME = {
         strong: 'rgba(255,255,255,0.14)',
     },
     chart: {
-        emerald: '#7456ff',
-        violet: '#7456ff',
-        amber: '#9d88ff',
-        blue: '#8b74ff',
-        rose: '#5f43df',
-        cyan: '#a696ff',
+        emerald: '#34d399',
+        violet: '#94a3b8',
+        amber: '#fbbf24',
+        blue: '#38bdf8',
+        rose: '#f87171',
+        cyan: '#67e8f9',
         slate: '#94a3b8',
     },
 } as const;
@@ -294,7 +294,7 @@ function MetricCard({
 }) {
     const colorMap = {
         emerald: { bg: 'rgba(16,185,129,0.1)', text: '#10B981', glow: 'rgba(16,185,129,0.06)' },
-        violet: { bg: 'rgba(139,92,246,0.1)', text: '#8B5CF6', glow: 'rgba(139,92,246,0.06)' },
+        violet: { bg: 'rgba(255,255,255,0.05)', text: '#94a3b8', glow: 'rgba(255,255,255,0.03)' },
         amber: { bg: 'rgba(245,158,11,0.1)', text: '#F59E0B', glow: 'rgba(245,158,11,0.06)' },
         blue: { bg: 'rgba(59,130,246,0.1)', text: '#3B82F6', glow: 'rgba(59,130,246,0.06)' },
         rose: { bg: 'rgba(244,63,94,0.1)', text: '#F43F5E', glow: 'rgba(244,63,94,0.06)' },
@@ -850,7 +850,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                     ctaAction: (() => void) | null;
                 }> = [
                     {
-                        color: '#7456ff',
+                        color: '#94a3b8',
                         title: `Welcome back — ${activeProject.name}`,
                         subtitle: 'Your AI co-founder is ready',
                         body: hasSnap
@@ -860,7 +860,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         ctaAction: hasSnap ? null : () => { setShowDexoWelcome(false); runAgentStaffSync(); },
                     },
                     ...(hasSnap && summary ? [{
-                        color: '#7456ff',
+                        color: '#94a3b8',
                         title: 'Here is what your AI team found',
                         subtitle: 'Executive research summary',
                         body: summary.slice(0, 360) + (summary.length > 360 ? '…' : ''),
@@ -892,7 +892,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         },
                     }] : []),
                     {
-                        color: '#7456ff',
+                        color: '#94a3b8',
                         title: 'Do you have anything specific in mind?',
                         subtitle: 'Dexo is ready to help',
                         body: 'Ask Dexo anything — what should I change, what are the risks, what should I build next? Dexo has your full venture context and will give you a direct, grounded answer.',
@@ -1026,7 +1026,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         type="button"
                                         onClick={step.ctaAction}
                                         className="flex items-center gap-1.5 rounded-xl border px-4 py-2 text-[12px] font-semibold transition-all hover:opacity-80 active:scale-[0.98]"
-                                        style={{ borderColor: 'rgba(116,86,255,0.35)', background: 'rgba(116,86,255,0.14)', color: '#a78bfa' }}
+                                        style={{ borderColor: 'rgba(255,255,255,0.14)', background: 'rgba(255,255,255,0.07)', color: '#f2f2f5' }}
                                     >
                                         <Sparkles className="h-3.5 w-3.5 shrink-0" />
                                         {step.cta}
@@ -1078,7 +1078,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             type="button"
                             onClick={() => { setDexoWelcomeStep(0); setShowDexoWelcome(true); }}
                             className="flex items-center gap-1.5 rounded-xl border px-3 py-2 text-[12px] font-medium transition-all"
-                            style={{ borderColor: 'rgba(116,86,255,0.25)', background: 'rgba(116,86,255,0.08)', color: '#a78bfa' }}
+                            style={{ borderColor: 'rgba(255,255,255,0.10)', background: 'rgba(255,255,255,0.05)', color: '#f2f2f5' }}
                         >
                             <Sparkles className="h-3.5 w-3.5 shrink-0" />
                             <span className="hidden sm:inline">Dexo Guide</span>
@@ -1546,7 +1546,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         type="button"
                                         onClick={() => switchRoom('dexo')}
                                         className="shrink-0 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition hover:opacity-80"
-                                        style={{ borderColor: 'rgba(116,86,255,0.25)', background: 'rgba(116,86,255,0.08)', color: '#a78bfa' }}
+                                        style={{ borderColor: 'rgba(255,255,255,0.10)', background: 'rgba(255,255,255,0.05)', color: '#f2f2f5' }}
                                     >
                                         Change
                                     </button>
@@ -1606,7 +1606,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                             <span className="min-w-0 flex-1 truncate text-[12px]" style={{ color: THEME.text.secondary }}>
                                                                 {a.title}
                                                             </span>
-                                                            <span className="shrink-0 text-[10px] font-medium opacity-0 transition-opacity group-hover:opacity-100" style={{ color: '#7456ff' }}>
+                                                            <span className="shrink-0 text-[10px] font-medium opacity-0 transition-opacity group-hover:opacity-100" style={{ color: '#94a3b8' }}>
                                                                 Ask Dexo →
                                                             </span>
                                                         </button>

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { GoogleIcon } from '@/components/auth/GoogleIcon';
 
@@ -22,11 +22,11 @@ const googleBtn =
   'inline-flex min-h-[3rem] w-full items-center justify-center gap-3 rounded-xl border border-zinc-200 bg-white px-4 font-sans text-[15px] font-semibold text-zinc-800 shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition hover:border-zinc-300 hover:bg-zinc-50 hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)]';
 
 const emailSecondary =
-  'inline-flex min-h-[2.75rem] w-full items-center justify-center rounded-xl border border-violet-600/90 bg-violet-600 px-4 font-sans text-[14px] font-semibold text-white shadow-sm transition hover:bg-violet-500';
+  'inline-flex min-h-[2.75rem] w-full items-center justify-center rounded-xl border border-white/10 bg-white/08 px-4 font-sans text-[14px] font-semibold text-white shadow-sm transition hover:bg-white/08';
 
 /**
  * Plain `<a href>` forces a real browser navigation off the `/` client shell.
- * Primary row matches common “Continue with Google” affordance; Clerk on `/sign-in` runs the real OAuth.
+ * Primary row matches common â€œContinue with Googleâ€ affordance; Clerk on `/sign-in` runs the real OAuth.
  */
 export function LandingClerkAuth({ className }: LandingClerkAuthProps) {
   const signInUrl = LANDING_SIGN_IN_HREF;
@@ -35,7 +35,7 @@ export function LandingClerkAuth({ className }: LandingClerkAuthProps) {
   return (
     <div className={className}>
       <p className="mb-3 text-center font-sans text-[13px] leading-snug text-zinc-600">
-        Choose how you want to continue — Google, other providers, or email on the secure sign-in page.
+        Choose how you want to continue â€” Google, other providers, or email on the secure sign-in page.
       </p>
       <div className="flex flex-col gap-2.5">
         <a href={signInUrl} className={googleBtn}>
@@ -64,10 +64,11 @@ export function LandingClerkAuth({ className }: LandingClerkAuthProps) {
       </div>
       <p className="mt-3 text-center font-sans text-[11px] leading-snug text-zinc-500">
         Prefer a direct link?{' '}
-        <a href={signInUrl} className="font-semibold text-violet-700 underline-offset-2 hover:underline">
+        <a href={signInUrl} className="font-semibold text-white/70 underline-offset-2 hover:underline">
           Open sign-in
         </a>
       </p>
     </div>
   );
 }
+

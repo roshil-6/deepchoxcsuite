@@ -183,9 +183,7 @@
   .executive-panel-glass {
     border: 1px solid var(--border);
     border-radius: 0.875rem;
-    background: rgba(14, 14, 22, 0.85);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: #111117;
   }
 
   .executive-card {
@@ -365,28 +363,24 @@
   }
 
   .glass-panel {
-    background: rgba(16, 16, 24, 0.80);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: #111117;
   }
 
   .card-glass {
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: #19181f;
     border-radius: 0.875rem;
     transition: background 0.15s ease, border-color 0.15s ease;
   }
 
   .card-glass:hover {
-    background: rgba(255, 255, 255, 0.045);
-    border-color: rgba(255, 255, 255, 0.13);
+    background: #1c1b24;
+    border-color: rgba(255, 255, 255, 0.11);
   }
 
   .sidebar-float {
-    background: rgba(11, 11, 18, 0.96);
-    box-shadow:
-      inset -1px 0 0 var(--border),
-      4px 0 24px rgba(0, 0, 0, 0.4);
+    background: #111117;
+    box-shadow: inset -1px 0 0 var(--border);
   }
 
   .surface-soft-edge {

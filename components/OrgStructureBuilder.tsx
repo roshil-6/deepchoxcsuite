@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useOffice } from '@/lib/OfficeContext';
@@ -100,7 +100,7 @@ export function OrgStructureBuilder() {
                         <div
                             onClick={() => setEditingNode(node)}
                             className={`group flex items-start gap-4 p-4 mb-2 rounded-xl border transition-all cursor-pointer ${editingNode?.id === node.id
-                                    ? 'bg-indigo-900/20 border-indigo-500/50 shadow-lg shadow-indigo-500/10'
+                                    ? 'bg-indigo-900/20 border-indigo-500/50 shadow-lg shadow-black/20'
                                     : 'bg-zinc-900/30 border-zinc-800 hover:border-zinc-600'
                                 }`}
                         >
@@ -168,7 +168,7 @@ export function OrgStructureBuilder() {
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => setShowAiModal(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-indigo-500/20"
+                            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-black/20"
                         >
                             <Wand2 className="w-3.5 h-3.5" />
                             AI Generate
@@ -333,3 +333,4 @@ function Bot({ className }: { className?: string }) {
         </svg>
     );
 }
+

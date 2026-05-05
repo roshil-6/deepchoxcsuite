@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -407,7 +407,7 @@ export function AICompanionExpanded({
                         <div
                             className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm ${
                                 msg.type === 'user'
-                                    ? 'rounded-br-md bg-gradient-to-r from-[#8B5CF6] to-[#6366F1] text-white'
+                                    ? 'rounded-br-md bg-gradient-to-r from-[#94a3b8] to-[#6366F1] text-white'
                                     : 'rounded-bl-md bg-white/[0.06] text-[#A1A1AA]'
                             }`}
                         >
@@ -431,7 +431,7 @@ export function AICompanionExpanded({
                     <button
                         onClick={handleSend}
                         disabled={!inputText.trim()}
-                        className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#8B5CF6] text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+                        className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#94a3b8] text-white transition-opacity hover:opacity-90 disabled:opacity-40"
                     >
                         <ChevronRight className="h-4 w-4" />
                     </button>
@@ -440,3 +440,4 @@ export function AICompanionExpanded({
         </motion.div>
     );
 }
+

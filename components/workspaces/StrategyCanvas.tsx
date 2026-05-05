@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useOffice } from '@/lib/OfficeContext';
@@ -59,7 +59,7 @@ export function StrategyCanvas() {
         <div className="h-full overflow-y-auto custom-scrollbar p-5 sm:p-6">
             <div className="mx-auto max-w-5xl space-y-6">
 
-                {/* ── Page header ── */}
+                {/* â”€â”€ Page header â”€â”€ */}
                 <div className="flex items-center justify-between gap-4">
                     <div>
                         <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--muted)]">Strategic Command</p>
@@ -76,7 +76,7 @@ export function StrategyCanvas() {
                                               hour: '2-digit',
                                               minute: '2-digit',
                                           })
-                                        : '—'
+                                        : 'â€”'
                                     : 'Offline'}
                             </p>
                         </div>
@@ -90,7 +90,7 @@ export function StrategyCanvas() {
                     </div>
                 </div>
 
-                {/* ── Mission / Vision ── */}
+                {/* â”€â”€ Mission / Vision â”€â”€ */}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="rounded-xl border border-white/[0.07] bg-[var(--color-brand-card)] p-5 sm:p-6">
                         <label className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">
@@ -116,7 +116,7 @@ export function StrategyCanvas() {
                     </div>
                 </div>
 
-                {/* ── KPI Strip + Chart ── */}
+                {/* â”€â”€ KPI Strip + Chart â”€â”€ */}
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
                     {/* Chart placeholder */}
                     <div className="rounded-xl border border-white/[0.07] bg-[var(--color-brand-card)] p-5 sm:p-6 lg:col-span-2">
@@ -152,7 +152,7 @@ export function StrategyCanvas() {
                                     <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--muted)]">{kpi.label}</p>
                                     <p className="mt-1 text-base font-semibold text-[var(--text)]">{kpi.value}</p>
                                 </div>
-                                <span className={`rounded-lg px-2 py-1 text-[10px] font-semibold ${kpi.change.includes('+') ? 'bg-violet-500/10 text-violet-400' : 'bg-white/[0.04] text-[var(--muted)]'}`}>
+                                <span className={`rounded-lg px-2 py-1 text-[10px] font-semibold ${kpi.change.includes('+') ? 'bg-white/[0.05] text-white/70' : 'bg-white/[0.04] text-[var(--muted)]'}`}>
                                     {kpi.change}
                                 </span>
                             </div>
@@ -160,7 +160,7 @@ export function StrategyCanvas() {
                     </div>
                 </div>
 
-                {/* ── OKR Engine ── */}
+                {/* â”€â”€ OKR Engine â”€â”€ */}
                 <div>
                     <div className="mb-4 flex items-center justify-between px-1">
                         <h3 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--muted)]">
@@ -206,7 +206,7 @@ export function StrategyCanvas() {
                                                     max={kr.target}
                                                     value={kr.current}
                                                     onChange={e => toggleKeyResult(obj.id, kr.id, parseInt(e.target.value))}
-                                                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/[0.08] [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white/60 hover:[&::-webkit-slider-thumb]:bg-violet-400"
+                                                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/[0.08] [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white/60 hover:[&::-webkit-slider-thumb]:bg-white/08"
                                                 />
                                             </div>
                                         ))}
@@ -267,3 +267,4 @@ const defaultObjectives: Objective[] = [
         ],
     },
 ];
+

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 /** Particles scattered across the auth page background */
 const PARTICLES = [
@@ -19,22 +19,22 @@ const PARTICLES = [
 /**
  * Pure-CSS animated background for the sign-in / sign-up pages.
  * Renders floating particles, a vertical scan line, and pulsing glow orbs.
- * No canvas, no JS animation loops — only keyframes defined in globals.css.
+ * No canvas, no JS animation loops â€” only keyframes defined in globals.css.
  */
 export function AuthPageBackground() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-      {/* Primary glow — top centre */}
+      {/* Primary glow â€” top centre */}
       <div
-        className="absolute -top-32 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-[#7456ff]/20 blur-[110px]"
+        className="absolute -top-32 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-[#f2f2f5]/20 blur-[110px]"
         style={{ animation: 'auth-glow 6s ease-in-out infinite' }}
       />
-      {/* Secondary glow — bottom right */}
+      {/* Secondary glow â€” bottom right */}
       <div
         className="absolute -bottom-24 right-[-10%] h-72 w-72 rounded-full bg-[#8b74ff]/14 blur-[90px]"
         style={{ animation: 'auth-glow 8s ease-in-out infinite 2s' }}
       />
-      {/* Tertiary glow — left mid */}
+      {/* Tertiary glow â€” left mid */}
       <div
         className="absolute left-[-8%] top-1/2 h-56 w-56 -translate-y-1/2 rounded-full bg-sky-600/8 blur-[80px]"
         style={{ animation: 'auth-glow 7s ease-in-out infinite 1s' }}
@@ -51,7 +51,7 @@ export function AuthPageBackground() {
 
       {/* Scan line */}
       <div
-        className="absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-[#7456ff]/70 to-transparent"
+        className="absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-[#f2f2f5]/70 to-transparent"
         style={{ animation: 'auth-scan 4.5s linear infinite', top: 0 }}
       />
 
@@ -73,3 +73,4 @@ export function AuthPageBackground() {
     </div>
   );
 }
+

@@ -3,7 +3,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { formatStrategyForContext } from '@/lib/ventureReadableContext';
 import { useOffice } from '@/lib/OfficeContext';
-import { Bot, Sparkles, Send } from 'lucide-react';
+import { Sparkles, Send } from 'lucide-react';
+import { DexoAvatar } from '@/components/Dexo/DexoAvatar';
 import { safeJsonParse } from '@/lib/utils';
 import { ModelAttribution } from '@/components/ModelAttribution';
 import { useTokens } from '@/lib/tokens/useTokens';
@@ -138,16 +139,14 @@ export function DexoChat() {
     return (
         <div className="flex flex-col h-full bg-brand-bg text-brand-text">
             {/* Header */}
-            <div className="p-6 border-b border-zinc-800 bg-[#09090b]/40 backdrop-blur-xl flex items-center justify-between sticky top-0 z-10">
+            <div className="p-6 border-b flex items-center justify-between sticky top-0 z-10" style={{ borderColor: 'rgba(255,255,255,0.07)', background: '#111117' }}>
                 <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                        <Bot className="w-5 h-5 text-white" />
-                    </div>
+                    <DexoAvatar size="md" state="idle" />
                     <div>
-                        <h2 className="text-lg font-bold tracking-tight">Dexo Core</h2>
+                        <h2 className="text-lg font-bold tracking-tight" style={{ color: '#f2f2f5' }}>Dexo Core</h2>
                         <div className="flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 bg-violet-500 rounded-full animate-pulse"></span>
-                            <span className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold">General Intelligence Online</span>
+                            <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.35)' }}></span>
+                            <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#5c5c6e' }}>General Intelligence Online</span>
                         </div>
                     </div>
                 </div>
@@ -158,8 +157,8 @@ export function DexoChat() {
                 {messages.map((msg) => (
                     <div key={msg.id} className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                         {msg.role === 'assistant' && (
-                            <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center flex-shrink-0 mt-1">
-                                <Bot className="w-4 h-4 text-indigo-500" />
+                            <div className="mt-1 flex-shrink-0">
+                                <DexoAvatar size="xs" state="idle" />
                             </div>
                         )}
 
@@ -180,8 +179,8 @@ export function DexoChat() {
                 ))}
                 {isLoading && (
                     <div className="flex gap-4 justify-start">
-                        <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center flex-shrink-0 mt-1">
-                            <Bot className="w-4 h-4 text-indigo-500" />
+                        <div className="mt-1 flex-shrink-0">
+                            <DexoAvatar size="xs" state="thinking" />
                         </div>
                         <div className="max-w-[75%] p-4 rounded-2xl rounded-tl-sm bg-zinc-900 border border-zinc-800 shadow-xl flex flex-col gap-2">
                             <div className="flex items-center gap-2">

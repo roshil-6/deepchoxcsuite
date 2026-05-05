@@ -5,6 +5,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { DexoAvatar } from './DexoAvatar';
 import { createPortal } from 'react-dom';
 import { useOffice } from '@/lib/OfficeContext';
 import { useDexoConversationalVoice } from '@/lib/useDexoConversationalVoice';
@@ -1029,14 +1030,14 @@ export function FloatingDexoOrb() {
                         animation: 'dexo-chat-enter 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards',
                     }}
                 >
-                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(116,86,255,0.6)] to-transparent" aria-hidden />
+                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(255,255,255,0.12)] to-transparent" aria-hidden />
                     <div className="flex items-start gap-3 p-3.5">
-                        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-zinc-100 ring-2 ring-[rgba(116,86,255,0.35)]">
-                            <img src="/dexo-avatar.jpg" alt="Dexo" className="h-full w-full object-cover object-top" />
+                        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl" style={{ background: 'rgba(148,163,184,0.08)', border: '1px solid rgba(148,163,184,0.20)' }}>
+                            <DexoAvatar size="sm" state="idle" />
                         </div>
                         <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1.5">
-                                <span className="font-sans text-[9px] font-bold uppercase tracking-[0.22em] text-[#7456ff]">Dexo</span>
+                                <span className="font-sans text-[9px] font-bold uppercase tracking-[0.22em]" style={{ color: '#f2f2f5' }}>Dexo</span>
                                 <span className="font-sans text-[8px] font-semibold uppercase tracking-widest text-zinc-600">AI Co-Founder</span>
                             </div>
                             <p className="mt-1.5 font-sans text-[12px] leading-relaxed text-zinc-200">

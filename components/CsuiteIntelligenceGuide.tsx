@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -47,8 +47,8 @@ const DESK_HF_ROLE: Record<(typeof DESK_ORDER)[number]['key'], HfDeskRole> = {
     cmo: 'cmo',
 };
 
-/** Tinted shells — same vocabulary as executive dashboard “message” blocks */
-/** Neutral panels — readable hierarchy without tinted gradients or glow */
+/** Tinted shells â€” same vocabulary as executive dashboard â€œmessageâ€ blocks */
+/** Neutral panels â€” readable hierarchy without tinted gradients or glow */
 const INTEL_OUTLINE = {
     flow: 'executive-panel',
     roles: 'executive-panel',
@@ -134,7 +134,7 @@ const COORD_PRESETS: { label: string; text: string }[] = [
     },
 ];
 
-/** Nested “inline insight” — small outline inside a message block */
+/** Nested â€œinline insightâ€ â€” small outline inside a message block */
 function InsetPanel({
     children,
     className = '',
@@ -254,7 +254,7 @@ export function CsuiteIntelligenceGuide() {
         }));
     }, [snapshot]);
 
-    /* ── Empty state ── */
+    /* â”€â”€ Empty state â”€â”€ */
     if (!activeProject?.id) {
         return (
             <div className="flex h-full min-h-0 flex-col items-center justify-center gap-4 px-6 text-center" style={{ background: '#0A0A0B' }}>
@@ -279,12 +279,12 @@ export function CsuiteIntelligenceGuide() {
     }
 
 
-    /* ── Fullscreen flow overlay ── */
+    /* â”€â”€ Fullscreen flow overlay â”€â”€ */
     return (
         <div className="w-full min-w-0" style={{ background: '#0A0A0B' }}>
                 <div className="mx-auto max-w-3xl space-y-6 px-4 pt-5 pb-16 sm:px-5 lg:max-w-5xl">
                     <header className="rounded-2xl border border-white/[0.06] px-4 py-5 sm:px-5" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))' }}>
-                        <SectionLabel>northROSC LABS · Deepchox</SectionLabel>
+                        <SectionLabel>northROSC LABS Â· Deepchox</SectionLabel>
                         <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#71717A]">
                             AI-powered team for founders
                         </p>
@@ -298,7 +298,7 @@ export function CsuiteIntelligenceGuide() {
                         </p>
                         <p className="mt-3 text-[11px] leading-snug text-[#52525B]">
                             Outlined blocks group controls (your setup) from readouts (model output). Nothing here replaces your judgment
-                            — verify anything that affects real decisions.
+                            â€” verify anything that affects real decisions.
                         </p>
                         <SuiteNavChips className="mt-5" />
 
@@ -315,13 +315,13 @@ export function CsuiteIntelligenceGuide() {
                         </div>
                     </header>
 
-                    <section className="relative scroll-mt-28 overflow-hidden rounded-2xl border border-violet-500/22 bg-[var(--bg-card)] shadow-[0_0_48px_-16px_rgba(139,92,246,0.28)]">
+                    <section className="relative scroll-mt-28 overflow-hidden rounded-2xl border border-white/10 bg-[var(--bg-card)] shadow-[0_0_48px_-16px_rgba(255,255,255,0.07)]">
                         <div
-                            className="pointer-events-none absolute -top-20 left-1/2 h-40 w-[min(100%,36rem)] -translate-x-1/2 rounded-full bg-violet-500/15 blur-3xl"
+                            className="pointer-events-none absolute -top-20 left-1/2 h-40 w-[min(100%,36rem)] -translate-x-1/2 rounded-full bg-white/[0.05] blur-3xl"
                             aria-hidden
                         />
                         <div className="relative border-b border-[var(--border)] px-4 py-3 sm:px-5">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-violet-300/85">AI network</p>
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/55">AI network</p>
                             <p className="mt-1 max-w-2xl text-[12px] leading-relaxed text-[var(--text-secondary)]">
                                 Your <span className="text-[var(--text-primary)]">neural map</span> (workflows &amp; model lanes) and{' '}
                                 <span className="text-[var(--text-primary)]">team link diagram</span> (desks) live in one surface so the suite feels
@@ -331,7 +331,7 @@ export function CsuiteIntelligenceGuide() {
                         <div className="relative space-y-0 px-3 py-4 sm:px-4 sm:py-5">
                             <WorkflowNeuralMap embedded />
                             <div
-                                className="my-6 h-px bg-gradient-to-r from-transparent via-violet-400/25 to-transparent"
+                                className="my-6 h-px bg-gradient-to-r from-transparent via-white/08 to-transparent"
                                 aria-hidden
                             />
                             <AITeamNetwork embedded />
@@ -344,14 +344,14 @@ export function CsuiteIntelligenceGuide() {
                             id="intel-no-brief"
                             when={!activeProject?.agentCoordinationBrief?.trim() && !activeProject?.agentStaffSnapshot}
                             variant="tip"
-                            message='Write a short coordination brief below — e.g. "Ship-first: CFO flags runway risk, CMO stays lean until we have pilot names." This tells your AI team how to weight priorities.'
+                            message='Write a short coordination brief below â€” e.g. "Ship-first: CFO flags runway risk, CMO stays lean until we have pilot names." This tells your AI team how to weight priorities.'
                             dismissible
                         />
                         <GuideHint
                             id="intel-first-sync"
                             when={!activeProject?.agentStaffSnapshot && !agentSyncRunning}
                             variant="info"
-                            message="No sync has run yet. Hit Run staff sync — Claude and GPT routes run together (dual-model stack) across all five desks and populate the outputs below."
+                            message="No sync has run yet. Hit Run staff sync â€” Claude and GPT routes run together (dual-model stack) across all five desks and populate the outputs below."
                             action="Run sync"
                             onAction={() => runAgentStaffSync()}
                             dismissible={false}
@@ -450,21 +450,21 @@ export function CsuiteIntelligenceGuide() {
                                     >
                                         <ol className="list-decimal space-y-2.5 pl-4 text-[12px] leading-relaxed text-zinc-400 marker:text-zinc-600">
                                             <li>
-                                                <span className="text-zinc-200">Venture snapshot</span> — strategy, product, budget,
+                                                <span className="text-zinc-200">Venture snapshot</span> â€” strategy, product, budget,
                                                 market notes, kanban, calendar, onboarding, team directives, and your coordination brief
                                                 above (if any).
                                             </li>
                                             <li>
-                                                <span className="text-zinc-200">Server run</span> — one request to the configured model
+                                                <span className="text-zinc-200">Server run</span> â€” one request to the configured model
                                                 returns five desk strings plus optional merges (intel, budget, board, focus list,
                                                 etc.).
                                             </li>
                                             <li>
-                                                <span className="text-zinc-200">Between syncs</span> — you edit desks, PA, or notes
+                                                <span className="text-zinc-200">Between syncs</span> â€” you edit desks, PA, or notes
                                                 locally; the next sync sees the updated snapshot.
                                             </li>
                                             <li>
-                                                <span className="text-zinc-200">Not automatic</span> — sync only runs when you press the
+                                                <span className="text-zinc-200">Not automatic</span> â€” sync only runs when you press the
                                                 button (or equivalent). Headlines are fetched when the server allows; they can be empty.
                                             </li>
                                         </ol>
@@ -479,7 +479,7 @@ export function CsuiteIntelligenceGuide() {
                                     </span>
                                     <p className="mt-1 text-[11px] leading-snug text-zinc-500">
                                         Separate from staff sync: calls a different API with your venture name and coordination brief
-                                        (or team directives) as a short blurb — useful to compare tone, not to update the venture record.
+                                        (or team directives) as a short blurb â€” useful to compare tone, not to update the venture record.
                                     </p>
                                 </div>
                                 <div className="flex flex-wrap gap-1.5 sm:justify-end">
@@ -519,7 +519,7 @@ export function CsuiteIntelligenceGuide() {
                                         strokeWidth={2}
                                         aria-hidden
                                     />
-                                    {agentSyncRunning ? 'Running staff sync…' : 'Run staff sync now'}
+                                    {agentSyncRunning ? 'Running staff syncâ€¦' : 'Run staff sync now'}
                                 </button>
                                 <p className="max-w-md text-[12px] leading-relaxed text-zinc-400 sm:text-right">
                                     Sends your venture snapshot, optional RSS headlines, and coordination brief to the staff-sync
@@ -529,10 +529,10 @@ export function CsuiteIntelligenceGuide() {
                         </div>
                     </IntelMessageSection>
 
-                    {/* ─── Dual-Agent Network Panel ─── */}
+                    {/* â”€â”€â”€ Dual-Agent Network Panel â”€â”€â”€ */}
                     <DualAgentWorkPanel state={dualAgentPanelState} />
 
-                    {/* ─── Section 2: Role outputs ─── */}
+                    {/* â”€â”€â”€ Section 2: Role outputs â”€â”€â”€ */}
                     {snapshot?.desks && (
                         <IntelMessageSection
                             id="desk-out"
@@ -540,7 +540,7 @@ export function CsuiteIntelligenceGuide() {
                             icon={<Users className="h-4 w-4 text-zinc-400" strokeWidth={1.9} aria-hidden />}
                             eyebrow="Model output"
                             title="Latest desk briefs from staff sync"
-                            subtitle={`Generated ${formatSyncTime(snapshot.at)} — stored on this venture; open a lane to read or continue in desk chat.`}
+                            subtitle={`Generated ${formatSyncTime(snapshot.at)} â€” stored on this venture; open a lane to read or continue in desk chat.`}
                         >
                             {snapshot.summary?.trim() ? (
                                 <InsetPanel className="mb-5 border-l-2 border-l-zinc-600 pl-4">
@@ -580,7 +580,7 @@ export function CsuiteIntelligenceGuide() {
                                             {open ? (
                                                 <div className="border-t border-white/[0.06] bg-black/25 px-4 py-4">
                                                     <p className="whitespace-pre-wrap text-[12px] leading-relaxed text-zinc-400">
-                                                        {row.text || '—'}
+                                                        {row.text || 'â€”'}
                                                     </p>
                                                     <DeskChatThreadMount className="mt-4 max-w-3xl" />
                                                 </div>
@@ -733,7 +733,7 @@ export function CsuiteIntelligenceGuide() {
                                 {
                                     icon: Users,
                                     label: 'Per-desk AI',
-                                    text: 'Each room’s chat uses that surface’s context; replies do not automatically rerun the whole staff sync. Use sync when you want all five briefs refreshed together.',
+                                    text: 'Each roomâ€™s chat uses that surfaceâ€™s context; replies do not automatically rerun the whole staff sync. Use sync when you want all five briefs refreshed together.',
                                     tone: 'border-l-2 border-l-zinc-600',
                                 },
                             ].map((item) => (
@@ -769,7 +769,7 @@ export function CsuiteIntelligenceGuide() {
                                 {[
                                     {
                                         label: 'Executive overview',
-                                        text: 'Charts and scores derive from what is already in the venture — they are not independent research.',
+                                        text: 'Charts and scores derive from what is already in the venture â€” they are not independent research.',
                                     },
                                     {
                                         label: 'Staff sync',
@@ -787,7 +787,7 @@ export function CsuiteIntelligenceGuide() {
                                         />
                                         <span>
                                             <span className="font-medium text-zinc-200">{item.label}</span>
-                                            <span className="text-zinc-500"> — {item.text}</span>
+                                            <span className="text-zinc-500"> â€” {item.text}</span>
                                         </span>
                                     </li>
                                 ))}
@@ -807,7 +807,7 @@ export function CsuiteIntelligenceGuide() {
                             {[
                                 {
                                     icon: LayoutDashboard,
-                                    text: 'Executive overview — KPIs, office brief, and dashboard tiles.',
+                                    text: 'Executive overview â€” KPIs, office brief, and dashboard tiles.',
                                     ring: 'border-zinc-800/90 bg-zinc-950/40',
                                     room: 'dashboard' as const,
                                     label: 'Overview',
@@ -815,7 +815,7 @@ export function CsuiteIntelligenceGuide() {
                                 },
                                 {
                                     icon: FileText,
-                                    text: 'Knowledge — exports and artifacts tied to desks.',
+                                    text: 'Knowledge â€” exports and artifacts tied to desks.',
                                     ring: 'border-zinc-800/90 bg-zinc-950/40',
                                     room: 'reports' as const,
                                     label: 'Knowledge',
@@ -823,7 +823,7 @@ export function CsuiteIntelligenceGuide() {
                                 },
                                 {
                                     icon: MessageSquare,
-                                    text: 'Personal Assistant — change strategy, phases, or board through chat.',
+                                    text: 'Personal Assistant â€” change strategy, phases, or board through chat.',
                                     ring: 'border-zinc-800/90 bg-zinc-950/40',
                                     room: 'personal_assistant' as const,
                                     label: 'Assistant',
@@ -841,7 +841,7 @@ export function CsuiteIntelligenceGuide() {
                                     </div>
                                     <p className="text-[12px] leading-relaxed text-zinc-400">{item.text}</p>
                                     <span className={`text-[10px] font-semibold uppercase tracking-wide ${item.ctaClass}`}>
-                                        Open {item.label} →
+                                        Open {item.label} â†’
                                     </span>
                                 </button>
                             ))}
@@ -856,3 +856,4 @@ export function CsuiteIntelligenceGuide() {
             </div>
     );
 }
+

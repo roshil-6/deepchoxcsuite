@@ -134,7 +134,7 @@ function CoachPanel({
                 <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-1">
                         <div>
-                            <span className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-[#7456ff]">Dexo</span>
+                            <span className="font-sans text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: '#f2f2f5' }}>Dexo</span>
                             <span className="ml-1.5 font-sans text-[8px] font-semibold uppercase tracking-widest text-[var(--muted)]">Guide</span>
                         </div>
                         <div className="flex items-center gap-0.5">
@@ -226,7 +226,7 @@ function CoachPanel({
                 <button
                     type="button"
                     onClick={last ? onFinish : onNext}
-                    className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl border border-violet-400/35 bg-violet-500/15 px-3 py-1.5 text-[11px] font-semibold tracking-wide text-violet-100 shadow-[0_1px_0_rgba(255,255,255,0.06)] transition hover:border-violet-400/50 hover:bg-violet-500/25 sm:py-2 sm:text-[12px]"
+                    className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl border px-3 py-1.5 text-[11px] font-semibold tracking-wide shadow-[0_1px_0_rgba(255,255,255,0.06)] transition sm:py-2 sm:text-[12px]" style={{ borderColor: 'rgba(255,255,255,0.14)', background: 'rgba(255,255,255,0.07)', color: '#f2f2f5' }}
                 >
                     {last ? 'Done' : 'Next'}
                     {!last ? <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" strokeWidth={2} aria-hidden /> : null}

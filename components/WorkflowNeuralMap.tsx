@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -32,9 +32,9 @@ const WORKFLOW_ICON: Record<IntelligenceWorkflow['id'], React.ReactNode> = {
 function protocolTone(protocol: IntelligenceWorkflow['protocol']): string {
     switch (protocol) {
         case 'parallel_merge':
-            return 'border-violet-400/28 bg-violet-500/[0.08] text-violet-200/90';
+            return 'border-white/10 bg-white/[0.05] text-white/55';
         case 'lead_challenger':
-            return 'border-violet-500/35 bg-violet-500/[0.12] text-violet-100/95';
+            return 'border-white/10 bg-white/[0.05] text-white/55';
         case 'relay_critique':
             return 'border-fuchsia-500/25 bg-fuchsia-500/[0.08] text-fuchsia-200/88';
         default:
@@ -176,7 +176,7 @@ export function WorkflowNeuralMap({ embedded = false }: { embedded?: boolean }) 
             className="pointer-events-none absolute inset-0 opacity-[0.22]"
             aria-hidden
             style={{
-                backgroundImage: 'radial-gradient(circle at 20% 0%, rgba(139,92,246,0.1) 0%, transparent 42%)',
+                backgroundImage: 'radial-gradient(circle at 20% 0%, rgba(255,255,255,0.07) 0%, transparent 42%)',
             }}
         />
     ) : (
@@ -185,7 +185,7 @@ export function WorkflowNeuralMap({ embedded = false }: { embedded?: boolean }) 
             aria-hidden
             style={{
                 backgroundImage:
-                    'radial-gradient(circle at 15% 25%, rgba(139,92,246,0.14) 0%, transparent 32%), radial-gradient(circle at 85% 70%, rgba(167,139,250,0.1) 0%, transparent 30%)',
+                    'radial-gradient(circle at 15% 25%, rgba(255,255,255,0.07) 0%, transparent 32%), radial-gradient(circle at 85% 70%, rgba(255,255,255,0.07) 0%, transparent 30%)',
             }}
         />
     );
@@ -194,16 +194,16 @@ export function WorkflowNeuralMap({ embedded = false }: { embedded?: boolean }) 
             <div className="relative space-y-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="flex min-w-0 items-start gap-3">
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-violet-500/25 bg-violet-500/[0.08] text-violet-100">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] text-white/70">
                             <BrainCircuit className="h-5 w-5" aria-hidden />
                         </div>
                         <div className="min-w-0">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-violet-300/70">AI network</p>
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/55">AI network</p>
                             <h2 className="mt-1 text-sm font-semibold tracking-tight text-[var(--text-primary)] sm:text-[15px]">
                                 Neural operating map
                             </h2>
                             <p className="mt-1.5 max-w-xl text-[11px] leading-relaxed text-[var(--text-secondary)]">
-                                I will help you build your venture — drag nodes to match how you think, and set performance preferences
+                                I will help you build your venture â€” drag nodes to match how you think, and set performance preferences
                                 for how answers should feel. Layout saves on this device.
                             </p>
                         </div>
@@ -213,7 +213,7 @@ export function WorkflowNeuralMap({ embedded = false }: { embedded?: boolean }) 
                         onClick={() =>
                             speakingKey === 'neural-welcome' ? stop() : speak(WELCOME_SPEECH, 'neural-welcome')
                         }
-                        className="flex shrink-0 items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-elevated)] px-3 py-2 text-[10px] font-medium text-[var(--text-secondary)] transition hover:border-violet-500/25 hover:bg-violet-500/[0.06]"
+                        className="flex shrink-0 items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-elevated)] px-3 py-2 text-[10px] font-medium text-[var(--text-secondary)] transition hover:border-white/10 hover:bg-white/[0.05]"
                     >
                         {speakingKey === 'neural-welcome' ? (
                             <Square className="h-3.5 w-3.5" aria-hidden />
@@ -228,13 +228,13 @@ export function WorkflowNeuralMap({ embedded = false }: { embedded?: boolean }) 
                     <div className="mb-3 flex flex-wrap items-center gap-2 text-[10px] text-[var(--text-secondary)]">
                         <SlidersHorizontal className="h-3.5 w-3.5 text-[var(--text-secondary)]" aria-hidden />
                         <span className="font-medium uppercase tracking-wider text-[var(--text-primary)]">Performance preferences</span>
-                        <span className="hidden sm:inline">— saved locally</span>
+                        <span className="hidden sm:inline">â€” saved locally</span>
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                         <label className="block space-y-1.5">
                             <span className="flex items-center gap-1.5 text-[10px] font-medium text-[var(--text-secondary)]">
                                 <Gauge className="h-3 w-3" aria-hidden />
-                                Pace · fast ↔ thorough
+                                Pace Â· fast â†” thorough
                             </span>
                             <input
                                 type="range"
@@ -251,7 +251,7 @@ export function WorkflowNeuralMap({ embedded = false }: { embedded?: boolean }) 
                         <label className="block space-y-1.5">
                             <span className="flex items-center gap-1.5 text-[10px] font-medium text-[var(--text-secondary)]">
                                 <Cpu className="h-3 w-3" aria-hidden />
-                                Model blend · GPT ↔ Claude
+                                Model blend Â· GPT â†” Claude
                             </span>
                             <input
                                 type="range"
@@ -268,7 +268,7 @@ export function WorkflowNeuralMap({ embedded = false }: { embedded?: boolean }) 
 
                 <div
                     ref={containerRef}
-                    className="relative isolate min-h-[min(72vh,520px)] w-full overflow-hidden rounded-xl border border-violet-500/15 bg-[var(--bg-primary)]"
+                    className="relative isolate min-h-[min(72vh,520px)] w-full overflow-hidden rounded-xl border border-white/10 bg-[var(--bg-primary)]"
                 >
                     <svg
                         className="pointer-events-none absolute inset-0 h-full w-full"
@@ -281,7 +281,7 @@ export function WorkflowNeuralMap({ embedded = false }: { embedded?: boolean }) 
                                 key={i}
                                 d={d}
                                 fill="none"
-                                stroke="rgba(167,139,250,0.22)"
+                                stroke="rgba(255,255,255,0.07)"
                                 strokeWidth={0.35}
                                 vectorEffect="non-scaling-stroke"
                             />
@@ -301,10 +301,10 @@ export function WorkflowNeuralMap({ embedded = false }: { embedded?: boolean }) 
                                   : 'Merge & route';
                         const tone =
                             id === 'gpt'
-                                ? 'border-violet-400/30 bg-violet-500/[0.1]'
+                                ? 'border-white/10 bg-white/[0.05]'
                                 : id === 'claude'
                                   ? 'border-fuchsia-500/28 bg-fuchsia-500/[0.08]'
-                                  : 'border-violet-500/40 bg-violet-500/[0.14]';
+                                  : 'border-white/10 bg-white/[0.05]';
                         return (
                             <div
                                 key={id}
@@ -339,12 +339,12 @@ export function WorkflowNeuralMap({ embedded = false }: { embedded?: boolean }) 
                                 onPointerUp={onPointerUp}
                                 onPointerCancel={onPointerUp}
                                 style={{ left: `${p.xp}%`, top: `${p.yp}%`, transform: 'translate(-50%, -50%)' }}
-                                className="absolute z-10 w-[min(94%,13rem)] touch-none cursor-grab select-none rounded-xl border border-violet-500/18 bg-[var(--bg-card)]/95 px-2.5 py-2 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] active:cursor-grabbing sm:w-52"
+                                className="absolute z-10 w-[min(94%,13rem)] touch-none cursor-grab select-none rounded-xl border border-white/10 bg-[var(--bg-card)]/95 px-2.5 py-2 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] active:cursor-grabbing sm:w-52"
                             >
                                 <div className="flex items-start justify-between gap-1">
                                     <div className="flex min-w-0 items-center gap-1.5">
                                         <GripVertical className="h-3.5 w-3.5 shrink-0 text-[var(--text-secondary)]" aria-hidden />
-                                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-violet-500/15 bg-[var(--bg-elevated)] text-violet-200/90">
+                                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-[var(--bg-elevated)] text-white/55">
                                             {WORKFLOW_ICON[workflow.id]}
                                         </div>
                                         <div className="min-w-0">
@@ -361,8 +361,8 @@ export function WorkflowNeuralMap({ embedded = false }: { embedded?: boolean }) 
                                     </span>
                                 </div>
                                 <div className="mt-2 grid grid-cols-2 gap-1.5">
-                                    <div className="rounded-md border border-violet-400/22 bg-violet-500/[0.07] px-1.5 py-1">
-                                        <p className="text-[8px] font-semibold uppercase text-violet-300/85">GPT</p>
+                                    <div className="rounded-md border border-white/10 bg-white/[0.05] px-1.5 py-1">
+                                        <p className="text-[8px] font-semibold uppercase text-white/55">GPT</p>
                                         <p className="mt-0.5 line-clamp-2 text-[9px] leading-snug text-[var(--text-secondary)]">{workflow.gptRole}</p>
                                     </div>
                                     <div className="rounded-md border border-fuchsia-500/22 bg-fuchsia-500/[0.07] px-1.5 py-1">
@@ -386,7 +386,7 @@ export function WorkflowNeuralMap({ embedded = false }: { embedded?: boolean }) 
                 </div>
 
                 <p className="text-center text-[10px] text-[var(--text-secondary)]">
-                    Drag any card to remap your view. Connections update live. Preferences are hints for future routing — they do not
+                    Drag any card to remap your view. Connections update live. Preferences are hints for future routing â€” they do not
                     change model APIs yet.
                 </p>
             </div>
@@ -402,9 +402,10 @@ export function WorkflowNeuralMap({ embedded = false }: { embedded?: boolean }) 
     }
 
     return (
-        <section className="relative overflow-hidden rounded-2xl border border-violet-500/20 bg-[var(--bg-card)] p-4 sm:p-5 shadow-[0_0_40px_-14px_rgba(139,92,246,0.22)]">
+        <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-[var(--bg-card)] p-4 sm:p-5 shadow-[0_0_40px_-14px_rgba(255,255,255,0.07)]">
             {wash}
             {inner}
         </section>
     );
 }
+

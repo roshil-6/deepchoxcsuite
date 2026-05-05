@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useMemo } from 'react';
 import { ShieldAlert, Play } from 'lucide-react';
@@ -71,15 +71,15 @@ export function WargameNexus() {
             {/* Header */}
             <div className="z-10 mb-8 flex items-center justify-between border-b border-zinc-800 pb-4">
                 <div className="flex items-center gap-3">
-                    <ShieldAlert className="h-6 w-6 animate-pulse text-violet-400" />
-                    <h1 className="text-2xl font-bold uppercase tracking-widest text-violet-300">Wargame Nexus</h1>
+                    <ShieldAlert className="h-6 w-6 animate-pulse text-white/70" />
+                    <h1 className="text-2xl font-bold uppercase tracking-widest text-white/70">Wargame Nexus</h1>
                 </div>
                 <div className="flex flex-col items-end gap-1 text-right">
                     <div className="rounded border border-brand-border bg-brand-panel/90 px-3 py-1 text-xs text-brand-muted">
                         SIMULATION STATUS: {isSimulating ? 'RUNNING' : 'IDLE'}
                     </div>
                     <p className="max-w-[14rem] text-[10px] leading-snug text-zinc-500">
-                        Impact core: {unifiedImpact.severity} · {wargameDesks.join(', ') || '—'}
+                        Impact core: {unifiedImpact.severity} Â· {wargameDesks.join(', ') || 'â€”'}
                     </p>
                 </div>
             </div>
@@ -96,7 +96,7 @@ export function WargameNexus() {
                             </div>
                             <div className="h-4 overflow-hidden rounded-full border border-brand-border bg-brand-input/80">
                                 <div
-                                    className="relative h-full bg-violet-500 transition-all duration-700 ease-out"
+                                    className="relative h-full bg-white/08 transition-all duration-700 ease-out"
                                     style={{ width: `${stats[stat as keyof typeof stats]}%` }}
                                 >
                                     <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
@@ -109,11 +109,11 @@ export function WargameNexus() {
                     <button
                         onClick={runSimulation}
                         disabled={isSimulating}
-                        className="group relative mt-8 flex items-center justify-center gap-3 overflow-hidden border-2 border-violet-500 py-4 font-bold uppercase tracking-[0.2em] transition-all hover:bg-violet-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                        className="group relative mt-8 flex items-center justify-center gap-3 overflow-hidden border-2 border-white/12 py-4 font-bold uppercase tracking-[0.2em] transition-all hover:bg-white/08 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         <Play className="h-5 w-5 fill-current" />
                         Run Stress Test
-                        {isSimulating && <div className="absolute inset-0 translate-x-[-100%] animate-[slide_2s_infinite] bg-violet-500/15" />}
+                        {isSimulating && <div className="absolute inset-0 translate-x-[-100%] animate-[slide_2s_infinite] bg-white/[0.05]" />}
                     </button>
                 </div>
 
@@ -126,7 +126,7 @@ export function WargameNexus() {
                     {log.map((entry, i) => (
                         <div key={i} className="mb-2 animate-in fade-in slide-in-from-left-2 border-l-2 border-zinc-700 pl-2">
                             <span className="mr-2 opacity-50">{entry.split(']')[0]}]</span>
-                            <span className={entry.includes('success') ? 'text-violet-300' : entry.includes('outage') || entry.includes('cost') ? 'text-red-400' : 'text-zinc-400'}>
+                            <span className={entry.includes('success') ? 'text-white/70' : entry.includes('outage') || entry.includes('cost') ? 'text-red-400' : 'text-zinc-400'}>
                                 {entry.split(']')[1]}
                             </span>
                         </div>
@@ -135,7 +135,7 @@ export function WargameNexus() {
                         <div className="mt-4 space-y-2 border-t border-zinc-800 pt-2 text-zinc-500">
                             <p>Simulation Complete. Report saved.</p>
                             <p className="text-[10px] leading-relaxed text-zinc-400">
-                                Unified impact: {unifiedImpact.severity} · desks {wargameDesks.join(', ') || '—'} · escalation{' '}
+                                Unified impact: {unifiedImpact.severity} Â· desks {wargameDesks.join(', ') || 'â€”'} Â· escalation{' '}
                                 {unifiedImpact.requiresEscalation ? 'yes' : 'no'}
                             </p>
                         </div>
@@ -145,3 +145,4 @@ export function WargameNexus() {
         </div>
     );
 }
+
