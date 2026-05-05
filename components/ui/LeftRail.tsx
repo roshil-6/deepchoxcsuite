@@ -66,12 +66,11 @@ export function LeftRail({
                         <div
                             className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
                             style={{
-                                background: 'rgba(139,92,246,0.14)',
-                                border: '1px solid rgba(139,92,246,0.28)',
-                                boxShadow: '0 0 12px rgba(139,92,246,0.15)',
+                                background: 'rgba(255,255,255,0.06)',
+                                border: '1px solid rgba(255,255,255,0.10)',
                             }}
                         >
-                            <Sparkles className="h-3.5 w-3.5 text-violet-400" strokeWidth={1.75} />
+                            <Sparkles className="h-3.5 w-3.5" style={{ color: '#f2f2f5' }} strokeWidth={1.75} />
                         </div>
                         <span className="font-sans text-[13.5px] font-bold tracking-tight text-white/88">DeepChox</span>
                     </div>
@@ -115,16 +114,16 @@ export function LeftRail({
                                     }}
                                     className="group flex w-full items-center gap-2.5 rounded-lg px-2.5 py-[7px] text-left transition-all duration-150"
                                     style={isActive ? {
-                                        background: 'rgba(139,92,246,0.09)',
-                                        boxShadow: 'inset 2px 0 0 rgba(139,92,246,0.55)',
-                                        color: 'rgba(255,255,255,0.88)',
+                                        background: 'rgba(255,255,255,0.07)',
+                                        boxShadow: 'inset 2px 0 0 rgba(255,255,255,0.30)',
+                                        color: '#f2f2f5',
                                     } : {}}
                                 >
                                     <span
                                         className="h-[5px] w-[5px] shrink-0 rounded-full transition-all duration-150"
                                         style={{
-                                            background: isActive ? 'rgba(167,139,250,1)' : 'rgba(255,255,255,0.14)',
-                                            boxShadow: isActive ? '0 0 6px rgba(167,139,250,0.6)' : 'none',
+                                            background: isActive ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.14)',
+                                            boxShadow: isActive ? '0 0 5px rgba(255,255,255,0.25)' : 'none',
                                         }}
                                     />
                                     <span
@@ -198,7 +197,7 @@ export function LeftRail({
                                             >
                                                 <Icon
                                                     className="h-3.5 w-3.5 shrink-0"
-                                                    style={{ color: active ? '#a78bfa' : undefined }}
+                                                    style={{ color: active ? '#f2f2f5' : undefined }}
                                                     strokeWidth={1.75}
                                                 />
                                                 <span className="flex min-w-0 flex-1 flex-col gap-0">
@@ -231,7 +230,7 @@ export function LeftRail({
                                         >
                                             <Icon
                                                 className="h-3.5 w-3.5 shrink-0"
-                                                style={{ color: active ? '#a78bfa' : undefined }}
+                                                style={{ color: active ? '#f2f2f5' : undefined }}
                                                 strokeWidth={1.75}
                                             />
                                             <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium leading-tight">
@@ -261,10 +260,11 @@ export function LeftRail({
                         <div className="flex flex-col gap-1.5">
                             <Link
                                 href="/sign-in"
-                                className="flex h-9 w-full items-center justify-center gap-2 rounded-xl text-[12px] font-semibold text-white/75 transition-all hover:text-white/95"
+                                className="flex h-9 w-full items-center justify-center gap-2 rounded-xl text-[12px] font-semibold transition-all"
                                 style={{
-                                    background: 'rgba(139,92,246,0.12)',
-                                    border: '1px solid rgba(139,92,246,0.28)',
+                                    background: 'rgba(255,255,255,0.09)',
+                                    border: '1px solid rgba(255,255,255,0.14)',
+                                    color: '#f2f2f5',
                                 }}
                             >
                                 <LogIn className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />

@@ -39,8 +39,8 @@ const DESKS: DeskConfig[] = [
         role: 'CEO Desk',
         description: 'Brand vision, competitive positioning, market strategy, and leadership direction.',
         Icon: TrendingUp,
-        iconColor: '#a78bfa',
-        iconBg: 'rgba(139,92,246,0.18)',
+        iconColor: '#c4b5fd',
+        iconBg: 'rgba(255,255,255,0.09)',
         tag: 'Core',
     },
     {
@@ -264,9 +264,9 @@ export function DesksHub() {
                         type="button"
                         onClick={() => switchRoom('dexo')}
                         className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-all"
-                        style={{ background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.25)', color: '#a78bfa' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(139,92,246,0.18)'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(139,92,246,0.12)'; }}
+                        style={{ background: '#f2f2f5', border: '1px solid transparent', color: '#0d0d10' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = '#e5e5ea'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = '#f2f2f5'; }}
                     >
                         <Plus className="h-3.5 w-3.5" strokeWidth={2} />
                         Ask Dexo
@@ -318,7 +318,7 @@ export function DesksHub() {
                     className="group relative flex w-full items-start gap-3.5 rounded-xl p-4 text-left transition-all duration-150"
                     style={{ background: '#19181f', border: '1px solid rgba(255,255,255,0.07)' }}
                     onMouseEnter={(e) => {
-                        e.currentTarget.style.background = '#201f28';
+                        e.currentTarget.style.background = '#1c1b24';
                         e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)';
                     }}
                     onMouseLeave={(e) => {
@@ -329,9 +329,9 @@ export function DesksHub() {
                     {/* Icon */}
                     <div
                         className="mt-0.5 flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl"
-                        style={{ background: 'rgba(139,92,246,0.18)' }}
+                        style={{ background: 'rgba(255,255,255,0.07)' }}
                     >
-                        <Sparkles className="h-5 w-5 text-violet-400" strokeWidth={1.75} />
+                        <Sparkles className="h-5 w-5" style={{ color: '#f2f2f5' }} strokeWidth={1.75} />
                     </div>
 
                     {/* Content */}
@@ -342,7 +342,7 @@ export function DesksHub() {
                             </p>
                             <span
                                 className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em]"
-                                style={{ background: 'rgba(139,92,246,0.14)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.22)' }}
+                                style={{ background: 'rgba(255,255,255,0.07)', color: '#8c8c9e', border: '1px solid rgba(255,255,255,0.10)' }}
                             >
                                 Co-Founder
                             </span>
