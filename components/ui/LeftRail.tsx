@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Plus, LogOut, LogIn, UserPlus, Home } from 'lucide-react';
+import { Plus, LogOut, LogIn, UserPlus, Sparkles } from 'lucide-react';
 import { useAuth } from '@clerk/nextjs';
 import { useOffice } from '@/lib/OfficeContext';
 import { getAllProjects } from '@/lib/db';
@@ -51,23 +51,36 @@ export function LeftRail({
         <div
             role="navigation"
             aria-label="DeepChox workspace navigation"
-            className="relative z-30 flex h-full min-h-0 w-full min-w-0 shrink-0 flex-col overflow-hidden border-r border-[var(--border)] shadow-[inset_-1px_0_0_rgba(255,255,255,0.06)] backdrop-blur-[6px] lg:w-[260px]"
-            style={{ background: 'rgba(14, 14, 17, 0.90)' }}
+            className="relative z-30 flex h-full min-h-0 w-full min-w-0 shrink-0 flex-col overflow-hidden lg:w-[252px]"
+            style={{
+                background: 'rgba(9, 9, 16, 0.97)',
+                borderRight: '1px solid rgba(255,255,255,0.07)',
+            }}
         >
             <div className="custom-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden">
 
-                {/* ── Brand header ── */}
+                {/* ── Brand ── */}
                 <div className="flex shrink-0 items-center justify-between gap-2 px-4 pb-3 pt-4">
-                    <div className="min-w-0">
-                        <p className="font-mono text-[8px] uppercase tracking-[0.22em] text-[#7456ff]">NorthROSC Labs</p>
-                        <p className="mt-0.5 truncate font-sans text-[15px] font-bold tracking-tight text-white/90">DeepChox AI</p>
+                    <div className="flex min-w-0 items-center gap-2.5">
+                        {/* Logo mark */}
+                        <div
+                            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
+                            style={{
+                                background: 'rgba(139,92,246,0.14)',
+                                border: '1px solid rgba(139,92,246,0.28)',
+                                boxShadow: '0 0 12px rgba(139,92,246,0.15)',
+                            }}
+                        >
+                            <Sparkles className="h-3.5 w-3.5 text-violet-400" strokeWidth={1.75} />
+                        </div>
+                        <span className="font-sans text-[13.5px] font-bold tracking-tight text-white/88">DeepChox</span>
                     </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
+                    <div className="flex shrink-0 items-center gap-1">
                         {onToggleIntel && (
                             <button
                                 type="button"
                                 onClick={onToggleIntel}
-                                className="rounded-lg p-1.5 text-[var(--muted)] transition-colors hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]"
+                                className="rounded-lg p-1.5 text-white/25 transition-colors hover:bg-white/[0.05] hover:text-white/55"
                                 aria-label="Toggle intelligence panel"
                             >
                                 <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -80,11 +93,11 @@ export function LeftRail({
                     </div>
                 </div>
 
-                {/* ── VENTURES (top — primary context) ── */}
+                {/* ── Ventures ── */}
                 <div className="shrink-0 px-3 pb-1">
-                    <div className="mb-1.5 flex items-center justify-between px-1">
-                        <span className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">
-                            Ventures {allProjects.length > 0 && <span className="ml-1 opacity-60">{allProjects.length}</span>}
+                    <div className="mb-1.5 flex items-center justify-between px-1.5">
+                        <span className="text-[9px] font-semibold uppercase tracking-[0.22em] text-white/28">
+                            Ventures{allProjects.length > 0 && <span className="ml-1.5 opacity-60">{allProjects.length}</span>}
                         </span>
                     </div>
 
@@ -100,16 +113,26 @@ export function LeftRail({
                                         switchRoom('dexo');
                                         onNavigate?.();
                                     }}
-                                    className={`group flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left transition-colors ${
-                                        isActive
-                                            ? 'bg-white/[0.07] text-white/85'
-                                            : 'text-white/40 hover:bg-white/[0.04] hover:text-white/70'
-                                    }`}
+                                    className="group flex w-full items-center gap-2.5 rounded-lg px-2.5 py-[7px] text-left transition-all duration-150"
+                                    style={isActive ? {
+                                        background: 'rgba(139,92,246,0.09)',
+                                        boxShadow: 'inset 2px 0 0 rgba(139,92,246,0.55)',
+                                        color: 'rgba(255,255,255,0.88)',
+                                    } : {}}
                                 >
-                                    <span className={`h-1.5 w-1.5 shrink-0 rounded-full transition-colors ${
-                                        isActive ? 'bg-[#9d88ff]' : 'bg-white/15 group-hover:bg-white/30'
-                                    }`} />
-                                    <span className="min-w-0 flex-1 truncate font-sans text-[13px]">{p.name}</span>
+                                    <span
+                                        className="h-[5px] w-[5px] shrink-0 rounded-full transition-all duration-150"
+                                        style={{
+                                            background: isActive ? 'rgba(167,139,250,1)' : 'rgba(255,255,255,0.14)',
+                                            boxShadow: isActive ? '0 0 6px rgba(167,139,250,0.6)' : 'none',
+                                        }}
+                                    />
+                                    <span
+                                        className="min-w-0 flex-1 truncate text-[12.5px] font-medium transition-colors duration-150"
+                                        style={{ color: isActive ? undefined : 'rgba(255,255,255,0.38)' }}
+                                    >
+                                        {p.name}
+                                    </span>
                                 </button>
                             );
                         })}
@@ -118,14 +141,18 @@ export function LeftRail({
                     <button
                         type="button"
                         onClick={() => { onNewVenture(); onNavigate?.(); }}
-                        className="mt-2 flex w-full items-center gap-2 rounded-md border border-dashed border-white/[0.08] px-2.5 py-2 font-sans text-[12px] font-medium text-white/30 transition hover:border-white/[0.16] hover:bg-white/[0.04] hover:text-white/60"
+                        className="mt-1.5 flex w-full items-center gap-2 rounded-lg px-2.5 py-[7px] text-[12px] font-medium transition-all duration-150 hover:bg-white/[0.04]"
+                        style={{
+                            border: '1px dashed rgba(255,255,255,0.08)',
+                            color: 'rgba(255,255,255,0.28)',
+                        }}
                     >
-                        <Plus className="h-3.5 w-3.5 shrink-0" strokeWidth={2} />
+                        <Plus className="h-3 w-3 shrink-0" strokeWidth={2} />
                         New venture
                     </button>
                 </div>
 
-                {/* Desk sync controls (venture-specific) */}
+                {/* Desk sync controls */}
                 <DeskSyncSidebarControls room={activeRoom} />
 
                 {/* Daily sync banner */}
@@ -136,14 +163,14 @@ export function LeftRail({
                 )}
 
                 {/* ── Divider ── */}
-                <div className="mx-3 my-3 h-px bg-[var(--border)]" />
+                <div className="mx-3 my-3 h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
 
                 {/* ── Navigation (grouped) ── */}
-                <nav className="flex shrink-0 flex-col px-2 pb-3 gap-4">
+                <nav className="flex shrink-0 flex-col gap-5 px-2 pb-3">
                     {APP_NAV_GROUPS.map((group) => (
                         <div key={group.id}>
                             {group.label && (
-                                <p className="mb-1 px-2 font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">
+                                <p className="mb-1.5 px-2 text-[9px] font-semibold uppercase tracking-[0.22em] text-white/22">
                                     {group.label}
                                 </p>
                             )}
@@ -159,21 +186,41 @@ export function LeftRail({
                                                 key={item.room}
                                                 type="button"
                                                 onClick={() => go(item.room)}
-                                                className={`group relative flex w-full items-center gap-3 rounded-lg py-2.5 pl-3 pr-3 text-left transition-colors ${
-                                                    active
-                                                        ? 'border border-[rgba(116,86,255,0.35)] bg-[rgba(116,86,255,0.12)]'
-                                                        : 'border border-transparent hover:border-white/[0.08] hover:bg-white/[0.04]'
-                                                }`}
+                                                className="group flex w-full items-center gap-3 rounded-xl py-2.5 pl-3 pr-3 text-left transition-all duration-150"
+                                                style={active ? {
+                                                    background: 'rgba(139,92,246,0.13)',
+                                                    border: '1px solid rgba(139,92,246,0.32)',
+                                                    boxShadow: '0 0 20px rgba(139,92,246,0.09)',
+                                                } : {
+                                                    border: '1px solid transparent',
+                                                }}
                                             >
-                                                <Icon
-                                                    className={`h-4 w-4 shrink-0 ${active ? 'text-[#c4b5fd]' : 'text-[var(--muted)] group-hover:text-white/60'}`}
-                                                    strokeWidth={1.75}
-                                                />
+                                                <div
+                                                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-all duration-150"
+                                                    style={active ? {
+                                                        background: 'rgba(139,92,246,0.2)',
+                                                        boxShadow: '0 0 10px rgba(139,92,246,0.2)',
+                                                    } : {
+                                                        background: 'rgba(255,255,255,0.05)',
+                                                    }}
+                                                >
+                                                    <Icon
+                                                        className={`h-3.5 w-3.5 ${active ? 'text-violet-300' : 'text-white/30 group-hover:text-white/55'}`}
+                                                        strokeWidth={1.75}
+                                                    />
+                                                </div>
                                                 <span className="flex flex-col gap-0.5 min-w-0">
-                                                    <span className={`truncate font-sans text-[13px] font-semibold leading-tight ${active ? 'text-[#e9e3ff]' : 'text-[var(--text-primary)]'}`}>
+                                                    <span
+                                                        className={`truncate text-[13px] font-semibold leading-tight ${active ? 'text-white/92' : 'text-white/55 group-hover:text-white/80'}`}
+                                                    >
                                                         {item.label}
                                                     </span>
-                                                    <span className="font-mono text-[9px] leading-tight text-white/25 uppercase tracking-[0.14em]">AI co-founder</span>
+                                                    <span
+                                                        className="text-[9px] uppercase tracking-[0.16em] leading-tight"
+                                                        style={{ color: active ? 'rgba(167,139,250,0.6)' : 'rgba(255,255,255,0.2)' }}
+                                                    >
+                                                        AI co-founder
+                                                    </span>
                                                 </span>
                                             </button>
                                         );
@@ -185,20 +232,22 @@ export function LeftRail({
                                             type="button"
                                             onClick={() => go(item.room)}
                                             title={WORKSPACE_TITLES[item.room] ?? item.label}
-                                            className={`group relative flex w-full items-center gap-3 rounded-md py-2 pl-3 pr-2 text-left transition-colors ${
-                                                active
-                                                    ? 'bg-[var(--accent-soft)] text-[#c4b5fd]'
-                                                    : 'text-white/40 hover:bg-white/[0.04] hover:text-white/70'
-                                            }`}
+                                            className="group flex w-full items-center gap-2.5 rounded-xl py-2 pl-3 pr-2 text-left transition-all duration-150"
+                                            style={active ? {
+                                                background: 'rgba(139,92,246,0.09)',
+                                                border: '1px solid rgba(139,92,246,0.15)',
+                                                color: 'rgba(196,181,253,0.9)',
+                                            } : {
+                                                border: '1px solid transparent',
+                                                color: 'rgba(255,255,255,0.35)',
+                                            }}
                                         >
-                                            {active && (
-                                                <span className="absolute left-0 top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-full bg-[var(--accent-violet)]" aria-hidden />
-                                            )}
                                             <Icon
-                                                className={`h-3.5 w-3.5 shrink-0 ${active ? 'text-[#9d88ff]' : 'text-white/25 group-hover:text-white/50'}`}
+                                                className="h-3.5 w-3.5 shrink-0 transition-colors duration-150"
+                                                style={{ color: active ? 'rgba(167,139,250,0.85)' : undefined }}
                                                 strokeWidth={1.75}
                                             />
-                                            <span className="min-w-0 flex-1 truncate font-sans text-[12.5px] font-medium leading-tight">
+                                            <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium leading-tight">
                                                 {item.label}
                                             </span>
                                         </button>
@@ -210,25 +259,37 @@ export function LeftRail({
                 </nav>
 
                 {/* ── Footer ── */}
-                <div className="mt-auto shrink-0 border-t border-[var(--border)] px-3 pb-4 pt-3 space-y-2">
+                <div
+                    className="mt-auto shrink-0 space-y-2 px-3 pb-4 pt-3"
+                    style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+                >
                     <SectionGuideRailButton />
                     <div className="flex justify-center">
                         <TokenDisplay compact showCosts={false} onRequestUpgrade={onUpgrade} />
                     </div>
+
                     {!isLoaded ? (
                         <div className="h-9" aria-hidden />
                     ) : !isSignedIn ? (
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-1.5">
                             <Link
                                 href="/sign-in"
-                                className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border border-white/20 bg-white/[0.08] font-sans text-[12px] font-semibold text-white transition hover:bg-white/[0.13] hover:border-white/30"
+                                className="flex h-9 w-full items-center justify-center gap-2 rounded-xl text-[12px] font-semibold text-white/75 transition-all hover:text-white/95"
+                                style={{
+                                    background: 'rgba(139,92,246,0.12)',
+                                    border: '1px solid rgba(139,92,246,0.28)',
+                                }}
                             >
                                 <LogIn className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
                                 Sign in
                             </Link>
                             <Link
                                 href="/sign-up"
-                                className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border border-white/[0.12] bg-white/[0.06] font-sans text-[12px] font-semibold text-white/60 transition hover:border-white/[0.2] hover:bg-white/[0.1] hover:text-white/85"
+                                className="flex h-9 w-full items-center justify-center gap-2 rounded-xl text-[12px] font-medium text-white/40 transition-all hover:text-white/70"
+                                style={{
+                                    background: 'rgba(255,255,255,0.04)',
+                                    border: '1px solid rgba(255,255,255,0.08)',
+                                }}
                             >
                                 <UserPlus className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
                                 Create account
@@ -236,9 +297,8 @@ export function LeftRail({
                             <button
                                 type="button"
                                 onClick={onLogout}
-                                className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl font-sans text-[12px] text-[var(--muted)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--text-secondary)]"
+                                className="flex h-8 w-full items-center justify-center gap-2 rounded-xl text-[11.5px] text-white/24 transition-all hover:text-white/50"
                             >
-                                <Home className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
                                 Back to welcome
                             </button>
                         </div>
@@ -246,7 +306,7 @@ export function LeftRail({
                         <button
                             type="button"
                             onClick={onLogout}
-                            className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl font-sans text-[12px] text-[var(--muted)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--text-secondary)]"
+                            className="flex h-9 w-full items-center justify-center gap-2 rounded-xl text-[12px] text-white/28 transition-all hover:bg-white/[0.04] hover:text-white/55"
                         >
                             <LogOut className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
                             Sign out
