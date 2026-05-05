@@ -696,17 +696,20 @@ export function DexoRoom() {
 
             {/* ── Sticky mode header ── */}
             {activeProject && (
-                <div className="relative z-20 shrink-0 border-b border-white/[0.07]" style={{ background: 'rgba(12,12,14,0.96)' }}>
-                    <div className="mx-auto flex max-w-[660px] items-center gap-3 px-4 py-2">
-                        <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/30 shrink-0">VENTURE</span>
-                        <span className="max-w-[140px] truncate font-sans text-[12px] font-medium text-white/70">
+                <div className="relative z-20 shrink-0" style={{ background: '#111117', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                    <div className="mx-auto flex max-w-[660px] items-center gap-3 px-4 py-2.5">
+                        <span className="font-sans text-[9px] font-semibold uppercase tracking-[0.18em] shrink-0" style={{ color: '#5c5c6e' }}>VENTURE</span>
+                        <span className="max-w-[160px] truncate font-sans text-[13px] font-medium" style={{ color: '#f2f2f5' }}>
                             {activeProject.name}
                         </span>
-                        <span className="text-white/20 select-none">|</span>
+                        <span style={{ color: 'rgba(255,255,255,0.12)' }} className="select-none">|</span>
                         <button
                             type="button"
                             onClick={() => setModePanelOpen(o => !o)}
-                            className="flex items-center gap-1.5 rounded border border-white/[0.1] bg-white/[0.04] px-2 py-1 font-mono text-[9px] uppercase tracking-[0.15em] text-white/50 transition hover:border-white/[0.18] hover:bg-white/[0.08] hover:text-white/80"
+                            className="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-all"
+                            style={{ background: '#1c1b24', border: '1px solid rgba(255,255,255,0.09)', color: '#8c8c9e' }}
+                            onMouseEnter={(e) => { e.currentTarget.style.color = '#f2f2f5'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.16)'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.color = '#8c8c9e'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.09)'; }}
                         >
                             <span className="text-xs leading-none">{activePriorityDef?.icon ?? '◎'}</span>
                             <span>{activePriorityDef?.label ?? 'Set focus'}</span>
@@ -820,30 +823,30 @@ export function DexoRoom() {
                     {/* ── Tab row ── */}
                     <div className="mb-6 flex items-center justify-between gap-2">
                         <div
-                            className="flex items-center gap-0.5 rounded-full p-[3px]"
-                            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+                            className="flex items-center gap-1 rounded-full p-[3px]"
+                            style={{ background: '#19181f', border: '1px solid rgba(255,255,255,0.07)' }}
                         >
+                            {/* Chat tab */}
                             <button
                                 type="button"
                                 onClick={() => setView('chat')}
-                                className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] font-medium transition-all duration-150 ${
-                                    view === 'chat'
-                                        ? 'bg-white/[0.1] text-white/88 shadow-sm'
-                                        : 'text-white/32 hover:text-white/60'
-                                }`}
+                                className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-all duration-150"
+                                style={view === 'chat'
+                                    ? { background: '#f2f2f5', color: '#0d0d10' }
+                                    : { color: '#8c8c9e' }}
                             >
                                 <MessageSquarePlus className="h-3 w-3" />
                                 Chat
                             </button>
+                            {/* Overview tab — only when there's a report */}
                             {currentReport && (
                                 <button
                                     type="button"
                                     onClick={() => { overviewNudgeShownRef.current = true; setView('overview'); }}
-                                    className={`relative flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] font-medium transition-all duration-150 ${
-                                        view === 'overview'
-                                            ? 'bg-white/[0.1] text-white/88 shadow-sm'
-                                            : 'text-white/32 hover:text-white/60'
-                                    }`}
+                                    className="relative flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-all duration-150"
+                                    style={view === 'overview'
+                                        ? { background: '#f2f2f5', color: '#0d0d10' }
+                                        : { color: '#8c8c9e' }}
                                 >
                                     <Activity className="h-3 w-3" />
                                     Overview
@@ -852,24 +855,26 @@ export function DexoRoom() {
                                     )}
                                 </button>
                             )}
+                            {/* Research tab */}
                             <button
                                 type="button"
                                 onClick={() => setView('daily')}
-                                className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] font-medium transition-all duration-150 ${
-                                    view === 'daily'
-                                        ? 'bg-white/[0.1] text-white/88 shadow-sm'
-                                        : 'text-white/32 hover:text-white/60'
-                                }`}
+                                className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-all duration-150"
+                                style={view === 'daily'
+                                    ? { background: '#f2f2f5', color: '#0d0d10' }
+                                    : { color: '#8c8c9e' }}
                             >
                                 <BarChart2 className="h-3 w-3" />
                                 Research
                             </button>
+                            {/* New (reset) */}
                             {view === 'chat' && (
                                 <button
                                     type="button"
                                     onClick={resetConversation}
                                     disabled={loading || !activeProject?.id}
-                                    className="rounded-full px-3 py-1.5 text-[11px] text-white/20 transition hover:text-white/50 disabled:opacity-25"
+                                    className="rounded-full px-3 py-1.5 text-[12px] font-medium transition-all duration-150 disabled:opacity-25"
+                                    style={{ color: '#5c5c6e' }}
                                 >
                                     New
                                 </button>
@@ -981,7 +986,7 @@ export function DexoRoom() {
                     {view === 'chat' && (
                     <>
                     {/* ── Identity header ── */}
-                    <div className="mb-7 flex items-center gap-3.5">
+                    <div className="mb-7 flex items-start gap-3.5">
                         <DexoAvatar
                             state={
                                 orbState === 'loading'    ? 'thinking'  :
@@ -991,25 +996,26 @@ export function DexoRoom() {
                             }
                             size="md"
                             pulse
-                            className="shrink-0"
+                            className="shrink-0 mt-0.5"
                         />
                         <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-2">
-                                <h1 className="text-[15px] font-semibold leading-tight tracking-tight text-white/90">
+                                <h1 className="text-[16px] font-semibold leading-tight tracking-tight" style={{ color: '#f2f2f5' }}>
                                     {activeProject?.name ?? 'Dexo'}
                                 </h1>
                                 {(isSpeaking || isListening) && (
-                                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-medium ${
-                                        isListening
-                                            ? 'bg-rose-500/10 text-rose-400'
-                                            : 'bg-emerald-500/10 text-emerald-400'
-                                    }`}>
+                                    <span
+                                        className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-medium"
+                                        style={isListening
+                                            ? { background: 'rgba(244,63,94,0.10)', color: '#f87171' }
+                                            : { background: 'rgba(16,185,129,0.10)', color: '#34d399' }}
+                                    >
                                         <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse" />
                                         {isListening ? 'Listening' : 'Speaking'}
                                     </span>
                                 )}
                             </div>
-                            <p className="mt-0.5 text-[12px] text-white/28">Tell me what&apos;s on your mind.</p>
+                            <p className="mt-0.5 text-[12.5px]" style={{ color: '#5c5c6e' }}>Tell me what&apos;s on your mind.</p>
                         </div>
                     </div>
                     {voiceError && (
@@ -1039,8 +1045,12 @@ export function DexoRoom() {
                                         return (
                                             <div key={msg.id} className="flex justify-end">
                                                 <div
-                                                    className="max-w-[82%] sm:max-w-[72%] rounded-2xl rounded-br-sm px-4 py-2.5 text-[13.5px] leading-relaxed text-white/85"
-                                                    style={{ background: 'rgba(255,255,255,0.08)' }}
+                                                    className="max-w-[82%] sm:max-w-[72%] rounded-2xl rounded-br-md px-4 py-3 text-[13.5px] leading-relaxed"
+                                                    style={{
+                                                        background: '#1c1b24',
+                                                        border: '1px solid rgba(255,255,255,0.09)',
+                                                        color: '#f2f2f5',
+                                                    }}
                                                 >
                                                     {msg.text}
                                                 </div>
@@ -1053,14 +1063,17 @@ export function DexoRoom() {
                                         <div key={msg.id} className="flex flex-col items-start gap-2">
                                             <div className="flex items-center gap-1.5">
                                                 <DexoParticleMark state="idle" />
-                                                <span className="text-[9px] uppercase tracking-[0.2em] text-white/22">Dexo</span>
+                                                <span className="text-[9px] font-semibold uppercase tracking-[0.2em]" style={{ color: '#5c5c6e' }}>DEXO</span>
                                             </div>
                                             <div className="w-full pl-8">
-                                                <p className="text-[14px] leading-[1.75] text-white/78 whitespace-pre-wrap">{msg.text}</p>
+                                                <p className="text-[14px] leading-[1.75] whitespace-pre-wrap" style={{ color: '#8c8c9e' }}>{msg.text}</p>
                                                 <button
                                                     type="button"
                                                     onClick={() => isSpeaking ? stopSpeaking() : speakJarvis(msg.text)}
-                                                    className="mt-2 inline-flex items-center gap-1 text-[10px] text-white/18 transition hover:text-white/45"
+                                                    className="mt-2 inline-flex items-center gap-1 text-[10px] transition"
+                                                    style={{ color: 'rgba(255,255,255,0.16)' }}
+                                                    onMouseEnter={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.45)'; }}
+                                                    onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.16)'; }}
                                                     title={isSpeaking ? 'Stop speaking' : 'Read aloud'}
                                                 >
                                                     {isSpeaking
@@ -1076,13 +1089,15 @@ export function DexoRoom() {
                                 {/* Overview ready nudge */}
                                 {currentReport && !loading && convo.some(m => m.role === 'dexo') && (
                                     <div className="flex flex-col items-start gap-2 pl-8">
-                                        <p className="text-[11px] uppercase tracking-[0.14em] text-blue-400/50">Overview ready</p>
-                                        <p className="text-[13px] leading-snug text-white/68">{currentReport.headline}</p>
+                                        <p className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: '#5c5c6e' }}>Overview ready</p>
+                                        <p className="text-[13px] leading-snug font-medium" style={{ color: '#f2f2f5' }}>{currentReport.headline}</p>
                                         <button
                                             type="button"
                                             onClick={() => { overviewNudgeShownRef.current = true; setView('overview'); }}
-                                            className="mt-1 inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] text-white/50 transition hover:text-white/80"
-                                            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)' }}
+                                            className="mt-1 inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] font-medium transition-all duration-150"
+                                            style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.10)', color: '#8c8c9e' }}
+                                            onMouseEnter={(e) => { e.currentTarget.style.background = '#19181f'; e.currentTarget.style.color = '#f2f2f5'; }}
+                                            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#8c8c9e'; }}
                                         >
                                             <Activity className="h-3 w-3" />
                                             See full overview
@@ -1104,11 +1119,10 @@ export function DexoRoom() {
                                                         setConvo(prev => [...prev, { role: 'user', text: reply, id: uid }]);
                                                         void run('converse', reply);
                                                     }}
-                                                    className="rounded-full px-3.5 py-1.5 text-[12px] text-white/38 transition-all hover:text-white/70"
-                                                    style={{
-                                                        background: 'rgba(255,255,255,0.04)',
-                                                        border: '1px solid rgba(255,255,255,0.08)',
-                                                    }}
+                                                    className="rounded-full px-3.5 py-1.5 text-[12px] font-medium transition-all duration-150"
+                                                    style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.10)', color: '#8c8c9e' }}
+                                                    onMouseEnter={(e) => { e.currentTarget.style.background = '#19181f'; e.currentTarget.style.color = '#f2f2f5'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.16)'; }}
+                                                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#8c8c9e'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.10)'; }}
                                                 >
                                                     {reply}
                                                 </button>
@@ -1147,10 +1161,10 @@ export function DexoRoom() {
 
             {/* ── Input strip ── */}
             <div className="relative z-10 shrink-0">
-                <div className="pointer-events-none absolute inset-x-0 -top-16 h-16 bg-gradient-to-t from-[rgba(12,12,14,0.95)] to-transparent" />
+                <div className="pointer-events-none absolute inset-x-0 -top-16 h-16 bg-gradient-to-t from-[#111117] to-transparent" />
                 <div
                     className="px-4 pb-5 pt-3"
-                    style={{ background: 'rgba(12,12,14,0.97)', borderTop: '1px solid rgba(255,255,255,0.05)' }}
+                    style={{ background: '#111117', borderTop: '1px solid rgba(255,255,255,0.07)' }}
                 >
                     <div className="mx-auto max-w-[660px] space-y-2">
 
@@ -1184,9 +1198,9 @@ export function DexoRoom() {
                                 isListening   ? 'shadow-[0_0_0_1.5px_rgba(244,63,94,0.35)]' :
                                 isSpeaking    ? 'shadow-[0_0_0_1.5px_rgba(16,185,129,0.3)]' :
                                 isProcessing  ? 'shadow-[0_0_0_1.5px_rgba(99,102,241,0.3)]' :
-                                'focus-within:shadow-[0_0_0_1.5px_rgba(255,255,255,0.14)]'
+                                'focus-within:shadow-[0_0_0_1.5px_rgba(255,255,255,0.12)]'
                             }`}
-                            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+                            style={{ background: '#19181f', border: '1px solid rgba(255,255,255,0.09)' }}
                         >
                             {/* Mic button */}
                             <div className="relative shrink-0">
