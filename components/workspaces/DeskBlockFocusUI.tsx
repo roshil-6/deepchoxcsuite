@@ -1,9 +1,9 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { DeskChatThreadMount } from '@/components/DeskChatThreadSlotContext';
-/** User-side “question” bubble in desk block-focus mode */
+/** User-side â€œquestionâ€ bubble in desk block-focus mode */
 export function DeskMsgUser({ children }: { children: React.ReactNode }) {
     return (
         <div className="flex justify-end">
@@ -14,7 +14,7 @@ export function DeskMsgUser({ children }: { children: React.ReactNode }) {
     );
 }
 
-/** Assistant-side details — label only; body flows on the canvas (no inner “card” around block content). */
+/** Assistant-side details â€” label only; body flows on the canvas (no inner â€œcardâ€ around block content). */
 export function DeskMsgAssistant({
     children,
     variant = 'default',
@@ -23,7 +23,7 @@ export function DeskMsgAssistant({
     children: React.ReactNode;
     /** Full width for large canvases (e.g. strategy flow map). */
     variant?: 'default' | 'fullBleed';
-    /** Hide the “Details” kicker (e.g. long-form narrative should feel like the page, not a inset panel). */
+    /** Hide the â€œDetailsâ€ kicker (e.g. long-form narrative should feel like the page, not a inset panel). */
     hideDetailsLabel?: boolean;
 }) {
     const full = variant === 'fullBleed';
@@ -104,9 +104,9 @@ export function DeskFocusToolbar({
     saving?: boolean;
     saveLabel?: string;
     saveClassName?: string;
-    /** Merged onto header — e.g. `border-b-0 bg-transparent` for a flat document surface */
+    /** Merged onto header â€” e.g. `border-b-0 bg-transparent` for a flat document surface */
     className?: string;
-    /** `compact` — back + save only (title lives in the page body). */
+    /** `compact` â€” back + save only (title lives in the page body). */
     layout?: 'default' | 'compact';
 }) {
     const saveBtn =
@@ -116,7 +116,7 @@ export function DeskFocusToolbar({
 
     if (layout === 'compact') {
         return (
-            <header className={`${headerBase} border-b-0 bg-transparent backdrop-blur-none`}>
+            <header className={`${headerBase} border-b-0 bg-transparent`}>
                 <button
                     type="button"
                     onClick={onBack}
@@ -138,7 +138,7 @@ export function DeskFocusToolbar({
 
     return (
         <header
-            className={`${headerBase} border-b border-white/[0.06] bg-brand-bg/90 backdrop-blur-sm`}
+            className={`${headerBase} border-b border-white/[0.06] bg-[#111117]`}
         >
             <button
                 type="button"
@@ -161,3 +161,4 @@ export function DeskFocusToolbar({
         </header>
     );
 }
+

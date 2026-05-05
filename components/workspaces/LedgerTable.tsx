@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import { useAnalysisData } from '@/lib/useAnalysisData';
@@ -35,7 +35,7 @@ export function LedgerTable() {
 
                 {/* Top Metrics Row */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-zinc-900/40 backdrop-blur-md border border-zinc-800 p-7 rounded-2xl shadow-xl">
+                    <div className="bg-[#111117] border border-zinc-800 p-7 rounded-2xl shadow-xl">
                         <div className="flex items-center justify-between mb-2">
                             <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Total Capitalization</div>
                             <TrendingUp className="w-4 h-4 text-[#0D9488]" />
@@ -47,7 +47,7 @@ export function LedgerTable() {
                         </div>
                     </div>
 
-                    <div className="bg-zinc-900/40 backdrop-blur-md border border-zinc-800 p-7 rounded-2xl shadow-xl">
+                    <div className="bg-[#111117] border border-zinc-800 p-7 rounded-2xl shadow-xl">
                         <div className="flex items-center justify-between mb-2">
                             <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Operational Burn</div>
                             <Activity className="w-4 h-4 text-zinc-400" />
@@ -58,7 +58,7 @@ export function LedgerTable() {
                         </div>
                     </div>
 
-                    <div className="bg-zinc-900/40 backdrop-blur-md border border-zinc-800 p-7 rounded-2xl shadow-xl">
+                    <div className="bg-[#111117] border border-zinc-800 p-7 rounded-2xl shadow-xl">
                         <div className="flex items-center justify-between mb-2">
                             <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Net Runway</div>
                             <PieChart className="w-4 h-4 text-zinc-400" />
@@ -89,9 +89,9 @@ export function LedgerTable() {
                         </div>
                     </div>
 
-                    <div className="bg-zinc-900/40 backdrop-blur-md border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl">
+                    <div className="bg-[#111117] border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl">
                         <table className="w-full text-left">
-                            <thead className="bg-zinc-950/50 border-b border-zinc-800">
+                            <thead className="bg-[#0d0d10] border-b border-zinc-800">
                                 <tr>
                                     <th className="px-6 py-4 text-[10px] font-bold text-zinc-600 uppercase tracking-widest">Account Unit</th>
                                     <th className="px-6 py-4 text-[10px] font-bold text-zinc-600 uppercase tracking-widest text-right">Allocation</th>
@@ -106,7 +106,7 @@ export function LedgerTable() {
                                             <div className="text-xs font-bold text-zinc-200 uppercase tracking-wide">{item.category}</div>
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <div className="text-xs font-bold text-zinc-100">{item.amount || '—'}</div>
+                                            <div className="text-xs font-bold text-zinc-100">{item.amount || 'â€”'}</div>
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800">Operational</span>
@@ -146,3 +146,4 @@ export function LedgerTable() {
         </div>
     );
 }
+

@@ -652,18 +652,18 @@ export function ChatAssistant({
                         type="button"
                         onClick={() => setFloatOpen(true)}
                         style={{ transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)` }}
-                        className="fixed bottom-[108px] left-1/2 z-[60] flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/[0.14] bg-zinc-900/95 px-3.5 py-2 text-[12px] font-medium text-zinc-100 shadow-[0_8px_32px_rgba(0,0,0,0.55)] backdrop-blur-sm transition hover:bg-zinc-800 hover:text-white lg:left-auto lg:translate-x-0 lg:right-[360px]"
+                        className="fixed bottom-[108px] left-1/2 z-[60] flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/[0.14] bg-zinc-900/95 px-3.5 py-2 text-[12px] font-medium text-zinc-100 shadow-[0_8px_32px_rgba(0,0,0,0.55)] transition hover:bg-zinc-800 hover:text-white lg:left-auto lg:translate-x-0 lg:right-[360px]"
                     >
                         <MessageSquare className="h-3.5 w-3.5" aria-hidden />
                         <span>Thread</span>
-                        <span className="ml-0.5 rounded-full border border-white/[0.1] bg-zinc-950/80 px-1.5 py-px text-[10px] tabular-nums text-zinc-300">{messages.length}</span>
+                        <span className="ml-0.5 rounded-full border border-white/[0.1] bg-[#111117] px-1.5 py-px text-[10px] tabular-nums text-zinc-300">{messages.length}</span>
                     </button>
                 )}
                 {/* Floating thread panel */}
                 {floatOpen && (
                     <div
                         style={{ transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)` }}
-                        className={`fixed bottom-[108px] left-1/2 z-[60] flex w-[min(calc(100vw-1rem),380px)] -translate-x-1/2 flex-col overflow-hidden rounded-2xl border border-white/[0.14] bg-zinc-900/98 shadow-[0_24px_56px_-12px_rgba(0,0,0,0.65)] backdrop-blur-md transition-[height,width] duration-300 ease-in-out lg:left-auto lg:w-[380px] lg:translate-x-0 lg:right-[360px] ${
+                        className={`fixed bottom-[108px] left-1/2 z-[60] flex w-[min(calc(100vw-1rem),380px)] -translate-x-1/2 flex-col overflow-hidden rounded-2xl border border-white/[0.14] bg-zinc-900/98 shadow-[0_24px_56px_-12px_rgba(0,0,0,0.65)] transition-[height,width] duration-300 ease-in-out lg:left-auto lg:w-[380px] lg:translate-x-0 lg:right-[360px] ${
                             floatExpanded
                                 ? 'h-[min(520px,calc(100dvh-140px))] w-[min(calc(100vw-1rem),680px)] lg:h-[520px] lg:w-[680px]'
                                 : 'h-[300px] lg:h-[300px]'
@@ -742,9 +742,9 @@ export function ChatAssistant({
                                     ? 'h-auto w-full rounded-3xl border border-white/[0.08] bg-zinc-800/90'
                                     : 'w-full rounded-3xl border border-white/[0.08] bg-zinc-800/90'
                                 : isBottomDock && dockThreadEmpty
-                                  ? `h-auto w-full ${isAiOs ? 'rounded-3xl border border-white/[0.08] bg-zinc-800/95 shadow-[0_-16px_48px_rgba(0,0,0,0.4)] backdrop-blur-md' : 'rounded-none border-0 bg-transparent'}`
+                                  ? `h-auto w-full ${isAiOs ? 'rounded-3xl border border-white/[0.08] bg-[#1c1b24] shadow-[0_-16px_48px_rgba(0,0,0,0.4)]' : 'rounded-none border-0 bg-transparent'}`
                                   : isBottomDock
-                                    ? `min-h-0 w-full max-h-full flex-1 ${isAiOs ? 'rounded-3xl border border-white/[0.08] bg-zinc-800/95 shadow-[0_-16px_48px_rgba(0,0,0,0.4)] backdrop-blur-md' : 'rounded-none border-0 bg-transparent'}`
+                                    ? `min-h-0 w-full max-h-full flex-1 ${isAiOs ? 'rounded-3xl border border-white/[0.08] bg-[#1c1b24] shadow-[0_-16px_48px_rgba(0,0,0,0.4)]' : 'rounded-none border-0 bg-transparent'}`
                                     : chatTheme.railClass
                       }`
             }
@@ -857,7 +857,7 @@ export function ChatAssistant({
                     className={`flex flex-wrap gap-2 px-1 py-1.5 sm:px-2 ${
                         isDockChrome
                             ? 'border-0 bg-transparent'
-                            : 'border-t border-brand-border bg-brand-panel/80 px-6 py-3'
+                            : 'border-t border-brand-border bg-[#111117] px-6 py-3'
                     }`}
                 >
                     {activeProject.files.map(f => (
@@ -952,7 +952,7 @@ export function ChatAssistant({
                         </div>
                     </div>
                 ) : (
-                    <div className="group relative mx-auto w-full overflow-hidden rounded-3xl border border-white/[0.06] bg-white/[0.04] backdrop-blur-md transition-all duration-300 focus-within:border-white/[0.1] focus-within:bg-white/[0.06]">
+                    <div className="group relative mx-auto w-full overflow-hidden rounded-3xl border border-white/[0.06] bg-white/[0.04] transition-all duration-300 focus-within:border-white/[0.1] focus-within:bg-white/[0.06]">
                         <textarea
                             ref={textareaRef}
                             value={inputValue}
@@ -1033,4 +1033,5 @@ export function ChatAssistant({
         </div>
     );
 }
+
 

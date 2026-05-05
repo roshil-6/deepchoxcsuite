@@ -28,9 +28,9 @@ const DEFAULT_CHAT: ChatRailTheme = {
   roleLabel: RESEARCH_STAFF.dexo.navTitle,
   subtitle: 'Side thread for this room.',
   emptyPrompt: 'Ask something about this venture or desk.',
-  headerClass: 'border-b border-[var(--border)] bg-[var(--bg-secondary)]/95 backdrop-blur-md',
-  railClass: 'border-r border-[var(--border)] bg-[var(--bg-secondary)]/92 backdrop-blur-md',
-  userBubbleClass: 'border border-[rgba(116,86,255,0.22)] bg-[var(--accent-soft)] text-brand-text shadow-[0_1px_2px_rgba(0,0,0,0.25)]',
+  headerClass: 'border-b border-[var(--border)] bg-[var(--bg-secondary)]',
+  railClass: 'border-r border-[var(--border)] bg-[var(--bg-secondary)]',
+  userBubbleClass: 'border border-white/[0.09] bg-white/[0.05] text-brand-text shadow-[0_1px_2px_rgba(0,0,0,0.25)]',
   accentDot: 'bg-[var(--accent)]',
   placeholder: 'Message…',
 };

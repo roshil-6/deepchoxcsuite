@@ -108,7 +108,7 @@ export function PortfolioDailyIntelSection({
           type="button"
           onClick={() => void load()}
           disabled={refreshing}
-          className="inline-flex items-center justify-center gap-2 self-start rounded-xl border border-white/[0.1] bg-white/[0.04] px-4 py-2 text-xs font-medium text-[var(--text-secondary)] backdrop-blur-sm transition hover:bg-white/[0.07] disabled:opacity-50 sm:self-auto"
+          className="inline-flex items-center justify-center gap-2 self-start rounded-xl border border-white/[0.1] bg-white/[0.04] px-4 py-2 text-xs font-medium text-[var(--text-secondary)] transition hover:bg-white/[0.07] disabled:opacity-50 sm:self-auto"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} aria-hidden />
           Refresh intel
@@ -125,7 +125,7 @@ export function PortfolioDailyIntelSection({
               key={project.id ?? project.name}
               className="group relative overflow-hidden rounded-2xl border border-white/[0.09] bg-gradient-to-br from-[rgba(255,255,255,0.07)] via-[rgba(255,255,255,0.03)] to-[rgba(6,182,212,0.06)] p-[1px] shadow-[0_20px_50px_rgba(0,0,0,0.35)]"
             >
-              <div className="h-full rounded-[0.9rem] bg-[rgba(12,12,14,0.78)] p-4 backdrop-blur-xl">
+              <div className="h-full rounded-[0.9rem] bg-[#0d0d10] p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="truncate text-[11px] font-semibold uppercase tracking-[0.14em] text-cyan-200/85">
@@ -201,4 +201,5 @@ export function PortfolioDailyIntelSection({
     </section>
   );
 }
+
 
