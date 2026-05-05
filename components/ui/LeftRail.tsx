@@ -53,7 +53,7 @@ export function LeftRail({
             aria-label="DeepChox workspace navigation"
             className="relative z-30 flex h-full min-h-0 w-full min-w-0 shrink-0 flex-col overflow-hidden lg:w-[252px]"
             style={{
-                background: 'rgba(9, 9, 16, 0.97)',
+                background: '#111117',
                 borderRight: '1px solid rgba(255,255,255,0.07)',
             }}
         >
@@ -186,39 +186,26 @@ export function LeftRail({
                                                 key={item.room}
                                                 type="button"
                                                 onClick={() => go(item.room)}
-                                                className="group flex w-full items-center gap-3 rounded-xl py-2.5 pl-3 pr-3 text-left transition-all duration-150"
+                                                className="group flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-all duration-150"
                                                 style={active ? {
-                                                    background: 'rgba(139,92,246,0.13)',
-                                                    border: '1px solid rgba(139,92,246,0.32)',
-                                                    boxShadow: '0 0 20px rgba(139,92,246,0.09)',
+                                                    background: '#1c1b24',
+                                                    color: '#f2f2f5',
                                                 } : {
-                                                    border: '1px solid transparent',
+                                                    color: '#8c8c9e',
                                                 }}
+                                                onMouseEnter={(e) => { if (!active) { e.currentTarget.style.background = '#161520'; e.currentTarget.style.color = '#c8c8d8'; } }}
+                                                onMouseLeave={(e) => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#8c8c9e'; } }}
                                             >
-                                                <div
-                                                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-all duration-150"
-                                                    style={active ? {
-                                                        background: 'rgba(139,92,246,0.2)',
-                                                        boxShadow: '0 0 10px rgba(139,92,246,0.2)',
-                                                    } : {
-                                                        background: 'rgba(255,255,255,0.05)',
-                                                    }}
-                                                >
-                                                    <Icon
-                                                        className={`h-3.5 w-3.5 ${active ? 'text-violet-300' : 'text-white/30 group-hover:text-white/55'}`}
-                                                        strokeWidth={1.75}
-                                                    />
-                                                </div>
-                                                <span className="flex flex-col gap-0.5 min-w-0">
-                                                    <span
-                                                        className={`truncate text-[13px] font-semibold leading-tight ${active ? 'text-white/92' : 'text-white/55 group-hover:text-white/80'}`}
-                                                    >
+                                                <Icon
+                                                    className="h-3.5 w-3.5 shrink-0"
+                                                    style={{ color: active ? '#a78bfa' : undefined }}
+                                                    strokeWidth={1.75}
+                                                />
+                                                <span className="flex min-w-0 flex-1 flex-col gap-0">
+                                                    <span className="truncate text-[12.5px] font-medium leading-tight">
                                                         {item.label}
                                                     </span>
-                                                    <span
-                                                        className="text-[9px] uppercase tracking-[0.16em] leading-tight"
-                                                        style={{ color: active ? 'rgba(167,139,250,0.6)' : 'rgba(255,255,255,0.2)' }}
-                                                    >
+                                                    <span className="text-[9px] uppercase tracking-[0.14em] leading-tight opacity-50">
                                                         AI co-founder
                                                     </span>
                                                 </span>
@@ -232,19 +219,19 @@ export function LeftRail({
                                             type="button"
                                             onClick={() => go(item.room)}
                                             title={WORKSPACE_TITLES[item.room] ?? item.label}
-                                            className="group flex w-full items-center gap-2.5 rounded-xl py-2 pl-3 pr-2 text-left transition-all duration-150"
+                                            className="group flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-all duration-150"
                                             style={active ? {
-                                                background: 'rgba(139,92,246,0.09)',
-                                                border: '1px solid rgba(139,92,246,0.15)',
-                                                color: 'rgba(196,181,253,0.9)',
+                                                background: '#1c1b24',
+                                                color: '#f2f2f5',
                                             } : {
-                                                border: '1px solid transparent',
-                                                color: 'rgba(255,255,255,0.35)',
+                                                color: '#8c8c9e',
                                             }}
+                                            onMouseEnter={(e) => { if (!active) { e.currentTarget.style.background = '#161520'; e.currentTarget.style.color = '#c8c8d8'; } }}
+                                            onMouseLeave={(e) => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#8c8c9e'; } }}
                                         >
                                             <Icon
-                                                className="h-3.5 w-3.5 shrink-0 transition-colors duration-150"
-                                                style={{ color: active ? 'rgba(167,139,250,0.85)' : undefined }}
+                                                className="h-3.5 w-3.5 shrink-0"
+                                                style={{ color: active ? '#a78bfa' : undefined }}
                                                 strokeWidth={1.75}
                                             />
                                             <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium leading-tight">
