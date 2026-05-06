@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useMemo, useId, useEffect, useCallback } from 'react';
 import {
@@ -293,11 +293,11 @@ function MetricCard({
     delay?: number;
 }) {
     const colorMap = {
-        emerald: { bg: 'rgba(16,185,129,0.1)', text: '#10B981', glow: 'rgba(16,185,129,0.06)' },
+        emerald: { bg: 'rgba(255,255,255,0.05)', text: 'rgba(255,255,255,0.65)', glow: 'none' },
         violet: { bg: 'rgba(255,255,255,0.05)', text: '#94a3b8', glow: 'rgba(255,255,255,0.03)' },
-        amber: { bg: 'rgba(245,158,11,0.1)', text: '#F59E0B', glow: 'rgba(245,158,11,0.06)' },
-        blue: { bg: 'rgba(59,130,246,0.1)', text: '#3B82F6', glow: 'rgba(59,130,246,0.06)' },
-        rose: { bg: 'rgba(244,63,94,0.1)', text: '#F43F5E', glow: 'rgba(244,63,94,0.06)' },
+        amber: { bg: 'rgba(255,255,255,0.05)', text: 'rgba(255,255,255,0.65)', glow: 'none' },
+        blue: { bg: 'rgba(255,255,255,0.05)', text: 'rgba(255,255,255,0.65)', glow: 'none' },
+        rose: { bg: 'rgba(255,255,255,0.05)', text: 'rgba(255,255,255,0.65)', glow: 'none' },
     };
     const c = colorMap[color];
     const [entered, setEntered] = useState(false);
@@ -422,10 +422,10 @@ function StatusBadge({
     label?: string;
 }) {
     const config = {
-        active: { bg: 'rgba(16,185,129,0.15)', color: '#10B981', dot: '#10B981' },
-        pending: { bg: 'rgba(245,158,11,0.15)', color: '#F59E0B', dot: '#F59E0B' },
+        active: { bg: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.70)', dot: 'rgba(255,255,255,0.55)' },
+        pending: { bg: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.50)', dot: 'rgba(255,255,255,0.35)' },
         idle: { bg: 'rgba(100,116,139,0.15)', color: '#94A3B8', dot: '#64748B' },
-        warning: { bg: 'rgba(239,68,68,0.15)', color: '#EF4444', dot: '#EF4444' },
+        warning: { bg: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.45)', dot: 'rgba(255,255,255,0.30)' },
     };
     const c = config[status];
 
@@ -677,8 +677,8 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
         const progress = phases.filter((p) => p.status === 'in_progress').length;
         const done = phases.filter((p) => p.status === 'done').length;
         return [
-            { name: 'Done', value: done, fill: THEME.chart.emerald },
-            { name: 'In Progress', value: progress, fill: THEME.chart.amber },
+            { name: 'Done', value: done, fill: 'rgba(255,255,255,0.45)' },
+            { name: 'In Progress', value: progress, fill: 'rgba(255,255,255,0.45)' },
             { name: 'Planned', value: planned, fill: THEME.chart.slate },
         ].filter((d) => d.value > 0);
     }, [phases]);
@@ -687,8 +687,8 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
         if (!priTotal) return [];
         const open = Math.max(0, priTotal - priDone);
         return [
-            { name: 'Complete', value: priDone, fill: THEME.chart.emerald },
-            { name: 'Open', value: open, fill: THEME.chart.rose },
+            { name: 'Complete', value: priDone, fill: 'rgba(255,255,255,0.45)' },
+            { name: 'Open', value: open, fill: 'rgba(255,255,255,0.45)' },
         ].filter((d) => d.value > 0);
     }, [priTotal, priDone]);
 
@@ -712,35 +712,35 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
             {
                 label: 'Strategy',
                 pct: strategyCoverage,
-                fill: THEME.chart.violet,
+                fill: 'rgba(255,255,255,0.45)',
                 icon: Lightbulb,
                 hint: clip(snap?.ceo) || 'Mission, phases, priorities',
             },
             {
                 label: 'Market',
                 pct: pct(p?.marketInsights),
-                fill: THEME.chart.blue,
+                fill: 'rgba(255,255,255,0.45)',
                 icon: Globe,
                 hint: clip(snap?.scout) || 'Competitors, signals, landscape',
             },
             {
                 label: 'Finance',
                 pct: pct(p?.budget),
-                fill: THEME.chart.emerald,
+                fill: 'rgba(255,255,255,0.45)',
                 icon: Wallet,
                 hint: clip(snap?.accountant) || 'Runway, burn, capital',
             },
             {
                 label: 'Product',
                 pct: pct(p?.productPlan),
-                fill: THEME.chart.amber,
+                fill: 'rgba(255,255,255,0.45)',
                 icon: Layers,
                 hint: clip(snap?.pm) || 'Roadmap, shipping cadence',
             },
             {
                 label: 'Growth',
                 pct: growthPct,
-                fill: THEME.chart.rose,
+                fill: 'rgba(255,255,255,0.45)',
                 icon: Megaphone,
                 hint: clip(snap?.cmo) || 'GTM, positioning, pitch',
             },
@@ -1051,7 +1051,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                     <div className="flex items-center gap-2 sm:gap-4 min-w-0">
                         <div
                             className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl"
-                            style={{ background: 'rgba(116,86,255,0.10)' }}
+                            style={{ background: 'rgba(255,255,255,0.05)' }}
                         >
                             <LayoutDashboard className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: THEME.accent.secondary }} />
                         </div>
@@ -1155,11 +1155,11 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         {/* Popup guide overlay â€” renders on top of page via fixed positioning */}
                         {openGuideKey && activeProject.agentStaffSnapshot && (() => {
                             const DESK_DEFS = [
-                                { key: 'ceo',        label: 'Strategic Direction', role: 'CEO',             covers: 'Vision, mission, and competitive positioning',        snap: activeProject.agentStaffSnapshot!.desks.ceo,        color: THEME.chart.violet,  room: 'ceo'        as const, icon: Lightbulb, guide: "Use this to set or challenge your strategy. It shapes every other decision â€” read it first when you're unsure about direction."                    },
-                                { key: 'scout',      label: 'Market Intelligence', role: 'Scout',           covers: 'Competitor signals, trends, and market opportunities', snap: activeProject.agentStaffSnapshot!.desks.scout,      color: THEME.chart.blue,    room: 'scout'      as const, icon: Globe,     guide: 'Use this to spot threats before they hit and validate your market assumptions. Check it before any competitive or go-to-market decision.'             },
-                                { key: 'pm',         label: 'Product Insights',    role: 'Product Manager', covers: 'Roadmap priorities, features, and user problems',      snap: activeProject.agentStaffSnapshot!.desks.pm,         color: THEME.chart.amber,   room: 'pm'         as const, icon: Layers,    guide: 'Use this to decide what to build next and what to cut. It directly informs your roadmap and sprint priorities.'                                      },
-                                { key: 'accountant', label: 'Finance & Runway',    role: 'Accountant',      covers: 'Budget, burn rate, and revenue model signals',        snap: activeProject.agentStaffSnapshot!.desks.accountant, color: THEME.chart.emerald, room: 'accountant' as const, icon: Wallet,    guide: 'Read this before any spending or pricing decision. It shows your real financial constraints and revenue opportunities.'                               },
-                                { key: 'cmo',        label: 'Growth & GTM',        role: 'CMO',             covers: 'Channels, acquisition, and marketing strategy',       snap: activeProject.agentStaffSnapshot!.desks.cmo,        color: THEME.chart.rose,    room: 'cmo'        as const, icon: Megaphone, guide: 'Use this to pick channels and craft messaging before investing in any marketing or sales motion.'                                                    },
+                                { key: 'ceo',        label: 'Strategic Direction', role: 'CEO',             covers: 'Vision, mission, and competitive positioning',        snap: activeProject.agentStaffSnapshot!.desks.ceo,        color: 'rgba(255,255,255,0.45)',  room: 'ceo'        as const, icon: Lightbulb, guide: "Use this to set or challenge your strategy. It shapes every other decision â€” read it first when you're unsure about direction."                    },
+                                { key: 'scout',      label: 'Market Intelligence', role: 'Scout',           covers: 'Competitor signals, trends, and market opportunities', snap: activeProject.agentStaffSnapshot!.desks.scout,      color: 'rgba(255,255,255,0.45)',    room: 'scout'      as const, icon: Globe,     guide: 'Use this to spot threats before they hit and validate your market assumptions. Check it before any competitive or go-to-market decision.'             },
+                                { key: 'pm',         label: 'Product Insights',    role: 'Product Manager', covers: 'Roadmap priorities, features, and user problems',      snap: activeProject.agentStaffSnapshot!.desks.pm,         color: 'rgba(255,255,255,0.45)',   room: 'pm'         as const, icon: Layers,    guide: 'Use this to decide what to build next and what to cut. It directly informs your roadmap and sprint priorities.'                                      },
+                                { key: 'accountant', label: 'Finance & Runway',    role: 'Accountant',      covers: 'Budget, burn rate, and revenue model signals',        snap: activeProject.agentStaffSnapshot!.desks.accountant, color: 'rgba(255,255,255,0.45)', room: 'accountant' as const, icon: Wallet,    guide: 'Read this before any spending or pricing decision. It shows your real financial constraints and revenue opportunities.'                               },
+                                { key: 'cmo',        label: 'Growth & GTM',        role: 'CMO',             covers: 'Channels, acquisition, and marketing strategy',       snap: activeProject.agentStaffSnapshot!.desks.cmo,        color: 'rgba(255,255,255,0.45)',    room: 'cmo'        as const, icon: Megaphone, guide: 'Use this to pick channels and craft messaging before investing in any marketing or sales motion.'                                                    },
                             ] as const;
                             const d = DESK_DEFS.find(x => x.key === openGuideKey);
                             if (!d) return null;
@@ -1171,16 +1171,16 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 >
                                     <div
                                         className="w-full max-w-md overflow-hidden rounded-2xl border"
-                                        style={{ background: 'rgba(16,16,20,0.99)', borderColor: `${d.color}40`, boxShadow: `0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px ${d.color}25` }}
+                                        style={{ background: "#1c1c1f", borderColor: "rgba(255,255,255,0.10)", boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}
                                         onClick={e => e.stopPropagation()}
                                     >
                                         {/* Popup header */}
-                                        <div className="flex items-start justify-between gap-3 border-b px-5 py-4" style={{ borderColor: `${d.color}18`, background: `linear-gradient(135deg, ${d.color}12, ${d.color}06)` }}>
+                                        <div className="flex items-start justify-between gap-3 border-b px-5 py-4" style={{ background: "#111113" }}>
                                             <div className="flex items-center gap-3 min-w-0">
                                                 <DexoAvatar size="sm" state="idle" pulse={false} />
                                                 <div className="min-w-0">
                                                     <p className="text-[13px] font-semibold" style={{ color: THEME.text.primary }}>Dexo Co-Founder Guide</p>
-                                                    <p className="text-[11px] font-medium" style={{ color: d.color }}>{d.label} Â· {d.role}</p>
+                                                    <p className="text-[11px] font-medium" style={{ color: "rgba(255,255,255,0.35)" }}>{d.label} Â· {d.role}</p>
                                                 </div>
                                             </div>
                                             <button
@@ -1196,8 +1196,8 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         {/* Popup body */}
                                         <div className="space-y-3 px-5 py-4">
                                             {/* What this covers */}
-                                            <div className="rounded-xl border px-4 py-3" style={{ borderColor: `${d.color}18`, background: `${d.color}08` }}>
-                                                <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.14em]" style={{ color: d.color }}>What this desk covers</p>
+                                            <div className="rounded-xl border px-4 py-3" style={{ borderColor: "rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)" }}>
+                                                <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.28)" }}>What this desk covers</p>
                                                 <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>{d.covers}</p>
                                             </div>
 
@@ -1223,9 +1223,9 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                         switchRoom('dexo');
                                                     }}
                                                     className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-[13px] font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
-                                                    style={{ background: `linear-gradient(135deg, ${d.color}28, rgba(116,86,255,0.22))`, border: `1px solid ${d.color}35`, color: THEME.text.primary }}
+                                                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)", color: "rgba(255,255,255,0.80)" }}
                                                 >
-                                                    <Sparkles className="h-4 w-4 shrink-0" style={{ color: d.color }} />
+                                                    <Sparkles className="h-4 w-4 shrink-0" style={{ color: "rgba(255,255,255,0.55)" }} />
                                                     Ask Dexo about this finding â†’
                                                 </button>
                                             ) : (
@@ -1252,7 +1252,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     <div className="flex min-w-0 items-center gap-3">
                                         <div
                                             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-                                            style={{ background: 'rgba(116,86,255,0.22)', boxShadow: '0 0 0 1px rgba(116,86,255,0.28)' }}
+                                            style={{ background: 'rgba(255,255,255,0.10)', boxShadow: '0 0 0 1px rgba(255,255,255,0.12)' }}
                                         >
                                             <Cpu className="h-4 w-4" style={{ color: THEME.accent.primary }} />
                                         </div>
@@ -1277,7 +1277,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                 switchRoom('dexo');
                                             }}
                                             className="flex items-center gap-1.5 rounded-xl border px-3 py-2 text-[11px] font-semibold transition-all hover:opacity-80"
-                                            style={{ borderColor: 'rgba(116,86,255,0.32)', background: 'rgba(116,86,255,0.14)', color: THEME.accent.primary }}
+                                            style={{ borderColor: 'rgba(255,255,255,0.13)', background: 'rgba(255,255,255,0.07)', color: THEME.accent.primary }}
                                         >
                                             <Sparkles className="h-3.5 w-3.5 shrink-0" />
                                             <span className="hidden sm:inline">Full briefing</span>
@@ -1299,11 +1299,11 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 {/* Desk cards â€” 1 col mobile, 2 col sm+ */}
                                 <div className="grid gap-px sm:grid-cols-2" style={{ background: 'rgba(255,255,255,0.05)' }}>
                                     {([
-                                        { key: 'ceo',        label: 'Strategic Direction', role: 'CEO',             sub: 'Vision Â· positioning Â· strategy',       snap: activeProject.agentStaffSnapshot.desks.ceo,        color: THEME.chart.violet,  room: 'ceo'        as const, icon: Lightbulb },
-                                        { key: 'scout',      label: 'Market Intelligence', role: 'Scout',           sub: 'Competitors Â· trends Â· opportunities',  snap: activeProject.agentStaffSnapshot.desks.scout,      color: THEME.chart.blue,    room: 'scout'      as const, icon: Globe     },
-                                        { key: 'pm',         label: 'Product Insights',    role: 'Product Manager', sub: 'Roadmap Â· features Â· user problems',    snap: activeProject.agentStaffSnapshot.desks.pm,         color: THEME.chart.amber,   room: 'pm'         as const, icon: Layers    },
-                                        { key: 'accountant', label: 'Finance & Runway',    role: 'Accountant',      sub: 'Budget Â· burn Â· revenue signals',       snap: activeProject.agentStaffSnapshot.desks.accountant, color: THEME.chart.emerald, room: 'accountant' as const, icon: Wallet    },
-                                        { key: 'cmo',        label: 'Growth & GTM',        role: 'CMO',             sub: 'Channels Â· marketing Â· acquisition',    snap: activeProject.agentStaffSnapshot.desks.cmo,        color: THEME.chart.rose,    room: 'cmo'        as const, icon: Megaphone },
+                                        { key: 'ceo',        label: 'Strategic Direction', role: 'CEO',             sub: 'Vision Â· positioning Â· strategy',       snap: activeProject.agentStaffSnapshot.desks.ceo,        color: 'rgba(255,255,255,0.45)',  room: 'ceo'        as const, icon: Lightbulb },
+                                        { key: 'scout',      label: 'Market Intelligence', role: 'Scout',           sub: 'Competitors Â· trends Â· opportunities',  snap: activeProject.agentStaffSnapshot.desks.scout,      color: 'rgba(255,255,255,0.45)',    room: 'scout'      as const, icon: Globe     },
+                                        { key: 'pm',         label: 'Product Insights',    role: 'Product Manager', sub: 'Roadmap Â· features Â· user problems',    snap: activeProject.agentStaffSnapshot.desks.pm,         color: 'rgba(255,255,255,0.45)',   room: 'pm'         as const, icon: Layers    },
+                                        { key: 'accountant', label: 'Finance & Runway',    role: 'Accountant',      sub: 'Budget Â· burn Â· revenue signals',       snap: activeProject.agentStaffSnapshot.desks.accountant, color: 'rgba(255,255,255,0.45)', room: 'accountant' as const, icon: Wallet    },
+                                        { key: 'cmo',        label: 'Growth & GTM',        role: 'CMO',             sub: 'Channels Â· marketing Â· acquisition',    snap: activeProject.agentStaffSnapshot.desks.cmo,        color: 'rgba(255,255,255,0.45)',    room: 'cmo'        as const, icon: Megaphone },
                                     ] as const).map(({ key, label, role, sub, snap, color, room, icon: DeskIcon }) => {
                                         const hasSnap = !!snap?.trim();
                                         return (
@@ -1313,20 +1313,20 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                     <div className="flex min-w-0 items-center gap-2.5">
                                                         <div
                                                             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl"
-                                                            style={{ background: `${color}16`, boxShadow: `0 0 0 1px ${color}20` }}
+                                                            style={{ background: "rgba(255,255,255,0.05)", boxShadow: "0 0 0 1px rgba(255,255,255,0.08)" }}
                                                         >
-                                                            <DeskIcon className="h-3.5 w-3.5" style={{ color }} />
+                                                            <DeskIcon className="h-3.5 w-3.5" style={{ color: "rgba(255,255,255,0.45)" }} />
                                                         </div>
                                                         <div className="min-w-0">
                                                             <p className="truncate text-[12px] font-semibold" style={{ color: THEME.text.primary }}>{label}</p>
-                                                            <p className="text-[10px] font-medium" style={{ color }}>{role}</p>
+                                                            <p className="text-[10px] font-medium" style={{ color: "rgba(255,255,255,0.35)" }}>{role}</p>
                                                         </div>
                                                     </div>
                                                     <button
                                                         type="button"
                                                         onClick={() => switchRoom(room)}
                                                         className="shrink-0 rounded-lg border px-2 py-1 text-[10px] font-semibold transition-all hover:opacity-80"
-                                                        style={{ borderColor: `${color}30`, background: `${color}0E`, color }}
+                                                        style={{ borderColor: "rgba(255,255,255,0.10)", background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.55)" }}
                                                     >
                                                         Open â†’
                                                     </button>
@@ -1339,7 +1339,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                 <div className="mt-3 flex-1">
                                                     {hasSnap ? (
                                                         <>
-                                                            <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.12em]" style={{ color }}>Research Finding</p>
+                                                            <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.12em]" style={{ color: "rgba(255,255,255,0.28)" }}>Research Finding</p>
                                                             <p className="text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>
                                                                 {snap!.trim().length > 240 ? `${snap!.trim().slice(0, 237)}â€¦` : snap!.trim()}
                                                             </p>
@@ -1376,7 +1376,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                                 switchRoom('dexo');
                                                             }}
                                                             className="flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-semibold transition-all hover:opacity-80"
-                                                            style={{ borderColor: 'rgba(116,86,255,0.28)', background: 'rgba(116,86,255,0.10)', color: THEME.accent.primary }}
+                                                            style={{ borderColor: 'rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.05)', color: THEME.accent.primary }}
                                                         >
                                                             <Sparkles className="h-3 w-3 shrink-0" />
                                                             Ask Dexo
@@ -1392,7 +1392,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 {activeProject.agentStaffSnapshot.summary?.trim() && (
                                     <div
                                         className="border-t px-4 py-4 sm:px-6"
-                                        style={{ borderColor: 'rgba(116,86,255,0.10)', background: 'rgba(116,86,255,0.06)' }}
+                                        style={{ borderColor: 'rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.03)' }}
                                     >
                                         <div className="flex flex-wrap items-start justify-between gap-3">
                                             <div className="min-w-0 flex-1">
@@ -1422,7 +1422,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                     switchRoom('dexo');
                                                 }}
                                                 className="shrink-0 flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-[11px] font-semibold transition-all hover:opacity-80"
-                                                style={{ borderColor: 'rgba(116,86,255,0.28)', background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}
+                                                style={{ borderColor: 'rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.06)', color: THEME.accent.primary }}
                                             >
                                                 <Sparkles className="h-3 w-3 shrink-0" />
                                                 Unpack with Dexo â†’
@@ -1434,11 +1434,11 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         ) : (
                             <div
                                 className="flex flex-col items-center gap-5 rounded-2xl border px-6 py-12 text-center"
-                                style={{ borderColor: 'rgba(116,86,255,0.18)', background: 'rgba(116,86,255,0.04)' }}
+                                style={{ borderColor: 'rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.025)' }}
                             >
                                 <div
                                     className="flex h-14 w-14 items-center justify-center rounded-2xl"
-                                    style={{ background: 'rgba(116,86,255,0.16)', boxShadow: '0 0 0 1px rgba(116,86,255,0.22)' }}
+                                    style={{ background: 'rgba(255,255,255,0.08)', boxShadow: '0 0 0 1px rgba(255,255,255,0.10)' }}
                                 >
                                     <Cpu className="h-7 w-7" style={{ color: THEME.accent.primary }} />
                                 </div>
@@ -1450,7 +1450,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     onClick={() => runAgentStaffSync()}
                                     disabled={agentSyncRunning}
                                     className="flex items-center gap-2 rounded-xl border px-6 py-2.5 text-sm font-semibold transition-all active:scale-[0.98]"
-                                    style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.14)', color: THEME.accent.primary, opacity: agentSyncRunning ? 0.6 : 1 }}
+                                    style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(255,255,255,0.07)', color: THEME.accent.primary, opacity: agentSyncRunning ? 0.6 : 1 }}
                                 >
                                     <RefreshCw className={`h-4 w-4 shrink-0 ${agentSyncRunning ? 'animate-spin' : ''}`} />
                                     {agentSyncRunning ? 'Analysingâ€¦' : 'Run Staff Sync now'}
@@ -1470,21 +1470,21 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     value: foundationSparse ? 'Needed' : `${animatedScore}%`,
                                     sub: foundationSparse ? 'Add venture data to unlock' : 'Strategy Â· phases Â· priorities',
                                     icon: Target,
-                                    accent: THEME.chart.violet,
+                                    accent: 'rgba(255,255,255,0.45)',
                                 },
                                 {
                                     label: foundationSparse ? 'Phase timeline' : 'Phases complete',
                                     value: foundationSparse ? 'Pending' : `${phaseDone} / ${phaseTotal || 0}`,
                                     sub: foundationSparse ? 'Define your roadmap phases' : phaseActive > 0 ? `${phaseActive} active now` : 'All planned',
                                     icon: Layers,
-                                    accent: THEME.chart.blue,
+                                    accent: 'rgba(255,255,255,0.45)',
                                 },
                                 {
                                     label: foundationSparse ? 'Executive priorities' : 'Priorities done',
                                     value: foundationSparse ? 'Pending' : `${priDone} / ${priTotal || 0}`,
                                     sub: foundationSparse ? 'Add priorities in CEO desk' : priTotal > 0 ? `${Math.round((priDone / priTotal) * 100)}% complete` : 'None set yet',
                                     icon: CheckCircle2,
-                                    accent: THEME.chart.emerald,
+                                    accent: 'rgba(255,255,255,0.45)',
                                 },
                                 {
                                     label: staffSyncAt ? 'Last AI research sync' : 'AI staff sync',
@@ -1495,7 +1495,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         : 'Never synced',
                                     sub: staffSyncAt ? lastStaffSyncLabel ?? 'â€”' : 'Run sync to populate desks',
                                     icon: Clock,
-                                    accent: THEME.chart.amber,
+                                    accent: 'rgba(255,255,255,0.45)',
                                 },
                             ].map(({ label, value, sub, icon: Icon, accent }, i) => (
                                 <div key={i} className="flex items-start gap-3 px-5 py-4" style={{ borderColor: THEME.border.subtle }}>
@@ -1629,7 +1629,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         value={executionScore}
                                         size={88}
                                         strokeWidth={7}
-                                        color={executionScore > 70 ? THEME.accent.primary : executionScore > 40 ? THEME.chart.amber : THEME.chart.rose}
+                                        color={executionScore > 70 ? THEME.accent.primary : executionScore > 40 ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.45)'}
                                     />
                                     <div>
                                         <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>Venture health</p>
@@ -1686,7 +1686,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         type="button"
                                         onClick={() => switchRoom('dexo')}
                                         className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl border py-2 text-[12px] font-semibold transition-all hover:opacity-80"
-                                        style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.10)', color: THEME.accent.primary }}
+                                        style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(255,255,255,0.05)', color: THEME.accent.primary }}
                                     >
                                         <Sparkles className="h-3.5 w-3.5" />
                                         Open Dexo AI
@@ -1732,7 +1732,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     >
                                         <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>Daily brief</p>
                                         <p className="text-[13px] leading-relaxed" style={{ color: THEME.text.secondary }}>{livingOffice.brief.greeting}</p>
-                                        <div className="mt-3 rounded-xl border px-3 py-2.5" style={{ borderColor: THEME.border.default, background: 'rgba(116,86,255,0.08)' }}>
+                                        <div className="mt-3 rounded-xl border px-3 py-2.5" style={{ borderColor: THEME.border.default, background: 'rgba(255,255,255,0.04)' }}>
                                             <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: THEME.accent.primary }}>Focus</p>
                                             <p className="mt-1 text-[13px] font-medium" style={{ color: THEME.text.primary }}>{livingOffice.brief.suggestedFocus}</p>
                                         </div>
@@ -1762,8 +1762,8 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         <ul className="space-y-2.5">
                                             {upcomingEvents.slice(0, 4).map((ev, idx) => (
                                                 <li key={`${ev.date}-${idx}`} className="flex items-start gap-2.5">
-                                                    <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md" style={{ background: 'rgba(52,211,153,0.12)' }}>
-                                                        <Calendar className="h-3.5 w-3.5" style={{ color: '#34d399' }} />
+                                                    <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                                                        <Calendar className="h-3.5 w-3.5" style={{ color: 'rgba(255,255,255,0.45)' }} />
                                                     </div>
                                                     <div>
                                                         <p className="text-[12px] font-medium leading-snug" style={{ color: THEME.text.primary }}>{ev.title}</p>
@@ -1788,7 +1788,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                             <button type="button" onClick={() => switchRoom('pm')} className="text-[10px] font-medium" style={{ color: THEME.accent.info }}>Open PM â†’</button>
                                         </div>
                                         <div className="grid grid-cols-2 gap-2">
-                                            {([['To do', kanbanCounts.todo, THEME.text.muted], ['In progress', kanbanCounts.in_progress, THEME.chart.amber], ['Next up', kanbanCounts.next, THEME.chart.blue], ['Done', kanbanCounts.completed, THEME.chart.emerald]] as const).map(([label, n, color]) => (
+                                            {([['To do', kanbanCounts.todo, THEME.text.muted], ['In progress', kanbanCounts.in_progress, 'rgba(255,255,255,0.45)'], ['Next up', kanbanCounts.next, 'rgba(255,255,255,0.45)'], ['Done', kanbanCounts.completed, 'rgba(255,255,255,0.45)']] as const).map(([label, n, color]) => (
                                                 <div
                                                     key={label}
                                                     className="rounded-xl border px-3 py-2.5 text-center"
@@ -1804,7 +1804,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                 <span>Phase progress</span>
                                                 <span>{phaseDone}/{phaseTotal || 0}</span>
                                             </div>
-                                            <ProgressBar value={phaseDone} max={phaseTotal || 1} color={THEME.chart.violet} />
+                                            <ProgressBar value={phaseDone} max={phaseTotal || 1} color={'rgba(255,255,255,0.45)'} />
                                         </div>
                                     </div>
                                 )}
@@ -1848,10 +1848,10 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         >
                             <div className="grid grid-cols-2 divide-x divide-y sm:grid-cols-3 lg:grid-cols-6">
                                 {([
-                                    { id: 'ceo', label: 'CEO', sub: 'Strategy', icon: Lightbulb, color: THEME.chart.violet, room: 'ceo' as const },
-                                    { id: 'scout', label: 'Scout', sub: 'Market', icon: Globe, color: THEME.chart.blue, room: 'scout' as const },
-                                    { id: 'finance', label: 'Finance', sub: 'Budget', icon: Wallet, color: THEME.chart.emerald, room: 'accountant' as const },
-                                    { id: 'product', label: 'Product', sub: 'Roadmap', icon: Layers, color: THEME.chart.amber, room: 'pm' as const },
+                                    { id: 'ceo', label: 'CEO', sub: 'Strategy', icon: Lightbulb, color: 'rgba(255,255,255,0.45)', room: 'ceo' as const },
+                                    { id: 'scout', label: 'Scout', sub: 'Market', icon: Globe, color: 'rgba(255,255,255,0.45)', room: 'scout' as const },
+                                    { id: 'finance', label: 'Finance', sub: 'Budget', icon: Wallet, color: 'rgba(255,255,255,0.45)', room: 'accountant' as const },
+                                    { id: 'product', label: 'Product', sub: 'Roadmap', icon: Layers, color: 'rgba(255,255,255,0.45)', room: 'pm' as const },
                                     { id: 'pa', label: 'Assistant', sub: 'Support', icon: MessageSquare, color: THEME.chart.cyan, room: 'personal_assistant' as const },
                                     { id: 'dexo', label: 'Dexo AI', sub: 'Command', icon: Cpu, color: THEME.accent.primary, room: 'dexo' as const },
                                 ] as const).map(({ label, sub, icon: Icon, color, room }) => (
@@ -1919,11 +1919,11 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
 // ============================================================================
 
 const PORTFOLIO_DESK_ACCENTS: Record<'ceo' | 'accountant' | 'pm' | 'cmo' | 'scout', string> = {
-    ceo: THEME.chart.violet,
-    accountant: THEME.chart.emerald,
-    pm: THEME.chart.amber,
-    cmo: THEME.chart.rose,
-    scout: THEME.chart.blue,
+    ceo: 'rgba(255,255,255,0.45)',
+    accountant: 'rgba(255,255,255,0.45)',
+    pm: 'rgba(255,255,255,0.45)',
+    cmo: 'rgba(255,255,255,0.45)',
+    scout: 'rgba(255,255,255,0.45)',
 };
 
 function PortfolioView({
@@ -1943,7 +1943,7 @@ function PortfolioView({
     const deskStats = useMemo(() => aggregatePortfolioDeskStats(allProjects), [allProjects]);
 
     const portfolioComposition = [
-        { name: 'Active', value: withStrategy, fill: THEME.chart.emerald },
+        { name: 'Active', value: withStrategy, fill: 'rgba(255,255,255,0.45)' },
         { name: 'Draft', value: draft, fill: THEME.chart.slate },
     ].filter((d) => d.value > 0);
 
@@ -1972,7 +1972,7 @@ function PortfolioView({
             <header className="border-b px-6 py-5" style={{ borderColor: THEME.border.subtle }}>
                 <div className="mx-auto max-w-7xl flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: 'rgba(116,86,255,0.12)' }}>
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: 'rgba(255,255,255,0.06)' }}>
                             <LayoutDashboard className="h-5 w-5" style={{ color: THEME.accent.primary }} />
                         </div>
                         <div>
@@ -2003,8 +2003,8 @@ function PortfolioView({
                     </div>
                     <PortfolioDailyIntelSection allProjects={allProjects} onOpenVenture={setActiveProject} />
                     {allProjects.length === 0 && (
-                        <div className="flex flex-col items-center gap-4 rounded-2xl border py-16 text-center" style={{ borderColor: THEME.border.subtle, background: 'rgba(116,86,255,0.04)' }}>
-                            <div className="flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: 'rgba(116,86,255,0.12)' }}>
+                        <div className="flex flex-col items-center gap-4 rounded-2xl border py-16 text-center" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.025)' }}>
+                            <div className="flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: 'rgba(255,255,255,0.06)' }}>
                                 <Globe className="h-7 w-7" style={{ color: THEME.accent.primary }} />
                             </div>
                             <div className="max-w-sm">
@@ -2014,7 +2014,7 @@ function PortfolioView({
                                 </p>
                             </div>
                             {onNewVenture && (
-                                <button onClick={onNewVenture} className="flex items-center gap-2 rounded-xl border px-5 py-2.5 text-sm font-semibold" style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}>
+                                <button onClick={onNewVenture} className="flex items-center gap-2 rounded-xl border px-5 py-2.5 text-sm font-semibold" style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(255,255,255,0.06)', color: THEME.accent.primary }}>
                                     <Sparkles className="h-4 w-4" /> Create venture
                                 </button>
                             )}
@@ -2037,7 +2037,7 @@ function PortfolioView({
                                 <button
                                     onClick={() => setActiveProject(leadingVenture)}
                                     className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-semibold transition-all hover:opacity-80"
-                                    style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.10)', color: THEME.accent.primary }}
+                                    style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(255,255,255,0.05)', color: THEME.accent.primary }}
                                 >
                                     <Sparkles className="h-3 w-3" /> Full briefing
                                 </button>
@@ -2046,11 +2046,11 @@ function PortfolioView({
 
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                             {([
-                                { key: 'scout',      label: 'Market Intelligence',  role: 'Scout',           covers: 'Competitor signals Â· trends Â· opportunities', finds: 'Use this to spot threats early and validate market assumptions before committing to any direction.',      color: THEME.chart.blue,    room: 'scout'      as const, icon: Globe     },
-                                { key: 'ceo',        label: 'Strategic Direction',  role: 'CEO',             covers: 'Mission Â· vision Â· positioning',              finds: 'Use this to set or challenge your strategy â€” it shapes every other decision across the whole business.',   color: THEME.chart.violet,  room: 'ceo'        as const, icon: Lightbulb },
-                                { key: 'pm',         label: 'Product Insights',     role: 'Product Manager', covers: 'Roadmap Â· features Â· user problems',          finds: 'Use this to decide what ships next and what gets cut. It directly drives your roadmap and sprint focus.',   color: THEME.chart.amber,   room: 'pm'         as const, icon: Layers    },
-                                { key: 'accountant', label: 'Finance & Runway',     role: 'Accountant',      covers: 'Budget Â· burn Â· revenue signals',             finds: 'Read this before any spending or pricing call â€” it shows your real constraints and revenue opportunities.',   color: THEME.chart.emerald, room: 'accountant' as const, icon: Wallet    },
-                                { key: 'cmo',        label: 'Growth & GTM',         role: 'CMO',             covers: 'Marketing Â· channels Â· acquisition',          finds: 'Use this to pick your channels and craft messaging before spending anything on marketing or sales.',          color: THEME.chart.rose,    room: 'cmo'        as const, icon: Megaphone },
+                                { key: 'scout',      label: 'Market Intelligence',  role: 'Scout',           covers: 'Competitor signals Â· trends Â· opportunities', finds: 'Use this to spot threats early and validate market assumptions before committing to any direction.',      color: 'rgba(255,255,255,0.45)',    room: 'scout'      as const, icon: Globe     },
+                                { key: 'ceo',        label: 'Strategic Direction',  role: 'CEO',             covers: 'Mission Â· vision Â· positioning',              finds: 'Use this to set or challenge your strategy â€” it shapes every other decision across the whole business.',   color: 'rgba(255,255,255,0.45)',  room: 'ceo'        as const, icon: Lightbulb },
+                                { key: 'pm',         label: 'Product Insights',     role: 'Product Manager', covers: 'Roadmap Â· features Â· user problems',          finds: 'Use this to decide what ships next and what gets cut. It directly drives your roadmap and sprint focus.',   color: 'rgba(255,255,255,0.45)',   room: 'pm'         as const, icon: Layers    },
+                                { key: 'accountant', label: 'Finance & Runway',     role: 'Accountant',      covers: 'Budget Â· burn Â· revenue signals',             finds: 'Read this before any spending or pricing call â€” it shows your real constraints and revenue opportunities.',   color: 'rgba(255,255,255,0.45)', room: 'accountant' as const, icon: Wallet    },
+                                { key: 'cmo',        label: 'Growth & GTM',         role: 'CMO',             covers: 'Marketing Â· channels Â· acquisition',          finds: 'Use this to pick your channels and craft messaging before spending anything on marketing or sales.',          color: 'rgba(255,255,255,0.45)',    room: 'cmo'        as const, icon: Megaphone },
                                 { key: 'summary',    label: 'Executive Synthesis',  role: 'Chief of Staff',  covers: 'Cross-desk synthesis Â· executive brief',      finds: 'Read this first â€” it synthesizes all six desks into one brief. The fastest way to see the full picture.',    color: THEME.accent.primary, room: null,                  icon: Cpu       },
                             ] as const).map(({ key, label, role, covers, finds, color, room, icon: DeskIcon }) => {
                                 const snap = key === 'summary'
@@ -2073,7 +2073,7 @@ function PortfolioView({
                                                 </div>
                                                 <div>
                                                     <p className="text-[12px] font-semibold leading-tight" style={{ color: THEME.text.primary }}>{label}</p>
-                                                    <p className="text-[10px] font-medium" style={{ color }}>{role}</p>
+                                                    <p className="text-[10px] font-medium" style={{ color: "rgba(255,255,255,0.35)" }}>{role}</p>
                                                 </div>
                                             </div>
                                             {room && (
@@ -2187,7 +2187,7 @@ function PortfolioView({
                                                             type="button"
                                                             onClick={() => { setActiveProject(a.ventureRef); switchRoom('dexo'); }}
                                                             className="shrink-0 rounded-xl border px-3 py-2 text-[11px] font-semibold transition-all hover:opacity-80"
-                                                            style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.10)', color: THEME.accent.primary }}
+                                                            style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(255,255,255,0.05)', color: THEME.accent.primary }}
                                                         >
                                                             Discuss â†’
                                                         </button>
@@ -2232,11 +2232,11 @@ function PortfolioView({
                 <section>
                     <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
                         <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: THEME.chart.emerald }}>Workspaces</span>
+                            <span className="text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: 'rgba(255,255,255,0.45)' }}>Workspaces</span>
                             <span className="text-sm font-semibold" style={{ color: THEME.text.primary }}>Venture Workspaces</span>
                         </div>
                         {onNewVenture && (
-                            <button onClick={onNewVenture} className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold hover:opacity-80" style={{ background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}>
+                            <button onClick={onNewVenture} className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold hover:opacity-80" style={{ background: 'rgba(255,255,255,0.06)', color: THEME.accent.primary }}>
                                 <Sparkles className="h-3 w-3" /> New venture
                             </button>
                         )}
@@ -2266,7 +2266,7 @@ function PortfolioView({
                                             >
                                                 <div className="flex items-start justify-between gap-2">
                                                     <div className="flex items-center gap-2.5">
-                                                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl" style={{ background: hasStrategy ? 'rgba(116,86,255,0.12)' : 'rgba(255,255,255,0.06)' }}>
+                                                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl" style={{ background: hasStrategy ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.06)' }}>
                                                             <Briefcase className="h-4 w-4" style={{ color: hasStrategy ? THEME.accent.primary : THEME.text.muted }} />
                                                         </div>
                                                         <div>
@@ -2284,7 +2284,7 @@ function PortfolioView({
                                                 <div className="flex items-center justify-between gap-2">
                                                     <div className="flex items-center gap-2">
                                                         {hasSynced ? (
-                                                            <span className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}>
+                                                            <span className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ background: 'rgba(255,255,255,0.06)', color: THEME.accent.primary }}>
                                                                 <Zap className="h-2.5 w-2.5" /> Synced {syncAgo}
                                                             </span>
                                                         ) : (
@@ -2343,8 +2343,8 @@ function PortfolioView({
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 {[
-                                    { label: 'Ventures', value: String(ventureCount), accent: THEME.chart.violet },
-                                    { label: 'AI Synced', value: String(synced),       accent: THEME.chart.amber  },
+                                    { label: 'Ventures', value: String(ventureCount), accent: 'rgba(255,255,255,0.45)' },
+                                    { label: 'AI Synced', value: String(synced),       accent: 'rgba(255,255,255,0.45)'  },
                                 ].map(({ label, value, accent }) => (
                                     <div key={label} className="rounded-xl border p-3 text-center" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.03)' }}>
                                         <p className="text-xl font-bold tabular-nums" style={{ color: THEME.text.primary }}>{value}</p>
@@ -2390,11 +2390,11 @@ function PortfolioView({
                             <div className="overflow-hidden rounded-2xl border" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
                                     {([
-                                        { role: 'ceo'        as const, label: 'CEO Desk', sub: 'Strategy & Vision',  icon: Lightbulb, color: THEME.chart.violet  },
-                                        { role: 'scout'      as const, label: 'Scout',    sub: 'Market Research',    icon: Globe,     color: THEME.chart.blue    },
-                                        { role: 'accountant' as const, label: 'Finance',  sub: 'Budget & Runway',    icon: Wallet,    color: THEME.chart.emerald },
-                                        { role: 'pm'         as const, label: 'Product',  sub: 'Roadmap & Features', icon: Layers,    color: THEME.chart.amber   },
-                                        { role: 'cmo'        as const, label: 'Growth',   sub: 'GTM & Acquisition',  icon: Megaphone, color: THEME.chart.rose    },
+                                        { role: 'ceo'        as const, label: 'CEO Desk', sub: 'Strategy & Vision',  icon: Lightbulb, color: 'rgba(255,255,255,0.45)'  },
+                                        { role: 'scout'      as const, label: 'Scout',    sub: 'Market Research',    icon: Globe,     color: 'rgba(255,255,255,0.45)'    },
+                                        { role: 'accountant' as const, label: 'Finance',  sub: 'Budget & Runway',    icon: Wallet,    color: 'rgba(255,255,255,0.45)' },
+                                        { role: 'pm'         as const, label: 'Product',  sub: 'Roadmap & Features', icon: Layers,    color: 'rgba(255,255,255,0.45)'   },
+                                        { role: 'cmo'        as const, label: 'Growth',   sub: 'GTM & Acquisition',  icon: Megaphone, color: 'rgba(255,255,255,0.45)'    },
                                         { role: null,                  label: 'Dexo AI',  sub: 'Discuss & Plan',     icon: Cpu,       color: THEME.accent.primary },
                                     ] as const).map(({ role, label, sub, icon: Icon, color }) => (
                                         <button key={label} type="button"
@@ -2527,11 +2527,11 @@ function AnalyticsTab({
                     />
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {[
-                            ['Strategy', activeProject.agentStaffSnapshot.desks.ceo, THEME.chart.violet],
-                            ['Product', activeProject.agentStaffSnapshot.desks.pm, THEME.chart.amber],
-                            ['Finance', activeProject.agentStaffSnapshot.desks.accountant, THEME.chart.emerald],
-                            ['Market', activeProject.agentStaffSnapshot.desks.scout, THEME.chart.blue],
-                            ['Growth', activeProject.agentStaffSnapshot.desks.cmo, THEME.chart.rose],
+                            ['Strategy', activeProject.agentStaffSnapshot.desks.ceo, 'rgba(255,255,255,0.45)'],
+                            ['Product', activeProject.agentStaffSnapshot.desks.pm, 'rgba(255,255,255,0.45)'],
+                            ['Finance', activeProject.agentStaffSnapshot.desks.accountant, 'rgba(255,255,255,0.45)'],
+                            ['Market', activeProject.agentStaffSnapshot.desks.scout, 'rgba(255,255,255,0.45)'],
+                            ['Growth', activeProject.agentStaffSnapshot.desks.cmo, 'rgba(255,255,255,0.45)'],
                         ].map(([label, text, color]) =>
                             text?.trim() ? (
                                 <div
@@ -2560,10 +2560,10 @@ function AnalyticsTab({
                 <SectionHeader title="Operational Desks" />
                 <div className="grid gap-3 sm:grid-cols-2">
                     {[
-                        { agent: agents.ceo, room: 'ceo', status: activeProject.strategy ? 'active' : 'pending', accent: THEME.chart.violet },
-                        { agent: agents.scout, room: 'scout', status: activeProject.marketInsights ? 'active' : 'idle', accent: THEME.chart.blue },
-                        { agent: agents.accountant, room: 'accountant', status: activeProject.budget ? 'active' : 'pending', accent: THEME.chart.emerald },
-                        { agent: agents.pm, room: 'pm', status: activeProject.productPlan ? 'active' : 'idle', accent: THEME.chart.amber },
+                        { agent: agents.ceo, room: 'ceo', status: activeProject.strategy ? 'active' : 'pending', accent: 'rgba(255,255,255,0.45)' },
+                        { agent: agents.scout, room: 'scout', status: activeProject.marketInsights ? 'active' : 'idle', accent: 'rgba(255,255,255,0.45)' },
+                        { agent: agents.accountant, room: 'accountant', status: activeProject.budget ? 'active' : 'pending', accent: 'rgba(255,255,255,0.45)' },
+                        { agent: agents.pm, room: 'pm', status: activeProject.productPlan ? 'active' : 'idle', accent: 'rgba(255,255,255,0.45)' },
                     ].map(({ agent, room, status, accent }) => (
                         <button
                             key={room}
@@ -2637,11 +2637,11 @@ function ActivityTab({ systemLogs, chartUid }: any) {
                                         <Cell
                                             key={i}
                                             fill={[
-                                                THEME.chart.emerald,
-                                                THEME.chart.violet,
-                                                THEME.chart.blue,
-                                                THEME.chart.amber,
-                                                THEME.chart.rose,
+                                                'rgba(255,255,255,0.45)',
+                                                'rgba(255,255,255,0.45)',
+                                                'rgba(255,255,255,0.45)',
+                                                'rgba(255,255,255,0.45)',
+                                                'rgba(255,255,255,0.45)',
                                                 THEME.chart.cyan,
                                             ][i % 6]}
                                         />
