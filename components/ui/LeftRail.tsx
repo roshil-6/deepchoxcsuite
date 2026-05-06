@@ -53,7 +53,7 @@ export function LeftRail({
             aria-label="DeepChox workspace navigation"
             className="relative z-30 flex h-full min-h-0 w-full min-w-0 shrink-0 flex-col overflow-hidden lg:w-[252px]"
             style={{
-                background: '#141416',
+                background: '#111113',
             }}
         >
             <div className="custom-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden">
@@ -186,7 +186,7 @@ export function LeftRail({
                                                 onClick={() => go(item.room)}
                                                 className="group flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-all duration-150"
                                                 style={active ? {
-                                                    background: '#222227',
+                                                    background: '#242428',
                                                     color: '#f2f2f5',
                                                 } : {
                                                     color: '#8c8c9e',
@@ -219,7 +219,7 @@ export function LeftRail({
                                             title={WORKSPACE_TITLES[item.room] ?? item.label}
                                             className="group flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-all duration-150"
                                             style={active ? {
-                                                background: '#222227',
+                                                background: '#242428',
                                                 color: '#f2f2f5',
                                             } : {
                                                 color: '#8c8c9e',

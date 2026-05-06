@@ -148,7 +148,7 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
                                 transition={{ type: 'spring', stiffness: 360, damping: 34 }}
                                 className="fixed inset-y-2 left-2 z-[70] flex h-[calc(100%-1rem)] w-[min(20rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-[1.35rem] border border-[var(--border)] lg:hidden"
                                 style={{
-                                    background: '#141416',
+                                    background: '#111113',
                                     boxShadow: 'var(--shadow-panel)',
                                     backdropFilter: 'blur(12px)',
                                     WebkitBackdropFilter: 'blur(12px)',

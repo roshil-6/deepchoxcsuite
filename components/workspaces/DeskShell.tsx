@@ -50,15 +50,13 @@ export function DeskShell({
             style={{
                 opacity: entered ? 1 : 0,
                 transform: entered ? 'translateY(0)' : 'translateY(6px)',
-                background: '#141416',
-                border: '1px solid rgba(255,255,255,0.07)',
-                borderRadius: '0.875rem',
+                background: '#111113',
             }}
         >
             {/* â”€â”€ Desk header â”€â”€ */}
             <header
                 className={`shrink-0 px-5 py-4 sm:px-6 sm:py-5 ${headerClassName ?? ''}`}
-                style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: '#141416' }}
+                style={{ background: '#111113' }}
             >
                 <div className="flex items-start gap-3">
                     <div className={`mt-1 h-10 w-0.5 shrink-0 rounded-full ${headerSpineClassName}`} aria-hidden />
@@ -95,7 +93,7 @@ export function DeskShell({
 
             {/* â”€â”€ Desk footer â”€â”€ */}
             {footer ? (
-                <div className="shrink-0 px-5 py-3 sm:px-6" style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: '#1e1e22' }}>
+                <div className="shrink-0 px-5 py-3 sm:px-6" style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: '#1c1c1f' }}>
                     {footer}
                 </div>
             ) : null}

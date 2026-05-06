@@ -292,7 +292,7 @@ export function DeskChat({ deskId }: { deskId: DeskId }) {
     const isEmpty = messages.length === 0 && !loading;
 
     return (
-        <div className="flex min-h-0 w-full flex-1 flex-col" style={{ background: '#141416' }}>
+        <div className="flex min-h-0 w-full flex-1 flex-col" style={{ background: '#111113' }}>
 
             {/* â”€â”€ Minimal header â”€â”€ */}
             <div

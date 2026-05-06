@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import { useOffice } from '@/lib/OfficeContext';
@@ -10,7 +10,7 @@ export function OfficeShell({ children }: { children: React.ReactNode }) {
 
     return (
         <div className={`relative h-screen w-full overflow-hidden font-sans text-[var(--text)] transition-all duration-700 ${systemState.isDeepWork ? 'brightness-95 saturate-75' : ''
-            }`} style={{ background: '#141416' }}>
+            }`} style={{ background: '#111113' }}>
 
             {/* Deep Work Focus Overlay (Pure Black) */}
             <div className={`absolute inset-0 z-50 pointer-events-none bg-black transition-opacity duration-1000 ${systemState.isDeepWork ? 'opacity-80' : 'opacity-0'}`} />

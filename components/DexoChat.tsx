@@ -139,7 +139,7 @@ export function DexoChat() {
     return (
         <div className="flex flex-col h-full bg-brand-bg text-brand-text">
             {/* Header */}
-            <div className="p-6 border-b flex items-center justify-between sticky top-0 z-10" style={{ borderColor: 'rgba(255,255,255,0.07)', background: '#141416' }}>
+            <div className="p-6 border-b flex items-center justify-between sticky top-0 z-10" style={{ borderColor: 'rgba(255,255,255,0.07)', background: '#111113' }}>
                 <div className="flex items-center gap-4">
                     <DexoAvatar size="md" state="idle" />
                     <div>
@@ -166,7 +166,7 @@ export function DexoChat() {
                             className={`max-w-[75%] p-4 rounded-2xl text-sm leading-relaxed ${msg.role === 'user' ? 'rounded-tr-sm' : 'rounded-tl-sm'}`}
                             style={msg.role === 'user'
                                 ? { background: 'rgba(255,255,255,0.07)', color: '#f2f2f5' }
-                                : { background: '#1e1e22', border: '1px solid rgba(255,255,255,0.06)', color: '#8c8c9e' }
+                                : { background: '#1c1c1f', border: '1px solid rgba(255,255,255,0.06)', color: '#8c8c9e' }
                             }
                         >
                             <div className="whitespace-pre-wrap font-sans">{msg.content}</div>

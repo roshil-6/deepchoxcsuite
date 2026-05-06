@@ -125,7 +125,7 @@ export function PortfolioDailyIntelSection({
               key={project.id ?? project.name}
               className="group relative overflow-hidden rounded-2xl border border-white/[0.09] bg-gradient-to-br from-[rgba(255,255,255,0.07)] via-[rgba(255,255,255,0.03)] to-[rgba(6,182,212,0.06)] p-[1px] shadow-[0_20px_50px_rgba(0,0,0,0.35)]"
             >
-              <div className="h-full rounded-[0.9rem] bg-[#141416] p-4">
+              <div className="h-full rounded-[0.9rem] bg-[#111113] p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="truncate text-[11px] font-semibold uppercase tracking-[0.14em] text-cyan-200/85">

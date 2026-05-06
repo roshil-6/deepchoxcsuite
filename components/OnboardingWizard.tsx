@@ -72,7 +72,7 @@ export function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) 
 
     if (formData.isAnalyzing) {
         return (
-            <div className="fixed inset-0 z-[100] bg-[#141416] flex flex-col items-center justify-center p-10 animate-in fade-in duration-700">
+            <div className="fixed inset-0 z-[100] bg-[#111113] flex flex-col items-center justify-center p-10 animate-in fade-in duration-700">
                 <div className="relative">
                     <div className="w-32 h-32 rounded-full border-2 border-zinc-900 flex items-center justify-center">
                         <Sparkles className="w-12 h-12 text-[#0D9488] animate-pulse" />
@@ -90,14 +90,14 @@ export function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) 
     }
 
     return (
-        <div className="fixed inset-0 z-[100] bg-[#141416]/90 backdrop-blur-2xl flex items-center justify-center p-6 sm:p-10 animate-in fade-in duration-500">
-            <div className="flex w-full max-w-5xl flex-col overflow-hidden rounded-[2.5rem] border border-zinc-900 bg-[#141416] shadow-2xl lg:flex-row">
+        <div className="fixed inset-0 z-[100] bg-[#111113]/90 backdrop-blur-2xl flex items-center justify-center p-6 sm:p-10 animate-in fade-in duration-500">
+            <div className="flex w-full max-w-5xl flex-col overflow-hidden rounded-[2.5rem] border border-zinc-900 bg-[#111113] shadow-2xl lg:flex-row">
 
                 {/* Left Sidebar - Progress */}
                 <div className="w-full lg:w-80 bg-zinc-950/50 p-10 border-b lg:border-b-0 lg:border-r border-zinc-900 flex flex-col justify-between">
                     <div>
                         <div className="flex items-center gap-3 mb-12">
-                            <div className="w-8 h-8 bg-zinc-100 rounded-lg flex items-center justify-center text-[#141416] shadow-lg">
+                            <div className="w-8 h-8 bg-zinc-100 rounded-lg flex items-center justify-center text-[#111113] shadow-lg">
                                 <Briefcase className="w-4 h-4" />
                             </div>
                             <span className="font-bold text-zinc-100 tracking-tight">Deepchox</span>
@@ -120,7 +120,7 @@ export function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) 
                 </div>
 
                 {/* Main Form Area */}
-                <div className="flex-1 p-10 lg:p-16 flex flex-col bg-[#141416]">
+                <div className="flex-1 p-10 lg:p-16 flex flex-col bg-[#111113]">
                     <div className="flex justify-between items-start mb-12">
                         <div>
                             <p className="text-[#0D9488] font-bold text-[10px] uppercase tracking-[0.3em] mb-2">Step 0{step} / 04</p>
@@ -234,7 +234,7 @@ export function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) 
                                                 key={time}
                                                 onClick={() => setFormData({ ...formData, timeline: time })}
                                                 className={`p-6 rounded-2xl border text-sm font-bold uppercase tracking-wider transition-all ${formData.timeline === time
-                                                        ? 'bg-zinc-100 text-[#141416] border-zinc-100 shadow-xl'
+                                                        ? 'bg-zinc-100 text-[#111113] border-zinc-100 shadow-xl'
                                                         : 'bg-zinc-900/30 border-zinc-800 text-zinc-500 hover:border-zinc-700'
                                                     }`}
                                             >
@@ -257,7 +257,7 @@ export function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) 
                         </button>
                         <button
                             onClick={handleNext}
-                            className="px-10 py-4 bg-zinc-100 text-[#141416] rounded-2xl font-extrabold text-xs uppercase tracking-[0.2em] shadow-2xl hover:bg-white transition-all flex items-center gap-3 shadow-zinc-950/40 translate-y-0 active:translate-y-1"
+                            className="px-10 py-4 bg-zinc-100 text-[#111113] rounded-2xl font-extrabold text-xs uppercase tracking-[0.2em] shadow-2xl hover:bg-white transition-all flex items-center gap-3 shadow-zinc-950/40 translate-y-0 active:translate-y-1"
                         >
                             {step === totalSteps ? "Synchronize" : "Proceed"}
                             <ArrowRight className="w-4 h-4" />
@@ -277,7 +277,7 @@ function StepIndicator({ current, stepNumber, title, icon }: { current: number, 
     return (
         <div className={`flex items-center gap-5 transition-all duration-500 ${isActive ? 'translate-x-2' : ''}`}>
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all duration-500 ${isCompleted ? 'bg-[#0D9488]/10 border-[#0D9488]/20 text-[#0D9488]' :
-                    isActive ? 'bg-zinc-100 border-zinc-100 text-[#141416] shadow-lg scale-110 shadow-zinc-950/30' :
+                    isActive ? 'bg-zinc-100 border-zinc-100 text-[#111113] shadow-lg scale-110 shadow-zinc-950/30' :
                         'bg-zinc-900 border-zinc-800 text-zinc-700'
                 }`}>
                 {isCompleted ? <Check className="w-5 h-5" /> : icon}

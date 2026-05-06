@@ -178,7 +178,7 @@ export function TimelinePhaseSetter({
 
     return (
         <div
-            className={`flex flex-col ${rail || embedded ? 'bg-transparent' : 'h-full min-h-0 bg-[#141416]'}`}
+            className={`flex flex-col ${rail || embedded ? 'bg-transparent' : 'h-full min-h-0 bg-[#111113]'}`}
         >
             {/* Header */}
             <div

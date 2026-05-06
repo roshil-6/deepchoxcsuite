@@ -696,7 +696,7 @@ export function DexoRoom() {
 
             {/* â”€â”€ Sticky mode header â”€â”€ */}
             {activeProject && (
-                <div className="relative z-20 shrink-0" style={{ background: '#141416', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                <div className="relative z-20 shrink-0" style={{ background: '#111113' }}>
                     <div className="mx-auto flex max-w-[660px] items-center gap-3 px-4 py-2.5">
                         <span className="font-sans text-[9px] font-semibold uppercase tracking-[0.18em] shrink-0" style={{ color: '#5c5c6e' }}>VENTURE</span>
                         <span className="max-w-[160px] truncate font-sans text-[13px] font-medium" style={{ color: '#f2f2f5' }}>
@@ -1039,7 +1039,7 @@ export function DexoRoom() {
                                                 <div
                                                     className="max-w-[82%] sm:max-w-[72%] rounded-2xl rounded-br-md px-4 py-3 text-[13.5px] leading-relaxed"
                                                     style={{
-                                                        background: '#222227',
+                                                        background: '#242428',
                                                         border: '1px solid rgba(255,255,255,0.09)',
                                                         color: '#f2f2f5',
                                                     }}
@@ -1088,7 +1088,7 @@ export function DexoRoom() {
                                             onClick={() => { overviewNudgeShownRef.current = true; setView('overview'); }}
                                             className="mt-1 inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] font-medium transition-all duration-150"
                                             style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.10)', color: '#8c8c9e' }}
-                                            onMouseEnter={(e) => { e.currentTarget.style.background = '#1e1e22'; e.currentTarget.style.color = '#f2f2f5'; }}
+                                            onMouseEnter={(e) => { e.currentTarget.style.background = '#1c1c1f'; e.currentTarget.style.color = '#f2f2f5'; }}
                                             onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#8c8c9e'; }}
                                         >
                                             <Activity className="h-3 w-3" />
@@ -1113,7 +1113,7 @@ export function DexoRoom() {
                                                     }}
                                                     className="rounded-full px-3.5 py-1.5 text-[12px] font-medium transition-all duration-150"
                                                     style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.10)', color: '#8c8c9e' }}
-                                                    onMouseEnter={(e) => { e.currentTarget.style.background = '#1e1e22'; e.currentTarget.style.color = '#f2f2f5'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.16)'; }}
+                                                    onMouseEnter={(e) => { e.currentTarget.style.background = '#1c1c1f'; e.currentTarget.style.color = '#f2f2f5'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.16)'; }}
                                                     onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#8c8c9e'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.10)'; }}
                                                 >
                                                     {reply}
@@ -1153,10 +1153,10 @@ export function DexoRoom() {
 
             {/* â”€â”€ Input strip â”€â”€ */}
             <div className="relative z-10 shrink-0">
-                <div className="pointer-events-none absolute inset-x-0 -top-16 h-16 bg-gradient-to-t from-[#141416] to-transparent" />
+                <div className="pointer-events-none absolute inset-x-0 -top-16 h-16 bg-gradient-to-t from-[#111113] to-transparent" />
                 <div
                     className="px-4 pb-5 pt-3"
-                    style={{ background: '#141416', borderTop: '1px solid rgba(255,255,255,0.07)' }}
+                    style={{ background: '#111113', borderTop: '1px solid rgba(255,255,255,0.07)' }}
                 >
                     <div className="mx-auto max-w-[660px] space-y-2">
 
@@ -1192,7 +1192,7 @@ export function DexoRoom() {
                                 isProcessing  ? 'shadow-[0_0_0_1.5px_rgba(99,102,241,0.3)]' :
                                 'focus-within:shadow-[0_0_0_1.5px_rgba(255,255,255,0.12)]'
                             }`}
-                            style={{ background: '#1e1e22', border: '1px solid rgba(255,255,255,0.09)' }}
+                            style={{ background: '#1c1c1f', border: '1px solid rgba(255,255,255,0.09)' }}
                         >
                             {/* Mic button */}
                             <div className="relative shrink-0">

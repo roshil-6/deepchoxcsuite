@@ -266,7 +266,7 @@ function Card({ children, className = '', interactive = false, onClick, id }: Ca
                 ${className}
             `}
             style={{
-                background: isHovered && interactive ? '#201f28' : '#1e1e22',
+                background: isHovered && interactive ? '#201f28' : '#1c1c1f',
                 borderColor: isHovered && interactive ? 'rgba(255,255,255,0.11)' : 'rgba(255,255,255,0.07)',
             }}
         >
@@ -832,7 +832,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     return (
         <div
             className="min-h-screen w-full pb-24"
-            style={{ background: '#141416' }}
+            style={{ background: '#111113' }}
         >
             {/* â”€â”€ DEXO OVERVIEW GUIDE POP-UP â”€â”€ renders directly on the page */}
             {showDexoWelcome && (() => {
@@ -1046,7 +1046,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
             })()}
 
             {/* HEADER */}
-            <header className="border-b" style={{ background: '#141416', borderColor: 'rgba(255,255,255,0.07)' }}>
+            <header className="border-b" style={{ background: '#111113', borderColor: 'rgba(255,255,255,0.07)' }}>
                 <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 sm:px-6 py-3 sm:py-4">
                     <div className="flex items-center gap-2 sm:gap-4 min-w-0">
                         <div
@@ -1242,12 +1242,12 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         {activeProject.agentStaffSnapshot ? (
                             <div
                                 className="overflow-hidden rounded-xl border"
-                                style={{ borderColor: 'rgba(255,255,255,0.07)', background: '#1e1e22' }}
+                                style={{ borderColor: 'rgba(255,255,255,0.07)', background: '#1c1c1f' }}
                             >
                                 {/* Section header */}
                                 <div
                                     className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-4 sm:px-6"
-                                    style={{ borderColor: 'rgba(255,255,255,0.07)', background: '#222227' }}
+                                    style={{ borderColor: 'rgba(255,255,255,0.07)', background: '#242428' }}
                                 >
                                     <div className="flex min-w-0 items-center gap-3">
                                         <div
@@ -1307,7 +1307,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     ] as const).map(({ key, label, role, sub, snap, color, room, icon: DeskIcon }) => {
                                         const hasSnap = !!snap?.trim();
                                         return (
-                                            <div key={key} className="flex flex-col p-4 sm:p-5" style={{ background: '#1e1e22' }}>
+                                            <div key={key} className="flex flex-col p-4 sm:p-5" style={{ background: '#1c1c1f' }}>
                                                 {/* Card header row */}
                                                 <div className="flex items-start justify-between gap-2">
                                                     <div className="flex min-w-0 items-center gap-2.5">

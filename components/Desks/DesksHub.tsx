@@ -176,7 +176,7 @@ export function DesksHub() {
     });
 
     return (
-        <div className="min-h-full pb-16" style={{ background: '#141416' }}>
+        <div className="min-h-full pb-16" style={{ background: '#111113' }}>
 
             {/* â”€â”€ Page header â”€â”€ */}
             <div className="pb-6 pt-1">

@@ -18,12 +18,6 @@ import { RoomChrome } from './RoomChrome';
 import { DeskChat } from './workspaces/DeskChat';
 import { DexoResearchRoom } from './DexoResearchRoom';
 import { getWorkspaceShellTheme } from '@/lib/roomThemes';
-import { WORKSPACE_TITLES } from '@/components/ui/appNav';
-import { User } from 'lucide-react';
-
-function workspaceTitle(room: string) {
-    return WORKSPACE_TITLES[room] ?? 'Workspace';
-}
 
 export function WorkspaceStage({
     onNewVenture,
@@ -86,26 +80,8 @@ export function WorkspaceStage({
     return (
         <div className="relative flex min-h-0 w-full flex-1 flex-col">
             <div
-                className={`relative z-10 flex min-h-0 flex-1 flex-col animate-in fade-in duration-300 ${shell.immersive ? '' : 'py-3 sm:py-4'}`}
+                className="relative z-10 flex min-h-0 flex-1 flex-col animate-in fade-in duration-300"
             >
-                {!shell.immersive && !hideWorkspaceHeader && (
-                    <header className="mb-2 flex shrink-0 items-center justify-between gap-3 border-b border-white/[0.04] pb-2.5">
-                        <h1 className="text-sm font-normal tracking-normal text-brand-text/95 sm:text-[15px]">
-                            {workspaceTitle(activeRoom)}
-                        </h1>
-                        <div className="flex items-center gap-1 sm:gap-2">
-                            <div
-                                className="flex items-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.03] py-1 pl-1 pr-3"
-                                role="presentation"
-                            >
-                                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/[0.05]">
-                                    <User className="h-3.5 w-3.5 text-brand-text" aria-hidden />
-                                </span>
-                                <span className="hidden text-sm text-brand-muted sm:inline">Research</span>
-                            </div>
-                        </div>
-                    </header>
-                )}
                 <RoomChrome immersive={shell.immersive} chromeClass={shell.chrome}>
                     {renderWorkspace()}
                 </RoomChrome>

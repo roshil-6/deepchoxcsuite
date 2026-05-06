@@ -514,7 +514,7 @@ export function StrategyNotebook() {
             case 'flow':
                 if (!hasClearPlanIntent) {
                     return (
-                        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#141416] p-5 shadow-none">
+                        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#111113] p-5 shadow-none">
                             <div
                                 className="pointer-events-none absolute -top-24 left-1/2 h-48 w-[min(100%,28rem)] -translate-x-1/2 rounded-full bg-white/[0.05] blur-3xl"
                                 aria-hidden
@@ -564,7 +564,7 @@ export function StrategyNotebook() {
                 );
             case 'phases':
                 return (
-                    <div className="min-h-0 flex-1 overflow-auto rounded-lg border border-white/[0.06] bg-[#141416]">
+                    <div className="min-h-0 flex-1 overflow-auto rounded-lg border border-white/[0.06] bg-[#111113]">
                         <TimelinePhaseSetter
                             variant="page"
                             projectName={activeProject.name}
