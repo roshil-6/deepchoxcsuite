@@ -17,6 +17,7 @@ import { CsuiteIntelligenceGuide } from './CsuiteIntelligenceGuide';
 import { RoomChrome } from './RoomChrome';
 import { DeskChat } from './workspaces/DeskChat';
 import { DexoResearchRoom } from './DexoResearchRoom';
+import { Trivily } from './Trivily';
 import { getWorkspaceShellTheme } from '@/lib/roomThemes';
 
 export function WorkspaceStage({
@@ -62,6 +63,8 @@ export function WorkspaceStage({
                 return <CsuiteIntelligenceGuide />;
             case 'dexo_daily':
                 return <DexoResearchRoom />;
+            case 'trivily':
+                return <Trivily />;
             case 'ceo':
                 return <DeskChat deskId="ceo" />;
             case 'pm':

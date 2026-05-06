@@ -1,7 +1,7 @@
 ﻿'use client';
 
 /**
- * Dexo â€” AI Command Center
+ * Dexo — AI Command Center
  * Jarvis-style: non-blocking, always-interruptible, reactive orb
  */
 
@@ -48,7 +48,7 @@ import { VenturePrioritySelector } from '@/components/Dexo/VenturePrioritySelect
 import { PlanGate } from '@/components/PlanGate';
 import { readVenturePriority, getPriorityById, type VenturePriorityId } from '@/lib/venturePriority';
 
-// â”€â”€â”€ Global CSS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€â"€ Global CSS â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 const ORB_CSS = `
 @keyframes orb-breathe {
@@ -60,7 +60,7 @@ const ORB_CSS = `
     50%     { box-shadow: 0 0 0 14px rgba(196,201,212,0), 0 0 72px rgba(196,201,212,0.22); transform: scale(1.04); }
 }
 @keyframes orb-speak {
-    /* Softer, tighter glow â€” large spread reads as a square plate behind the orb */
+    /* Softer, tighter glow — large spread reads as a square plate behind the orb */
     0%,100% { box-shadow: 0 0 28px rgba(148,163,184,0.18), 0 0 48px rgba(148,163,184,0.08); }
     50%     { box-shadow: 0 0 36px rgba(148,163,184,0.26), 0 0 64px rgba(148,163,184,0.12); }
 }
@@ -80,24 +80,24 @@ if (typeof document !== 'undefined') {
     document.head.appendChild(el);
 }
 
-// â”€â”€â”€ Mode-adaptive data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€â"€ Mode-adaptive data â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 const MODE_HINTS: Record<string, string> = {
     vision:          "Let's explore why this venture exists and who it's really for.",
     market_research: "Ask about competitors, pricing, market size, or customer segments.",
-    execution:       "Tell me what's blocking you â€” I'll help clear it.",
-    planning:        "Let's map your path â€” milestones, constraints, and what to sequence.",
-    all:             "Everything is fair game â€” strategy, market, execution, and planning.",
+    execution:       "Tell me what's blocking you — I'll help clear it.",
+    planning:        "Let's map your path — milestones, constraints, and what to sequence.",
+    all:             "Everything is fair game — strategy, market, execution, and planning.",
     custom:          "Dexo is working within your custom focus.",
 };
 
 const MODE_LOADING_TEXT: Record<string, string> = {
-    vision:          'Shaping your brand storyâ€¦',
-    market_research: 'Scanning your market landscapeâ€¦',
-    execution:       'Finding your next moveâ€¦',
-    planning:        'Mapping the path forwardâ€¦',
-    all:             'Analyzing your ventureâ€¦',
-    custom:          'Working on your focus areaâ€¦',
+    vision:          'Shaping your brand story…',
+    market_research: 'Scanning your market landscape…',
+    execution:       'Finding your next move…',
+    planning:        'Mapping the path forward…',
+    all:             'Analyzing your venture…',
+    custom:          'Working on your focus area…',
 };
 
 const MODE_QUICK_REPLIES: Record<string, string[]> = {
@@ -112,13 +112,13 @@ const MODE_QUICK_REPLIES: Record<string, string[]> = {
 const MODE_REACTIONS: Record<string, string> = {
     vision:          "Switching to Vision mode. I'll dig into brand story, positioning, and your 'why' before anything else. What's the core reason this venture exists?",
     market_research: "Market research mode. I'll focus on competitors, customer segments, and market gaps from here. What do you already know about your space?",
-    execution:       "Execution mode â€” let's cut through the noise. Short answers, one next move at a time. What's the biggest thing blocking you right now?",
+    execution:       "Execution mode — let's cut through the noise. Short answers, one next move at a time. What's the biggest thing blocking you right now?",
     planning:        "Strategic planning mode. I'll think in timelines, sequences, and constraints. Where are you trying to be in the next 90 days?",
-    all:             "Full stack mode â€” nothing gets deprioritised. I'll balance vision, market, execution, and planning equally. What do you want to tackle?",
-    custom:          "Got it â€” I'm working within your custom focus now. What would you like to start with?",
+    all:             "Full stack mode — nothing gets deprioritised. I'll balance vision, market, execution, and planning equally. What do you want to tackle?",
+    custom:          "Got it — I'm working within your custom focus now. What would you like to start with?",
 };
 
-// â”€â”€â”€ Voice orb â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€â"€ Voice orb â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 function VoiceOrb({ state, onClick }: { state: ConvoVoiceState | 'loading'; onClick?: () => void }) {
     const listening    = state === 'listening';
@@ -176,7 +176,7 @@ function VoiceOrb({ state, onClick }: { state: ConvoVoiceState | 'loading'; onCl
                 <span style={{ position:'absolute', inset:-18, borderRadius:'50%', border:'1px dashed rgba(148,163,184,0.1)', animation:'ring-spin-r 14s linear infinite' }} />
             </>}
 
-            {/* Main orb â€” box-shadow glow on this circle only (avoids a square halo from the 120Ã—120 wrapper) */}
+            {/* Main orb — box-shadow glow on this circle only (avoids a square halo from the 120×120 wrapper) */}
             <div
                 style={{
                     position:'absolute', inset:0, borderRadius:'50%',
@@ -198,7 +198,7 @@ function VoiceOrb({ state, onClick }: { state: ConvoVoiceState | 'loading'; onCl
     );
 }
 
-// â”€â”€â”€ Wave bars â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€â"€ Wave bars â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 function WaveBars({ active, color = 'bg-[var(--accent)]' }: { active: boolean; color?: string }) {
     return (
@@ -216,14 +216,18 @@ function WaveBars({ active, color = 'bg-[var(--accent)]' }: { active: boolean; c
     );
 }
 
-// â”€â”€â”€ Particle mark (replaces avatar in chat messages) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€â"€ Particle mark (replaces avatar in chat messages) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 const DMK_CSS = `
-@keyframes dmk-a{0%,100%{transform:translate(0,0) scale(1);opacity:.45}50%{transform:translate(5px,-5px) scale(1.3);opacity:1}}
-@keyframes dmk-b{0%,100%{transform:translate(0,0) scale(1);opacity:.45}50%{transform:translate(-5px,4px) scale(1.3);opacity:1}}
-@keyframes dmk-c{0%,100%{transform:translate(0,0) scale(1);opacity:.4}50%{transform:translate(4px,5px) scale(1.2);opacity:.95}}
-@keyframes dmk-d{0%,100%{transform:translate(0,0) scale(1);opacity:.35}50%{transform:translate(-4px,-5px) scale(1.15);opacity:.85}}
-@keyframes dmk-e{0%,100%{transform:translate(0,0) scale(1);opacity:.3}50%{transform:translate(3px,3px) scale(1.1);opacity:.7}}
+@keyframes dmk-ring{0%,100%{opacity:.18;transform:scale(1)}50%{opacity:.38;transform:scale(1.07)}}
+@keyframes dmk-core{0%,100%{opacity:.22;transform:scale(1) translate(-50%,-50%)}50%{opacity:.55;transform:scale(1.2) translate(-42%,-42%)}}
+@keyframes dmk-a{0%,100%{transform:translate(0,0) scale(1);opacity:.55}50%{transform:translate(4px,-5px) scale(1.5);opacity:1}}
+@keyframes dmk-b{0%,100%{transform:translate(0,0) scale(1);opacity:.45}50%{transform:translate(-5px,4px) scale(1.4);opacity:.95}}
+@keyframes dmk-c{0%,100%{transform:translate(0,0) scale(1);opacity:.4}50%{transform:translate(4px,5px) scale(1.3);opacity:.9}}
+@keyframes dmk-d{0%,100%{transform:translate(0,0) scale(1);opacity:.35}50%{transform:translate(-4px,-5px) scale(1.25);opacity:.8}}
+@keyframes dmk-e{0%,100%{transform:translate(0,0) scale(1);opacity:.3}50%{transform:translate(3px,3px) scale(1.2);opacity:.7}}
+@keyframes dmk-f{0%,100%{transform:translate(0,0) scale(1);opacity:.25}50%{transform:translate(-3px,4px) scale(1.15);opacity:.65}}
+@keyframes dmk-g{0%,100%{transform:translate(0,0) scale(1);opacity:.22}50%{transform:translate(5px,-3px) scale(1.1);opacity:.6}}
 `;
 let dmkCssInjected = false;
 function injectDmkCss() {
@@ -242,45 +246,72 @@ function DexoParticleMark({ state = 'idle' }: { state?: DmkState }) {
         state === 'listening' ? '244,63,94'  :
         '148,163,184';
     const DOTS = [
-        { a: 'dmk-a', d: '2.0s', dl: '0s',    x: '32%', y: '35%', r: 2.5 },
-        { a: 'dmk-b', d: '2.7s', dl: '0.45s', x: '60%', y: '52%', r: 2   },
-        { a: 'dmk-c', d: '2.3s', dl: '0.8s',  x: '46%', y: '64%', r: 1.5 },
-        { a: 'dmk-d', d: '2.9s', dl: '0.25s', x: '56%', y: '28%', r: 1.5 },
-        { a: 'dmk-e', d: '1.8s', dl: '1.05s', x: '26%', y: '56%', r: 1.5 },
+        { a: 'dmk-a', d: '2.2s', dl: '0s',    x: '28%', y: '26%', r: 3   },
+        { a: 'dmk-b', d: '2.8s', dl: '0.4s',  x: '62%', y: '44%', r: 2.5 },
+        { a: 'dmk-c', d: '2.4s', dl: '0.75s', x: '40%', y: '66%', r: 2   },
+        { a: 'dmk-d', d: '3.0s', dl: '0.2s',  x: '68%', y: '24%', r: 2   },
+        { a: 'dmk-e', d: '1.9s', dl: '1.0s',  x: '18%', y: '58%', r: 1.5 },
+        { a: 'dmk-f', d: '2.6s', dl: '0.55s', x: '54%', y: '74%', r: 1.5 },
+        { a: 'dmk-g', d: '2.1s', dl: '0.85s', x: '74%', y: '58%', r: 1.5 },
     ];
     return (
         <div
-            className="relative shrink-0 overflow-hidden rounded-full"
-            style={{
-                width: 20, height: 20,
-                background: `rgba(${rgb},0.10)`,
-                border: `1px solid rgba(${rgb},0.25)`,
-            }}
+            className="relative shrink-0"
+            style={{ width: 28, height: 28 }}
         >
-            {DOTS.map((p, i) => (
-                <span
-                    key={i}
-                    className="absolute rounded-full"
+            {/* Pulsing outer ring */}
+            <div
+                className="absolute inset-0 rounded-full"
+                style={{
+                    border: `1px solid rgba(${rgb},0.35)`,
+                    boxShadow: `0 0 10px rgba(${rgb},0.18), inset 0 0 6px rgba(${rgb},0.06)`,
+                    animation: 'dmk-ring 2.6s ease-in-out infinite',
+                }}
+            />
+            {/* Filled container */}
+            <div
+                className="absolute inset-0 overflow-hidden rounded-full"
+                style={{ background: `rgba(${rgb},0.09)` }}
+            >
+                {/* Soft center core */}
+                <div
+                    className="absolute"
                     style={{
-                        width: p.r, height: p.r,
-                        left: p.x, top: p.y,
-                        background: `rgba(${rgb},0.9)`,
-                        animation: `${p.a} ${p.d} ${p.dl} ease-in-out infinite`,
+                        width: 9, height: 9,
+                        left: '50%', top: '50%',
+                        borderRadius: '50%',
+                        background: `rgba(${rgb},0.35)`,
+                        filter: 'blur(4px)',
+                        animation: 'dmk-core 2.8s ease-in-out infinite',
                     }}
                 />
-            ))}
+                {DOTS.map((p, i) => (
+                    <span
+                        key={i}
+                        className="absolute rounded-full"
+                        style={{
+                            width: p.r, height: p.r,
+                            left: p.x, top: p.y,
+                            background: `rgba(${rgb},1)`,
+                            filter: `blur(0.4px)`,
+                            boxShadow: `0 0 ${p.r * 2}px rgba(${rgb},0.55)`,
+                            animation: `${p.a} ${p.d} ${p.dl} ease-in-out infinite`,
+                        }}
+                    />
+                ))}
+            </div>
         </div>
     );
 }
 
-// â”€â”€â”€ Voice hook replaced by useDexoConversationalVoice from lib/useDexoConversationalVoice â”€â”€â”€â”€â”€
+// â"€â"€â"€ Voice hook replaced by useDexoConversationalVoice from lib/useDexoConversationalVoice â"€â"€â"€â"€â"€
 
-// â”€â”€â”€ Main component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€â"€ Main component â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 function truncateSetupDetail(s: string, max = 320): string {
     const t = s.trim();
     if (t.length <= max) return t;
-    return `${t.slice(0, max - 1)}â€¦`;
+    return `${t.slice(0, max - 1)}…`;
 }
 
 export function DexoRoom() {
@@ -347,7 +378,7 @@ export function DexoRoom() {
         activeProject?.userNotes,
     ]);
 
-    // â”€â”€ Transcript handler: fill input and auto-submit â”€â”€
+    // â"€â"€ Transcript handler: fill input and auto-submit â"€â"€
     const onTranscript = useCallback((t: string) => {
         const trimmed = t.trim();
         if (!trimmed) return;
@@ -366,8 +397,8 @@ export function DexoRoom() {
     }, []);
 
     const onInterrupt = useCallback(() => {
-        // Dexo was interrupted â€” acknowledge it
-        setConvo((prev) => [...prev, { role: 'dexo', text: 'â€” interrupted â€”', id: ++convoId.current }]);
+        // Dexo was interrupted — acknowledge it
+        setConvo((prev) => [...prev, { role: 'dexo', text: '— interrupted —', id: ++convoId.current }]);
     }, []);
 
     // Use conversational voice system with streaming and human-like features
@@ -527,7 +558,7 @@ export function DexoRoom() {
             // Build context including previous analyses for continuity
             let context = buildCtx();
 
-            // No venture selected â€” use the generic pre-venture context so the API won't 400
+            // No venture selected — use the generic pre-venture context so the API won't 400
             if (!context.trim()) {
                 context = DEXO_PRE_VENTURE_CONTEXT;
             }
@@ -562,15 +593,15 @@ export function DexoRoom() {
                         ventureId: activeProject.id,
                         source: 'dexo_room',
                         model: 'Dexo',
-                        summary: `Dexo suggests: ${pending.join(' Â· ')}`,
+                        summary: `Dexo suggests: ${pending.join(' · ')}`,
                         patch,
                         updateProjectField,
                     });
                     const hint = !out.ok
                         ? ''
                         : out.applied
-                          ? `\n\n_Applied to your venture: ${pending.join(' Â· ')} (${out.mode} mode)._`
-                          : `\n\n_Pending your approval: ${pending.join(' Â· ')}._`;
+                          ? `\n\n_Applied to your venture: ${pending.join(' · ')} (${out.mode} mode)._`
+                          : `\n\n_Pending your approval: ${pending.join(' · ')}._`;
                     data.report = {
                         ...data.report,
                         voiceResponse: data.report.voiceResponse + hint,
@@ -607,7 +638,7 @@ export function DexoRoom() {
     // Keep runRef current for the pending-transcript effect
     runRef.current = run;
 
-    // Staff attention / "Set up now" â€” show mission banner + seed first Dexo converse turn
+    // Staff attention / "Set up now" — show mission banner + seed first Dexo converse turn
     useEffect(() => {
         if (!dexoBootstrap || !activeProject?.id) return;
         const payload = dexoBootstrap;
@@ -694,7 +725,7 @@ export function DexoRoom() {
     return (
         <div data-dexo-room className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-transparent">
 
-            {/* â”€â”€ Sticky mode header â”€â”€ */}
+            {/* â"€â"€ Sticky mode header â"€â"€ */}
             {activeProject && (
                 <div className="relative z-20 shrink-0" style={{ background: '#111113' }}>
                     <div className="mx-auto flex max-w-[660px] items-center gap-3 px-4 py-2.5">
@@ -717,7 +748,7 @@ export function DexoRoom() {
                         </button>
                     </div>
 
-                    {/* Mode picker â€” slides in below header */}
+                    {/* Mode picker — slides in below header */}
                     {modePanelOpen && (
                         <div className="mx-auto max-w-[660px] px-4 pb-3">
                             <VenturePrioritySelector
@@ -745,7 +776,7 @@ export function DexoRoom() {
                 </div>
             )}
 
-            {/* â”€â”€ Scrollable body (min-h-0 required or flex won't shrink below content â†’ no scroll on mobile) â”€â”€ */}
+            {/* â"€â"€ Scrollable body (min-h-0 required or flex won't shrink below content ←' no scroll on mobile) â"€â"€ */}
             <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]">
                 <div className="mx-auto max-w-[660px] px-4 pb-32 pt-6 sm:px-5 sm:pt-8">
 
@@ -761,128 +792,147 @@ export function DexoRoom() {
                     <TokenWarningBanner onUpgrade={upgradeModal.open} />
 
                     {setupMission ? (
-                        <div className="mb-5 rounded-lg border border-white/[0.1] bg-white/[0.04] px-4 py-3.5">
-                            <div className="flex gap-3">
-                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-white/[0.1] bg-white/[0.05] text-white/50">
-                                    <ClipboardList className="h-5 w-5" aria-hidden />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--accent)]">
-                                        You&apos;re here to set this up
-                                    </p>
-                                    <h2 className="mt-1 text-[16px] font-semibold leading-snug tracking-tight text-[var(--text)]">
-                                        {setupMission.title}
-                                    </h2>
-                                    <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-[var(--text-muted)]">
-                                        Source desk: {(setupMission.sourceRole ?? 'staff').toUpperCase()}
-                                    </p>
-                                    <div className="mt-1.5 max-h-44 overflow-y-auto rounded-lg border border-[var(--border)] bg-[var(--bg-elevated)] px-2.5 py-2">
-                                        <p className="text-[12px] leading-relaxed text-[var(--muted)]">{setupMission.detail}</p>
+                        <div
+                            className="mb-5 overflow-hidden rounded-2xl"
+                            style={{
+                                background: 'rgba(14,13,18,0.97)',
+                                border: '1px solid rgba(255,255,255,0.10)',
+                                boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 16px 48px rgba(0,0,0,0.5)',
+                            }}
+                        >
+                            {/* Top accent line */}
+                            <div className="h-[2px] w-full" style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.20) 40%, rgba(255,255,255,0.10) 70%, transparent 100%)' }} />
+
+                            <div className="px-5 py-4">
+                                {/* Header row */}
+                                <div className="flex items-start justify-between gap-3 mb-4">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.09)' }}>
+                                            <ClipboardList className="h-4.5 w-4.5" style={{ color: 'rgba(255,255,255,0.50)' }} aria-hidden />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="text-[9px] font-bold uppercase tracking-[0.22em]" style={{ color: 'rgba(255,255,255,0.28)' }}>
+                                                Mission Brief · {(setupMission.sourceRole ?? 'staff').toUpperCase()}
+                                            </p>
+                                            <h2 className="mt-0.5 text-[15px] font-semibold leading-snug tracking-tight" style={{ color: '#f2f2f5' }}>
+                                                {setupMission.title}
+                                            </h2>
+                                        </div>
                                     </div>
-                                    <div className="mt-3 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] p-2.5">
-                                        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">
-                                            Required from you
-                                        </p>
-                                        <ul className="mt-1.5 space-y-1.5">
-                                            {(Array.isArray(setupMission.requiredInfo) && setupMission.requiredInfo.length > 0
-                                                ? setupMission.requiredInfo
-                                                : ['Confirm what is missing and ask Dexo for exact fields to update.']
-                                            ).map((line, idx) => (
-                                                <li key={`${idx}-${line}`} className="flex gap-2 text-[11px] text-[var(--text)]">
-                                                    <span className="mt-[2px] h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent)]/80" aria-hidden />
-                                                    <span>{line}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                    <p className="mt-2 text-[11px] text-[var(--muted)]">
-                                        Dexo is using this alert context plus your venture record. You can proceed here without going back.
-                                    </p>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setSetupMission(null);
-                                        if (setupCacheKey && typeof window !== 'undefined') {
-                                            try {
-                                                sessionStorage.removeItem(setupCacheKey);
-                                            } catch {
-                                                /* noop */
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSetupMission(null);
+                                            if (setupCacheKey && typeof window !== 'undefined') {
+                                                try { sessionStorage.removeItem(setupCacheKey); } catch { /* noop */ }
                                             }
-                                        }
-                                    }}
-                                    className="shrink-0 rounded-lg p-1.5 text-[var(--muted)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--text)]"
-                                    aria-label="Dismiss setup focus"
-                                >
-                                    <X className="h-4 w-4" />
-                                </button>
+                                        }}
+                                        className="shrink-0 flex h-7 w-7 items-center justify-center rounded-lg transition hover:bg-white/[0.06]"
+                                        style={{ color: 'rgba(255,255,255,0.28)' }}
+                                        aria-label="Dismiss setup focus"
+                                    >
+                                        <X className="h-3.5 w-3.5" />
+                                    </button>
+                                </div>
+
+                                {/* Detail */}
+                                <div className="mb-3 max-h-36 overflow-y-auto rounded-xl px-3.5 py-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                                    <p className="text-[12px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.50)' }}>{setupMission.detail}</p>
+                                </div>
+
+                                {/* Required info */}
+                                <div className="rounded-xl px-3.5 py-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                                    <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.22em]" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                                        Required from you
+                                    </p>
+                                    <ul className="space-y-1.5">
+                                        {(Array.isArray(setupMission.requiredInfo) && setupMission.requiredInfo.length > 0
+                                            ? setupMission.requiredInfo
+                                            : ['Confirm what is missing and ask Dexo for exact fields to update.']
+                                        ).map((line, idx) => (
+                                            <li key={`${idx}-${line}`} className="flex gap-2 text-[12px]" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                                                <span className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: 'rgba(255,255,255,0.35)' }} aria-hidden />
+                                                <span>{line}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+
+                                <p className="mt-3 text-[11px]" style={{ color: 'rgba(255,255,255,0.28)' }}>
+                                    Dexo has full context. You can continue here without switching rooms.
+                                </p>
                             </div>
                         </div>
                     ) : null}
                     
-                    {/* â”€â”€ Tab row â”€â”€ */}
-                    <div className="mb-6 flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-6">
+                    {/* â"€â"€ Tab row â"€â"€ */}
+                    <div className="mb-7 flex items-center justify-between gap-4 border-b pb-0" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                        <div className="flex items-center">
                             <button
                                 type="button"
                                 onClick={() => setView('chat')}
-                                className="text-[13px] font-medium transition-colors duration-150"
-                                style={{ color: view === 'chat' ? '#f2f2f5' : '#5c5c6e' }}
-                                onMouseEnter={(e) => { if (view !== 'chat') e.currentTarget.style.color = '#8c8c9e'; }}
-                                onMouseLeave={(e) => { if (view !== 'chat') e.currentTarget.style.color = '#5c5c6e'; }}
+                                className="relative pb-3 pr-6 text-[13px] font-medium transition-colors duration-150"
+                                style={{ color: view === 'chat' ? '#f2f2f5' : 'rgba(255,255,255,0.28)' }}
+                                onMouseEnter={(e) => { if (view !== 'chat') e.currentTarget.style.color = 'rgba(255,255,255,0.55)'; }}
+                                onMouseLeave={(e) => { if (view !== 'chat') e.currentTarget.style.color = 'rgba(255,255,255,0.28)'; }}
                             >
                                 Chat
+                                {view === 'chat' && <span className="absolute bottom-0 left-0 h-[1.5px] w-full rounded-full" style={{ background: '#f2f2f5' }} />}
                             </button>
                             {currentReport && (
                                 <button
                                     type="button"
                                     onClick={() => { overviewNudgeShownRef.current = true; setView('overview'); }}
-                                    className="relative text-[13px] font-medium transition-colors duration-150"
-                                    style={{ color: view === 'overview' ? '#f2f2f5' : '#5c5c6e' }}
-                                    onMouseEnter={(e) => { if (view !== 'overview') e.currentTarget.style.color = '#8c8c9e'; }}
-                                    onMouseLeave={(e) => { if (view !== 'overview') e.currentTarget.style.color = '#5c5c6e'; }}
+                                    className="relative pb-3 pr-6 text-[13px] font-medium transition-colors duration-150"
+                                    style={{ color: view === 'overview' ? '#f2f2f5' : 'rgba(255,255,255,0.28)' }}
+                                    onMouseEnter={(e) => { if (view !== 'overview') e.currentTarget.style.color = 'rgba(255,255,255,0.55)'; }}
+                                    onMouseLeave={(e) => { if (view !== 'overview') e.currentTarget.style.color = 'rgba(255,255,255,0.28)'; }}
                                 >
                                     Overview
+                                    {view === 'overview' && <span className="absolute bottom-0 left-0 h-[1.5px] w-full rounded-full" style={{ background: '#f2f2f5' }} />}
                                     {!overviewNudgeShownRef.current && view !== 'overview' && (
-                                        <span className="absolute -right-2 -top-1 h-1 w-1 rounded-full bg-white/40" />
+                                        <span className="absolute right-4 top-0 h-1 w-1 rounded-full bg-white/40" />
                                     )}
                                 </button>
                             )}
                             <button
                                 type="button"
                                 onClick={() => setView('daily')}
-                                className="text-[13px] font-medium transition-colors duration-150"
-                                style={{ color: view === 'daily' ? '#f2f2f5' : '#5c5c6e' }}
-                                onMouseEnter={(e) => { if (view !== 'daily') e.currentTarget.style.color = '#8c8c9e'; }}
-                                onMouseLeave={(e) => { if (view !== 'daily') e.currentTarget.style.color = '#5c5c6e'; }}
+                                className="relative pb-3 pr-6 text-[13px] font-medium transition-colors duration-150"
+                                style={{ color: view === 'daily' ? '#f2f2f5' : 'rgba(255,255,255,0.28)' }}
+                                onMouseEnter={(e) => { if (view !== 'daily') e.currentTarget.style.color = 'rgba(255,255,255,0.55)'; }}
+                                onMouseLeave={(e) => { if (view !== 'daily') e.currentTarget.style.color = 'rgba(255,255,255,0.28)'; }}
                             >
                                 Research
+                                {view === 'daily' && <span className="absolute bottom-0 left-0 h-[1.5px] w-full rounded-full" style={{ background: '#f2f2f5' }} />}
                             </button>
                             {view === 'chat' && (
                                 <button
                                     type="button"
                                     onClick={resetConversation}
                                     disabled={loading || !activeProject?.id}
-                                    className="text-[13px] transition-colors duration-150 disabled:opacity-25"
-                                    style={{ color: '#3d3d4e' }}
-                                    onMouseEnter={(e) => { e.currentTarget.style.color = '#5c5c6e'; }}
-                                    onMouseLeave={(e) => { e.currentTarget.style.color = '#3d3d4e'; }}
+                                    className="pb-3 pr-6 text-[13px] transition-colors duration-150 disabled:opacity-25"
+                                    style={{ color: 'rgba(255,255,255,0.22)' }}
+                                    onMouseEnter={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.45)'; }}
+                                    onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.22)'; }}
                                 >
                                     New
                                 </button>
                             )}
                         </div>
-                        <TokenDisplay compact={false} showCosts={true} />
+                        <div className="pb-3">
+                            <TokenDisplay compact={false} showCosts={true} />
+                        </div>
                     </div>
 
-                    {/* â”€â”€ Mode hint â”€â”€ */}
+                    {/* â"€â"€ Mode hint â"€â"€ */}
                     {view === 'chat' && activePriorityId && MODE_HINTS[activePriorityId] && (
                         <p className="-mt-2 mb-5 text-[12px] leading-relaxed text-white/24">
                             {MODE_HINTS[activePriorityId]}
                         </p>
                     )}
 
-                    {/* â”€â”€ Overview Panel â”€â”€ */}
+                    {/* â"€â"€ Overview Panel â"€â"€ */}
                     {view === 'overview' && currentReport && (
                         <div className="flex flex-col gap-8 pb-28">
                             {/* Summary */}
@@ -892,7 +942,7 @@ export function DexoRoom() {
                                         className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-[10px] font-bold"
                                         style={{ background: 'rgba(255,255,255,0.06)', color: '#f2f2f5', border: '1px solid rgba(255,255,255,0.12)' }}
                                     >D</span>
-                                    <span className="text-[10px] uppercase tracking-[0.2em] text-white/22">Venture Overview Â· updates as you chat</span>
+                                    <span className="text-[10px] uppercase tracking-[0.2em] text-white/22">Venture Overview · updates as you chat</span>
                                 </div>
                                 <p className="text-[18px] font-semibold leading-snug text-white/90">{currentReport.headline}</p>
                                 <p className="mt-2 text-[13.5px] leading-relaxed text-white/50">{currentReport.summary}</p>
@@ -933,7 +983,7 @@ export function DexoRoom() {
                                     <div className="flex flex-col gap-3">
                                         {currentReport.risks.map((r, i) => (
                                             <div key={i}>
-                                                <p className="mb-1 text-[11px] font-medium text-amber-400/60">âš  {r.label} <span className="text-amber-400/30">Â· {r.level}</span></p>
+                                                <p className="mb-1 text-[11px] font-medium text-amber-400/60">âš  {r.label} <span className="text-amber-400/30">· {r.level}</span></p>
                                                 <p className="text-[13px] leading-relaxed text-white/55">{r.detail}</p>
                                             </div>
                                         ))}
@@ -962,23 +1012,23 @@ export function DexoRoom() {
                                 onClick={() => setView('chat')}
                                 className="self-start text-[11px] text-white/22 transition hover:text-white/50"
                             >
-                                â† Back to chat
+                                ← Back to chat
                             </button>
                         </div>
                     )}
 
-                    {/* â”€â”€ Daily Research Panel â”€â”€ */}
+                    {/* â"€â"€ Daily Research Panel â"€â"€ */}
                     {view === 'daily' && activeProject && (
                         <PlanGate feature="dexoDailyBriefReports">
                             <DexoDailyBriefPanel activeProject={activeProject} autoRunPulse />
                         </PlanGate>
                     )}
 
-                    {/* â”€â”€ Chat / Analysis view â”€â”€ */}
+                    {/* â"€â"€ Chat / Analysis view â"€â"€ */}
                     {view === 'chat' && (
                     <>
-                    {/* â”€â”€ Identity header â”€â”€ */}
-                    <div className="mb-7 flex items-start gap-3.5">
+                    {/* â"€â"€ Identity header â"€â"€ */}
+                    <div className="mb-7 flex items-center gap-3">
                         <DexoAvatar
                             state={
                                 orbState === 'loading'    ? 'thinking'  :
@@ -986,9 +1036,9 @@ export function DexoRoom() {
                                 orbState === 'speaking'   ? 'speaking'  :
                                 orbState === 'thinking'   ? 'thinking'  : 'idle'
                             }
-                            size="md"
+                            size="sm"
                             pulse
-                            className="shrink-0 mt-0.5"
+                            className="shrink-0"
                         />
                         <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-2">
@@ -1023,12 +1073,12 @@ export function DexoRoom() {
                             <div className="flex flex-col gap-5">
                                 {convo.map((msg) => {
                                     const isUser = msg.role === 'user';
-                                    const isInterrupted = msg.text === 'â€” interrupted â€”';
+                                    const isInterrupted = msg.text === '— interrupted —';
 
                                     if (isInterrupted) {
                                         return (
                                             <div key={msg.id}>
-                                                <p className="border-l-2 border-white/10 pl-3 text-[11px] italic text-white/18">â€” interrupted â€”</p>
+                                                <p className="border-l-2 border-white/10 pl-3 text-[11px] italic text-white/18">— interrupted —</p>
                                             </div>
                                         );
                                     }
@@ -1050,7 +1100,7 @@ export function DexoRoom() {
                                         );
                                     }
 
-                                    // AI message â€” raw text, no box
+                                    // AI message — raw text, no box
                                     return (
                                         <div key={msg.id} className="flex flex-col items-start gap-2">
                                             <div className="flex items-center gap-1.5">
@@ -1151,7 +1201,7 @@ export function DexoRoom() {
                 </div>
             </div>
 
-            {/* â”€â”€ Input strip â”€â”€ */}
+            {/* â"€â"€ Input strip â"€â"€ */}
             <div className="relative z-10 shrink-0">
                 <div className="pointer-events-none absolute inset-x-0 -top-16 h-16 bg-gradient-to-t from-[#111113] to-transparent" />
                 <div
@@ -1233,22 +1283,22 @@ export function DexoRoom() {
                                 onKeyDown={onKey}
                                 rows={1}
                                 placeholder={
-                                    isListening   ? 'Speak nowâ€¦'
-                                    : isProcessing  ? 'Thinkingâ€¦'
-                                    : isSpeaking    ? 'Dexo is speakingâ€¦'
-                                    : loading       ? (activePriorityId ? (MODE_LOADING_TEXT[activePriorityId] ?? 'Analyzingâ€¦') : 'Analyzingâ€¦')
-                                    : 'Message Dexoâ€¦'
+                                    isListening   ? 'Speak now…'
+                                    : isProcessing  ? 'Thinking…'
+                                    : isSpeaking    ? 'Dexo is speaking…'
+                                    : loading       ? (activePriorityId ? (MODE_LOADING_TEXT[activePriorityId] ?? 'Analyzing…') : 'Analyzing…')
+                                    : 'Message Dexo…'
                                 }
                                 className="min-h-[32px] min-w-0 flex-1 resize-none border-none bg-transparent py-1 text-[14px] leading-[1.5] text-white/85 placeholder:text-white/20 focus:outline-none focus:ring-0"
                                 style={{ maxHeight: '160px', overflowY: 'auto' }}
                             />
 
-                            {/* Right-side controls: hands-free Â· mute Â· send/stop */}
+                            {/* Right-side controls: hands-free · mute · send/stop */}
                             <div className="flex shrink-0 items-center gap-1">
                                 <button
                                     type="button"
                                     onClick={() => setHandsFree((h) => !h)}
-                                    title={handsFree ? 'Hands-free on â€” turn off' : 'Enable hands-free conversation'}
+                                    title={handsFree ? 'Hands-free on — turn off' : 'Enable hands-free conversation'}
                                     className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
                                         handsFree ? 'bg-blue-500/15 text-blue-400' : 'text-white/20 hover:text-white/50'
                                     }`}
@@ -1299,7 +1349,7 @@ export function DexoRoom() {
                                 title={`Voice: ${voicePreset}`}
                             >
                                 <Settings2 className="h-2.5 w-2.5" />
-                                Voice Â· {voicePreset}
+                                Voice · {voicePreset}
                             </button>
                             {(isSpeaking || isListening) && (
                                 <button

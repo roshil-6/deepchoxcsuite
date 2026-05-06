@@ -221,6 +221,7 @@ export function getWorkspaceShellTheme(activeRoom: string): WorkspaceShellTheme 
     'cmo',
     'personal_assistant',
     'dexo_daily',
+    'trivily',
   ]);
 
   const p: Partial<WorkspaceShellTheme> = immersiveRooms.has(activeRoom)

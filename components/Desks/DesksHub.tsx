@@ -190,7 +190,7 @@ export function DesksHub() {
                         </h1>
                     </div>
 
-                    {/* Search â€” flat, no box feel */}
+                    {/* Search — flat, no box feel */}
                     <div className="flex items-center gap-2 pb-0.5">
                         <Search className="h-3.5 w-3.5 shrink-0" style={{ color: '#3d3d4e' }} strokeWidth={1.75} />
                         <input
@@ -222,7 +222,7 @@ export function DesksHub() {
                         onMouseEnter={(e) => { e.currentTarget.style.color = '#f2f2f5'; }}
                         onMouseLeave={(e) => { e.currentTarget.style.color = '#5c5c6e'; }}
                     >
-                        Ask Dexo â†’
+                        Ask Dexo ←’
                     </button>
                 </div>
             </div>
@@ -255,7 +255,7 @@ export function DesksHub() {
                         room: 'dexo' as 'ceo',
                         label: 'Dexo',
                         role: 'AI Co-Founder',
-                        description: 'Full-stack AI partner â€” synthesises every desk, runs daily research, and adapts to your current priority.',
+                        description: 'Full-stack AI partner — synthesises every desk, runs daily research, and adapts to your current priority.',
                         Icon: Sparkles,
                         iconColor: '#f2f2f5',
                         iconBg: 'rgba(255,255,255,0.05)',
