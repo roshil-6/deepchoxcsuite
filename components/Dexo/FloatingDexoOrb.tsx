@@ -970,8 +970,8 @@ export function FloatingDexoOrb() {
             {/* Mode picker */}
             {fabPanel === 'menu' && (
                 <div
-                    className="absolute bottom-[calc(100%+12px)] right-0 w-[min(calc(100vw-1.5rem),17.5rem)] rounded-xl p-3" style={{ background: "#1c1c1f", border: "1px solid rgba(255,255,255,0.09)", boxShadow: "0 20px 40px rgba(0,0,0,0.5)" }}
-                    style={{ animation: 'dexo-chat-enter 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards' }}
+                    className="absolute bottom-[calc(100%+12px)] right-0 w-[min(calc(100vw-1.5rem),17.5rem)] rounded-xl p-3"
+                    style={{ background: "#1c1c1f", border: "1px solid rgba(255,255,255,0.09)", boxShadow: "0 20px 40px rgba(0,0,0,0.5)", animation: 'dexo-chat-enter 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards' }}
                 >
                     <p className="text-[12px] font-semibold text-white/80">How should Dexo help?</p>
                     <p className="mt-0.5 text-[10px] leading-snug text-white/30">
