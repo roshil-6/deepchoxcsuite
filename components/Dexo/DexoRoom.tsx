@@ -1,7 +1,7 @@
 ﻿'use client';
 
 /**
- * Dexo â€” AI Command Center
+ * Dexo — AI Command Center
  * Jarvis-style: non-blocking, always-interruptible, reactive orb
  */
 
@@ -60,7 +60,7 @@ const ORB_CSS = `
     50%     { box-shadow: 0 0 0 14px rgba(196,201,212,0), 0 0 72px rgba(196,201,212,0.22); transform: scale(1.04); }
 }
 @keyframes orb-speak {
-    /* Softer, tighter glow â€” large spread reads as a square plate behind the orb */
+    /* Softer, tighter glow — large spread reads as a square plate behind the orb */
     0%,100% { box-shadow: 0 0 28px rgba(148,163,184,0.18), 0 0 48px rgba(148,163,184,0.08); }
     50%     { box-shadow: 0 0 36px rgba(148,163,184,0.26), 0 0 64px rgba(148,163,184,0.12); }
 }
@@ -85,19 +85,19 @@ if (typeof document !== 'undefined') {
 const MODE_HINTS: Record<string, string> = {
     vision:          "Let's explore why this venture exists and who it's really for.",
     market_research: "Ask about competitors, pricing, market size, or customer segments.",
-    execution:       "Tell me what's blocking you â€” I'll help clear it.",
-    planning:        "Let's map your path â€” milestones, constraints, and what to sequence.",
-    all:             "Everything is fair game â€” strategy, market, execution, and planning.",
+    execution:       "Tell me what's blocking you — I'll help clear it.",
+    planning:        "Let's map your path — milestones, constraints, and what to sequence.",
+    all:             "Everything is fair game — strategy, market, execution, and planning.",
     custom:          "Dexo is working within your custom focus.",
 };
 
 const MODE_LOADING_TEXT: Record<string, string> = {
-    vision:          'Shaping your brand storyâ€¦',
-    market_research: 'Scanning your market landscapeâ€¦',
-    execution:       'Finding your next moveâ€¦',
-    planning:        'Mapping the path forwardâ€¦',
-    all:             'Analyzing your ventureâ€¦',
-    custom:          'Working on your focus areaâ€¦',
+    vision:          'Shaping your brand story…',
+    market_research: 'Scanning your market landscape…',
+    execution:       'Finding your next move…',
+    planning:        'Mapping the path forward…',
+    all:             'Analyzing your venture…',
+    custom:          'Working on your focus area…',
 };
 
 const MODE_QUICK_REPLIES: Record<string, string[]> = {
@@ -112,10 +112,10 @@ const MODE_QUICK_REPLIES: Record<string, string[]> = {
 const MODE_REACTIONS: Record<string, string> = {
     vision:          "Switching to Vision mode. I'll dig into brand story, positioning, and your 'why' before anything else. What's the core reason this venture exists?",
     market_research: "Market research mode. I'll focus on competitors, customer segments, and market gaps from here. What do you already know about your space?",
-    execution:       "Execution mode â€” let's cut through the noise. Short answers, one next move at a time. What's the biggest thing blocking you right now?",
+    execution:       "Execution mode — let's cut through the noise. Short answers, one next move at a time. What's the biggest thing blocking you right now?",
     planning:        "Strategic planning mode. I'll think in timelines, sequences, and constraints. Where are you trying to be in the next 90 days?",
-    all:             "Full stack mode â€” nothing gets deprioritised. I'll balance vision, market, execution, and planning equally. What do you want to tackle?",
-    custom:          "Got it â€” I'm working within your custom focus now. What would you like to start with?",
+    all:             "Full stack mode — nothing gets deprioritised. I'll balance vision, market, execution, and planning equally. What do you want to tackle?",
+    custom:          "Got it — I'm working within your custom focus now. What would you like to start with?",
 };
 
 // â”€â”€â”€ Voice orb â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -176,7 +176,7 @@ function VoiceOrb({ state, onClick }: { state: ConvoVoiceState | 'loading'; onCl
                 <span style={{ position:'absolute', inset:-18, borderRadius:'50%', border:'1px dashed rgba(148,163,184,0.1)', animation:'ring-spin-r 14s linear infinite' }} />
             </>}
 
-            {/* Main orb â€” box-shadow glow on this circle only (avoids a square halo from the 120Ã—120 wrapper) */}
+            {/* Main orb — box-shadow glow on this circle only (avoids a square halo from the 120×120 wrapper) */}
             <div
                 style={{
                     position:'absolute', inset:0, borderRadius:'50%',
@@ -280,7 +280,7 @@ function DexoParticleMark({ state = 'idle' }: { state?: DmkState }) {
 function truncateSetupDetail(s: string, max = 320): string {
     const t = s.trim();
     if (t.length <= max) return t;
-    return `${t.slice(0, max - 1)}â€¦`;
+    return `${t.slice(0, max - 1)}…`;
 }
 
 export function DexoRoom() {
@@ -366,8 +366,8 @@ export function DexoRoom() {
     }, []);
 
     const onInterrupt = useCallback(() => {
-        // Dexo was interrupted â€” acknowledge it
-        setConvo((prev) => [...prev, { role: 'dexo', text: 'â€” interrupted â€”', id: ++convoId.current }]);
+        // Dexo was interrupted — acknowledge it
+        setConvo((prev) => [...prev, { role: 'dexo', text: '— interrupted —', id: ++convoId.current }]);
     }, []);
 
     // Use conversational voice system with streaming and human-like features
@@ -527,7 +527,7 @@ export function DexoRoom() {
             // Build context including previous analyses for continuity
             let context = buildCtx();
 
-            // No venture selected â€” use the generic pre-venture context so the API won't 400
+            // No venture selected — use the generic pre-venture context so the API won't 400
             if (!context.trim()) {
                 context = DEXO_PRE_VENTURE_CONTEXT;
             }
@@ -562,15 +562,15 @@ export function DexoRoom() {
                         ventureId: activeProject.id,
                         source: 'dexo_room',
                         model: 'Dexo',
-                        summary: `Dexo suggests: ${pending.join(' Â· ')}`,
+                        summary: `Dexo suggests: ${pending.join(' · ')}`,
                         patch,
                         updateProjectField,
                     });
                     const hint = !out.ok
                         ? ''
                         : out.applied
-                          ? `\n\n_Applied to your venture: ${pending.join(' Â· ')} (${out.mode} mode)._`
-                          : `\n\n_Pending your approval: ${pending.join(' Â· ')}._`;
+                          ? `\n\n_Applied to your venture: ${pending.join(' · ')} (${out.mode} mode)._`
+                          : `\n\n_Pending your approval: ${pending.join(' · ')}._`;
                     data.report = {
                         ...data.report,
                         voiceResponse: data.report.voiceResponse + hint,
@@ -607,7 +607,7 @@ export function DexoRoom() {
     // Keep runRef current for the pending-transcript effect
     runRef.current = run;
 
-    // Staff attention / "Set up now" â€” show mission banner + seed first Dexo converse turn
+    // Staff attention / "Set up now" — show mission banner + seed first Dexo converse turn
     useEffect(() => {
         if (!dexoBootstrap || !activeProject?.id) return;
         const payload = dexoBootstrap;
@@ -717,7 +717,7 @@ export function DexoRoom() {
                         </button>
                     </div>
 
-                    {/* Mode picker â€” slides in below header */}
+                    {/* Mode picker — slides in below header */}
                     {modePanelOpen && (
                         <div className="mx-auto max-w-[660px] px-4 pb-3">
                             <VenturePrioritySelector
@@ -745,7 +745,7 @@ export function DexoRoom() {
                 </div>
             )}
 
-            {/* â”€â”€ Scrollable body (min-h-0 required or flex won't shrink below content â†’ no scroll on mobile) â”€â”€ */}
+            {/* â”€â”€ Scrollable body (min-h-0 required or flex won't shrink below content ←’ no scroll on mobile) â”€â”€ */}
             <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]">
                 <div className="mx-auto max-w-[660px] px-4 pb-32 pt-6 sm:px-5 sm:pt-8">
 
@@ -892,7 +892,7 @@ export function DexoRoom() {
                                         className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-[10px] font-bold"
                                         style={{ background: 'rgba(255,255,255,0.06)', color: '#f2f2f5', border: '1px solid rgba(255,255,255,0.12)' }}
                                     >D</span>
-                                    <span className="text-[10px] uppercase tracking-[0.2em] text-white/22">Venture Overview Â· updates as you chat</span>
+                                    <span className="text-[10px] uppercase tracking-[0.2em] text-white/22">Venture Overview · updates as you chat</span>
                                 </div>
                                 <p className="text-[18px] font-semibold leading-snug text-white/90">{currentReport.headline}</p>
                                 <p className="mt-2 text-[13.5px] leading-relaxed text-white/50">{currentReport.summary}</p>
@@ -933,7 +933,7 @@ export function DexoRoom() {
                                     <div className="flex flex-col gap-3">
                                         {currentReport.risks.map((r, i) => (
                                             <div key={i}>
-                                                <p className="mb-1 text-[11px] font-medium text-amber-400/60">âš  {r.label} <span className="text-amber-400/30">Â· {r.level}</span></p>
+                                                <p className="mb-1 text-[11px] font-medium text-amber-400/60">âš  {r.label} <span className="text-amber-400/30">· {r.level}</span></p>
                                                 <p className="text-[13px] leading-relaxed text-white/55">{r.detail}</p>
                                             </div>
                                         ))}
@@ -962,7 +962,7 @@ export function DexoRoom() {
                                 onClick={() => setView('chat')}
                                 className="self-start text-[11px] text-white/22 transition hover:text-white/50"
                             >
-                                â† Back to chat
+                                ← Back to chat
                             </button>
                         </div>
                     )}
@@ -978,7 +978,7 @@ export function DexoRoom() {
                     {view === 'chat' && (
                     <>
                     {/* â”€â”€ Identity header â”€â”€ */}
-                    <div className="mb-7 flex items-start gap-3.5">
+                    <div className="mb-7 flex items-center gap-3">
                         <DexoAvatar
                             state={
                                 orbState === 'loading'    ? 'thinking'  :
@@ -986,9 +986,9 @@ export function DexoRoom() {
                                 orbState === 'speaking'   ? 'speaking'  :
                                 orbState === 'thinking'   ? 'thinking'  : 'idle'
                             }
-                            size="md"
+                            size="sm"
                             pulse
-                            className="shrink-0 mt-0.5"
+                            className="shrink-0"
                         />
                         <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-2">
@@ -1023,12 +1023,12 @@ export function DexoRoom() {
                             <div className="flex flex-col gap-5">
                                 {convo.map((msg) => {
                                     const isUser = msg.role === 'user';
-                                    const isInterrupted = msg.text === 'â€” interrupted â€”';
+                                    const isInterrupted = msg.text === '— interrupted —';
 
                                     if (isInterrupted) {
                                         return (
                                             <div key={msg.id}>
-                                                <p className="border-l-2 border-white/10 pl-3 text-[11px] italic text-white/18">â€” interrupted â€”</p>
+                                                <p className="border-l-2 border-white/10 pl-3 text-[11px] italic text-white/18">— interrupted —</p>
                                             </div>
                                         );
                                     }
@@ -1050,7 +1050,7 @@ export function DexoRoom() {
                                         );
                                     }
 
-                                    // AI message â€” raw text, no box
+                                    // AI message — raw text, no box
                                     return (
                                         <div key={msg.id} className="flex flex-col items-start gap-2">
                                             <div className="flex items-center gap-1.5">
@@ -1233,22 +1233,22 @@ export function DexoRoom() {
                                 onKeyDown={onKey}
                                 rows={1}
                                 placeholder={
-                                    isListening   ? 'Speak nowâ€¦'
-                                    : isProcessing  ? 'Thinkingâ€¦'
-                                    : isSpeaking    ? 'Dexo is speakingâ€¦'
-                                    : loading       ? (activePriorityId ? (MODE_LOADING_TEXT[activePriorityId] ?? 'Analyzingâ€¦') : 'Analyzingâ€¦')
-                                    : 'Message Dexoâ€¦'
+                                    isListening   ? 'Speak now…'
+                                    : isProcessing  ? 'Thinking…'
+                                    : isSpeaking    ? 'Dexo is speaking…'
+                                    : loading       ? (activePriorityId ? (MODE_LOADING_TEXT[activePriorityId] ?? 'Analyzing…') : 'Analyzing…')
+                                    : 'Message Dexo…'
                                 }
                                 className="min-h-[32px] min-w-0 flex-1 resize-none border-none bg-transparent py-1 text-[14px] leading-[1.5] text-white/85 placeholder:text-white/20 focus:outline-none focus:ring-0"
                                 style={{ maxHeight: '160px', overflowY: 'auto' }}
                             />
 
-                            {/* Right-side controls: hands-free Â· mute Â· send/stop */}
+                            {/* Right-side controls: hands-free · mute · send/stop */}
                             <div className="flex shrink-0 items-center gap-1">
                                 <button
                                     type="button"
                                     onClick={() => setHandsFree((h) => !h)}
-                                    title={handsFree ? 'Hands-free on â€” turn off' : 'Enable hands-free conversation'}
+                                    title={handsFree ? 'Hands-free on — turn off' : 'Enable hands-free conversation'}
                                     className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
                                         handsFree ? 'bg-blue-500/15 text-blue-400' : 'text-white/20 hover:text-white/50'
                                     }`}
@@ -1299,7 +1299,7 @@ export function DexoRoom() {
                                 title={`Voice: ${voicePreset}`}
                             >
                                 <Settings2 className="h-2.5 w-2.5" />
-                                Voice Â· {voicePreset}
+                                Voice · {voicePreset}
                             </button>
                             {(isSpeaking || isListening) && (
                                 <button

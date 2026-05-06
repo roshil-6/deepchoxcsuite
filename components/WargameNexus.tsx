@@ -79,7 +79,7 @@ export function WargameNexus() {
                         SIMULATION STATUS: {isSimulating ? 'RUNNING' : 'IDLE'}
                     </div>
                     <p className="max-w-[14rem] text-[10px] leading-snug text-zinc-500">
-                        Impact core: {unifiedImpact.severity} Â· {wargameDesks.join(', ') || 'â€”'}
+                        Impact core: {unifiedImpact.severity} · {wargameDesks.join(', ') || '—'}
                     </p>
                 </div>
             </div>
@@ -135,7 +135,7 @@ export function WargameNexus() {
                         <div className="mt-4 space-y-2 border-t border-zinc-800 pt-2 text-zinc-500">
                             <p>Simulation Complete. Report saved.</p>
                             <p className="text-[10px] leading-relaxed text-zinc-400">
-                                Unified impact: {unifiedImpact.severity} Â· desks {wargameDesks.join(', ') || 'â€”'} Â· escalation{' '}
+                                Unified impact: {unifiedImpact.severity} · desks {wargameDesks.join(', ') || '—'} · escalation{' '}
                                 {unifiedImpact.requiresEscalation ? 'yes' : 'no'}
                             </p>
                         </div>
