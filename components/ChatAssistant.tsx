@@ -656,7 +656,7 @@ export function ChatAssistant({
                     >
                         <MessageSquare className="h-3.5 w-3.5" aria-hidden />
                         <span>Thread</span>
-                        <span className="ml-0.5 rounded-full border border-white/[0.1] bg-[#111117] px-1.5 py-px text-[10px] tabular-nums text-zinc-300">{messages.length}</span>
+                        <span className="ml-0.5 rounded-full border border-white/[0.1] bg-[#111113] px-1.5 py-px text-[10px] tabular-nums text-zinc-300">{messages.length}</span>
                     </button>
                 )}
                 {/* Floating thread panel */}
@@ -742,9 +742,9 @@ export function ChatAssistant({
                                     ? 'h-auto w-full rounded-3xl border border-white/[0.08] bg-zinc-800/90'
                                     : 'w-full rounded-3xl border border-white/[0.08] bg-zinc-800/90'
                                 : isBottomDock && dockThreadEmpty
-                                  ? `h-auto w-full ${isAiOs ? 'rounded-3xl border border-white/[0.08] bg-[#1c1b24] shadow-[0_-16px_48px_rgba(0,0,0,0.4)]' : 'rounded-none border-0 bg-transparent'}`
+                                  ? `h-auto w-full ${isAiOs ? 'rounded-3xl border border-white/[0.08] bg-[#242428] shadow-[0_-16px_48px_rgba(0,0,0,0.4)]' : 'rounded-none border-0 bg-transparent'}`
                                   : isBottomDock
-                                    ? `min-h-0 w-full max-h-full flex-1 ${isAiOs ? 'rounded-3xl border border-white/[0.08] bg-[#1c1b24] shadow-[0_-16px_48px_rgba(0,0,0,0.4)]' : 'rounded-none border-0 bg-transparent'}`
+                                    ? `min-h-0 w-full max-h-full flex-1 ${isAiOs ? 'rounded-3xl border border-white/[0.08] bg-[#242428] shadow-[0_-16px_48px_rgba(0,0,0,0.4)]' : 'rounded-none border-0 bg-transparent'}`
                                     : chatTheme.railClass
                       }`
             }
@@ -857,7 +857,7 @@ export function ChatAssistant({
                     className={`flex flex-wrap gap-2 px-1 py-1.5 sm:px-2 ${
                         isDockChrome
                             ? 'border-0 bg-transparent'
-                            : 'border-t border-brand-border bg-[#111117] px-6 py-3'
+                            : 'border-t border-brand-border bg-[#111113] px-6 py-3'
                     }`}
                 >
                     {activeProject.files.map(f => (
@@ -1033,5 +1033,6 @@ export function ChatAssistant({
         </div>
     );
 }
+
 
 

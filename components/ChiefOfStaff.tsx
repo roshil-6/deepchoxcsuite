@@ -165,9 +165,9 @@ export function ChiefOfStaff() {
     };
 
     return (
-        <div className="flex flex-col h-full bg-[#111117] border-r border-zinc-800/50 z-20 relative font-sans shadow-2xl">
+        <div className="flex flex-col h-full bg-[#111113] border-r border-zinc-800/50 z-20 relative font-sans shadow-2xl">
             {/* Header */}
-            <div className="p-6 border-b border-zinc-800/50 flex items-center gap-4 bg-[#111117] sticky top-0 z-10">
+            <div className="p-6 border-b border-zinc-800/50 flex items-center gap-4 bg-[#111113] sticky top-0 z-10">
                 <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20">
                     <LayoutDashboard className="w-5 h-5" />
                 </div>
@@ -192,7 +192,7 @@ export function ChiefOfStaff() {
 
                         {/* Delegation Card */}
                         {msg.delegation && (
-                            <div className="ml-2 mt-2 p-4 bg-[#0d0d10] rounded-2xl border border-zinc-700/50 w-[300px] animate-in zoom-in-95 duration-500 shadow-2xl relative overflow-hidden group">
+                            <div className="ml-2 mt-2 p-4 bg-[#111113] rounded-2xl border border-zinc-700/50 w-[300px] animate-in zoom-in-95 duration-500 shadow-2xl relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 w-20 h-20 rounded-full bg-white/[0.05] -mr-10 -mt-10 pointer-events-none" />
                                 <div className="relative z-10">
                                     <div className="text-[10px] uppercase tracking-widest text-white/70 font-bold mb-3 flex items-center gap-2">
@@ -232,8 +232,8 @@ export function ChiefOfStaff() {
             </div>
 
             {/* Input */}
-            <div className="p-6 border-t border-zinc-900/50 bg-[#0d0d10]">
-                <div className="relative bg-[#111117] border border-zinc-800 rounded-2xl focus-within:border-indigo-500/50 focus-within:ring-1 focus-within:ring-indigo-500/20 transition-all overflow-hidden shadow-inner group">
+            <div className="p-6 border-t border-zinc-900/50 bg-[#111113]">
+                <div className="relative bg-[#111113] border border-zinc-800 rounded-2xl focus-within:border-indigo-500/50 focus-within:ring-1 focus-within:ring-indigo-500/20 transition-all overflow-hidden shadow-inner group">
                     <input
                         type="text"
                         value={inputValue}
@@ -258,5 +258,6 @@ export function ChiefOfStaff() {
         </div>
     );
 }
+
 
 

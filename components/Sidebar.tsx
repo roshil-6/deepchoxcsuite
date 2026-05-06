@@ -51,7 +51,7 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2 }}
-      className="relative z-50 flex h-full w-[260px] shrink-0 flex-col overflow-hidden border-r border-brand-border bg-[#111117]"
+      className="relative z-50 flex h-full w-[260px] shrink-0 flex-col overflow-hidden border-r border-brand-border bg-[#111113]"
     >
       <div className="relative flex min-h-[3.5rem] shrink-0 items-center justify-between gap-2 border-b border-brand-border px-4 py-3">
         <div className="min-w-0">
@@ -226,4 +226,5 @@ function NavItem({
     </button>
   );
 }
+
 

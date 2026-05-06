@@ -138,7 +138,7 @@ export function DeskFocusToolbar({
 
     return (
         <header
-            className={`${headerBase} border-b border-white/[0.06] bg-[#111117]`}
+            className={`${headerBase} border-b border-white/[0.06] bg-[#111113]`}
         >
             <button
                 type="button"
@@ -161,4 +161,5 @@ export function DeskFocusToolbar({
         </header>
     );
 }
+
 

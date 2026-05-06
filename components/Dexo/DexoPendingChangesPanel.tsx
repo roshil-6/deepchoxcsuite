@@ -204,7 +204,7 @@ export function DexoPendingChangesFloating({ activeProject }: { activeProject: P
           </div>
         ) : (
           /* â”€â”€ Expanded panel â”€â”€ */
-          <div className="max-h-[min(65vh,440px)] overflow-hidden rounded-xl border border-white/[0.08] bg-[#111117] shadow-[0_12px_40px_rgba(0,0,0,0.35)]">
+          <div className="max-h-[min(65vh,440px)] overflow-hidden rounded-xl border border-white/[0.08] bg-[#111113] shadow-[0_12px_40px_rgba(0,0,0,0.35)]">
             <div className="flex items-start gap-2 border-b border-white/[0.06] px-3 py-2.5">
               {/* Drag handle for expanded state */}
               <div
@@ -306,5 +306,6 @@ export function DexoPendingChangesFloating({ activeProject }: { activeProject: P
     document.body
   );
 }
+
 
 

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowUp, Loader2, RotateCcw, Target, ClipboardList, Calculator, ScanSearch, Megaphone, LucideIcon } from 'lucide-react';
@@ -9,11 +9,11 @@ import { DESK_QUICK_STARTS } from '@/lib/deskChatTypes';
 import type { PersonalAssistantUpdates } from '@/lib/paApplyUpdates';
 import { mergeProjectWithPAUpdates } from '@/lib/paApplyUpdates';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type ChatMsg = { id: string; role: 'user' | 'assistant'; content: string; ts: number };
 
-// ─── Storage helpers ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Storage helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const STORAGE_PREFIX = 'deepchox-desk-chat-v1:';
 
@@ -38,7 +38,7 @@ function saveHistory(projectId: number | undefined, deskId: DeskId, msgs: ChatMs
     } catch { /* quota */ }
 }
 
-// ─── Desk config ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ Desk config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type DeskConfig = {
     Icon: LucideIcon;
@@ -54,39 +54,39 @@ const DESK_CONFIG: Record<DeskId, DeskConfig> = {
         accentRgb: '148,163,184',
         accentClass: 'text-slate-400',
         label: 'Strategy & direction',
-        domain: 'Narrative · Phases · Priorities',
+        domain: 'Narrative Â· Phases Â· Priorities',
     },
     pm: {
         Icon: ClipboardList,
         accentRgb: '56,189,248',
         accentClass: 'text-sky-400',
         label: 'Product & delivery',
-        domain: 'Roadmap · Execution board · Shipping',
+        domain: 'Roadmap Â· Execution board Â· Shipping',
     },
     accountant: {
         Icon: Calculator,
         accentRgb: '52,211,153',
         accentClass: 'text-emerald-400',
         label: 'Finance & runway',
-        domain: 'Burn · Capital · Funding readiness',
+        domain: 'Burn Â· Capital Â· Funding readiness',
     },
     scout: {
         Icon: ScanSearch,
         accentRgb: '251,191,36',
         accentClass: 'text-amber-400',
         label: 'Market & landscape',
-        domain: 'Competitors · Trends · Signals',
+        domain: 'Competitors Â· Trends Â· Signals',
     },
     cmo: {
         Icon: Megaphone,
         accentRgb: '251,113,133',
         accentClass: 'text-rose-400',
         label: 'Growth & narrative',
-        domain: 'GTM · Messaging · Positioning',
+        domain: 'GTM Â· Messaging Â· Positioning',
     },
 };
 
-// ─── Typing animation ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Typing animation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function TypingDots({ accentRgb }: { accentRgb: string }) {
     return (
@@ -106,7 +106,7 @@ function TypingDots({ accentRgb }: { accentRgb: string }) {
     );
 }
 
-// ─── Message bubbles ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Message bubbles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function UserMsg({ content }: { content: string }) {
     return (
@@ -128,12 +128,12 @@ function AssistantMsg({ content, accentRgb }: { content: string; accentRgb: stri
         <div className="space-y-3 pr-8 sm:pr-16">
             {paras.map((para, i) => {
                 const lines = para.split('\n');
-                const isList = lines.some((l) => l.startsWith('- ') || l.startsWith('• ') || /^\d+\.\s/.test(l));
+                const isList = lines.some((l) => l.startsWith('- ') || l.startsWith('â€¢ ') || /^\d+\.\s/.test(l));
                 if (isList) {
                     return (
                         <ul key={i} className="space-y-1.5 pl-0">
                             {lines.map((line, j) => {
-                                const isItem = line.startsWith('- ') || line.startsWith('• ');
+                                const isItem = line.startsWith('- ') || line.startsWith('â€¢ ');
                                 const isNum = /^\d+\.\s/.test(line);
                                 if (isItem || isNum) {
                                     return (
@@ -142,7 +142,7 @@ function AssistantMsg({ content, accentRgb }: { content: string; accentRgb: stri
                                                 className="mt-[7px] h-[4px] w-[4px] shrink-0 rounded-full"
                                                 style={{ background: `rgba(${accentRgb},0.7)` }}
                                             />
-                                            <span>{line.replace(/^[-•]\s|^\d+\.\s/, '')}</span>
+                                            <span>{line.replace(/^[-â€¢]\s|^\d+\.\s/, '')}</span>
                                         </li>
                                     );
                                 }
@@ -163,7 +163,7 @@ function AssistantMsg({ content, accentRgb }: { content: string; accentRgb: stri
     );
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Main component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function DeskChat({ deskId }: { deskId: DeskId }) {
     const { activeProject, patchActiveProject, persistActiveProject } = useOffice();
@@ -292,9 +292,9 @@ export function DeskChat({ deskId }: { deskId: DeskId }) {
     const isEmpty = messages.length === 0 && !loading;
 
     return (
-        <div className="flex min-h-0 w-full flex-1 flex-col" style={{ background: 'rgba(12,12,16,0.98)' }}>
+        <div className="flex min-h-0 w-full flex-1 flex-col" style={{ background: '#111113' }}>
 
-            {/* ── Minimal header ── */}
+            {/* â”€â”€ Minimal header â”€â”€ */}
             <div
                 className="shrink-0 flex items-center justify-between gap-3 px-5 py-3.5 sm:px-6"
                 style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}
@@ -309,7 +309,7 @@ export function DeskChat({ deskId }: { deskId: DeskId }) {
                     <div className="min-w-0">
                         <span className="text-[13px] font-semibold text-white/85 leading-none">{cfg.label}</span>
                         {activeProject?.name && (
-                            <span className="ml-2 text-[11px] text-white/25">· {activeProject.name}</span>
+                            <span className="ml-2 text-[11px] text-white/25">Â· {activeProject.name}</span>
                         )}
                         <p className="mt-0.5 text-[10px] tracking-wide" style={{ color: `rgba(${cfg.accentRgb},0.5)` }}>
                             {cfg.domain}
@@ -328,10 +328,10 @@ export function DeskChat({ deskId }: { deskId: DeskId }) {
                 )}
             </div>
 
-            {/* ── Messages ── */}
+            {/* â”€â”€ Messages â”€â”€ */}
             <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-5 py-6 sm:px-8">
                 {isEmpty ? (
-                    // ── Empty state ──
+                    // â”€â”€ Empty state â”€â”€
                     <div className="flex h-full flex-col items-center justify-center gap-8 pb-8">
                         <div className="text-center">
                             <div
@@ -406,7 +406,7 @@ export function DeskChat({ deskId }: { deskId: DeskId }) {
                 )}
             </div>
 
-            {/* ── Follow-up pills ── */}
+            {/* â”€â”€ Follow-up pills â”€â”€ */}
             {followUps.length > 0 && !loading && (
                 <div className="shrink-0 flex flex-wrap gap-2 px-5 pb-2 sm:px-8">
                     {followUps.map((opt) => (
@@ -426,7 +426,7 @@ export function DeskChat({ deskId }: { deskId: DeskId }) {
                 </div>
             )}
 
-            {/* ── Input ── */}
+            {/* â”€â”€ Input â”€â”€ */}
             <div
                 className="shrink-0 px-4 pb-4 pt-2 sm:px-6"
                 style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}
@@ -444,7 +444,7 @@ export function DeskChat({ deskId }: { deskId: DeskId }) {
                         value={input}
                         onChange={(e) => { setInput(e.target.value); resizeTextarea(); }}
                         onKeyDown={handleKeyDown}
-                        placeholder={activeProject ? `Message ${cfg.label.toLowerCase()}…` : 'Select a venture first'}
+                        placeholder={activeProject ? `Message ${cfg.label.toLowerCase()}â€¦` : 'Select a venture first'}
                         disabled={!activeProject || loading}
                         className="min-h-0 flex-1 resize-none bg-transparent text-[13.5px] leading-relaxed text-white/85 placeholder:text-white/20 outline-none disabled:opacity-40"
                         style={{ maxHeight: '120px' }}
@@ -466,9 +466,10 @@ export function DeskChat({ deskId }: { deskId: DeskId }) {
                     </button>
                 </div>
                 <p className="mt-1.5 text-center text-[10px] text-white/15">
-                    Enter · Updates save to venture
+                    Enter Â· Updates save to venture
                 </p>
             </div>
         </div>
     );
 }
+
