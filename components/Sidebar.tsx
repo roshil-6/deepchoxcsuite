@@ -13,6 +13,7 @@ import {
   LogOut,
   MessageSquare,
   GitBranch,
+  Zap,
 } from 'lucide-react';
 import { StaffNotificationCenter } from '@/components/StaffNotificationCenter';
 import { sidebarPrimaryLabel } from '@/lib/researchStaffLabels';
@@ -26,7 +27,7 @@ interface SidebarProps {
   onNewVenture: () => void;
 }
 
-/** Desk teammates in the rail (VC gauntlet / shark excluded â€” overlaps coordination bar) */
+/** Desk teammates in the rail (VC gauntlet / shark excluded â€" overlaps coordination bar) */
 const TEAM_DESK_ORDER = ['ceo', 'accountant', 'pm', 'cmo', 'scout', 'dexo'] as const;
 
 export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
@@ -66,7 +67,7 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
         <TeamHuddle />
       </div>
 
-      {/* Navigation â€” section labels align to nav item inset */}
+      {/* Navigation â€" section labels align to nav item inset */}
       <div className="custom-scrollbar relative flex-1 space-y-6 overflow-x-hidden overflow-y-auto px-2 pb-4 text-brand-text">
 
         {/* Main Workspace */}
@@ -89,7 +90,8 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
             isActive={activeRoom === 'suite_intelligence'}
             onClick={() => switchRoom('suite_intelligence')}
           />
-          <NavItem icon={<Sparkles className="w-4 h-4" />} label="Dexo" isActive={activeRoom === 'dexo'} onClick={() => switchRoom('dexo')} title="AI command center â€” analysis, voice, venture updates" />
+          <NavItem icon={<Sparkles className="w-4 h-4" />} label="Dexo" isActive={activeRoom === 'dexo'} onClick={() => switchRoom('dexo')} title="AI command center — analysis, voice, venture updates" />
+          <NavItem icon={<Zap className="w-4 h-4" />} label="Trivily" isActive={activeRoom === 'trivily'} onClick={() => switchRoom('trivily')} title="Live industry news and intelligence feed" />
           <NavItem icon={<Notebook className="w-4 h-4" />} label="Neural Diary" isActive={activeRoom === 'intelligence_diary'} onClick={() => switchRoom('intelligence_diary')} />
           <NavItem icon={<FileText className="w-4 h-4" />} label="Knowledge Base" isActive={activeRoom === 'reports'} onClick={() => switchRoom('reports')} />
         </NavSection>
@@ -106,7 +108,7 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
               onClick={() => switchRoom(agent.role)}
               className={`group relative flex min-h-[2.75rem] w-full items-center gap-2 rounded-lg py-1.5 pl-2 pr-3 text-left transition-colors ${activeRoom === agent.role ? 'bg-white/[0.08] text-brand-text' : 'text-brand-muted hover:bg-white/[0.05] hover:text-brand-text'
                 }`}
-              title={`${sidebarPrimaryLabel(agent.name)} â€” ${sidebarPrimaryLabel(agent.execOutput)}`}
+              title={`${sidebarPrimaryLabel(agent.name)} â€" ${sidebarPrimaryLabel(agent.execOutput)}`}
             >
               <span
                 className={`absolute left-[10px] top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full ${activeRoom === agent.role ? 'bg-brand-teal' : 'bg-brand-border group-hover:bg-brand-muted'}`}
@@ -119,7 +121,7 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
                 <span className="min-w-0 flex-1">
                 <span className={`block truncate text-sm leading-tight ${activeRoom === agent.role ? 'font-medium text-brand-text' : 'font-normal'}`}>{sidebarPrimaryLabel(agent.title)}</span>
                 <span className="mt-0.5 block truncate text-[10px] leading-snug text-brand-muted group-hover:text-brand-muted/90">{sidebarPrimaryLabel(agent.execOutput)}</span>
-                <span className="sr-only"> â€” {agent.description}</span>
+                <span className="sr-only"> â€" {agent.description}</span>
                 </span>
                 {pendingN > 0 && (
                   <span className="shrink-0 rounded-full bg-rose-500/25 px-1.5 py-0.5 text-[9px] font-bold tabular-nums text-rose-300" title={`${pendingN} waiting`}>
@@ -168,7 +170,7 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
 
       {/* Footer */}
       <div className="mt-auto border-t border-brand-border p-3 space-y-1.5">
-        {/* Upgrade CTA â€” only on free plan */}
+        {/* Upgrade CTA â€" only on free plan */}
         {!isPro && (
           <button
             type="button"

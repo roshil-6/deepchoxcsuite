@@ -184,7 +184,7 @@ const THEME = {
     },
 } as const;
 
-/** Map snapshot desk labels ←’ research room for quick navigation from the overview card */
+/** Map snapshot desk labels ←' research room for quick navigation from the overview card */
 const SNAPSHOT_DESK_ROOMS: Record<string, AgentRole> = {
     Strategy: 'ceo',
     Market: 'scout',
@@ -834,7 +834,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
             className="min-h-screen w-full pb-24"
             style={{ background: '#111113' }}
         >
-            {/* â”€â”€ DEXO OVERVIEW GUIDE POP-UP â”€â”€ renders directly on the page */}
+            {/* â"€â"€ DEXO OVERVIEW GUIDE POP-UP â"€â"€ renders directly on the page */}
             {showDexoWelcome && (() => {
                 const hasSnap = !!activeProject.agentStaffSnapshot;
                 const summary = activeProject.agentStaffSnapshot?.summary?.trim() ?? '';
@@ -1011,7 +1011,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                             onClick={() => { window.speechSynthesis?.cancel(); setDexoSpeaking(false); setDexoWelcomeStep(s => s + 1); }}
                                             className="rounded-xl px-5 py-2 text-[12px] font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
                                             style={{ background: step.color, color: '#fff' }}
-                                        >Next ←’</button>
+                                        >Next ←'</button>
                                     ) : (
                                         <button
                                             type="button"
@@ -1131,7 +1131,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                 {activeTab === 'overview' && (
                     <div className="flex flex-col gap-4">
 
-                        {/* â”€â”€ DEXO RESEARCH GUIDE â”€â”€ */}
+                        {/* â"€â"€ DEXO RESEARCH GUIDE â"€â"€ */}
 
                         {/* Popup guide overlay — renders on top of page via fixed positioning */}
                         {openGuideKey && activeProject.agentStaffSnapshot && (() => {
@@ -1147,45 +1147,55 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             return (
                                 <div
                                     className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center"
-                                    style={{ background: 'rgba(0,0,0,0.70)', backdropFilter: 'blur(6px)' }}
+                                    style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(14px)' }}
                                     onClick={() => setOpenGuideKey(null)}
                                 >
                                     <div
-                                        className="w-full max-w-md overflow-hidden rounded-xl"
-                                        style={{ background: "#1c1c1f", borderColor: "rgba(255,255,255,0.10)", boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}
+                                        className="w-full max-w-lg overflow-hidden rounded-2xl"
+                                        style={{
+                                            background: 'rgba(16,15,20,0.97)',
+                                            border: '1px solid rgba(255,255,255,0.10)',
+                                            boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 32px 80px rgba(0,0,0,0.7), 0 8px 24px rgba(0,0,0,0.4)',
+                                        }}
                                         onClick={e => e.stopPropagation()}
                                     >
+                                        {/* Top hairline accent */}
+                                        <div className="h-[2px] w-full" style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.18) 40%, rgba(255,255,255,0.10) 70%, transparent 100%)' }} />
+
                                         {/* Popup header */}
-                                        <div className="flex items-start justify-between gap-3 border-b px-5 py-4" style={{ background: "#111113" }}>
-                                            <div className="flex items-center gap-3 min-w-0">
+                                        <div className="flex items-center justify-between gap-3 px-6 py-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                                            <div className="flex items-center gap-3.5 min-w-0">
                                                 <DexoAvatar size="sm" state="idle" pulse={false} />
                                                 <div className="min-w-0">
-                                                    <p className="text-[13px] font-semibold" style={{ color: '#f2f2f5' }}>Dexo Guide</p>
-                                                    <p className="text-[11px] font-medium" style={{ color: "rgba(255,255,255,0.35)" }}>{d.label} · {d.role}</p>
+                                                    <div className="flex items-center gap-2 mb-0.5">
+                                                        <p className="text-[11px] font-bold uppercase tracking-[0.18em]" style={{ color: 'rgba(255,255,255,0.22)' }}>Dexo Guide</p>
+                                                    </div>
+                                                    <p className="text-[14px] font-semibold leading-snug" style={{ color: '#f2f2f5' }}>{d.label}</p>
+                                                    <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.32)' }}>{d.role}</p>
                                                 </div>
                                             </div>
                                             <button
                                                 type="button"
                                                 onClick={() => setOpenGuideKey(null)}
-                                                className="shrink-0 flex h-7 w-7 items-center justify-center rounded-lg text-[13px] font-bold transition hover:bg-white/10"
-                                                style={{ color: 'rgba(255,255,255,0.30)' }}
+                                                className="shrink-0 flex h-8 w-8 items-center justify-center rounded-xl transition hover:bg-white/[0.07]"
+                                                style={{ color: 'rgba(255,255,255,0.28)' }}
                                             >
-                                                âœ•
+                                                ✕
                                             </button>
                                         </div>
 
                                         {/* Popup body */}
-                                        <div className="space-y-3 px-5 py-4">
+                                        <div className="space-y-2.5 px-6 py-5">
                                             {/* What this covers */}
-                                            <div className="rounded-xl border px-4 py-3" style={{ borderColor: "rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)" }}>
-                                                <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.28)" }}>What this desk covers</p>
-                                                <p className="text-[12px] leading-snug" style={{ color: 'rgba(255,255,255,0.55)' }}>{d.covers}</p>
+                                            <div className="rounded-xl px-4 py-3.5" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                                                <p className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.22em]" style={{ color: 'rgba(255,255,255,0.25)' }}>What this desk covers</p>
+                                                <p className="text-[13px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.60)' }}>{d.covers}</p>
                                             </div>
 
                                             {/* How to use */}
-                                            <div className="rounded-xl border px-4 py-3" style={{ borderColor: 'rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.03)' }}>
-                                                <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.14em]" style={{ color: 'rgba(255,255,255,0.30)' }}>How to use this finding</p>
-                                                <p className="text-[12px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>{d.guide}</p>
+                                            <div className="rounded-xl px-4 py-3.5" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                                                <p className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.22em]" style={{ color: 'rgba(255,255,255,0.25)' }}>How to use this finding</p>
+                                                <p className="text-[13px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>{d.guide}</p>
                                             </div>
 
                                             {/* Ask Dexo CTA */}
@@ -1203,14 +1213,14 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                         setOpenGuideKey(null);
                                                         switchRoom('dexo');
                                                     }}
-                                                    className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-[13px] font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
-                                                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)", color: "rgba(255,255,255,0.80)" }}
+                                                    className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 text-[13px] font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
+                                                    style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.82)' }}
                                                 >
-                                                    <Sparkles className="h-4 w-4 shrink-0" style={{ color: "rgba(255,255,255,0.55)" }} />
-                                                    Ask Dexo about this finding ←’
+                                                    <Sparkles className="h-4 w-4 shrink-0" style={{ color: 'rgba(255,255,255,0.50)' }} />
+                                                    Ask Dexo about this finding →
                                                 </button>
                                             ) : (
-                                                <p className="text-center text-[11px]" style={{ color: 'rgba(255,255,255,0.30)' }}>
+                                                <p className="text-center text-[11px] py-1" style={{ color: 'rgba(255,255,255,0.28)' }}>
                                                     Run Staff Sync to generate a finding for this desk.
                                                 </p>
                                             )}
@@ -1219,6 +1229,12 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 </div>
                             );
                         })()}
+
+                        {/* ── SECTION LABEL: RESEARCH BRIEF ── */}
+                        <div className="flex items-center gap-3 pt-1">
+                            <span className="text-[9px] font-bold uppercase tracking-[0.28em]" style={{ color: 'rgba(255,255,255,0.18)' }}>Research Brief</span>
+                            <div className="h-px flex-1" style={{ background: 'rgba(255,255,255,0.05)' }} />
+                        </div>
 
                         {activeProject.agentStaffSnapshot ? (
                             <div
@@ -1405,7 +1421,13 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         )}
 
 
-                        {/* â”€â”€ KPI COMMAND STRIP â”€â”€ */}
+                        {/* ── SECTION LABEL: METRICS ── */}
+                        <div className="flex items-center gap-3 pt-1">
+                            <span className="text-[9px] font-bold uppercase tracking-[0.28em]" style={{ color: 'rgba(255,255,255,0.18)' }}>Metrics</span>
+                            <div className="h-px flex-1" style={{ background: 'rgba(255,255,255,0.05)' }} />
+                        </div>
+
+                        {/* ── KPI COMMAND STRIP ── */}
                         <div
                             className="grid grid-cols-2 divide-x overflow-hidden rounded-xl lg:grid-cols-4"
                             style={{ borderColor: 'rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
@@ -1459,7 +1481,13 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             ))}
                         </div>
 
-                        {/* â”€â”€ VENTURE CONTEXT + COMMAND CENTER â”€â”€ */}
+                        {/* ── SECTION LABEL: INTELLIGENCE ── */}
+                        <div className="flex items-center gap-3 pt-1">
+                            <span className="text-[9px] font-bold uppercase tracking-[0.28em]" style={{ color: 'rgba(255,255,255,0.18)' }}>Intelligence</span>
+                            <div className="h-px flex-1" style={{ background: 'rgba(255,255,255,0.05)' }} />
+                        </div>
+
+                        {/* ── VENTURE CONTEXT + COMMAND CENTER ── */}
                         <div className="grid gap-3 sm:gap-4 lg:grid-cols-[1fr_300px]">
                             {/* LEFT — Research context */}
                             <div
@@ -1552,7 +1580,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                                 {a.title}
                                                             </span>
                                                             <span className="shrink-0 text-[10px] font-medium opacity-0 transition-opacity group-hover:opacity-100" style={{ color: '#94a3b8' }}>
-                                                                Ask Dexo ←’
+                                                                Ask Dexo ←'
                                                             </span>
                                                         </button>
                                                     </li>
@@ -1666,7 +1694,15 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             </div>
                         </div>
 
-                        {/* â”€â”€ OPERATIONS ROW (living office + delivery) â”€â”€ */}
+                        {/* ── SECTION LABEL: OPERATIONS ── */}
+                        {((livingOffice && livingOffice.brief.greeting !== 'No venture selected.') || upcomingEvents.length > 0 || kanbanTasks.length > 0) && (
+                            <div className="flex items-center gap-3 pt-1">
+                                <span className="text-[9px] font-bold uppercase tracking-[0.28em]" style={{ color: 'rgba(255,255,255,0.18)' }}>Operations</span>
+                                <div className="h-px flex-1" style={{ background: 'rgba(255,255,255,0.05)' }} />
+                            </div>
+                        )}
+
+                        {/* ── OPERATIONS ROW (living office + delivery) ── */}
                         {((livingOffice && livingOffice.brief.greeting !== 'No venture selected.') || upcomingEvents.length > 0 || kanbanTasks.length > 0) && (
                             <div className="grid gap-5 lg:grid-cols-3">
                                 {/* Operational brief */}
@@ -1702,7 +1738,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     >
                                         <div className="mb-3 flex items-center justify-between">
                                             <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'rgba(255,255,255,0.30)' }}>Upcoming</p>
-                                            <button type="button" onClick={() => switchRoom('calendar')} className="text-[10px] font-medium" style={{ color: 'rgba(255,255,255,0.38)' }}>View all ←’</button>
+                                            <button type="button" onClick={() => switchRoom('calendar')} className="text-[10px] font-medium" style={{ color: 'rgba(255,255,255,0.38)' }}>View all ←'</button>
                                         </div>
                                         <ul className="space-y-2.5">
                                             {upcomingEvents.slice(0, 4).map((ev, idx) => (
@@ -1730,7 +1766,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     >
                                         <div className="mb-3 flex items-center justify-between">
                                             <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'rgba(255,255,255,0.30)' }}>Delivery board</p>
-                                            <button type="button" onClick={() => switchRoom('pm')} className="text-[10px] font-medium" style={{ color: 'rgba(255,255,255,0.38)' }}>Open PM ←’</button>
+                                            <button type="button" onClick={() => switchRoom('pm')} className="text-[10px] font-medium" style={{ color: 'rgba(255,255,255,0.38)' }}>Open PM ←'</button>
                                         </div>
                                         <div className="grid grid-cols-2 gap-2">
                                             {([['To do', kanbanCounts.todo, 'rgba(255,255,255,0.30)'], ['In progress', kanbanCounts.in_progress, 'rgba(255,255,255,0.45)'], ['Next up', kanbanCounts.next, 'rgba(255,255,255,0.45)'], ['Done', kanbanCounts.completed, 'rgba(255,255,255,0.45)']] as const).map(([label, n, color]) => (
@@ -1756,7 +1792,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             </div>
                         )}
 
-                        {/* â”€â”€ AI TOOLS â”€â”€ */}
+                        {/* â"€â"€ AI TOOLS â"€â"€ */}
                         <div
                             className="overflow-hidden rounded-xl"
                             style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.025)' }}
@@ -1786,7 +1822,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             </div>
                         </div>
 
-                        {/* â”€â”€ QUICK ACTIONS â”€â”€ */}
+                        {/* â"€â"€ QUICK ACTIONS â"€â"€ */}
                         <div
                             className="overflow-hidden rounded-xl"
                             style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.025)' }}
@@ -1913,7 +1949,7 @@ function PortfolioView({
     return (
         <div className="min-h-screen w-full pb-24" style={{ background: THEME.bg.primary }}>
 
-            {/* â”€â”€â”€ COMMAND HEADER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+            {/* â"€â"€â"€ COMMAND HEADER â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */}
             <header className="border-b px-6 py-5" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
                 <div className="mx-auto max-w-7xl flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
@@ -1937,7 +1973,7 @@ function PortfolioView({
 
             <main className="mx-auto max-w-7xl flex flex-col gap-8 px-3 sm:px-6 py-4 sm:py-6">
 
-                {/* â”€â”€ Morning Intel Brief â”€â”€ */}
+                {/* â"€â"€ Morning Intel Brief â"€â"€ */}
                 <section>
                     <div className="mb-4 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
@@ -1967,7 +2003,7 @@ function PortfolioView({
                     )}
                 </section>
 
-                {/* â”€â”€ AI Research Desk Briefing â”€â”€ */}
+                {/* â"€â"€ AI Research Desk Briefing â"€â"€ */}
                 {leadingVenture?.agentStaffSnapshot && (
                     <section>
                         <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
@@ -2028,7 +2064,7 @@ function PortfolioView({
                                                     className="shrink-0 rounded-lg border px-2.5 py-1 text-[10px] font-semibold transition-all hover:opacity-80"
                                                     style={{ borderColor: `${color}35`, background: `${color}12`, color }}
                                                 >
-                                                    Open desk ←’
+                                                    Open desk ←'
                                                 </button>
                                             )}
                                         </div>
@@ -2074,7 +2110,7 @@ function PortfolioView({
                     </section>
                 )}
 
-                {/* â”€â”€ Decision Queue â”€â”€ */}
+                {/* â"€â"€ Decision Queue â"€â"€ */}
                 {(allAttentionItems.length > 0 || focusLines.length > 0) && (
                     <section>
                         <div className="mb-4 flex items-center gap-3 flex-wrap">
@@ -2134,7 +2170,7 @@ function PortfolioView({
                                                             className="shrink-0 rounded-xl border px-3 py-2 text-[11px] font-semibold transition-all hover:opacity-80"
                                                             style={{ color: 'rgba(255,255,255,0.40)' }}
                                                         >
-                                                            Discuss ←’
+                                                            Discuss ←'
                                                         </button>
                                                     </div>
                                                 </div>
@@ -2164,7 +2200,7 @@ function PortfolioView({
                                     </ol>
                                     <div className="border-t px-5 py-3" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
                                         <button type="button" onClick={() => leadingVenture && setActiveProject(leadingVenture)} className="text-[11px] font-semibold" style={{ color: 'rgba(255,255,255,0.38)' }}>
-                                            Open {leadingVenture?.name ?? 'venture'} to discuss these ←’
+                                            Open {leadingVenture?.name ?? 'venture'} to discuss these ←'
                                         </button>
                                     </div>
                                 </div>
@@ -2173,7 +2209,7 @@ function PortfolioView({
                     </section>
                 )}
 
-                {/* â”€â”€ Venture Workspaces â”€â”€ */}
+                {/* â"€â"€ Venture Workspaces â"€â"€ */}
                 <section>
                     <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
                         <div className="flex items-center gap-2">
@@ -2301,7 +2337,7 @@ function PortfolioView({
                     </div>
                 </section>
 
-                {/* â”€â”€ Tools & Workspace Navigator â”€â”€ */}
+                {/* â"€â"€ Tools & Workspace Navigator â"€â"€ */}
                 <section>
                     <div className="mb-4 flex items-center gap-2">
                         <span className="text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: 'rgba(255,255,255,0.30)' }}>Tools</span>
