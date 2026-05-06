@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { RefreshCw, Globe, CheckCircle2, Send, Settings2, X, Sparkles, Search, BookOpen, TrendingUp, Lightbulb, Clock } from 'lucide-react';
+import { RefreshCw, Globe, CheckCircle2, Send, Settings2, X, Sparkles, Search, ArrowRight, Clock, MoreHorizontal, Hash, FileText, ExternalLink, ChevronRight, Plus } from 'lucide-react';
 import { useOffice } from '@/lib/OfficeContext';
 import { buildDexoJarvisVentureContext, DEXO_PRE_VENTURE_CONTEXT } from '@/lib/dexoJarvisContext';
 import { isVentureFoundationSparse } from '@/lib/ventureFoundation';
@@ -14,7 +14,6 @@ import { useTokens, useChatCost } from '@/lib/tokens/useTokens';
 import { TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 import { useUpgradeModal } from '@/components/tokens/UpgradeModal';
 import type { JarvisReport } from '@/app/api/jarvis/route';
-import { DexoParticleCanvas } from '@/components/Dexo/DexoParticleSphere';
 
 function todayUtcDay(): string {
   return new Date().toISOString().slice(0, 10);
@@ -56,7 +55,7 @@ export function DexoResearchRoom({ embedded }: { embedded?: boolean }) {
   const [error, setError] = useState<string | null>(null);
   const [proRequired, setProRequired] = useState(false);
   const [pulseAttempted, setPulseAttempted] = useState(false);
-  const [activeTab, setActiveTab] = useState<'brief' | 'chat'>('brief');
+  const [view, setView] = useState<'brief' | 'chat'>('brief');
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
   const [typing, setTyping] = useState(false);
@@ -72,7 +71,7 @@ export function DexoResearchRoom({ embedded }: { embedded?: boolean }) {
     setPrefs(loadResearchWorkflowPrefs(vid));
     const stored = loadMsgs(vid);
     if (stored.length === 0) {
-      const welcome: Msg = { id: 1, role: 'dexo', text: `Welcome to your research command center. I auto-scan the web daily for ${activeProject?.name || 'your startup'} — competitors, markets, signals. Ask me anything or review today's briefing.` };
+      const welcome: Msg = { id: 1, role: 'dexo', text: `I'm your research partner for ${activeProject?.name || 'this venture'}. I scan markets, competitors, and trends daily. Ask me anything or review your briefing below.` };
       idRef.current = 2;
       setMsgs([welcome]);
       saveMsgs(vid, [welcome]);
@@ -160,72 +159,69 @@ export function DexoResearchRoom({ embedded }: { embedded?: boolean }) {
 
   if (!activeProject) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
+      <div className="flex h-full items-center justify-center">
         <div className="text-center">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-zinc-900">
-            <Search className="h-8 w-8 text-zinc-600" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-zinc-900/50">
+            <Search className="h-6 w-6 text-zinc-600" />
           </div>
-          <h2 className="text-xl font-medium text-white">Research Studio</h2>
-          <p className="mt-2 text-zinc-500">Select a venture to begin</p>
+          <p className="text-lg font-medium text-zinc-400">Research Studio</p>
+          <p className="mt-1 text-sm text-zinc-600">Select a venture to begin</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-full w-full flex-col bg-black text-zinc-100">
-      {/* Top Bar */}
-      <div className="flex items-center justify-between border-b border-white/10 px-5 py-3">
+    <div className="flex h-full w-full flex-col overflow-hidden bg-[#0a0a0c]">
+      {/* Header */}
+      <header className="flex shrink-0 items-center justify-between border-b border-white/[0.06] bg-[#0a0a0c]/80 px-5 py-3 backdrop-blur">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-900">
-            <Sparkles className="h-4 w-4 text-white" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-900">
+            <Sparkles className="h-4 w-4 text-zinc-400" />
           </div>
           <div>
-            <div className="text-[15px] font-medium">{activeProject.name}</div>
-            <div className="text-[12px] text-zinc-500">Research Studio</div>
+            <h1 className="text-[15px] font-medium text-zinc-200">{activeProject.name}</h1>
+            <p className="text-[12px] text-zinc-600">Research Assistant</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => setPrefsOpen(p => !p)} className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-900 hover:text-white">
+          <button onClick={() => setPrefsOpen(p => !p)} className="rounded-lg p-2 text-zinc-500 transition hover:bg-white/[0.04] hover:text-zinc-300">
             <Settings2 className="h-4 w-4" />
           </button>
-          <button disabled={running || !vid} onClick={() => void runPulse(true)} className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-[13px] font-medium text-black hover:bg-zinc-200 disabled:opacity-30">
-            <RefreshCw className={`h-4 w-4 ${running ? 'animate-spin' : ''}`} />
-            Run Briefing
+          <button disabled={running || !vid} onClick={() => void runPulse(true)} className="flex items-center gap-2 rounded-lg bg-zinc-100 px-3 py-1.5 text-[13px] font-medium text-black hover:bg-white disabled:opacity-30">
+            <RefreshCw className={`h-3.5 w-3.5 ${running ? 'animate-spin' : ''}`} />
+            {running ? 'Scanning...' : 'Run Briefing'}
           </button>
         </div>
-      </div>
+      </header>
 
-      {/* Settings Drawer */}
+      {/* Settings */}
       {prefsOpen && (
-        <div className="border-b border-white/10 bg-zinc-950 px-5 py-4">
-          <div className="mb-4 flex items-center justify-between">
-            <span className="text-[13px] font-medium text-zinc-300">Research Preferences</span>
-            <button onClick={() => setPrefsOpen(false)} className="text-zinc-500 hover:text-white"><X className="h-4 w-4" /></button>
+        <div className="shrink-0 border-b border-white/[0.06] bg-[#0f0f12] px-5 py-4">
+          <div className="flex items-center justify-between">
+            <span className="text-[13px] font-medium text-zinc-400">Preferences</span>
+            <button onClick={() => setPrefsOpen(false)} className="text-zinc-600 hover:text-zinc-400"><X className="h-4 w-4" /></button>
           </div>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-2 block text-[12px] text-zinc-500">Focus Areas</label>
-              <input value={prefs.interestNotes} onChange={e => commit(p => ({ ...p, interestNotes: e.target.value }))} placeholder="What should I watch? Competitors, markets, launch timing..." className="w-full rounded-lg border border-white/10 bg-transparent px-3 py-2 text-[14px] placeholder:text-zinc-700 focus:outline-none" />
+              <label className="mb-1.5 block text-[12px] text-zinc-600">Research Focus</label>
+              <input value={prefs.interestNotes} onChange={e => commit(p => ({ ...p, interestNotes: e.target.value }))} placeholder="Competitors, markets, timing..." className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-[14px] text-zinc-300 placeholder:text-zinc-700 focus:border-zinc-700 focus:outline-none" />
             </div>
-            <div>
-              <label className="mb-2 block text-[12px] text-zinc-500">Auto-run</label>
-              <div className="flex items-center gap-3">
-                <select value={prefs.cadence} onChange={e => commit(p => ({ ...p, cadence: e.target.value as any }))} className="rounded-lg border border-white/10 bg-transparent px-3 py-2 text-[14px]">
-                  <option value="daily">Daily</option>
-                  <option value="weekdays">Weekdays</option>
-                  <option value="manual">Manual</option>
-                </select>
-                <label className="flex items-center gap-2 text-[13px]">
-                  <input type="checkbox" checked={prefs.autoBriefing} onChange={e => commit(p => ({ ...p, autoBriefing: e.target.checked }))} className="rounded border-white/20 bg-transparent" />
-                  Enabled
-                </label>
-              </div>
+            <div className="flex items-end gap-3">
+              <select value={prefs.cadence} onChange={e => commit(p => ({ ...p, cadence: e.target.value as any }))} className="rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-[14px] text-zinc-400 focus:outline-none">
+                <option value="daily">Daily</option>
+                <option value="weekdays">Weekdays</option>
+                <option value="manual">Manual</option>
+              </select>
+              <label className="flex items-center gap-2 text-[13px] text-zinc-500">
+                <input type="checkbox" checked={prefs.autoBriefing} onChange={e => commit(p => ({ ...p, autoBriefing: e.target.checked }))} className="rounded border-white/[0.15] bg-transparent" />
+                Auto-run
+              </label>
             </div>
           </div>
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-wrap gap-1.5">
             {(['market', 'product', 'fundraising', 'ops', 'narrative'] as const).map(l => (
-              <button key={l} onClick={() => commit(p => ({ ...p, lanesEnabled: { ...p.lanesEnabled, [l]: !p.lanesEnabled[l] } }))} className={`rounded-full border px-3 py-1 text-[12px] ${prefs.lanesEnabled[l] ? 'border-white bg-white text-black' : 'border-white/20 text-zinc-500 hover:border-white/40'}`}>
+              <button key={l} onClick={() => commit(p => ({ ...p, lanesEnabled: { ...p.lanesEnabled, [l]: !p.lanesEnabled[l] } }))} className={`rounded-md border px-2.5 py-1 text-[12px] ${prefs.lanesEnabled[l] ? 'border-zinc-600 bg-zinc-800 text-zinc-300' : 'border-white/[0.06] text-zinc-600 hover:border-zinc-800'}`}>
                 {l}
               </button>
             ))}
@@ -233,61 +229,71 @@ export function DexoResearchRoom({ embedded }: { embedded?: boolean }) {
         </div>
       )}
 
-      {/* Errors */}
-      {proRequired && <div className="mx-5 my-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-[14px] text-amber-400">Pro required for daily briefings</div>}
-      {error && <div className="mx-5 my-3 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-[14px] text-red-400">{error}</div>}
+      {/* Status */}
+      {proRequired && <div className="mx-5 my-3 rounded-lg border border-amber-500/20 bg-amber-500/10 px-4 py-2.5 text-[13px] text-amber-400">Pro required for daily briefings</div>}
+      {error && <div className="mx-5 my-3 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-[13px] text-red-400">{error}</div>}
 
-      {/* Main */}
+      {/* Content */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left: Briefing */}
-        <div className={`flex-1 overflow-y-auto px-5 py-5 ${activeTab === 'brief' ? 'block' : 'hidden lg:block'}`}>
+        {/* Briefing */}
+        <div className={`flex-1 overflow-y-auto px-5 py-4 ${view === 'brief' ? 'block' : 'hidden lg:block'}`}>
           {loading && !today ? (
-            <div className="flex h-40 items-center justify-center gap-2 text-zinc-500">
-              <RefreshCw className="h-5 w-5 animate-spin" /> Loading...
+            <div className="flex h-40 items-center justify-center gap-2 text-zinc-600">
+              <RefreshCw className="h-5 w-5 animate-spin" />
+              <span>Loading briefing...</span>
             </div>
           ) : today && parsed ? (
-            <div className="mx-auto max-w-2xl space-y-4">
-              {/* Header */}
-              <div className="mb-6">
-                <div className="mb-2 flex items-center gap-2 text-[12px] text-zinc-500">
-                  <Globe className="h-3.5 w-3.5" /> Web briefing · {today.reportDay}
-                </div>
-                {today.headline && <h1 className="text-[26px] font-medium leading-tight text-white">{today.headline}</h1>}
-                {parsed.intro && <p className="mt-3 text-[16px] leading-relaxed text-zinc-400">{parsed.intro}</p>}
+            <div className="mx-auto max-w-2xl">
+              {/* Meta */}
+              <div className="mb-6 flex items-center gap-2 text-[12px] text-zinc-600">
+                <Globe className="h-3.5 w-3.5" />
+                <span>Web briefing</span>
+                <span className="text-zinc-700">·</span>
+                <span>{today.reportDay}</span>
               </div>
+
+              {/* Title */}
+              {today.headline && <h2 className="mb-4 text-[22px] font-medium leading-snug text-zinc-200">{today.headline}</h2>}
+              {parsed.intro && <p className="mb-8 text-[15px] leading-relaxed text-zinc-500">{parsed.intro}</p>}
 
               {/* Sections */}
               <div className="space-y-3">
                 {parsed.sections.map((s, i) => (
-                  <div key={`${i}-${s.title}`} className="rounded-xl border border-white/10 bg-zinc-950 p-4">
-                    <div className="mb-3 flex items-center gap-2 text-[13px] font-medium text-zinc-300">
-                      <span className="flex h-6 w-6 items-center justify-center rounded bg-zinc-900 text-[11px]">{i + 1}</span>
+                  <div key={i} className="group rounded-lg border border-white/[0.04] bg-white/[0.02] p-4 transition hover:border-white/[0.08]">
+                    <div className="mb-3 flex items-center gap-2 text-[13px] font-medium text-zinc-400">
+                      <Hash className="h-3.5 w-3.5 text-zinc-700" />
                       {s.isRisk ? 'Risk' : s.title}
                     </div>
                     <ul className="space-y-2">
                       {s.bullets.map((b, j) => (
-                        <li key={j} className="flex gap-3 text-[15px] leading-relaxed text-zinc-400">
-                          <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-zinc-600" />
+                        <li key={j} className="flex gap-3 text-[14px] leading-relaxed text-zinc-500">
+                          <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-zinc-700" />
                           {b}
                         </li>
                       ))}
                     </ul>
-                    {s.move && <div className="mt-3 rounded-lg bg-zinc-900 p-3 text-[14px] text-zinc-300">→ {s.move}</div>}
+                    {s.move && (
+                      <div className="mt-3 flex items-start gap-2 rounded-md bg-zinc-900/50 p-3">
+                        <ArrowRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-600" />
+                        <span className="text-[13px] text-zinc-400">{s.move}</span>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
 
               {/* Follow-ups */}
               {parseFollowUp(today.followUpJson).length > 0 && (
-                <div className="rounded-xl border border-white/10 bg-zinc-950 p-4">
-                  <div className="mb-3 flex items-center gap-2 text-[12px] text-zinc-500">
-                    <Lightbulb className="h-4 w-4" /> Follow-ups
+                <div className="mt-6 rounded-lg border border-white/[0.04] bg-white/[0.02] p-4">
+                  <div className="mb-3 flex items-center gap-2 text-[12px] text-zinc-600">
+                    <MoreHorizontal className="h-3.5 w-3.5" />
+                    Follow-ups
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     {parseFollowUp(today.followUpJson).map((q, i) => (
-                      <button key={i} onClick={() => { setInput(q); setActiveTab('chat'); }} className="w-full text-left">
-                        <div className="flex items-start gap-3 rounded-lg p-2 text-[14px] text-zinc-400 hover:bg-zinc-900">
-                          <span className="text-zinc-600">{i + 1}.</span>
+                      <button key={i} onClick={() => { setInput(q); setView('chat'); }} className="w-full">
+                        <div className="flex items-start gap-3 rounded-md p-2 text-left text-[14px] text-zinc-500 transition hover:bg-white/[0.03]">
+                          <ChevronRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-700" />
                           {q}
                         </div>
                       </button>
@@ -298,13 +304,17 @@ export function DexoResearchRoom({ embedded }: { embedded?: boolean }) {
 
               {/* Sources */}
               {parseSources(today.sourcesJson).length > 0 && (
-                <div className="rounded-xl border border-white/10 bg-zinc-950 p-4">
-                  <div className="mb-3 text-[12px] text-zinc-500">Sources</div>
+                <div className="mt-6 rounded-lg border border-white/[0.04] bg-white/[0.02] p-4">
+                  <div className="mb-3 flex items-center gap-2 text-[12px] text-zinc-600">
+                    <FileText className="h-3.5 w-3.5" />
+                    Sources
+                  </div>
                   <div className="space-y-1">
                     {parseSources(today.sourcesJson).map((s, i) => (
-                      <a key={s.url} href={s.url} target="_blank" rel="noreferrer" className="flex items-center gap-3 rounded-lg p-2 text-[14px] text-zinc-400 hover:bg-zinc-900 hover:text-white">
-                        <span className="text-zinc-600">[{i + 1}]</span>
+                      <a key={s.url} href={s.url} target="_blank" rel="noreferrer" className="flex items-center gap-2 rounded-md p-2 text-[14px] text-zinc-500 transition hover:bg-white/[0.03] hover:text-zinc-400">
+                        <span className="text-zinc-700">{i + 1}.</span>
                         <span className="flex-1 truncate">{s.title}</span>
+                        <ExternalLink className="h-3 w-3 shrink-0 text-zinc-700" />
                       </a>
                     ))}
                   </div>
@@ -313,32 +323,33 @@ export function DexoResearchRoom({ embedded }: { embedded?: boolean }) {
 
               {/* Apply */}
               {hasPendingUpdates(today.pendingProposedUpdates) && !today.userApprovedAt && (
-                <div className="flex items-center justify-between rounded-xl border border-white/10 bg-zinc-950 p-4">
-                  <div className="text-[14px]">
-                    <div className="text-zinc-300">Suggestions ready</div>
-                    <div className="text-[13px] text-zinc-500">{pendingHint}</div>
+                <div className="mt-6 flex items-center justify-between rounded-lg border border-white/[0.04] bg-white/[0.02] p-4">
+                  <div>
+                    <div className="text-[14px] text-zinc-400">Updates available</div>
+                    <div className="text-[13px] text-zinc-600">{pendingHint}</div>
                   </div>
-                  <button disabled={applyId === today.id} onClick={() => void apply(today)} className="rounded-lg bg-white px-4 py-2 text-[13px] font-medium text-black hover:bg-zinc-200 disabled:opacity-40">
+                  <button disabled={applyId === today.id} onClick={() => void apply(today)} className="rounded-lg bg-zinc-200 px-4 py-2 text-[13px] font-medium text-black hover:bg-white disabled:opacity-30">
                     {applyId === today.id ? 'Applying...' : 'Apply'}
                   </button>
                 </div>
               )}
 
               {today.userApprovedAt && (
-                <div className="flex items-center gap-2 text-[14px] text-emerald-400">
-                  <CheckCircle2 className="h-4 w-4" /> Applied to venture
+                <div className="mt-6 flex items-center gap-2 text-[14px] text-emerald-500/80">
+                  <CheckCircle2 className="h-4 w-4" />
+                  Applied to venture
                 </div>
               )}
 
-              {/* Earlier */}
+              {/* History */}
               {reports.length > 1 && (
-                <div className="pt-4">
-                  <div className="mb-2 text-[12px] text-zinc-500">Earlier briefings</div>
+                <div className="mt-8">
+                  <div className="mb-3 text-[12px] text-zinc-700">Earlier briefings</div>
                   <div className="space-y-1">
                     {reports.filter(r => r.id !== today?.id).slice(0, 5).map(r => (
-                      <div key={r.id} className="flex items-center gap-4 rounded-lg p-2 text-[14px] text-zinc-500">
-                        <span className="tabular-nums">{r.reportDay}</span>
-                        <span className="flex-1 truncate">{r.headline || r.summary.slice(0, 80)}</span>
+                      <div key={r.id} className="flex items-center gap-4 rounded-md py-2 text-[14px] text-zinc-600">
+                        <span className="w-20 text-zinc-700">{r.reportDay}</span>
+                        <span className="flex-1 truncate">{r.headline || r.summary.slice(0, 70)}</span>
                       </div>
                     ))}
                   </div>
@@ -346,44 +357,48 @@ export function DexoResearchRoom({ embedded }: { embedded?: boolean }) {
               )}
             </div>
           ) : (
-            <div className="flex h-60 flex-col items-center justify-center gap-3 text-center">
-              <BookOpen className="h-10 w-10 text-zinc-700" />
-              <p className="text-zinc-500">No briefing yet. Run your first research pass.</p>
+            <div className="flex h-60 flex-col items-center justify-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-900/50">
+                <Plus className="h-5 w-5 text-zinc-700" />
+              </div>
+              <p className="text-zinc-600">No briefing yet</p>
+              <p className="text-[13px] text-zinc-700">Run your first research pass</p>
             </div>
           )}
         </div>
 
-        {/* Right: Chat */}
-        <div className={`flex w-full flex-col border-l border-white/10 bg-zinc-950 lg:w-[420px] ${activeTab === 'chat' ? 'flex' : 'hidden lg:flex'}`}>
-          <div className="flex items-center gap-3 border-b border-white/10 px-4 py-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-900">
-              <Sparkles className="h-4 w-4 text-white" />
+        {/* Chat */}
+        <div className={`flex w-full flex-col border-l border-white/[0.06] bg-[#0d0d10] lg:w-[400px] ${view === 'chat' ? 'flex' : 'hidden lg:flex'}`}>
+          <div className="flex items-center gap-3 border-b border-white/[0.06] px-4 py-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800">
+              <Sparkles className="h-3.5 w-3.5 text-zinc-500" />
             </div>
-            <div className="text-[15px] font-medium">Dexo</div>
+            <div className="text-[14px] font-medium text-zinc-400">Dexo</div>
           </div>
           <div className="flex-1 space-y-4 overflow-y-auto p-4">
             {msgs.map(m => (
               <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[90%] rounded-2xl px-4 py-3 text-[15px] leading-relaxed ${m.role === 'user' ? 'bg-white text-black' : 'bg-zinc-900 text-zinc-300'}`}>
+                <div className={`max-w-[92%] rounded-2xl px-4 py-3 text-[15px] leading-relaxed ${m.role === 'user' ? 'bg-zinc-200 text-black' : 'border border-white/[0.06] bg-zinc-900/50 text-zinc-400'}`}>
                   {stripMd(m.text)}
                 </div>
               </div>
             ))}
             {typing && (
               <div className="flex justify-start">
-                <div className="flex items-center gap-2 rounded-2xl bg-zinc-900 px-4 py-3 text-zinc-500">
-                  <Clock className="h-4 w-4 animate-spin" /> Thinking...
+                <div className="flex items-center gap-2 rounded-2xl border border-white/[0.06] bg-zinc-900/50 px-4 py-2 text-zinc-600">
+                  <Clock className="h-3.5 w-3.5 animate-spin" />
+                  <span className="text-[14px]">Thinking</span>
                 </div>
               </div>
             )}
             <div ref={bottomRef} />
           </div>
-          <div className="border-t border-white/10 p-3">
+          <div className="border-t border-white/[0.06] p-3">
             {chatError && <div className="mb-2 text-[13px] text-red-400">{chatError}</div>}
-            <div className="flex items-end gap-2 rounded-xl border border-white/10 bg-zinc-900 p-2">
-              <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(); } }} placeholder="Ask anything..." rows={1} disabled={typing} className="max-h-28 flex-1 resize-none bg-transparent px-2 py-1 text-[15px] placeholder:text-zinc-600 focus:outline-none" />
-              <button onClick={() => void send()} disabled={typing || !input.trim()} className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-black disabled:opacity-30">
-                <Send className="h-4 w-4" />
+            <div className="flex items-end gap-2 rounded-xl border border-white/[0.08] bg-zinc-900/50 p-2">
+              <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(); } }} placeholder="Ask anything..." rows={1} disabled={typing} className="max-h-24 flex-1 resize-none bg-transparent px-2 py-1 text-[15px] text-zinc-300 placeholder:text-zinc-700 focus:outline-none" />
+              <button onClick={() => void send()} disabled={typing || !input.trim()} className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-200 text-black transition hover:bg-white disabled:opacity-30">
+                <Send className="h-3.5 w-3.5" />
               </button>
             </div>
           </div>
@@ -391,17 +406,10 @@ export function DexoResearchRoom({ embedded }: { embedded?: boolean }) {
       </div>
 
       {/* Mobile Toggle */}
-      <div className="fixed bottom-4 left-1/2 z-20 flex -translate-x-1/2 gap-1 rounded-full border border-white/10 bg-zinc-900 p-1 lg:hidden">
-        <button onClick={() => setActiveTab('brief')} className={`rounded-full px-4 py-2 text-[13px] ${activeTab === 'brief' ? 'bg-white text-black' : 'text-zinc-500'}`}>Brief</button>
-        <button onClick={() => setActiveTab('chat')} className={`rounded-full px-4 py-2 text-[13px] ${activeTab === 'chat' ? 'bg-white text-black' : 'text-zinc-500'}`}>Chat</button>
+      <div className="fixed bottom-4 left-1/2 z-20 flex -translate-x-1/2 gap-1 rounded-full border border-white/[0.08] bg-zinc-900/90 p-1 backdrop-blur lg:hidden">
+        <button onClick={() => setView('brief')} className={`rounded-full px-4 py-2 text-[13px] ${view === 'brief' ? 'bg-zinc-200 text-black' : 'text-zinc-500'}`}>Briefing</button>
+        <button onClick={() => setView('chat')} className={`rounded-full px-4 py-2 text-[13px] ${view === 'chat' ? 'bg-zinc-200 text-black' : 'text-zinc-500'}`}>Chat</button>
       </div>
-
-      {/* FAB */}
-      {!embedded && (
-        <button onClick={() => setActiveTab('chat')} className="fixed bottom-5 right-5 z-30 hidden h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-white/20 bg-zinc-900 lg:flex">
-          <DexoParticleCanvas mode="floating" size={44} active={false} />
-        </button>
-      )}
     </div>
   );
 }
