@@ -20,7 +20,7 @@ export function ProjectJournal() {
     return (
         <div className="flex flex-col h-full bg-[#050505] rounded-[32px] overflow-hidden shadow-2xl border border-red-900/20">
             {/* Header - Minimalist Journal */}
-            <div className="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-[#0d0d10]">
+            <div className="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-[#141416]">
                 <div className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-red-950/30 text-red-600 rounded-xl flex items-center justify-center border border-red-900/30">
                         <History className="w-5 h-5" />
@@ -97,11 +97,12 @@ export function ProjectJournal() {
             </div>
 
             {/* Footer Bar */}
-            <div className="px-8 py-4 border-t border-white/5 bg-[#0d0d10] flex items-center justify-between">
+            <div className="px-8 py-4 border-t border-white/5 bg-[#141416] flex items-center justify-between">
                 <span className="text-[9px] font-bold text-gray-700 uppercase tracking-widest">Entry Verification: Level 4</span>
                 <span className="text-[9px] font-mono text-gray-700">IDX: {activeProject.journal?.length || 0}</span>
             </div>
         </div>
     );
 }
+
 

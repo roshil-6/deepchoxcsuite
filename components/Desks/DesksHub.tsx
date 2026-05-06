@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import {
@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { useOffice } from '@/lib/OfficeContext';
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type DeskConfig = {
     room: 'ceo' | 'pm' | 'accountant' | 'scout' | 'cmo';
@@ -30,7 +30,7 @@ type DeskConfig = {
 
 type FilterId = 'all' | 'active' | 'available';
 
-// ── Desk data ─────────────────────────────────────────────────────────────────
+// â”€â”€ Desk data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const DESKS: DeskConfig[] = [
     {
@@ -85,7 +85,7 @@ const DESKS: DeskConfig[] = [
     },
 ];
 
-// ── Text filter tab ───────────────────────────────────────────────────────────
+// â”€â”€ Text filter tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function FilterTab({
     active,
@@ -110,7 +110,7 @@ function FilterTab({
     );
 }
 
-// ── Connector card (Perplexity style: icon left, text right) ──────────────────
+// â”€â”€ Connector card (Perplexity style: icon left, text right) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function DeskCard({
     desk,
@@ -155,7 +155,7 @@ function DeskCard({
     );
 }
 
-// ── Main ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Main â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function DesksHub() {
     const { switchRoom, activeProject } = useOffice();
@@ -176,9 +176,9 @@ export function DesksHub() {
     });
 
     return (
-        <div className="min-h-full pb-16" style={{ background: '#0d0d10' }}>
+        <div className="min-h-full pb-16" style={{ background: '#141416' }}>
 
-            {/* ── Page header ── */}
+            {/* â”€â”€ Page header â”€â”€ */}
             <div className="pb-6 pt-1">
                 <div className="flex flex-wrap items-end justify-between gap-4">
                     <div>
@@ -190,7 +190,7 @@ export function DesksHub() {
                         </h1>
                     </div>
 
-                    {/* Search — flat, no box feel */}
+                    {/* Search â€” flat, no box feel */}
                     <div className="flex items-center gap-2 pb-0.5">
                         <Search className="h-3.5 w-3.5 shrink-0" style={{ color: '#3d3d4e' }} strokeWidth={1.75} />
                         <input
@@ -207,7 +207,7 @@ export function DesksHub() {
                 {/* Divider */}
                 <div className="mt-5 h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
 
-                {/* ── Filter tabs + action ── */}
+                {/* â”€â”€ Filter tabs + action â”€â”€ */}
                 <div className="mt-4 flex items-center justify-between">
                     <div className="flex items-center gap-6">
                         <FilterTab active={filter === 'all'} onClick={() => setFilter('all')}>All</FilterTab>
@@ -222,12 +222,12 @@ export function DesksHub() {
                         onMouseEnter={(e) => { e.currentTarget.style.color = '#f2f2f5'; }}
                         onMouseLeave={(e) => { e.currentTarget.style.color = '#5c5c6e'; }}
                     >
-                        Ask Dexo →
+                        Ask Dexo â†’
                     </button>
                 </div>
             </div>
 
-            {/* ── Desk list ── */}
+            {/* â”€â”€ Desk list â”€â”€ */}
             <section className="mb-8">
                 {filtered.length === 0 ? (
                     <p className="py-10 text-[13px]" style={{ color: '#3d3d4e' }}>No desks match.</p>
@@ -245,17 +245,17 @@ export function DesksHub() {
                 )}
             </section>
 
-            {/* ── Divider ── */}
+            {/* â”€â”€ Divider â”€â”€ */}
             <div className="h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
 
-            {/* ── AI Co-Founder ── */}
+            {/* â”€â”€ AI Co-Founder â”€â”€ */}
             <section className="mt-8">
                 <DeskCard
                     desk={{
                         room: 'dexo' as 'ceo',
                         label: 'Dexo',
                         role: 'AI Co-Founder',
-                        description: 'Full-stack AI partner — synthesises every desk, runs daily research, and adapts to your current priority.',
+                        description: 'Full-stack AI partner â€” synthesises every desk, runs daily research, and adapts to your current priority.',
                         Icon: Sparkles,
                         iconColor: '#f2f2f5',
                         iconBg: 'rgba(255,255,255,0.05)',
@@ -268,3 +268,4 @@ export function DesksHub() {
         </div>
     );
 }
+

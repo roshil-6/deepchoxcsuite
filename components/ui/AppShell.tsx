@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -127,7 +127,7 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
                 </div>
 
                 {/* Main Content Area */}
-                <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden lg:gap-5 lg:px-5 lg:pb-5 lg:pt-4">
+                <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden">
                     {/* Mobile Navigation Overlay */}
                     <AnimatePresence>
                         {mobileNav && (
@@ -148,7 +148,7 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
                                 transition={{ type: 'spring', stiffness: 360, damping: 34 }}
                                 className="fixed inset-y-2 left-2 z-[70] flex h-[calc(100%-1rem)] w-[min(20rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-[1.35rem] border border-[var(--border)] lg:hidden"
                                 style={{
-                                    background: 'rgba(18,18,22,0.98)',
+                                    background: '#141416',
                                     boxShadow: 'var(--shadow-panel)',
                                     backdropFilter: 'blur(12px)',
                                     WebkitBackdropFilter: 'blur(12px)',
@@ -212,10 +212,11 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
 
             {bottomBar}
 
-            {/* Mobile Bottom Navigation — 4 clear items: Dexo, Overview, Desks, More */}
+            {/* Mobile Bottom Navigation â€” 4 clear items: Dexo, Overview, Desks, More */}
             <MobileBottomNav onOpenMore={() => setMobileNav(true)} />
 
             <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} />
         </div>
     );
 }
+

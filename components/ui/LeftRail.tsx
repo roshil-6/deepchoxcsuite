@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import Link from 'next/link';
@@ -53,13 +53,12 @@ export function LeftRail({
             aria-label="DeepChox workspace navigation"
             className="relative z-30 flex h-full min-h-0 w-full min-w-0 shrink-0 flex-col overflow-hidden lg:w-[252px]"
             style={{
-                background: '#111117',
-                borderRight: '1px solid rgba(255,255,255,0.07)',
+                background: '#141416',
             }}
         >
             <div className="custom-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden">
 
-                {/* ── Brand ── */}
+                {/* â”€â”€ Brand â”€â”€ */}
                 <div className="flex shrink-0 items-center justify-between gap-2 px-4 pb-3 pt-4">
                     <div className="flex min-w-0 items-center gap-2.5">
                         {/* Logo mark */}
@@ -92,7 +91,7 @@ export function LeftRail({
                     </div>
                 </div>
 
-                {/* ── Ventures ── */}
+                {/* â”€â”€ Ventures â”€â”€ */}
                 <div className="shrink-0 px-3 pb-1">
                     <div className="mb-1.5 flex items-center justify-between px-1.5">
                         <span className="text-[9px] font-semibold uppercase tracking-[0.22em] text-white/28">
@@ -161,10 +160,10 @@ export function LeftRail({
                     </div>
                 )}
 
-                {/* ── Divider ── */}
+                {/* â”€â”€ Divider â”€â”€ */}
                 <div className="mx-3 my-3 h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
 
-                {/* ── Navigation (grouped) ── */}
+                {/* â”€â”€ Navigation (grouped) â”€â”€ */}
                 <nav className="flex shrink-0 flex-col gap-5 px-2 pb-3">
                     {APP_NAV_GROUPS.map((group) => (
                         <div key={group.id}>
@@ -187,7 +186,7 @@ export function LeftRail({
                                                 onClick={() => go(item.room)}
                                                 className="group flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-all duration-150"
                                                 style={active ? {
-                                                    background: '#1c1b24',
+                                                    background: '#222227',
                                                     color: '#f2f2f5',
                                                 } : {
                                                     color: '#8c8c9e',
@@ -220,7 +219,7 @@ export function LeftRail({
                                             title={WORKSPACE_TITLES[item.room] ?? item.label}
                                             className="group flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-all duration-150"
                                             style={active ? {
-                                                background: '#1c1b24',
+                                                background: '#222227',
                                                 color: '#f2f2f5',
                                             } : {
                                                 color: '#8c8c9e',
@@ -244,7 +243,7 @@ export function LeftRail({
                     ))}
                 </nav>
 
-                {/* ── Footer ── */}
+                {/* â”€â”€ Footer â”€â”€ */}
                 <div
                     className="mt-auto shrink-0 space-y-2 px-3 pb-4 pt-3"
                     style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
@@ -305,3 +304,4 @@ export function LeftRail({
         </div>
     );
 }
+

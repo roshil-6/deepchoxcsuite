@@ -35,7 +35,7 @@ export function LedgerTable() {
 
                 {/* Top Metrics Row */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-[#111117] border border-zinc-800 p-7 rounded-2xl shadow-xl">
+                    <div className="bg-[#141416] border border-zinc-800 p-7 rounded-2xl shadow-xl">
                         <div className="flex items-center justify-between mb-2">
                             <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Total Capitalization</div>
                             <TrendingUp className="w-4 h-4 text-[#0D9488]" />
@@ -47,7 +47,7 @@ export function LedgerTable() {
                         </div>
                     </div>
 
-                    <div className="bg-[#111117] border border-zinc-800 p-7 rounded-2xl shadow-xl">
+                    <div className="bg-[#141416] border border-zinc-800 p-7 rounded-2xl shadow-xl">
                         <div className="flex items-center justify-between mb-2">
                             <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Operational Burn</div>
                             <Activity className="w-4 h-4 text-zinc-400" />
@@ -58,7 +58,7 @@ export function LedgerTable() {
                         </div>
                     </div>
 
-                    <div className="bg-[#111117] border border-zinc-800 p-7 rounded-2xl shadow-xl">
+                    <div className="bg-[#141416] border border-zinc-800 p-7 rounded-2xl shadow-xl">
                         <div className="flex items-center justify-between mb-2">
                             <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Net Runway</div>
                             <PieChart className="w-4 h-4 text-zinc-400" />
@@ -89,9 +89,9 @@ export function LedgerTable() {
                         </div>
                     </div>
 
-                    <div className="bg-[#111117] border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl">
+                    <div className="bg-[#141416] border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl">
                         <table className="w-full text-left">
-                            <thead className="bg-[#0d0d10] border-b border-zinc-800">
+                            <thead className="bg-[#141416] border-b border-zinc-800">
                                 <tr>
                                     <th className="px-6 py-4 text-[10px] font-bold text-zinc-600 uppercase tracking-widest">Account Unit</th>
                                     <th className="px-6 py-4 text-[10px] font-bold text-zinc-600 uppercase tracking-widest text-right">Allocation</th>
@@ -146,4 +146,5 @@ export function LedgerTable() {
         </div>
     );
 }
+
 

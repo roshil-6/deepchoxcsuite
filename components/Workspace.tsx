@@ -46,7 +46,7 @@ export function Workspace() {
   // High-level Routing with Transitions
   if (activeRoom === 'dashboard') {
     return (
-      <div key="dashboard" className="page-transition flex h-screen flex-1 overflow-hidden bg-[#0d0d10]">
+      <div key="dashboard" className="page-transition flex h-screen flex-1 overflow-hidden bg-[#141416]">
         <Dashboard />
       </div>
     );
@@ -54,7 +54,7 @@ export function Workspace() {
 
   if (activeRoom === 'calendar') {
     return (
-      <div key="calendar" className="flex-1 h-screen overflow-hidden bg-[#0d0d10] page-transition">
+      <div key="calendar" className="flex-1 h-screen overflow-hidden bg-[#141416] page-transition">
         <CalendarView />
       </div>
     );
@@ -62,7 +62,7 @@ export function Workspace() {
 
   if (activeRoom === 'org_structure') {
     return (
-      <div key="org_structure" className="flex-1 h-screen overflow-hidden bg-[#0d0d10] page-transition">
+      <div key="org_structure" className="flex-1 h-screen overflow-hidden bg-[#141416] page-transition">
         <OrgStructureBuilder />
       </div>
     );
@@ -70,7 +70,7 @@ export function Workspace() {
 
   if (activeRoom === 'intelligence_diary') {
     return (
-      <div key="intelligence_diary" className="flex-1 h-screen overflow-hidden bg-[#0d0d10] page-transition">
+      <div key="intelligence_diary" className="flex-1 h-screen overflow-hidden bg-[#141416] page-transition">
         <IntelligenceDiary />
       </div>
     );
@@ -78,7 +78,7 @@ export function Workspace() {
 
   if (!activeProject) {
     return (
-      <div key="dashboard-fallback" className="flex-1 h-screen overflow-hidden bg-[#0d0d10] page-transition">
+      <div key="dashboard-fallback" className="flex-1 h-screen overflow-hidden bg-[#141416] page-transition">
         <Dashboard />
       </div>
     );
@@ -112,7 +112,7 @@ export function Workspace() {
         <div className="flex-[5] flex flex-col min-w-0 h-full relative">
 
           {/* Workspace Toggle (Journal vs Agent Tool) - Maroon Glass */}
-          <div className="absolute top-4 right-6 z-20 flex bg-[#0d0d10] rounded-full p-1 shadow-2xl border border-red-800/20 transition-all hover:scale-105">
+          <div className="absolute top-4 right-6 z-20 flex bg-[#141416] rounded-full p-1 shadow-2xl border border-red-800/20 transition-all hover:scale-105">
             <button
               onClick={() => setRightPanelMode('agent_view')}
               className={`px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2 ${rightPanelMode === 'agent_view' ? 'bg-red-800 text-white shadow-lg shadow-red-800/20' : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'}`}
@@ -153,4 +153,5 @@ export function Workspace() {
     </div>
   );
 }
+
 

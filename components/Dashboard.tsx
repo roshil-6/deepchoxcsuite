@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useMemo, useId, useEffect, useCallback } from 'react';
 import {
@@ -83,7 +83,7 @@ import { DexoOpsPanel } from '@/components/Dexo/DexoOpsPanel';
 import { PortfolioDailyIntelSection } from '@/components/Dexo/PortfolioDailyIntelSection';
 
 // ============================================================================
-// AI TOOL LOGO MARKS — inline SVG, no external deps
+// AI TOOL LOGO MARKS â€” inline SVG, no external deps
 // ============================================================================
 
 function ChatGPTLogo({ size = 20 }: { size?: number }) {
@@ -184,7 +184,7 @@ const THEME = {
     },
 } as const;
 
-/** Map snapshot desk labels → research room for quick navigation from the overview card */
+/** Map snapshot desk labels â†’ research room for quick navigation from the overview card */
 const SNAPSHOT_DESK_ROOMS: Record<string, AgentRole> = {
     Strategy: 'ceo',
     Market: 'scout',
@@ -266,7 +266,7 @@ function Card({ children, className = '', interactive = false, onClick, id }: Ca
                 ${className}
             `}
             style={{
-                background: isHovered && interactive ? '#201f28' : '#19181f',
+                background: isHovered && interactive ? '#201f28' : '#1e1e22',
                 borderColor: isHovered && interactive ? 'rgba(255,255,255,0.11)' : 'rgba(255,255,255,0.07)',
             }}
         >
@@ -564,7 +564,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     }, [activeRoom, activeProject?.id, refreshLivingOffice]);
 
     // Auto-select most recently created venture when user enters Executive Overview
-    // with no active project — so they always see a venture, not the empty portfolio view
+    // with no active project â€” so they always see a venture, not the empty portfolio view
     useEffect(() => {
         if (activeRoom !== 'dashboard' || activeProject || allProjects.length === 0) return;
         const sorted = [...allProjects].sort((a, b) => (b.timestamp ?? 0) - (a.timestamp ?? 0));
@@ -577,7 +577,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     useEffect(() => {
         if (activeRoom !== 'dashboard' || !activeProject?.id) return;
         setDexoWelcomeStep(0);
-        // setShowDexoWelcome(true); // disabled — too intrusive on every visit
+        // setShowDexoWelcome(true); // disabled â€” too intrusive on every visit
     }, [activeRoom, activeProject?.id]);
 
     // Pre-load Dexo with a venture briefing whenever user enters Executive Overview
@@ -585,13 +585,13 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     useEffect(() => {
         if (activeRoom !== 'dashboard' || !activeProject?.agentStaffSnapshot) return;
         const summary = activeProject.agentStaffSnapshot.summary?.trim() ?? '';
-        const focusLines = (activeProject.staffFocusToday ?? []).filter(Boolean).slice(0, 4).join('\n• ');
+        const focusLines = (activeProject.staffFocusToday ?? []).filter(Boolean).slice(0, 4).join('\nâ€¢ ');
         setDexoBootstrap({
-            title: `Daily Briefing — ${activeProject.name}`,
+            title: `Daily Briefing â€” ${activeProject.name}`,
             detail: summary,
             sourceRole: 'ceo',
             requiredInfo: [],
-            userMessage: `You are my AI co-founder. Here is what has been researched for ${activeProject.name}.\n\nSummary:\n${summary.slice(0, 600)}\n\nFocus areas:\n• ${focusLines}\n\nBrief me on:\n1. What are the most important findings right now?\n2. What should I focus on today?\n3. Do I need to change anything?\n4. Any risks or opportunities I should act on?\n\nBe direct and specific — no fluff.`,
+            userMessage: `You are my AI co-founder. Here is what has been researched for ${activeProject.name}.\n\nSummary:\n${summary.slice(0, 600)}\n\nFocus areas:\nâ€¢ ${focusLines}\n\nBrief me on:\n1. What are the most important findings right now?\n2. What should I focus on today?\n3. Do I need to change anything?\n4. Any risks or opportunities I should act on?\n\nBe direct and specific â€” no fluff.`,
         });
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeRoom, activeProject?.id, activeProject?.agentStaffSnapshot?.at]);
@@ -699,7 +699,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
         const clip = (t?: string) => {
             const x = t?.trim();
             if (!x) return null;
-            return x.length > 96 ? `${x.slice(0, 93)}…` : x;
+            return x.length > 96 ? `${x.slice(0, 93)}â€¦` : x;
         };
         const growthPct =
             (snap?.cmo?.trim().length || 0) >= MIN_VENTURE_FIELD_CHARS ||
@@ -787,7 +787,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
         const content = (strategyDoc.content || '').trim();
         const pick = intent || vision || content.slice(0, 400);
         if (!pick) return null;
-        return pick.length > 400 ? `${pick.slice(0, 397)}…` : pick;
+        return pick.length > 400 ? `${pick.slice(0, 397)}â€¦` : pick;
     }, [strategyDoc]);
 
     const currentPhaseInfo = useMemo(() => {
@@ -812,7 +812,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     const aiSummaryExcerpt = useMemo(() => {
         const s = activeProject?.agentStaffSnapshot?.summary?.trim();
         if (!s) return null;
-        return s.length > 520 ? `${s.slice(0, 517)}…` : s;
+        return s.length > 520 ? `${s.slice(0, 517)}â€¦` : s;
     }, [activeProject?.agentStaffSnapshot?.summary]);
 
     // Portfolio view (no active project)
@@ -832,9 +832,9 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     return (
         <div
             className="min-h-screen w-full pb-24"
-            style={{ background: '#0d0d10' }}
+            style={{ background: '#141416' }}
         >
-            {/* ── DEXO OVERVIEW GUIDE POP-UP ── renders directly on the page */}
+            {/* â”€â”€ DEXO OVERVIEW GUIDE POP-UP â”€â”€ renders directly on the page */}
             {showDexoWelcome && (() => {
                 const hasSnap = !!activeProject.agentStaffSnapshot;
                 const summary = activeProject.agentStaffSnapshot?.summary?.trim() ?? '';
@@ -851,11 +851,11 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                 }> = [
                     {
                         color: '#94a3b8',
-                        title: `Welcome back — ${activeProject.name}`,
+                        title: `Welcome back â€” ${activeProject.name}`,
                         subtitle: 'Your AI co-founder is ready',
                         body: hasSnap
                             ? `Your AI team has researched Strategy, Market Intelligence, Product, Finance, and Growth. Scroll down to see what was found and ask Dexo to explain anything or recommend next steps.`
-                            : `This is your Executive Overview for ${activeProject.name}. Run a Staff Sync to activate your AI team — Dexo will research your venture across 5 desks and brief you daily.`,
+                            : `This is your Executive Overview for ${activeProject.name}. Run a Staff Sync to activate your AI team â€” Dexo will research your venture across 5 desks and brief you daily.`,
                         cta: hasSnap ? null : 'Run Staff Sync now',
                         ctaAction: hasSnap ? null : () => { setShowDexoWelcome(false); runAgentStaffSync(); },
                     },
@@ -863,10 +863,10 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         color: '#94a3b8',
                         title: 'Here is what your AI team found',
                         subtitle: 'Executive research summary',
-                        body: summary.slice(0, 360) + (summary.length > 360 ? '…' : ''),
+                        body: summary.slice(0, 360) + (summary.length > 360 ? 'â€¦' : ''),
                         cta: 'Get full briefing from Dexo',
                         ctaAction: () => {
-                            setDexoBootstrap({ title: `Full Briefing — ${activeProject.name}`, detail: summary, sourceRole: 'ceo' as const, requiredInfo: [], userMessage: `Give me a complete co-founder briefing for ${activeProject.name}. What did each desk find? What are the top 3 actions I should take right now?` });
+                            setDexoBootstrap({ title: `Full Briefing â€” ${activeProject.name}`, detail: summary, sourceRole: 'ceo' as const, requiredInfo: [], userMessage: `Give me a complete co-founder briefing for ${activeProject.name}. What did each desk find? What are the top 3 actions I should take right now?` });
                             setShowDexoWelcome(false);
                             switchRoom('dexo');
                         },
@@ -883,7 +883,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         color: '#f59e0b',
                         title: `${attn} thing${attn > 1 ? 's' : ''} need${attn === 1 ? 's' : ''} your decision`,
                         subtitle: 'Flagged by your AI team',
-                        body: staffAttentionPending.slice(0, 2).map(a => `• ${a.title}\n  ${a.message.slice(0, 90)}${a.message.length > 90 ? '…' : ''}`).join('\n\n'),
+                        body: staffAttentionPending.slice(0, 2).map(a => `â€¢ ${a.title}\n  ${a.message.slice(0, 90)}${a.message.length > 90 ? 'â€¦' : ''}`).join('\n\n'),
                         cta: 'Ask Dexo about these',
                         ctaAction: () => {
                             if (staffAttentionPending[0]) setDexoBootstrap(buildDexoStaffAttentionBootstrap(staffAttentionPending[0]));
@@ -895,7 +895,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         color: '#94a3b8',
                         title: 'Do you have anything specific in mind?',
                         subtitle: 'Dexo is ready to help',
-                        body: 'Ask Dexo anything — what should I change, what are the risks, what should I build next? Dexo has your full venture context and will give you a direct, grounded answer.',
+                        body: 'Ask Dexo anything â€” what should I change, what are the risks, what should I build next? Dexo has your full venture context and will give you a direct, grounded answer.',
                         cta: 'Ask Dexo now',
                         ctaAction: () => { setShowDexoWelcome(false); switchRoom('dexo'); },
                     },
@@ -959,7 +959,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     onClick={() => { window.speechSynthesis?.cancel(); setDexoSpeaking(false); setShowDexoWelcome(false); }}
                                     className="shrink-0 flex h-8 w-8 items-center justify-center rounded-xl transition hover:bg-white/[0.08]"
                                     style={{ color: 'rgba(255,255,255,0.35)' }}
-                                >✕</button>
+                                >âœ•</button>
                             </div>
 
                             {/* Body */}
@@ -977,7 +977,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     style={{ color: step.color }}
                                 >
                                     <Mic className="h-3.5 w-3.5" />
-                                    {dexoSpeaking ? 'Dexo is speaking…' : 'Hear Dexo read this'}
+                                    {dexoSpeaking ? 'Dexo is speakingâ€¦' : 'Hear Dexo read this'}
                                 </button>
                             </div>
 
@@ -1003,7 +1003,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                             onClick={() => { window.speechSynthesis?.cancel(); setDexoSpeaking(false); setDexoWelcomeStep(s => s - 1); }}
                                             className="rounded-xl border px-4 py-2 text-[12px] font-medium transition hover:bg-white/[0.06]"
                                             style={{ borderColor: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.5)' }}
-                                        >← Back</button>
+                                        >â† Back</button>
                                     )}
                                     {!isLast ? (
                                         <button
@@ -1011,14 +1011,14 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                             onClick={() => { window.speechSynthesis?.cancel(); setDexoSpeaking(false); setDexoWelcomeStep(s => s + 1); }}
                                             className="rounded-xl px-5 py-2 text-[12px] font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
                                             style={{ background: step.color, color: '#fff' }}
-                                        >Next →</button>
+                                        >Next â†’</button>
                                     ) : (
                                         <button
                                             type="button"
                                             onClick={() => { window.speechSynthesis?.cancel(); setDexoSpeaking(false); setShowDexoWelcome(false); }}
                                             className="rounded-xl px-5 py-2 text-[12px] font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
                                             style={{ background: step.color, color: '#fff' }}
-                                        >Got it — show me the overview</button>
+                                        >Got it â€” show me the overview</button>
                                     )}
                                 </div>
                                 {step.cta && step.ctaAction && (
@@ -1039,14 +1039,14 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 onClick={() => { window.speechSynthesis?.cancel(); setDexoSpeaking(false); setShowDexoWelcome(false); }}
                                 className="block w-full pb-5 text-center text-[10px] transition hover:opacity-70"
                                 style={{ color: 'rgba(255,255,255,0.22)' }}
-                            >Skip — take me to the overview</button>
+                            >Skip â€” take me to the overview</button>
                         </div>
                     </div>
                 );
             })()}
 
             {/* HEADER */}
-            <header className="border-b" style={{ background: '#111117', borderColor: 'rgba(255,255,255,0.07)' }}>
+            <header className="border-b" style={{ background: '#141416', borderColor: 'rgba(255,255,255,0.07)' }}>
                 <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 sm:px-6 py-3 sm:py-4">
                     <div className="flex items-center gap-2 sm:gap-4 min-w-0">
                         <div
@@ -1067,7 +1067,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     </span>
                                     Executive overview
                                 </span>
-                                <span>·</span>
+                                <span>Â·</span>
                                 <span>{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}</span>
                             </div>
                         </div>
@@ -1095,7 +1095,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             }}
                         >
                             <RefreshCw className={`h-3.5 w-3.5 ${agentSyncRunning ? 'animate-spin' : ''}`} />
-                            <span className="hidden sm:inline">{agentSyncRunning ? 'Syncing…' : 'Sync Staff'}</span>
+                            <span className="hidden sm:inline">{agentSyncRunning ? 'Syncingâ€¦' : 'Sync Staff'}</span>
                         </button>
                         <WorkspaceAiButton />
                     </div>
@@ -1150,12 +1150,12 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                 {activeTab === 'overview' && (
                     <div className="flex flex-col gap-4">
 
-                        {/* ── DEXO RESEARCH GUIDE ── */}
+                        {/* â”€â”€ DEXO RESEARCH GUIDE â”€â”€ */}
 
-                        {/* Popup guide overlay — renders on top of page via fixed positioning */}
+                        {/* Popup guide overlay â€” renders on top of page via fixed positioning */}
                         {openGuideKey && activeProject.agentStaffSnapshot && (() => {
                             const DESK_DEFS = [
-                                { key: 'ceo',        label: 'Strategic Direction', role: 'CEO',             covers: 'Vision, mission, and competitive positioning',        snap: activeProject.agentStaffSnapshot!.desks.ceo,        color: THEME.chart.violet,  room: 'ceo'        as const, icon: Lightbulb, guide: "Use this to set or challenge your strategy. It shapes every other decision — read it first when you're unsure about direction."                    },
+                                { key: 'ceo',        label: 'Strategic Direction', role: 'CEO',             covers: 'Vision, mission, and competitive positioning',        snap: activeProject.agentStaffSnapshot!.desks.ceo,        color: THEME.chart.violet,  room: 'ceo'        as const, icon: Lightbulb, guide: "Use this to set or challenge your strategy. It shapes every other decision â€” read it first when you're unsure about direction."                    },
                                 { key: 'scout',      label: 'Market Intelligence', role: 'Scout',           covers: 'Competitor signals, trends, and market opportunities', snap: activeProject.agentStaffSnapshot!.desks.scout,      color: THEME.chart.blue,    room: 'scout'      as const, icon: Globe,     guide: 'Use this to spot threats before they hit and validate your market assumptions. Check it before any competitive or go-to-market decision.'             },
                                 { key: 'pm',         label: 'Product Insights',    role: 'Product Manager', covers: 'Roadmap priorities, features, and user problems',      snap: activeProject.agentStaffSnapshot!.desks.pm,         color: THEME.chart.amber,   room: 'pm'         as const, icon: Layers,    guide: 'Use this to decide what to build next and what to cut. It directly informs your roadmap and sprint priorities.'                                      },
                                 { key: 'accountant', label: 'Finance & Runway',    role: 'Accountant',      covers: 'Budget, burn rate, and revenue model signals',        snap: activeProject.agentStaffSnapshot!.desks.accountant, color: THEME.chart.emerald, room: 'accountant' as const, icon: Wallet,    guide: 'Read this before any spending or pricing decision. It shows your real financial constraints and revenue opportunities.'                               },
@@ -1180,7 +1180,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                 <DexoAvatar size="sm" state="idle" pulse={false} />
                                                 <div className="min-w-0">
                                                     <p className="text-[13px] font-semibold" style={{ color: THEME.text.primary }}>Dexo Co-Founder Guide</p>
-                                                    <p className="text-[11px] font-medium" style={{ color: d.color }}>{d.label} · {d.role}</p>
+                                                    <p className="text-[11px] font-medium" style={{ color: d.color }}>{d.label} Â· {d.role}</p>
                                                 </div>
                                             </div>
                                             <button
@@ -1189,7 +1189,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                 className="shrink-0 flex h-7 w-7 items-center justify-center rounded-lg text-[13px] font-bold transition hover:bg-white/10"
                                                 style={{ color: THEME.text.muted }}
                                             >
-                                                ✕
+                                                âœ•
                                             </button>
                                         </div>
 
@@ -1213,7 +1213,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                     type="button"
                                                     onClick={() => {
                                                         setDexoBootstrap({
-                                                            title: `${d.label} Finding — ${activeProject.name}`,
+                                                            title: `${d.label} Finding â€” ${activeProject.name}`,
                                                             detail: d.snap!.trim(),
                                                             sourceRole: d.key as 'ceo'|'pm'|'accountant'|'cmo'|'scout',
                                                             requiredInfo: [],
@@ -1226,7 +1226,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                     style={{ background: `linear-gradient(135deg, ${d.color}28, rgba(116,86,255,0.22))`, border: `1px solid ${d.color}35`, color: THEME.text.primary }}
                                                 >
                                                     <Sparkles className="h-4 w-4 shrink-0" style={{ color: d.color }} />
-                                                    Ask Dexo about this finding →
+                                                    Ask Dexo about this finding â†’
                                                 </button>
                                             ) : (
                                                 <p className="text-center text-[11px]" style={{ color: THEME.text.muted }}>
@@ -1242,12 +1242,12 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         {activeProject.agentStaffSnapshot ? (
                             <div
                                 className="overflow-hidden rounded-xl border"
-                                style={{ borderColor: 'rgba(255,255,255,0.07)', background: '#19181f' }}
+                                style={{ borderColor: 'rgba(255,255,255,0.07)', background: '#1e1e22' }}
                             >
                                 {/* Section header */}
                                 <div
                                     className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-4 sm:px-6"
-                                    style={{ borderColor: 'rgba(255,255,255,0.07)', background: '#1c1b24' }}
+                                    style={{ borderColor: 'rgba(255,255,255,0.07)', background: '#222227' }}
                                 >
                                     <div className="flex min-w-0 items-center gap-3">
                                         <div
@@ -1259,7 +1259,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         <div className="min-w-0">
                                             <h2 className="text-[13px] font-semibold" style={{ color: THEME.text.primary }}>Dexo Research Guide</h2>
                                             <p className="truncate text-[10px]" style={{ color: THEME.text.muted }}>
-                                                AI co-founder briefing · 5 desks{lastStaffSyncLabel ? ` · ${lastStaffSyncLabel}` : ''}
+                                                AI co-founder briefing Â· 5 desks{lastStaffSyncLabel ? ` Â· ${lastStaffSyncLabel}` : ''}
                                             </p>
                                         </div>
                                     </div>
@@ -1268,11 +1268,11 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                             type="button"
                                             onClick={() => {
                                                 setDexoBootstrap({
-                                                    title: `Full Research Briefing — ${activeProject.name}`,
+                                                    title: `Full Research Briefing â€” ${activeProject.name}`,
                                                     detail: activeProject.agentStaffSnapshot!.summary ?? '',
                                                     sourceRole: 'ceo',
                                                     requiredInfo: [],
-                                                    userMessage: `Give me a complete briefing on all the latest Staff Sync research for ${activeProject.name}. Walk through each desk — Strategy, Market Intelligence, Product, Finance, Growth — and give me the top 3 actions I should take right now.`,
+                                                    userMessage: `Give me a complete briefing on all the latest Staff Sync research for ${activeProject.name}. Walk through each desk â€” Strategy, Market Intelligence, Product, Finance, Growth â€” and give me the top 3 actions I should take right now.`,
                                                 });
                                                 switchRoom('dexo');
                                             }}
@@ -1291,23 +1291,23 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                             style={{ borderColor: THEME.border.default, background: 'rgba(255,255,255,0.05)', color: THEME.text.muted, opacity: agentSyncRunning ? 0.5 : 1 }}
                                         >
                                             <RefreshCw className={`h-3 w-3 shrink-0 ${agentSyncRunning ? 'animate-spin' : ''}`} />
-                                            <span className="hidden sm:inline">{agentSyncRunning ? 'Syncing…' : 'Refresh'}</span>
+                                            <span className="hidden sm:inline">{agentSyncRunning ? 'Syncingâ€¦' : 'Refresh'}</span>
                                         </button>
                                     </div>
                                 </div>
 
-                                {/* Desk cards — 1 col mobile, 2 col sm+ */}
+                                {/* Desk cards â€” 1 col mobile, 2 col sm+ */}
                                 <div className="grid gap-px sm:grid-cols-2" style={{ background: 'rgba(255,255,255,0.05)' }}>
                                     {([
-                                        { key: 'ceo',        label: 'Strategic Direction', role: 'CEO',             sub: 'Vision · positioning · strategy',       snap: activeProject.agentStaffSnapshot.desks.ceo,        color: THEME.chart.violet,  room: 'ceo'        as const, icon: Lightbulb },
-                                        { key: 'scout',      label: 'Market Intelligence', role: 'Scout',           sub: 'Competitors · trends · opportunities',  snap: activeProject.agentStaffSnapshot.desks.scout,      color: THEME.chart.blue,    room: 'scout'      as const, icon: Globe     },
-                                        { key: 'pm',         label: 'Product Insights',    role: 'Product Manager', sub: 'Roadmap · features · user problems',    snap: activeProject.agentStaffSnapshot.desks.pm,         color: THEME.chart.amber,   room: 'pm'         as const, icon: Layers    },
-                                        { key: 'accountant', label: 'Finance & Runway',    role: 'Accountant',      sub: 'Budget · burn · revenue signals',       snap: activeProject.agentStaffSnapshot.desks.accountant, color: THEME.chart.emerald, room: 'accountant' as const, icon: Wallet    },
-                                        { key: 'cmo',        label: 'Growth & GTM',        role: 'CMO',             sub: 'Channels · marketing · acquisition',    snap: activeProject.agentStaffSnapshot.desks.cmo,        color: THEME.chart.rose,    room: 'cmo'        as const, icon: Megaphone },
+                                        { key: 'ceo',        label: 'Strategic Direction', role: 'CEO',             sub: 'Vision Â· positioning Â· strategy',       snap: activeProject.agentStaffSnapshot.desks.ceo,        color: THEME.chart.violet,  room: 'ceo'        as const, icon: Lightbulb },
+                                        { key: 'scout',      label: 'Market Intelligence', role: 'Scout',           sub: 'Competitors Â· trends Â· opportunities',  snap: activeProject.agentStaffSnapshot.desks.scout,      color: THEME.chart.blue,    room: 'scout'      as const, icon: Globe     },
+                                        { key: 'pm',         label: 'Product Insights',    role: 'Product Manager', sub: 'Roadmap Â· features Â· user problems',    snap: activeProject.agentStaffSnapshot.desks.pm,         color: THEME.chart.amber,   room: 'pm'         as const, icon: Layers    },
+                                        { key: 'accountant', label: 'Finance & Runway',    role: 'Accountant',      sub: 'Budget Â· burn Â· revenue signals',       snap: activeProject.agentStaffSnapshot.desks.accountant, color: THEME.chart.emerald, room: 'accountant' as const, icon: Wallet    },
+                                        { key: 'cmo',        label: 'Growth & GTM',        role: 'CMO',             sub: 'Channels Â· marketing Â· acquisition',    snap: activeProject.agentStaffSnapshot.desks.cmo,        color: THEME.chart.rose,    room: 'cmo'        as const, icon: Megaphone },
                                     ] as const).map(({ key, label, role, sub, snap, color, room, icon: DeskIcon }) => {
                                         const hasSnap = !!snap?.trim();
                                         return (
-                                            <div key={key} className="flex flex-col p-4 sm:p-5" style={{ background: '#19181f' }}>
+                                            <div key={key} className="flex flex-col p-4 sm:p-5" style={{ background: '#1e1e22' }}>
                                                 {/* Card header row */}
                                                 <div className="flex items-start justify-between gap-2">
                                                     <div className="flex min-w-0 items-center gap-2.5">
@@ -1328,7 +1328,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                         className="shrink-0 rounded-lg border px-2 py-1 text-[10px] font-semibold transition-all hover:opacity-80"
                                                         style={{ borderColor: `${color}30`, background: `${color}0E`, color }}
                                                     >
-                                                        Open →
+                                                        Open â†’
                                                     </button>
                                                 </div>
 
@@ -1341,17 +1341,17 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                         <>
                                                             <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.12em]" style={{ color }}>Research Finding</p>
                                                             <p className="text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>
-                                                                {snap!.trim().length > 240 ? `${snap!.trim().slice(0, 237)}…` : snap!.trim()}
+                                                                {snap!.trim().length > 240 ? `${snap!.trim().slice(0, 237)}â€¦` : snap!.trim()}
                                                             </p>
                                                         </>
                                                     ) : (
                                                         <p className="text-[11px] italic" style={{ color: THEME.text.muted }}>
-                                                            No research yet — run Staff Sync.
+                                                            No research yet â€” run Staff Sync.
                                                         </p>
                                                     )}
                                                 </div>
 
-                                                {/* Action row — wraps on narrow screens */}
+                                                {/* Action row â€” wraps on narrow screens */}
                                                 <div className="mt-4 flex flex-wrap items-center gap-2">
                                                     <button
                                                         type="button"
@@ -1367,7 +1367,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                             type="button"
                                                             onClick={() => {
                                                                 setDexoBootstrap({
-                                                                    title: `${label} Finding — ${activeProject.name}`,
+                                                                    title: `${label} Finding â€” ${activeProject.name}`,
                                                                     detail: snap!.trim(),
                                                                     sourceRole: key as 'ceo'|'pm'|'accountant'|'cmo'|'scout',
                                                                     requiredInfo: [],
@@ -1405,7 +1405,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                 </div>
                                                 <p className="text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>
                                                     {activeProject.agentStaffSnapshot.summary.trim().length > 300
-                                                        ? `${activeProject.agentStaffSnapshot.summary.trim().slice(0, 297)}…`
+                                                        ? `${activeProject.agentStaffSnapshot.summary.trim().slice(0, 297)}â€¦`
                                                         : activeProject.agentStaffSnapshot.summary.trim()}
                                                 </p>
                                             </div>
@@ -1413,7 +1413,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                 type="button"
                                                 onClick={() => {
                                                     setDexoBootstrap({
-                                                        title: `Executive Synthesis — ${activeProject.name}`,
+                                                        title: `Executive Synthesis â€” ${activeProject.name}`,
                                                         detail: activeProject.agentStaffSnapshot!.summary ?? '',
                                                         sourceRole: 'ceo',
                                                         requiredInfo: [],
@@ -1425,7 +1425,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                 style={{ borderColor: 'rgba(116,86,255,0.28)', background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}
                                             >
                                                 <Sparkles className="h-3 w-3 shrink-0" />
-                                                Unpack with Dexo →
+                                                Unpack with Dexo â†’
                                             </button>
                                         </div>
                                     </div>
@@ -1453,13 +1453,13 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.14)', color: THEME.accent.primary, opacity: agentSyncRunning ? 0.6 : 1 }}
                                 >
                                     <RefreshCw className={`h-4 w-4 shrink-0 ${agentSyncRunning ? 'animate-spin' : ''}`} />
-                                    {agentSyncRunning ? 'Analysing…' : 'Run Staff Sync now'}
+                                    {agentSyncRunning ? 'Analysingâ€¦' : 'Run Staff Sync now'}
                                 </button>
                             </div>
                         )}
 
 
-                        {/* ── KPI COMMAND STRIP ── */}
+                        {/* â”€â”€ KPI COMMAND STRIP â”€â”€ */}
                         <div
                             className="grid grid-cols-2 divide-x overflow-hidden rounded-2xl border lg:grid-cols-4"
                             style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.03)' }}
@@ -1468,7 +1468,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 {
                                     label: foundationSparse ? 'Setup status' : 'Execution score',
                                     value: foundationSparse ? 'Needed' : `${animatedScore}%`,
-                                    sub: foundationSparse ? 'Add venture data to unlock' : 'Strategy · phases · priorities',
+                                    sub: foundationSparse ? 'Add venture data to unlock' : 'Strategy Â· phases Â· priorities',
                                     icon: Target,
                                     accent: THEME.chart.violet,
                                 },
@@ -1493,7 +1493,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         : syncAgeMinutes < 1440 ? `${Math.floor(syncAgeMinutes / 60)}h ago`
                                         : `${Math.floor(syncAgeMinutes / 1440)}d ago`
                                         : 'Never synced',
-                                    sub: staffSyncAt ? lastStaffSyncLabel ?? '—' : 'Run sync to populate desks',
+                                    sub: staffSyncAt ? lastStaffSyncLabel ?? 'â€”' : 'Run sync to populate desks',
                                     icon: Clock,
                                     accent: THEME.chart.amber,
                                 },
@@ -1514,14 +1514,14 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             ))}
                         </div>
 
-                        {/* ── VENTURE CONTEXT + COMMAND CENTER ── */}
+                        {/* â”€â”€ VENTURE CONTEXT + COMMAND CENTER â”€â”€ */}
                         <div className="grid gap-3 sm:gap-4 lg:grid-cols-[1fr_300px]">
-                            {/* LEFT — Research context */}
+                            {/* LEFT â€” Research context */}
                             <div
                                 className="flex flex-col gap-4 overflow-hidden rounded-2xl border p-5"
                                 style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
                             >
-                                {/* Active research focus — user-defined, drives all AI research */}
+                                {/* Active research focus â€” user-defined, drives all AI research */}
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="min-w-0">
                                         <p className="font-mono text-[9px] uppercase tracking-[0.18em]" style={{ color: 'rgba(255,255,255,0.25)' }}>
@@ -1538,7 +1538,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                             </>
                                         ) : (
                                             <p className="mt-1 text-[13px]" style={{ color: THEME.text.muted }}>
-                                                No focus set — Dexo runs full-stack research
+                                                No focus set â€” Dexo runs full-stack research
                                             </p>
                                         )}
                                     </div>
@@ -1554,7 +1554,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
 
                                 <div className="h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
 
-                                {/* Today's research output — 3 lines max, truncated */}
+                                {/* Today's research output â€” 3 lines max, truncated */}
                                 {staffFocusLines.length > 0 ? (
                                     <div>
                                         <p className="mb-2 font-mono text-[9px] uppercase tracking-[0.18em]" style={{ color: 'rgba(255,255,255,0.25)' }}>
@@ -1564,7 +1564,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                             {staffFocusLines.slice(0, 3).map((line, i) => (
                                                 <li key={i} className="flex items-start gap-2 text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
                                                     <span className="mt-[5px] h-1 w-1 shrink-0 rounded-full" style={{ background: THEME.accent.primary }} />
-                                                    {line.length > 90 ? `${line.slice(0, 87)}…` : line}
+                                                    {line.length > 90 ? `${line.slice(0, 87)}â€¦` : line}
                                                 </li>
                                             ))}
                                         </ul>
@@ -1572,7 +1572,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 ) : (
                                     <div className="flex items-center justify-between gap-3">
                                         <p className="text-[12px]" style={{ color: THEME.text.muted }}>
-                                            No research yet — run Staff Sync to generate insights.
+                                            No research yet â€” run Staff Sync to generate insights.
                                         </p>
                                         <button
                                             type="button"
@@ -1587,13 +1587,13 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     </div>
                                 )}
 
-                                {/* Pending items — title only, no verbose AI text */}
+                                {/* Pending items â€” title only, no verbose AI text */}
                                 {staffAttentionPending.length > 0 && (
                                     <>
                                         <div className="h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
                                         <div>
                                             <p className="mb-1.5 font-mono text-[9px] uppercase tracking-[0.18em]" style={{ color: 'rgba(255,255,255,0.25)' }}>
-                                                Pending · {staffAttentionPending.length}
+                                                Pending Â· {staffAttentionPending.length}
                                             </p>
                                             <ul className="space-y-0.5">
                                                 {staffAttentionPending.slice(0, 3).map((a) => (
@@ -1607,7 +1607,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                                 {a.title}
                                                             </span>
                                                             <span className="shrink-0 text-[10px] font-medium opacity-0 transition-opacity group-hover:opacity-100" style={{ color: '#94a3b8' }}>
-                                                                Ask Dexo →
+                                                                Ask Dexo â†’
                                                             </span>
                                                         </button>
                                                     </li>
@@ -1618,7 +1618,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 )}
                             </div>
 
-                            {/* RIGHT — Command center */}
+                            {/* RIGHT â€” Command center */}
                             <div className="flex flex-col gap-4">
                                 {/* Health ring */}
                                 <div
@@ -1721,7 +1721,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             </div>
                         </div>
 
-                        {/* ── OPERATIONS ROW (living office + delivery) ── */}
+                        {/* â”€â”€ OPERATIONS ROW (living office + delivery) â”€â”€ */}
                         {((livingOffice && livingOffice.brief.greeting !== 'No venture selected.') || upcomingEvents.length > 0 || kanbanTasks.length > 0) && (
                             <div className="grid gap-5 lg:grid-cols-3">
                                 {/* Operational brief */}
@@ -1757,7 +1757,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     >
                                         <div className="mb-3 flex items-center justify-between">
                                             <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>Upcoming</p>
-                                            <button type="button" onClick={() => switchRoom('calendar')} className="text-[10px] font-medium" style={{ color: THEME.accent.info }}>View all →</button>
+                                            <button type="button" onClick={() => switchRoom('calendar')} className="text-[10px] font-medium" style={{ color: THEME.accent.info }}>View all â†’</button>
                                         </div>
                                         <ul className="space-y-2.5">
                                             {upcomingEvents.slice(0, 4).map((ev, idx) => (
@@ -1768,7 +1768,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                     <div>
                                                         <p className="text-[12px] font-medium leading-snug" style={{ color: THEME.text.primary }}>{ev.title}</p>
                                                         <p className="text-[10px]" style={{ color: THEME.text.muted }}>
-                                                            {new Date(ev.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · {ev.type}
+                                                            {new Date(ev.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} Â· {ev.type}
                                                         </p>
                                                     </div>
                                                 </li>
@@ -1785,7 +1785,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     >
                                         <div className="mb-3 flex items-center justify-between">
                                             <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>Delivery board</p>
-                                            <button type="button" onClick={() => switchRoom('pm')} className="text-[10px] font-medium" style={{ color: THEME.accent.info }}>Open PM →</button>
+                                            <button type="button" onClick={() => switchRoom('pm')} className="text-[10px] font-medium" style={{ color: THEME.accent.info }}>Open PM â†’</button>
                                         </div>
                                         <div className="grid grid-cols-2 gap-2">
                                             {([['To do', kanbanCounts.todo, THEME.text.muted], ['In progress', kanbanCounts.in_progress, THEME.chart.amber], ['Next up', kanbanCounts.next, THEME.chart.blue], ['Done', kanbanCounts.completed, THEME.chart.emerald]] as const).map(([label, n, color]) => (
@@ -1811,7 +1811,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             </div>
                         )}
 
-                        {/* ── AI TOOLS ── */}
+                        {/* â”€â”€ AI TOOLS â”€â”€ */}
                         <div
                             className="overflow-hidden rounded-2xl border"
                             style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
@@ -1841,7 +1841,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             </div>
                         </div>
 
-                        {/* ── QUICK ACTIONS ── */}
+                        {/* â”€â”€ QUICK ACTIONS â”€â”€ */}
                         <div
                             className="overflow-hidden rounded-2xl border"
                             style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
@@ -1968,7 +1968,7 @@ function PortfolioView({
     return (
         <div className="min-h-screen w-full pb-24" style={{ background: THEME.bg.primary }}>
 
-            {/* ─── COMMAND HEADER ─────────────────────────────────── */}
+            {/* â”€â”€â”€ COMMAND HEADER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <header className="border-b px-6 py-5" style={{ borderColor: THEME.border.subtle }}>
                 <div className="mx-auto max-w-7xl flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
@@ -1978,7 +1978,7 @@ function PortfolioView({
                         <div>
                             <h1 className="text-xl font-semibold tracking-tight" style={{ color: THEME.text.primary }}>Executive Overview</h1>
                             <p className="text-[11px]" style={{ color: THEME.text.muted }}>
-                                AI Co-Founder Command Center · {ventureCount} venture{ventureCount !== 1 ? 's' : ''} · {synced} synced
+                                AI Co-Founder Command Center Â· {ventureCount} venture{ventureCount !== 1 ? 's' : ''} Â· {synced} synced
                             </p>
                         </div>
                     </div>
@@ -1992,14 +1992,14 @@ function PortfolioView({
 
             <main className="mx-auto max-w-7xl flex flex-col gap-8 px-3 sm:px-6 py-4 sm:py-6">
 
-                {/* ── Morning Intel Brief ── */}
+                {/* â”€â”€ Morning Intel Brief â”€â”€ */}
                 <section>
                     <div className="mb-4 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
                             <span className="text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: '#22d3ee' }}>Daily Intel</span>
                             <span className="text-sm font-semibold" style={{ color: THEME.text.primary }}>Morning Intelligence Brief</span>
                         </div>
-                        <span className="rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider" style={{ borderColor: 'rgba(6,182,212,0.25)', color: '#22d3ee' }}>Tavily · live</span>
+                        <span className="rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider" style={{ borderColor: 'rgba(6,182,212,0.25)', color: '#22d3ee' }}>Tavily Â· live</span>
                     </div>
                     <PortfolioDailyIntelSection allProjects={allProjects} onOpenVenture={setActiveProject} />
                     {allProjects.length === 0 && (
@@ -2010,7 +2010,7 @@ function PortfolioView({
                             <div className="max-w-sm">
                                 <p className="font-semibold" style={{ color: THEME.text.primary }}>No ventures yet</p>
                                 <p className="mt-1.5 text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
-                                    Create a venture and run a Staff Sync — Dexo will pull live market research from the web and generate a daily briefing for it here.
+                                    Create a venture and run a Staff Sync â€” Dexo will pull live market research from the web and generate a daily briefing for it here.
                                 </p>
                             </div>
                             {onNewVenture && (
@@ -2022,7 +2022,7 @@ function PortfolioView({
                     )}
                 </section>
 
-                {/* ── AI Research Desk Briefing ── */}
+                {/* â”€â”€ AI Research Desk Briefing â”€â”€ */}
                 {leadingVenture?.agentStaffSnapshot && (
                     <section>
                         <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
@@ -2046,12 +2046,12 @@ function PortfolioView({
 
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                             {([
-                                { key: 'scout',      label: 'Market Intelligence',  role: 'Scout',           covers: 'Competitor signals · trends · opportunities', finds: 'Use this to spot threats early and validate market assumptions before committing to any direction.',      color: THEME.chart.blue,    room: 'scout'      as const, icon: Globe     },
-                                { key: 'ceo',        label: 'Strategic Direction',  role: 'CEO',             covers: 'Mission · vision · positioning',              finds: 'Use this to set or challenge your strategy — it shapes every other decision across the whole business.',   color: THEME.chart.violet,  room: 'ceo'        as const, icon: Lightbulb },
-                                { key: 'pm',         label: 'Product Insights',     role: 'Product Manager', covers: 'Roadmap · features · user problems',          finds: 'Use this to decide what ships next and what gets cut. It directly drives your roadmap and sprint focus.',   color: THEME.chart.amber,   room: 'pm'         as const, icon: Layers    },
-                                { key: 'accountant', label: 'Finance & Runway',     role: 'Accountant',      covers: 'Budget · burn · revenue signals',             finds: 'Read this before any spending or pricing call — it shows your real constraints and revenue opportunities.',   color: THEME.chart.emerald, room: 'accountant' as const, icon: Wallet    },
-                                { key: 'cmo',        label: 'Growth & GTM',         role: 'CMO',             covers: 'Marketing · channels · acquisition',          finds: 'Use this to pick your channels and craft messaging before spending anything on marketing or sales.',          color: THEME.chart.rose,    room: 'cmo'        as const, icon: Megaphone },
-                                { key: 'summary',    label: 'Executive Synthesis',  role: 'Chief of Staff',  covers: 'Cross-desk synthesis · executive brief',      finds: 'Read this first — it synthesizes all six desks into one brief. The fastest way to see the full picture.',    color: THEME.accent.primary, room: null,                  icon: Cpu       },
+                                { key: 'scout',      label: 'Market Intelligence',  role: 'Scout',           covers: 'Competitor signals Â· trends Â· opportunities', finds: 'Use this to spot threats early and validate market assumptions before committing to any direction.',      color: THEME.chart.blue,    room: 'scout'      as const, icon: Globe     },
+                                { key: 'ceo',        label: 'Strategic Direction',  role: 'CEO',             covers: 'Mission Â· vision Â· positioning',              finds: 'Use this to set or challenge your strategy â€” it shapes every other decision across the whole business.',   color: THEME.chart.violet,  room: 'ceo'        as const, icon: Lightbulb },
+                                { key: 'pm',         label: 'Product Insights',     role: 'Product Manager', covers: 'Roadmap Â· features Â· user problems',          finds: 'Use this to decide what ships next and what gets cut. It directly drives your roadmap and sprint focus.',   color: THEME.chart.amber,   room: 'pm'         as const, icon: Layers    },
+                                { key: 'accountant', label: 'Finance & Runway',     role: 'Accountant',      covers: 'Budget Â· burn Â· revenue signals',             finds: 'Read this before any spending or pricing call â€” it shows your real constraints and revenue opportunities.',   color: THEME.chart.emerald, room: 'accountant' as const, icon: Wallet    },
+                                { key: 'cmo',        label: 'Growth & GTM',         role: 'CMO',             covers: 'Marketing Â· channels Â· acquisition',          finds: 'Use this to pick your channels and craft messaging before spending anything on marketing or sales.',          color: THEME.chart.rose,    room: 'cmo'        as const, icon: Megaphone },
+                                { key: 'summary',    label: 'Executive Synthesis',  role: 'Chief of Staff',  covers: 'Cross-desk synthesis Â· executive brief',      finds: 'Read this first â€” it synthesizes all six desks into one brief. The fastest way to see the full picture.',    color: THEME.accent.primary, room: null,                  icon: Cpu       },
                             ] as const).map(({ key, label, role, covers, finds, color, room, icon: DeskIcon }) => {
                                 const snap = key === 'summary'
                                     ? leadingVenture.agentStaffSnapshot.summary
@@ -2083,7 +2083,7 @@ function PortfolioView({
                                                     className="shrink-0 rounded-lg border px-2.5 py-1 text-[10px] font-semibold transition-all hover:opacity-80"
                                                     style={{ borderColor: `${color}35`, background: `${color}12`, color }}
                                                 >
-                                                    Open desk →
+                                                    Open desk â†’
                                                 </button>
                                             )}
                                         </div>
@@ -2098,13 +2098,13 @@ function PortfolioView({
                                                             Research Finding
                                                         </p>
                                                         <p className="text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>
-                                                            {snap!.trim().length > 400 ? `${snap!.trim().slice(0, 397)}…` : snap!.trim()}
+                                                            {snap!.trim().length > 400 ? `${snap!.trim().slice(0, 397)}â€¦` : snap!.trim()}
                                                         </p>
                                                     </div>
                                                     {/* Why it matters reasoning block */}
                                                     <div className="mt-auto space-y-1.5 rounded-xl border px-3 py-2.5" style={{ borderColor: `${color}20`, background: `${color}08` }}>
                                                         <p className="text-[10px] leading-snug" style={{ color: THEME.text.secondary }}>
-                                                            <span className="font-bold" style={{ color }}>How to use this · </span>
+                                                            <span className="font-bold" style={{ color }}>How to use this Â· </span>
                                                             {finds}
                                                         </p>
                                                         <p className="text-[9px]" style={{ color: THEME.text.muted }}>
@@ -2117,7 +2117,7 @@ function PortfolioView({
                                                     <DeskIcon className="h-7 w-7 opacity-15" style={{ color }} />
                                                     <p className="text-[11px] font-medium" style={{ color: THEME.text.muted }}>No research yet</p>
                                                     <p className="max-w-[180px] text-[10px] leading-snug" style={{ color: THEME.text.muted }}>
-                                                        Run Staff Sync · covers {covers}
+                                                        Run Staff Sync Â· covers {covers}
                                                     </p>
                                                 </div>
                                             )}
@@ -2129,7 +2129,7 @@ function PortfolioView({
                     </section>
                 )}
 
-                {/* ── Decision Queue ── */}
+                {/* â”€â”€ Decision Queue â”€â”€ */}
                 {(allAttentionItems.length > 0 || focusLines.length > 0) && (
                     <section>
                         <div className="mb-4 flex items-center gap-3 flex-wrap">
@@ -2180,7 +2180,7 @@ function PortfolioView({
                                                             </div>
                                                             {/* Signal title */}
                                                             <p className="text-[13px] font-semibold leading-snug" style={{ color: THEME.text.primary }}>{a.title}</p>
-                                                            {/* Full message — not truncated */}
+                                                            {/* Full message â€” not truncated */}
                                                             <p className="mt-1.5 text-[11px] leading-relaxed" style={{ color: THEME.text.secondary }}>{a.message}</p>
                                                         </div>
                                                         <button
@@ -2189,7 +2189,7 @@ function PortfolioView({
                                                             className="shrink-0 rounded-xl border px-3 py-2 text-[11px] font-semibold transition-all hover:opacity-80"
                                                             style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.10)', color: THEME.accent.primary }}
                                                         >
-                                                            Discuss →
+                                                            Discuss â†’
                                                         </button>
                                                     </div>
                                                 </div>
@@ -2219,7 +2219,7 @@ function PortfolioView({
                                     </ol>
                                     <div className="border-t px-5 py-3" style={{ borderColor: THEME.border.subtle }}>
                                         <button type="button" onClick={() => leadingVenture && setActiveProject(leadingVenture)} className="text-[11px] font-semibold" style={{ color: THEME.accent.info }}>
-                                            Open {leadingVenture?.name ?? 'venture'} to discuss these →
+                                            Open {leadingVenture?.name ?? 'venture'} to discuss these â†’
                                         </button>
                                     </div>
                                 </div>
@@ -2228,7 +2228,7 @@ function PortfolioView({
                     </section>
                 )}
 
-                {/* ── Venture Workspaces ── */}
+                {/* â”€â”€ Venture Workspaces â”€â”€ */}
                 <section>
                     <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
                         <div className="flex items-center gap-2">
@@ -2277,9 +2277,9 @@ function PortfolioView({
                                                     <StatusBadge status={hasStrategy ? 'active' : 'pending'} />
                                                 </div>
                                                 {excerpt ? (
-                                                    <p className="line-clamp-2 text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>{excerpt.slice(0, 180)}{excerpt.length > 180 ? '…' : ''}</p>
+                                                    <p className="line-clamp-2 text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>{excerpt.slice(0, 180)}{excerpt.length > 180 ? 'â€¦' : ''}</p>
                                                 ) : (
-                                                    <p className="text-[12px]" style={{ color: THEME.text.muted }}>No strategy yet — open CEO desk.</p>
+                                                    <p className="text-[12px]" style={{ color: THEME.text.muted }}>No strategy yet â€” open CEO desk.</p>
                                                 )}
                                                 <div className="flex items-center justify-between gap-2">
                                                     <div className="flex items-center gap-2">
@@ -2330,7 +2330,7 @@ function PortfolioView({
                                                 <div className="min-w-0 flex-1">
                                                     <div className="flex items-center justify-between gap-1 mb-1">
                                                         <p className="text-[11px] font-medium" style={{ color: THEME.text.primary }}>{row.navTitle}</p>
-                                                        <span className="text-[10px] tabular-nums font-semibold" style={{ color: pct === 100 ? accent : THEME.text.muted }}>{stat.total === 0 ? '—' : `${pct}%`}</span>
+                                                        <span className="text-[10px] tabular-nums font-semibold" style={{ color: pct === 100 ? accent : THEME.text.muted }}>{stat.total === 0 ? 'â€”' : `${pct}%`}</span>
                                                     </div>
                                                     <div className="h-1 overflow-hidden rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
                                                         <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${accent}99, ${accent})` }} />
@@ -2356,7 +2356,7 @@ function PortfolioView({
                     </div>
                 </section>
 
-                {/* ── Tools & Workspace Navigator ── */}
+                {/* â”€â”€ Tools & Workspace Navigator â”€â”€ */}
                 <section>
                     <div className="mb-4 flex items-center gap-2">
                         <span className="text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: THEME.text.muted }}>Tools</span>
@@ -2386,7 +2386,7 @@ function PortfolioView({
                         </div>
                         {/* Desk navigator */}
                         <div>
-                            <p className="mb-2.5 text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: THEME.text.muted }}>Desk Navigator — Jump to any room</p>
+                            <p className="mb-2.5 text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: THEME.text.muted }}>Desk Navigator â€” Jump to any room</p>
                             <div className="overflow-hidden rounded-2xl border" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
                                     {([
@@ -2754,3 +2754,4 @@ function DashMessageSection({
 }
 
 export default Dashboard;
+

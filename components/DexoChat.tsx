@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
 import { formatStrategyForContext } from '@/lib/ventureReadableContext';
@@ -11,11 +11,11 @@ import { useTokens } from '@/lib/tokens/useTokens';
 import { TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 
 const THINKING_STEPS = [
-  'Analysing your venture context…',
-  'Checking market signals…',
-  'Cross-referencing strategy…',
-  'Synthesising insights…',
-  'Drafting response…',
+  'Analysing your venture contextâ€¦',
+  'Checking market signalsâ€¦',
+  'Cross-referencing strategyâ€¦',
+  'Synthesising insightsâ€¦',
+  'Drafting responseâ€¦',
 ];
 
 interface Message {
@@ -139,7 +139,7 @@ export function DexoChat() {
     return (
         <div className="flex flex-col h-full bg-brand-bg text-brand-text">
             {/* Header */}
-            <div className="p-6 border-b flex items-center justify-between sticky top-0 z-10" style={{ borderColor: 'rgba(255,255,255,0.07)', background: '#111117' }}>
+            <div className="p-6 border-b flex items-center justify-between sticky top-0 z-10" style={{ borderColor: 'rgba(255,255,255,0.07)', background: '#141416' }}>
                 <div className="flex items-center gap-4">
                     <DexoAvatar size="md" state="idle" />
                     <div>
@@ -162,17 +162,20 @@ export function DexoChat() {
                             </div>
                         )}
 
-                        <div className={`max-w-[75%] p-4 rounded-2xl text-sm leading-relaxed shadow-xl ${msg.role === 'user'
-                                ? 'bg-indigo-600 text-white rounded-tr-sm'
-                                : 'bg-zinc-900 border border-zinc-800 text-zinc-300 rounded-tl-sm'
-                            }`}>
+                        <div
+                            className={`max-w-[75%] p-4 rounded-2xl text-sm leading-relaxed ${msg.role === 'user' ? 'rounded-tr-sm' : 'rounded-tl-sm'}`}
+                            style={msg.role === 'user'
+                                ? { background: 'rgba(255,255,255,0.07)', color: '#f2f2f5' }
+                                : { background: '#1e1e22', border: '1px solid rgba(255,255,255,0.06)', color: '#8c8c9e' }
+                            }
+                        >
                             <div className="whitespace-pre-wrap font-sans">{msg.content}</div>
                             {msg.role === 'assistant' ? <ModelAttribution model={msg.model} /> : null}
                         </div>
 
                         {msg.role === 'user' && (
-                            <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center flex-shrink-0 mt-1">
-                                <div className="w-4 h-4 rounded-full bg-zinc-500" />
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-1" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                <div className="w-3.5 h-3.5 rounded-full" style={{ background: 'rgba(255,255,255,0.25)' }} />
                             </div>
                         )}
                     </div>
@@ -225,3 +228,4 @@ export function DexoChat() {
         </div>
     );
 }
+

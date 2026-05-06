@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -72,7 +72,7 @@ export function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) 
 
     if (formData.isAnalyzing) {
         return (
-            <div className="fixed inset-0 z-[100] bg-[#09090b] flex flex-col items-center justify-center p-10 animate-in fade-in duration-700">
+            <div className="fixed inset-0 z-[100] bg-[#141416] flex flex-col items-center justify-center p-10 animate-in fade-in duration-700">
                 <div className="relative">
                     <div className="w-32 h-32 rounded-full border-2 border-zinc-900 flex items-center justify-center">
                         <Sparkles className="w-12 h-12 text-[#0D9488] animate-pulse" />
@@ -90,14 +90,14 @@ export function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) 
     }
 
     return (
-        <div className="fixed inset-0 z-[100] bg-[#09090b]/90 backdrop-blur-2xl flex items-center justify-center p-6 sm:p-10 animate-in fade-in duration-500">
-            <div className="flex w-full max-w-5xl flex-col overflow-hidden rounded-[2.5rem] border border-zinc-900 bg-[#09090b] shadow-2xl lg:flex-row">
+        <div className="fixed inset-0 z-[100] bg-[#141416]/90 backdrop-blur-2xl flex items-center justify-center p-6 sm:p-10 animate-in fade-in duration-500">
+            <div className="flex w-full max-w-5xl flex-col overflow-hidden rounded-[2.5rem] border border-zinc-900 bg-[#141416] shadow-2xl lg:flex-row">
 
                 {/* Left Sidebar - Progress */}
                 <div className="w-full lg:w-80 bg-zinc-950/50 p-10 border-b lg:border-b-0 lg:border-r border-zinc-900 flex flex-col justify-between">
                     <div>
                         <div className="flex items-center gap-3 mb-12">
-                            <div className="w-8 h-8 bg-zinc-100 rounded-lg flex items-center justify-center text-[#09090b] shadow-lg">
+                            <div className="w-8 h-8 bg-zinc-100 rounded-lg flex items-center justify-center text-[#141416] shadow-lg">
                                 <Briefcase className="w-4 h-4" />
                             </div>
                             <span className="font-bold text-zinc-100 tracking-tight">Deepchox</span>
@@ -120,7 +120,7 @@ export function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) 
                 </div>
 
                 {/* Main Form Area */}
-                <div className="flex-1 p-10 lg:p-16 flex flex-col bg-[#09090b]">
+                <div className="flex-1 p-10 lg:p-16 flex flex-col bg-[#141416]">
                     <div className="flex justify-between items-start mb-12">
                         <div>
                             <p className="text-[#0D9488] font-bold text-[10px] uppercase tracking-[0.3em] mb-2">Step 0{step} / 04</p>
@@ -168,15 +168,15 @@ export function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) 
                                         Strategic intent <span className="font-normal text-zinc-600 normal-case">(required for AI context)</span>
                                     </label>
                                     <p className="text-[13px] leading-relaxed text-zinc-500">
-                                        In 2–4 sentences, cover: <strong className="text-zinc-400">what you are building</strong>,{' '}
+                                        In 2â€“4 sentences, cover: <strong className="text-zinc-400">what you are building</strong>,{' '}
                                         <strong className="text-zinc-400">for whom</strong>, <strong className="text-zinc-400">why now</strong>, and{' '}
-                                        <strong className="text-zinc-400">what success looks like in the next 6–12 months</strong>. This becomes the
+                                        <strong className="text-zinc-400">what success looks like in the next 6â€“12 months</strong>. This becomes the
                                         north star for every desk and the assistant.
                                     </p>
                                     <textarea
                                         value={formData.strategicIntent}
                                         onChange={(e) => setFormData({ ...formData, strategicIntent: e.target.value })}
-                                        placeholder="e.g. We’re building a compliance-first AI cockpit for solo GPs in the UK to run deal flow and LP reporting in one place — launching a closed beta in Q2 with 10 design partners and revenue by Q4."
+                                        placeholder="e.g. Weâ€™re building a compliance-first AI cockpit for solo GPs in the UK to run deal flow and LP reporting in one place â€” launching a closed beta in Q2 with 10 design partners and revenue by Q4."
                                         className="w-full bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 text-lg text-zinc-100 placeholder-zinc-700 focus:outline-none focus:border-zinc-500 transition-all font-medium min-h-[140px] resize-y shadow-inner leading-relaxed"
                                     />
                                 </div>
@@ -212,12 +212,12 @@ export function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) 
                                     <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">
                                         Primary objective <span className="font-normal text-zinc-600 normal-case">(measurable)</span>
                                     </label>
-                                    <p className="text-[13px] text-zinc-500">Concrete outcome or milestone — different from strategic intent above.</p>
+                                    <p className="text-[13px] text-zinc-500">Concrete outcome or milestone â€” different from strategic intent above.</p>
                                     <input
                                         type="text"
                                         value={formData.primaryGoal}
                                         onChange={(e) => setFormData({ ...formData, primaryGoal: e.target.value })}
-                                        placeholder="e.g. 10 paying pilots by Q3, £X MRR, or first regulatory filing submitted"
+                                        placeholder="e.g. 10 paying pilots by Q3, Â£X MRR, or first regulatory filing submitted"
                                         className="w-full bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 text-xl text-zinc-100 placeholder-zinc-800 focus:outline-none focus:border-zinc-500 transition-all font-medium shadow-inner"
                                     />
                                 </div>
@@ -234,7 +234,7 @@ export function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) 
                                                 key={time}
                                                 onClick={() => setFormData({ ...formData, timeline: time })}
                                                 className={`p-6 rounded-2xl border text-sm font-bold uppercase tracking-wider transition-all ${formData.timeline === time
-                                                        ? 'bg-zinc-100 text-[#09090b] border-zinc-100 shadow-xl'
+                                                        ? 'bg-zinc-100 text-[#141416] border-zinc-100 shadow-xl'
                                                         : 'bg-zinc-900/30 border-zinc-800 text-zinc-500 hover:border-zinc-700'
                                                     }`}
                                             >
@@ -257,7 +257,7 @@ export function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) 
                         </button>
                         <button
                             onClick={handleNext}
-                            className="px-10 py-4 bg-zinc-100 text-[#09090b] rounded-2xl font-extrabold text-xs uppercase tracking-[0.2em] shadow-2xl hover:bg-white transition-all flex items-center gap-3 shadow-zinc-950/40 translate-y-0 active:translate-y-1"
+                            className="px-10 py-4 bg-zinc-100 text-[#141416] rounded-2xl font-extrabold text-xs uppercase tracking-[0.2em] shadow-2xl hover:bg-white transition-all flex items-center gap-3 shadow-zinc-950/40 translate-y-0 active:translate-y-1"
                         >
                             {step === totalSteps ? "Synchronize" : "Proceed"}
                             <ArrowRight className="w-4 h-4" />
@@ -277,7 +277,7 @@ function StepIndicator({ current, stepNumber, title, icon }: { current: number, 
     return (
         <div className={`flex items-center gap-5 transition-all duration-500 ${isActive ? 'translate-x-2' : ''}`}>
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all duration-500 ${isCompleted ? 'bg-[#0D9488]/10 border-[#0D9488]/20 text-[#0D9488]' :
-                    isActive ? 'bg-zinc-100 border-zinc-100 text-[#09090b] shadow-lg scale-110 shadow-zinc-950/30' :
+                    isActive ? 'bg-zinc-100 border-zinc-100 text-[#141416] shadow-lg scale-110 shadow-zinc-950/30' :
                         'bg-zinc-900 border-zinc-800 text-zinc-700'
                 }`}>
                 {isCompleted ? <Check className="w-5 h-5" /> : icon}
@@ -289,3 +289,4 @@ function StepIndicator({ current, stepNumber, title, icon }: { current: number, 
         </div>
     );
 }
+

@@ -23,7 +23,7 @@ export function WorkspacePanel({
 }) {
     const content = (
         <div
-            className={`mx-auto w-full max-w-[min(100%,72rem)] px-3 sm:px-5 ${
+            className={`w-full ${
                 fillViewport
                     ? 'flex min-h-0 min-w-0 flex-1 flex-col'
                     : 'shrink-0'

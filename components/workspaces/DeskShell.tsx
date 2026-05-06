@@ -1,11 +1,11 @@
-'use client';
+﻿'use client';
 
 import React, { useEffect, useState } from 'react';
 
 export type DeskShellProps = {
     /** Optional kicker above the title */
     eyebrow?: string;
-    /** Main headline — e.g. "{Venture} · fund intelligence research staff" */
+    /** Main headline â€” e.g. "{Venture} Â· fund intelligence research staff" */
     title: string;
     description?: string;
     /** Renders below description with a light divider (tab pills, etc.) */
@@ -24,7 +24,7 @@ export type DeskShellProps = {
 };
 
 /**
- * Shared desk surface — clean header with role identity, helper copy, optional tabs.
+ * Shared desk surface â€” clean header with role identity, helper copy, optional tabs.
  * The design makes the AI role feel present: the description speaks in first person,
  * the layout gives the content room to breathe.
  */
@@ -50,15 +50,15 @@ export function DeskShell({
             style={{
                 opacity: entered ? 1 : 0,
                 transform: entered ? 'translateY(0)' : 'translateY(6px)',
-                background: '#111117',
+                background: '#141416',
                 border: '1px solid rgba(255,255,255,0.07)',
                 borderRadius: '0.875rem',
             }}
         >
-            {/* ── Desk header ── */}
+            {/* â”€â”€ Desk header â”€â”€ */}
             <header
                 className={`shrink-0 px-5 py-4 sm:px-6 sm:py-5 ${headerClassName ?? ''}`}
-                style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: '#111117' }}
+                style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: '#141416' }}
             >
                 <div className="flex items-start gap-3">
                     <div className={`mt-1 h-10 w-0.5 shrink-0 rounded-full ${headerSpineClassName}`} aria-hidden />
@@ -88,14 +88,14 @@ export function DeskShell({
                 ) : null}
             </header>
 
-            {/* ── Desk body ── */}
+            {/* â”€â”€ Desk body â”€â”€ */}
             <div className={`${bodyFlush ? 'p-0' : 'px-5 py-4 sm:px-6 sm:py-5'} ${bodyClassName ?? ''}`}>
                 {children}
             </div>
 
-            {/* ── Desk footer ── */}
+            {/* â”€â”€ Desk footer â”€â”€ */}
             {footer ? (
-                <div className="shrink-0 px-5 py-3 sm:px-6" style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: '#19181f' }}>
+                <div className="shrink-0 px-5 py-3 sm:px-6" style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: '#1e1e22' }}>
                     {footer}
                 </div>
             ) : null}
@@ -103,7 +103,7 @@ export function DeskShell({
     );
 }
 
-/** Tab control — flat text, no chrome, no box */
+/** Tab control â€” flat text, no chrome, no box */
 export function DeskTabButton({
     active,
     onClick,
@@ -145,3 +145,4 @@ export function DeskEmpty({ children, className }: { children: React.ReactNode; 
         </div>
     );
 }
+
