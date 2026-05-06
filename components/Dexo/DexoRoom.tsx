@@ -821,58 +821,63 @@ export function DexoRoom() {
                     ) : null}
                     
                     {/* â”€â”€ Tab row â”€â”€ */}
-                    <div className="mb-6 flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-6">
+                    <div className="mb-7 flex items-center justify-between gap-4 border-b pb-0" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                        <div className="flex items-center">
                             <button
                                 type="button"
                                 onClick={() => setView('chat')}
-                                className="text-[13px] font-medium transition-colors duration-150"
-                                style={{ color: view === 'chat' ? '#f2f2f5' : '#5c5c6e' }}
-                                onMouseEnter={(e) => { if (view !== 'chat') e.currentTarget.style.color = '#8c8c9e'; }}
-                                onMouseLeave={(e) => { if (view !== 'chat') e.currentTarget.style.color = '#5c5c6e'; }}
+                                className="relative pb-3 pr-6 text-[13px] font-medium transition-colors duration-150"
+                                style={{ color: view === 'chat' ? '#f2f2f5' : 'rgba(255,255,255,0.28)' }}
+                                onMouseEnter={(e) => { if (view !== 'chat') e.currentTarget.style.color = 'rgba(255,255,255,0.55)'; }}
+                                onMouseLeave={(e) => { if (view !== 'chat') e.currentTarget.style.color = 'rgba(255,255,255,0.28)'; }}
                             >
                                 Chat
+                                {view === 'chat' && <span className="absolute bottom-0 left-0 h-[1.5px] w-full rounded-full" style={{ background: '#f2f2f5' }} />}
                             </button>
                             {currentReport && (
                                 <button
                                     type="button"
                                     onClick={() => { overviewNudgeShownRef.current = true; setView('overview'); }}
-                                    className="relative text-[13px] font-medium transition-colors duration-150"
-                                    style={{ color: view === 'overview' ? '#f2f2f5' : '#5c5c6e' }}
-                                    onMouseEnter={(e) => { if (view !== 'overview') e.currentTarget.style.color = '#8c8c9e'; }}
-                                    onMouseLeave={(e) => { if (view !== 'overview') e.currentTarget.style.color = '#5c5c6e'; }}
+                                    className="relative pb-3 pr-6 text-[13px] font-medium transition-colors duration-150"
+                                    style={{ color: view === 'overview' ? '#f2f2f5' : 'rgba(255,255,255,0.28)' }}
+                                    onMouseEnter={(e) => { if (view !== 'overview') e.currentTarget.style.color = 'rgba(255,255,255,0.55)'; }}
+                                    onMouseLeave={(e) => { if (view !== 'overview') e.currentTarget.style.color = 'rgba(255,255,255,0.28)'; }}
                                 >
                                     Overview
+                                    {view === 'overview' && <span className="absolute bottom-0 left-0 h-[1.5px] w-full rounded-full" style={{ background: '#f2f2f5' }} />}
                                     {!overviewNudgeShownRef.current && view !== 'overview' && (
-                                        <span className="absolute -right-2 -top-1 h-1 w-1 rounded-full bg-white/40" />
+                                        <span className="absolute right-4 top-0 h-1 w-1 rounded-full bg-white/40" />
                                     )}
                                 </button>
                             )}
                             <button
                                 type="button"
                                 onClick={() => setView('daily')}
-                                className="text-[13px] font-medium transition-colors duration-150"
-                                style={{ color: view === 'daily' ? '#f2f2f5' : '#5c5c6e' }}
-                                onMouseEnter={(e) => { if (view !== 'daily') e.currentTarget.style.color = '#8c8c9e'; }}
-                                onMouseLeave={(e) => { if (view !== 'daily') e.currentTarget.style.color = '#5c5c6e'; }}
+                                className="relative pb-3 pr-6 text-[13px] font-medium transition-colors duration-150"
+                                style={{ color: view === 'daily' ? '#f2f2f5' : 'rgba(255,255,255,0.28)' }}
+                                onMouseEnter={(e) => { if (view !== 'daily') e.currentTarget.style.color = 'rgba(255,255,255,0.55)'; }}
+                                onMouseLeave={(e) => { if (view !== 'daily') e.currentTarget.style.color = 'rgba(255,255,255,0.28)'; }}
                             >
                                 Research
+                                {view === 'daily' && <span className="absolute bottom-0 left-0 h-[1.5px] w-full rounded-full" style={{ background: '#f2f2f5' }} />}
                             </button>
                             {view === 'chat' && (
                                 <button
                                     type="button"
                                     onClick={resetConversation}
                                     disabled={loading || !activeProject?.id}
-                                    className="text-[13px] transition-colors duration-150 disabled:opacity-25"
-                                    style={{ color: '#3d3d4e' }}
-                                    onMouseEnter={(e) => { e.currentTarget.style.color = '#5c5c6e'; }}
-                                    onMouseLeave={(e) => { e.currentTarget.style.color = '#3d3d4e'; }}
+                                    className="pb-3 pr-6 text-[13px] transition-colors duration-150 disabled:opacity-25"
+                                    style={{ color: 'rgba(255,255,255,0.22)' }}
+                                    onMouseEnter={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.45)'; }}
+                                    onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.22)'; }}
                                 >
                                     New
                                 </button>
                             )}
                         </div>
-                        <TokenDisplay compact={false} showCosts={true} />
+                        <div className="pb-3">
+                            <TokenDisplay compact={false} showCosts={true} />
+                        </div>
                     </div>
 
                     {/* â”€â”€ Mode hint â”€â”€ */}
