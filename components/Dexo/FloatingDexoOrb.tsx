@@ -629,15 +629,15 @@ function FloatingChat({
 
     return (
         <div
-            className="flex w-[min(372px,calc(100vw-1rem))] max-h-[min(500px,calc(100dvh-12rem))] flex-col overflow-hidden rounded-xl border border-zinc-300/90 bg-zinc-50 shadow-[0_20px_50px_rgba(15,23,42,0.18)]"
+            className="flex w-[min(372px,calc(100vw-1rem))] max-h-[min(500px,calc(100dvh-12rem))] flex-col overflow-hidden rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)]" style={{ background: "#1c1c1f", border: "1px solid rgba(255,255,255,0.09)" }}
         >
-            <div className="flex shrink-0 items-center justify-between border-b border-zinc-200/90 bg-gradient-to-b from-white to-zinc-100/95 px-3.5 py-3">
+            <div className="flex shrink-0 items-center justify-between px-3.5 py-3" style={{ background: "#1c1c1f", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
                 <div className="flex min-w-0 items-center gap-2.5">
                     <div
                         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${
                             variant === 'talk'
-                                ? 'border-teal-300/80 bg-teal-50 text-teal-700'
-                                : 'border-zinc-300/90 bg-white text-zinc-600'
+                                ? 'bg-white/[0.07] text-white/60'
+                                : 'bg-white/[0.05] text-white/50'
                         }`}
                     >
                         {variant === 'talk' ? (
@@ -647,11 +647,11 @@ function FloatingChat({
                         )}
                     </div>
                     <div className="min-w-0">
-                        <p className="truncate text-[13px] font-semibold tracking-tight text-zinc-900">
+                        <p className="truncate text-[13px] font-semibold tracking-tight text-white/88">
                             Dexo {variant === 'talk' ? '· Live voice' : ''}
                         </p>
-                        <p className="truncate text-[10px] text-zinc-500">NorthROSC Labs · DeepChox AI</p>
-                        <p className="mt-0.5 truncate text-[10px] font-medium tabular-nums text-teal-700/90">{statusLine}</p>
+                        <p className="truncate text-[10px] text-white/35">NorthROSC Labs · DeepChox AI</p>
+                        <p className="mt-0.5 truncate text-[10px] font-medium tabular-nums text-white/45">{statusLine}</p>
                     </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-0.5">
@@ -669,7 +669,7 @@ function FloatingChat({
                                     },
                                 ]);
                             }}
-                            className="mr-0.5 flex items-center gap-1 rounded-md border border-rose-200 bg-rose-50 px-2 py-1 text-[11px] font-semibold text-rose-800 transition hover:bg-rose-100"
+                            className="mr-0.5 flex items-center gap-1 rounded-md border border-white/[0.10] bg-white/[0.05] px-2 py-1 text-[11px] font-semibold text-white/60 transition hover:bg-white/[0.08]"
                         >
                             <PhoneOff className="h-3 w-3" strokeWidth={2} />
                             End
@@ -678,7 +678,7 @@ function FloatingChat({
                         <button
                             type="button"
                             onClick={resetConversation}
-                            className="rounded-md p-1.5 text-zinc-500 transition hover:bg-zinc-200/80 hover:text-zinc-800"
+                            className="rounded-md p-1.5 text-white/35 transition hover:bg-white/[0.06] hover:text-white/70"
                             title="Start a new chat"
                         >
                             <MessageSquarePlus className="h-3.5 w-3.5" strokeWidth={1.75} />
@@ -706,7 +706,7 @@ function FloatingChat({
                     <button
                         type="button"
                         onClick={onExpand}
-                        className="rounded-md p-1.5 text-zinc-500 transition hover:bg-zinc-200/80 hover:text-zinc-800"
+                        className="rounded-md p-1.5 text-white/35 transition hover:bg-white/[0.06] hover:text-white/70"
                         title="Open full workspace"
                     >
                         <Maximize2 className="h-3.5 w-3.5" strokeWidth={1.75} />
@@ -714,7 +714,7 @@ function FloatingChat({
                     <button
                         type="button"
                         onClick={requestClose}
-                        className="rounded-md p-1.5 text-zinc-500 transition hover:bg-zinc-200/80 hover:text-zinc-800"
+                        className="rounded-md p-1.5 text-white/35 transition hover:bg-white/[0.06] hover:text-white/70"
                         aria-label="Close"
                     >
                         <X className="h-3.5 w-3.5" strokeWidth={1.75} />
@@ -722,10 +722,10 @@ function FloatingChat({
                 </div>
             </div>
 
-            <div className="custom-scrollbar min-h-[100px] flex-1 space-y-2.5 overflow-y-auto bg-zinc-50/90 px-3 py-3 sm:px-3.5">
+            <div className="custom-scrollbar min-h-[100px] flex-1 space-y-2.5 overflow-y-auto px-3 py-3 sm:px-3.5">
                 {messages.length === 0 && variant === 'chat' && (
                     <div className="flex h-full flex-col items-center justify-center px-2 py-12">
-                        <p className="max-w-[248px] text-center text-[12px] leading-relaxed text-zinc-500">
+                        <p className="max-w-[248px] text-center text-[12px] leading-relaxed text-white/35">
                             {activeProject?.id
                                 ? 'Messages stay in context for this venture. Ask for updates, decisions, or a concise read on where things stand.'
                                 : 'Exploring without a saved venture — Dexo helps you clarify ideas. Use New venture when you want a named workspace and full analysis.'}
@@ -737,8 +737,8 @@ function FloatingChat({
                         <div
                             className={`max-w-[88%] px-3 py-2 text-[13px] leading-[1.45] ${
                                 msg.role === 'user'
-                                    ? 'rounded-lg rounded-br-sm border border-zinc-200 bg-white text-zinc-900 shadow-sm'
-                                    : 'rounded-lg rounded-bl-sm border border-zinc-200/80 bg-zinc-100/90 text-zinc-800'
+                                    ? 'rounded-lg rounded-br-sm text-white/85'
+                                    : 'rounded-lg rounded-bl-sm text-white/55'
                             }`}
                         >
                             {msg.text}
@@ -747,14 +747,14 @@ function FloatingChat({
                 ))}
                 {loading && (
                     <div className="flex gap-2">
-                        <div className="rounded-lg border border-zinc-200 bg-white px-3 py-2.5 shadow-sm">
+                        <div className="rounded-lg px-3 py-2.5">
                             <div className="flex items-center gap-2.5">
-                                <div className="rounded-full border border-zinc-200 bg-zinc-50 p-1">
+                                <div className="rounded-full p-1">
                                     <DexoParticleCanvas mode="room" size={28} state="loading" />
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="text-[11px] font-medium text-zinc-800">{DEXO_LOADING_TAGLINES[loadingTick]}</p>
-                                    <p className="text-[10px] text-zinc-500">Generating reply…</p>
+                                    <p className="text-[11px] font-medium text-white/70">{DEXO_LOADING_TAGLINES[loadingTick]}</p>
+                                    <p className="text-[10px] text-white/35">Generating reply…</p>
                                 </div>
                             </div>
                         </div>
@@ -764,24 +764,24 @@ function FloatingChat({
             </div>
 
             {interimTranscript && (
-                <div className="shrink-0 border-t border-zinc-200 bg-white px-3.5 py-1.5">
-                    <p className="truncate text-[11px] text-zinc-500">{interimTranscript}</p>
+                <div className="shrink-0 px-3.5 py-1.5">
+                    <p className="truncate text-[11px] text-white/40">{interimTranscript}</p>
                 </div>
             )}
 
-            <div className="shrink-0 border-t border-zinc-200 bg-white px-3 py-2.5">
+            <div className="shrink-0 px-3 py-2.5">
                 {variant === 'talk' && (
-                    <p className="mb-2 hidden text-[10px] leading-snug text-zinc-500 sm:block">
-                        Mic stays active in the background: you can <span className="font-semibold text-zinc-700">interrupt</span> Dexo while it speaks. Use
-                        headphones to reduce echo. Say <span className="font-semibold text-zinc-700">end session</span> or tap{' '}
-                        <span className="font-semibold text-zinc-700">End</span> when finished.
+                    <p className="mb-2 hidden text-[10px] leading-snug text-white/30 sm:block">
+                        Mic stays active in the background: you can <span className="font-semibold text-white/60">interrupt</span> Dexo while it speaks. Use
+                        headphones to reduce echo. Say <span className="font-semibold text-white/60">end session</span> or tap{' '}
+                        <span className="font-semibold text-white/60">End</span> when finished.
                     </p>
                 )}
                 <div
                     className={`flex items-end gap-2 rounded-lg border px-2 py-1.5 transition-colors ${
                         isListening
-                            ? 'border-teal-300 bg-teal-50/60'
-                            : 'border-zinc-200 bg-zinc-50 focus-within:border-teal-400/80'
+                            ? 'border-white/20'
+                            : 'border-white/[0.09] focus-within:border-white/20'
                     }`}
                 >
                     <button
@@ -799,10 +799,10 @@ function FloatingChat({
                         }}
                         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-colors ${
                             isListening
-                                ? 'bg-teal-600 text-white'
+                                ? 'bg-white/20 text-white'
                                 : isSpeaking
-                                  ? 'bg-teal-100 text-teal-700'
-                                  : 'text-zinc-500 hover:bg-zinc-200 hover:text-zinc-800'
+                                  ? 'bg-white/10 text-white/70'
+                                  : 'text-white/35 hover:bg-white/[0.07] hover:text-white/70'
                         }`}
                     >
                         {isListening ? (
@@ -831,7 +831,7 @@ function FloatingChat({
                                   ? 'Or type a command — same live thread'
                                   : 'Type or use the mic — same thread as Dexo room'
                         }
-                        className="min-h-[32px] min-w-0 flex-1 resize-none border-none bg-transparent px-0.5 py-1.5 text-[13px] text-zinc-900 placeholder:text-zinc-400 focus:outline-none"
+                        className="min-h-[32px] min-w-0 flex-1 resize-none border-none bg-transparent px-0.5 py-1.5 text-[13px] text-white/80 placeholder:text-white/25 focus:outline-none"
                         style={{ maxHeight: '80px', overflowY: 'auto' }}
                     />
 
@@ -839,7 +839,7 @@ function FloatingChat({
                         <button
                             type="button"
                             onClick={stopVoiceOutput}
-                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-200 hover:text-zinc-800"
+                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-white/40 transition hover:bg-white/[0.07] hover:text-white/70"
                         >
                             <Square className="h-3 w-3.5 fill-current" />
                         </button>
@@ -848,7 +848,7 @@ function FloatingChat({
                             type="button"
                             onClick={() => handleSend()}
                             disabled={!inputText.trim() || loading}
-                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-zinc-300 bg-white text-zinc-800 shadow-sm transition hover:border-teal-400 hover:bg-teal-50 disabled:opacity-30"
+                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-white/[0.12] bg-white/[0.06] text-white/70 transition hover:bg-white/[0.10] disabled:opacity-25"
                         >
                             <Send className="h-3.5 w-3.5" strokeWidth={1.75} />
                         </button>
@@ -970,38 +970,38 @@ export function FloatingDexoOrb() {
             {/* Mode picker */}
             {fabPanel === 'menu' && (
                 <div
-                    className="absolute bottom-[calc(100%+12px)] right-0 w-[min(calc(100vw-1.5rem),17.5rem)] rounded-xl border border-zinc-200 bg-gradient-to-b from-white to-zinc-50 p-3 shadow-[0_20px_40px_rgba(15,23,42,0.15)]"
+                    className="absolute bottom-[calc(100%+12px)] right-0 w-[min(calc(100vw-1.5rem),17.5rem)] rounded-xl p-3" style={{ background: "#1c1c1f", border: "1px solid rgba(255,255,255,0.09)", boxShadow: "0 20px 40px rgba(0,0,0,0.5)" }}
                     style={{ animation: 'dexo-chat-enter 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards' }}
                 >
-                    <p className="text-[12px] font-semibold text-zinc-900">How should Dexo help?</p>
-                    <p className="mt-0.5 text-[10px] leading-snug text-zinc-500">
+                    <p className="text-[12px] font-semibold text-white/80">How should Dexo help?</p>
+                    <p className="mt-0.5 text-[10px] leading-snug text-white/30">
                         Chat or live voice — uses your saved venture when you have one, or helps you explore before you name it.
                     </p>
                     <div className="mt-3 flex flex-col gap-2">
                         <button
                             type="button"
                             onClick={() => setFabPanel('chat')}
-                            className="flex w-full items-center gap-2.5 rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-left text-[13px] font-medium text-zinc-900 shadow-sm transition hover:border-teal-300 hover:bg-teal-50/50"
+                            className="flex w-full items-center gap-2.5 rounded-lg border border-white/[0.08] px-3 py-2.5 text-left text-[13px] font-medium text-white/75 transition hover:bg-white/[0.05]"
                         >
-                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 text-zinc-700">
+                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-white/45">
                                 <MessageSquare className="h-4 w-4" strokeWidth={1.75} />
                             </span>
                             <span>
                                 <span className="block">Execute by Chat</span>
-                                <span className="text-[10px] font-normal text-zinc-500">Type or tap mic in the thread</span>
+                                <span className="text-[10px] font-normal text-white/30">Type or tap mic in the thread</span>
                             </span>
                         </button>
                         <button
                             type="button"
                             onClick={() => setFabPanel('talk')}
-                            className="flex w-full items-center gap-2.5 rounded-lg border border-teal-200/90 bg-teal-50/40 px-3 py-2.5 text-left text-[13px] font-medium text-zinc-900 shadow-sm transition hover:border-teal-400 hover:bg-teal-50/80"
+                            className="flex w-full items-center gap-2.5 rounded-lg border border-white/[0.08] px-3 py-2.5 text-left text-[13px] font-medium text-white/75 transition hover:bg-white/[0.05]"
                         >
-                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-teal-200 bg-white text-teal-700">
+                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-white/45">
                                 <AudioWaveform className="h-4 w-4" strokeWidth={1.75} />
                             </span>
                             <span>
                                 <span className="block">Execute by Talking</span>
-                                <span className="text-[10px] font-normal text-zinc-600">Greeting, then live voice until you End</span>
+                                <span className="text-[10px] font-normal text-white/30">Greeting, then live voice until you End</span>
                             </span>
                         </button>
                     </div>
@@ -1043,7 +1043,7 @@ export function FloatingDexoOrb() {
                             <p className="mt-1.5 font-sans text-[12px] leading-relaxed text-zinc-200">
                                 Hey! You can speak to me or chat with me by clicking this icon.
                             </p>
-                            <p className="mt-1 font-sans text-[10px] text-zinc-500">
+                            <p className="mt-1 font-sans text-[10px] text-white/35">
                                 Try live voice or text — I know your venture.
                             </p>
                         </div>
@@ -1065,21 +1065,21 @@ export function FloatingDexoOrb() {
             {/* Hover tooltip (only when intro already seen) */}
             {hovered && fabPanel === 'none' && !showIntro && (
                 <div
-                    className="pointer-events-none absolute bottom-[calc(100%+10px)] right-0 w-[min(calc(100vw-1.5rem),15rem)] rounded-xl border border-zinc-200/90 px-3 py-2.5 text-left shadow-lg"
+                    className="pointer-events-none absolute bottom-[calc(100%+10px)] right-0 w-[min(calc(100vw-1.5rem),15rem)] rounded-xl px-3 py-2.5 text-left shadow-lg"
                     style={{
-                        backgroundColor: 'rgba(255,255,255,0.97)',
-                        boxShadow: '0 12px 32px rgba(15,23,42,0.12)',
+                        background: '#1c1c1f',
+                        boxShadow: '0 12px 32px rgba(0,0,0,0.5)',
                         animation: 'dexo-chat-enter 0.2s ease-out forwards',
                     }}
                 >
-                    <p className="text-[12px] font-semibold tracking-tight text-zinc-900">Dexo</p>
-                    <p className="mt-0.5 text-[10px] leading-snug text-zinc-500">AI co-founder · venture context</p>
+                    <p className="text-[12px] font-semibold tracking-tight text-white/80">Dexo</p>
+                    <p className="mt-0.5 text-[10px] leading-snug text-white/30">AI co-founder · venture context</p>
                     {activeProject?.name ? (
-                        <p className="mt-1.5 truncate text-[11px] text-zinc-600" title={activeProject.name}>
+                        <p className="mt-1.5 truncate text-[11px] text-white/50" title={activeProject.name}>
                             {activeProject.name}
                         </p>
                     ) : null}
-                    <p className="mt-2 border-t border-zinc-200 pt-2 text-[10px] text-zinc-500">
+                    <p className="mt-2 border-t border-zinc-200 pt-2 text-[10px] text-white/35">
                         Tap for chat or live voice · drag orb to move
                     </p>
                 </div>
@@ -1096,7 +1096,7 @@ export function FloatingDexoOrb() {
                     style={{
                         inset: 0,
                         boxShadow:
-                            'inset 0 0 0 1px rgba(255,255,255,0.45), 0 0 0 1px rgba(15,118,110,0.25), 0 10px 28px rgba(15,23,42,0.18)',
+                            'inset 0 0 0 1px rgba(255,255,255,0.10), 0 10px 28px rgba(0,0,0,0.35)',
                     }}
                 />
                 <button
@@ -1134,7 +1134,7 @@ export function FloatingDexoOrb() {
                                       ? 'radial-gradient(circle at 35% 28%, rgba(244,244,245,0.98) 0%, rgba(228,228,231,0.96) 48%, rgba(212,212,216,0.94) 100%)'
                                       : 'radial-gradient(circle at 35% 28%, rgba(250,250,250,0.99) 0%, rgba(235,235,238,0.97) 50%, rgba(220,220,224,0.95) 100%)',
                             boxShadow:
-                                'inset 0 1px 0 rgba(255,255,255,0.75), inset 0 -1px 0 rgba(15,23,42,0.06)',
+                                'inset 0 0 0 1px rgba(255,255,255,0.10)',
                         }}
                     >
                         <DexoParticleCanvas
