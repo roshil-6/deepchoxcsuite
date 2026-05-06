@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ExternalLink, Globe, RefreshCw, Sparkles } from 'lucide-react';
 import type { Project } from '@/lib/db';
-import type { VentureDailyReportRow } from '@/components/Dexo/DexoDailyBriefPanel';
+import type { VentureDailyReportRow } from '@/lib/dexoDailyBriefTypes';
 
 function parseSources(raw: unknown): { title: string; url: string; snippet?: string }[] {
   if (!Array.isArray(raw)) return [];

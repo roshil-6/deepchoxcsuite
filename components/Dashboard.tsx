@@ -78,8 +78,7 @@ import { buildDexoStaffAttentionBootstrap } from '@/lib/dexoStaffAttentionPrompt
 import { buildDexoJarvisVentureContext } from '@/lib/dexoJarvisContext';
 import { readVenturePriority, getPriorityById } from '@/lib/venturePriority';
 import { FocusBriefingPanel } from '@/components/FocusBriefingPanel';
-import { DexoDailyBriefPanel } from '@/components/Dexo/DexoDailyBriefPanel';
-import { DexoOpsPanel } from '@/components/Dexo/DexoOpsPanel';
+import { DexoResearchRoom } from '@/components/DexoResearchRoom';
 import { PortfolioDailyIntelSection } from '@/components/Dexo/PortfolioDailyIntelSection';
 
 // ============================================================================
@@ -1884,9 +1883,8 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                 )}
 
                 {activeTab === 'dexo_daily' && (
-                    <div className="flex flex-col gap-4">
-                        <DexoOpsPanel activeProject={activeProject} />
-                        <DexoDailyBriefPanel activeProject={activeProject} autoRunPulse />
+                    <div className="min-h-[70vh] overflow-hidden rounded-lg">
+                        <DexoResearchRoom embedded />
                     </div>
                 )}
             </main>

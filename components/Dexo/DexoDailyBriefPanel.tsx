@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { RefreshCw, Globe, Sparkles, CheckCircle2, ExternalLink, ArrowRight, Zap } from 'lucide-react';
+import { RefreshCw, Globe, CheckCircle2, ExternalLink, ArrowRight, Zap } from 'lucide-react';
 import { useOffice } from '@/lib/OfficeContext';
 import { buildDexoJarvisVentureContext } from '@/lib/dexoJarvisContext';
 import { isVentureFoundationSparse } from '@/lib/ventureFoundation';
@@ -10,121 +10,19 @@ import { getEffectiveSessionId } from '@/lib/deviceSession';
 import { DexoAvatar } from '@/components/Dexo/DexoAvatar';
 import type { JarvisProposedUpdates } from '@/app/api/jarvis/route';
 import type { Project } from '@/lib/db';
+import type { VentureDailyReportRow } from '@/lib/dexoDailyBriefTypes';
+import {
+  parseBodyMd,
+  parseSources,
+  parseFollowUp,
+  hasPendingUpdates,
+  type ParsedSection,
+} from '@/lib/dexoDailyBriefParse';
 
-export type VentureDailyReportRow = {
-  id: string;
-  ventureId: number;
-  reportDay: string;
-  headline: string | null;
-  summary: string;
-  bodyMd: string;
-  sourcesJson: unknown;
-  followUpJson: unknown;
-  pendingProposedUpdates: unknown;
-  userApprovedAt: string | null;
-  researchQuery: string | null;
-  createdAt: string;
-  updatedAt: string;
-};
+export type { VentureDailyReportRow } from '@/lib/dexoDailyBriefTypes';
 
 function todayUtcDay(): string {
   return new Date().toISOString().slice(0, 10);
-}
-
-function parseSources(raw: unknown): { title: string; url: string; snippet?: string }[] {
-  if (!Array.isArray(raw)) return [];
-  const out: { title: string; url: string; snippet?: string }[] = [];
-  for (const x of raw) {
-    if (!x || typeof x !== 'object') continue;
-    const o = x as Record<string, unknown>;
-    const title = typeof o.title === 'string' ? o.title : '';
-    const url = typeof o.url === 'string' ? o.url : '';
-    if (!title || !url) continue;
-    const snippet = typeof o.snippet === 'string' ? o.snippet : undefined;
-    out.push({ title, url, snippet });
-  }
-  return out;
-}
-
-function parseFollowUp(raw: unknown): string[] {
-  if (!Array.isArray(raw)) return [];
-  return raw.map(String).filter(Boolean).slice(0, 5);
-}
-
-function hasPendingUpdates(p: unknown): p is JarvisProposedUpdates {
-  if (!p || typeof p !== 'object') return false;
-  const o = p as JarvisProposedUpdates;
-  if (o.strategy?.trim()) return true;
-  if (o.productPlan?.trim()) return true;
-  if (o.marketInsights?.trim()) return true;
-  if (o.budget?.trim()) return true;
-  if (o.teamDirectives?.trim()) return true;
-  if (Array.isArray(o.kanbanAdds) && o.kanbanAdds.some((k) => k && String(k.title || '').trim())) return true;
-  return false;
-}
-
-// ─── bodyMd parser ────────────────────────────────────────────────────────────
-type ParsedSection = {
-  title: string;
-  bullets: string[];
-  move: string;
-  isRisk?: boolean;
-};
-
-function parseBodyMd(bodyMd: string): { intro: string; sections: ParsedSection[] } {
-  const raw = bodyMd || '';
-  // Split on ### headings
-  const parts = raw.split(/\n(?=### )/);
-  let intro = '';
-  const sections: ParsedSection[] = [];
-
-  for (const part of parts) {
-    const trimmed = part.trim();
-    if (!trimmed) continue;
-    if (trimmed.startsWith('### ')) {
-      const firstNewline = trimmed.indexOf('\n');
-      const title = firstNewline === -1 ? trimmed.slice(4).trim() : trimmed.slice(4, firstNewline).trim();
-      const body = firstNewline === -1 ? '' : trimmed.slice(firstNewline + 1).trim();
-      const isRisk = title.toLowerCase() === 'risks';
-
-      if (isRisk) {
-        // Parse bullet list: `- **label** (level): detail`
-        const bullets = body
-          .split('\n')
-          .filter((l) => l.trim().startsWith('-'))
-          .map((l) => l.replace(/^-\s*/, '').trim())
-          // Strip markdown bold from the label for cleaner display
-          .map((l) => l.replace(/\*\*/g, ''))
-          .filter(Boolean);
-        sections.push({ title: 'Key risks', bullets, move: '', isRisk: true });
-      } else {
-        // Extract **Move:** line
-        let move = '';
-        const bodyLines = body.split('\n').filter((l) => {
-          if (l.startsWith('**Move:**') || l.startsWith('**Move: **')) {
-            move = l.replace(/^\*\*Move:\*?\*?\s*/, '').trim();
-            return false;
-          }
-          return true;
-        });
-
-        const insightText = bodyLines.join(' ').replace(/\s+/g, ' ').trim();
-
-        // Split insight into sentence-level bullets
-        const bullets = insightText
-          .split(/(?<=[.!?])\s+/)
-          .map((s) => s.trim())
-          .filter((s) => s.length > 8);
-
-        sections.push({ title, bullets, move });
-      }
-    } else {
-      // Everything before the first heading = intro
-      intro = trimmed;
-    }
-  }
-
-  return { intro, sections };
 }
 
 // ─── Particle CSS (injected once) ────────────────────────────────────────────
