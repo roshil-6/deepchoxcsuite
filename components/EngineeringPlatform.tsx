@@ -829,11 +829,23 @@ function ResultView({
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export function EngineeringPlatform({ selectedProjectId }: { selectedProjectId?: string | null }) {
-  const [state, setState] = useState<'home' | 'loading' | 'result'>('home');
+export function EngineeringPlatform({
+  selectedProjectId,
+  onProjectCreated,
+}: {
+  selectedProjectId?: string | null;
+  onProjectCreated?: (id: string) => void;
+}) {
+  // Initialise both state and project together so they're always in sync
   const [currentProject, setCurrentProject] = useState<EngProject | null>(() => {
     if (!selectedProjectId) return null;
     return loadProjects().find((p) => p.id === selectedProjectId) ?? null;
+  });
+
+  const [state, setState] = useState<'home' | 'loading' | 'result'>(() => {
+    if (!selectedProjectId) return 'home';
+    const p = loadProjects().find((proj) => proj.id === selectedProjectId);
+    return p?.result ? 'result' : 'home';
   });
   const [elapsed, setElapsed] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -875,12 +887,13 @@ export function EngineeringPlatform({ selectedProjectId }: { selectedProjectId?:
 
       setCurrentProject(done);
       setState('result');
+      onProjectCreated?.(done.id);
     } catch {
       setState('home');
     } finally {
       stopTimer();
     }
-  }, []);
+  }, [onProjectCreated]);
 
   const handleReset = () => {
     setCurrentProject(null);

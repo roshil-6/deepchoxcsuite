@@ -92,6 +92,7 @@ export default function Home() {
         <EngineeringPlatform
           key={selectedProjectId ?? '__new__'}
           selectedProjectId={selectedProjectId}
+          onProjectCreated={(id) => setSelectedProjectId(id)}
         />
       </div>
     </div>
