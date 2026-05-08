@@ -259,18 +259,19 @@ function Card({ children, className = '', interactive = false, onClick, id }: Ca
             onClick={onClick}
             id={id}
             className={`
-                relative overflow-hidden rounded-2xl border
+                relative overflow-hidden rounded-xl border
                 ${interactive ? 'cursor-pointer' : ''}
-                transition-all duration-300 ease-out
-                ${isHovered && interactive ? 'translate-y-[-2px]' : ''}
+                transition-all duration-200 ease-out
+                ${isHovered && interactive ? 'border-white/[0.12] bg-white/[0.04]' : ''}
                 ${className}
             `}
             style={{
-                background: `linear-gradient(180deg, ${THEME.bg.elevated} 0%, ${THEME.bg.tertiary} 100%)`,
-                borderColor: isHovered && interactive ? THEME.border.strong : THEME.border.default,
-                boxShadow: isHovered && interactive
-                    ? '0 12px 32px rgba(0,0,0,0.4), 0 4px 8px rgba(0,0,0,0.2)'
-                    : '0 4px 16px rgba(0,0,0,0.2)',
+                background: isHovered && interactive
+                    ? 'rgba(255,255,255,0.035)'
+                    : 'rgba(255,255,255,0.02)',
+                borderColor: isHovered && interactive
+                    ? 'rgba(255,255,255,0.12)'
+                    : 'rgba(255,255,255,0.07)',
             }}
         >
             {children}
@@ -546,6 +547,8 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     const [showDexoWelcome, setShowDexoWelcome] = useState(false);
     const [dexoWelcomeStep, setDexoWelcomeStep] = useState(0);
     const [dexoSpeaking, setDexoSpeaking] = useState(false);
+    const [commandInput, setCommandInput] = useState('');
+    const [commandFocus, setCommandFocus] = useState(false);
 
     const dashboardTabs = [
         { id: 'overview' as const, label: 'Overview' },
@@ -830,7 +833,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     return (
         <div
             className="min-h-screen w-full pb-24"
-            style={{ background: THEME.bg.primary }}
+            style={{ background: '#0d0d0d' }}
         >
             {/* ── DEXO OVERVIEW GUIDE POP-UP ── renders directly on the page */}
             {showDexoWelcome && (() => {
@@ -1043,77 +1046,193 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                 );
             })()}
 
-            {/* HEADER */}
-            <header className="sticky top-0 z-40 border-b backdrop-blur-xl" style={{ background: 'rgba(30,30,30,0.88)', borderColor: THEME.border.subtle }}>
-                <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-                    <div className="flex items-center gap-4">
-                        <div
-                            className="flex h-10 w-10 items-center justify-center rounded-xl"
-                            style={{ background: 'rgba(116,86,255,0.10)' }}
-                        >
-                            <LayoutDashboard className="h-5 w-5" style={{ color: THEME.accent.secondary }} />
-                        </div>
-                        <div>
-                            <h1 className="text-xl font-semibold tracking-tight" style={{ color: THEME.text.primary }}>
-                                {activeProject.name}
-                            </h1>
-                            <div className="flex items-center gap-3 text-xs" style={{ color: THEME.text.tertiary }}>
-                                <span className="flex items-center gap-1.5">
-                                    <span className="relative flex h-1.5 w-1.5">
-                                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-50" style={{ background: THEME.accent.primary }} />
-                                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full" style={{ background: THEME.accent.primary }} />
-                                    </span>
-                                    Executive overview
-                                </span>
-                                <span>·</span>
-                                <span>{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => runAgentStaffSync()}
-                            disabled={agentSyncRunning}
-                            className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all"
-                            style={{
-                                background: agentSyncRunning ? 'rgba(46,41,34,0.06)' : 'rgba(116,86,255,0.10)',
-                                color: THEME.text.primary,
-                                opacity: agentSyncRunning ? 0.6 : 1,
-                            }}
-                        >
-                            <RefreshCw className={`h-4 w-4 ${agentSyncRunning ? 'animate-spin' : ''}`} />
-                            {agentSyncRunning ? 'Syncing...' : 'Sync Staff'}
-                        </button>
-                        <WorkspaceAiButton />
-                    </div>
-                </div>
-
-                {/* TAB NAVIGATION */}
-                <div className="mx-auto max-w-7xl px-6">
-                    <div className="flex gap-1">
+            {/* ── PERPLEXITY-STYLE TOP NAV ── */}
+            <header
+                className="sticky top-0 z-40 border-b"
+                style={{ background: '#0d0d0d', borderColor: 'rgba(255,255,255,0.06)' }}
+            >
+                <div className="mx-auto flex max-w-5xl items-center justify-between px-6">
+                    {/* Tab strip */}
+                    <div className="flex items-center">
                         {dashboardTabs.map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className="relative px-4 py-3 text-sm font-medium transition-colors"
-                                style={{ color: activeTab === tab.id ? THEME.text.primary : THEME.text.muted }}
+                                className="relative px-4 py-3.5 text-sm transition-colors"
+                                style={{
+                                    color: activeTab === tab.id
+                                        ? 'rgba(255,255,255,0.92)'
+                                        : 'rgba(255,255,255,0.38)',
+                                }}
                             >
                                 {tab.label}
                                 {activeTab === tab.id && (
                                     <div
-                                        className="absolute bottom-0 left-0 right-0 h-0.5"
-                                        style={{ background: THEME.accent.primary }}
+                                        className="absolute bottom-0 left-2 right-2 h-[1.5px] rounded-full"
+                                        style={{ background: 'rgba(255,255,255,0.80)' }}
                                     />
                                 )}
                             </button>
                         ))}
                     </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => runAgentStaffSync()}
+                            disabled={agentSyncRunning}
+                            className="flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs transition-all"
+                            style={{
+                                borderColor: 'rgba(255,255,255,0.10)',
+                                color: agentSyncRunning
+                                    ? 'rgba(255,255,255,0.28)'
+                                    : 'rgba(255,255,255,0.52)',
+                                background: 'transparent',
+                            }}
+                        >
+                            <RefreshCw className={`h-3 w-3 ${agentSyncRunning ? 'animate-spin' : ''}`} />
+                            {agentSyncRunning ? 'Syncing' : 'Sync Staff'}
+                        </button>
+                        <WorkspaceAiButton />
+                    </div>
                 </div>
             </header>
 
+            {/* ── PERPLEXITY-STYLE HERO ── */}
+            <div className="mx-auto max-w-2xl px-6 pb-10 pt-16 text-center">
+                {/* Venture name + date */}
+                <h1
+                    className="mb-1 text-[2.5rem] font-light tracking-tight"
+                    style={{ color: 'rgba(255,255,255,0.88)' }}
+                >
+                    {activeProject.name}
+                </h1>
+                <p className="mb-10 text-sm" style={{ color: 'rgba(255,255,255,0.28)' }}>
+                    Executive Intelligence &mdash;{' '}
+                    {new Date().toLocaleDateString(undefined, {
+                        weekday: 'long',
+                        month: 'short',
+                        day: 'numeric',
+                    })}
+                </p>
+
+                {/* Command input */}
+                <div
+                    className="mb-10 overflow-hidden rounded-2xl border text-left transition-colors duration-150"
+                    style={{
+                        borderColor: commandFocus
+                            ? 'rgba(255,255,255,0.20)'
+                            : 'rgba(255,255,255,0.08)',
+                        background: 'rgba(255,255,255,0.03)',
+                    }}
+                >
+                    <textarea
+                        rows={2}
+                        value={commandInput}
+                        onChange={(e) => setCommandInput(e.target.value)}
+                        onFocus={() => setCommandFocus(true)}
+                        onBlur={() => setCommandFocus(false)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey && commandInput.trim()) {
+                                e.preventDefault();
+                                setDexoBootstrap({
+                                    title: 'Venture question',
+                                    detail: commandInput,
+                                    sourceRole: 'ceo' as const,
+                                    requiredInfo: [],
+                                    userMessage: commandInput,
+                                });
+                                switchRoom('dexo');
+                                setCommandInput('');
+                            }
+                        }}
+                        placeholder={`Ask Dexo anything about ${activeProject.name}...`}
+                        className="w-full resize-none bg-transparent px-5 pt-4 pb-2 text-sm outline-none placeholder:text-white/25"
+                        style={{ color: 'rgba(255,255,255,0.80)', caretColor: 'rgba(255,255,255,0.6)' }}
+                    />
+                    <div
+                        className="flex items-center justify-between border-t px-4 py-2.5"
+                        style={{ borderColor: 'rgba(255,255,255,0.05)' }}
+                    >
+                        <span className="text-xs" style={{ color: 'rgba(255,255,255,0.22)' }}>
+                            Press Enter to open Dexo
+                        </span>
+                        <button
+                            onClick={() => {
+                                if (!commandInput.trim()) return;
+                                setDexoBootstrap({
+                                    title: 'Venture question',
+                                    detail: commandInput,
+                                    sourceRole: 'ceo' as const,
+                                    requiredInfo: [],
+                                    userMessage: commandInput,
+                                });
+                                switchRoom('dexo');
+                                setCommandInput('');
+                            }}
+                            className="flex h-7 w-7 items-center justify-center rounded-full transition-all duration-150"
+                            style={{
+                                background: commandInput.trim()
+                                    ? 'rgba(255,255,255,0.88)'
+                                    : 'rgba(255,255,255,0.07)',
+                                color: commandInput.trim() ? '#0d0d0d' : 'rgba(255,255,255,0.28)',
+                            }}
+                        >
+                            <ArrowRight className="h-3.5 w-3.5" />
+                        </button>
+                    </div>
+                </div>
+
+                {/* Desk shortcut cards */}
+                <p
+                    className="mb-3 text-left text-[10px] font-semibold tracking-widest"
+                    style={{ color: 'rgba(255,255,255,0.22)' }}
+                >
+                    JUMP TO A DESK
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                    {([
+                        { label: 'Strategy', icon: Target, room: 'ceo' },
+                        { label: 'Market Intel', icon: Globe, room: 'scout' },
+                        { label: 'Finance', icon: Wallet, room: 'accountant' },
+                        { label: 'Product', icon: Layers, room: 'pm' },
+                        { label: 'Growth', icon: Megaphone, room: 'cmo' },
+                        { label: 'Invention', icon: Zap, room: 'invention' },
+                    ] as { label: string; icon: React.ElementType; room: string }[]).map(
+                        ({ label, icon: Icon, room }) => (
+                            <button
+                                key={room}
+                                onClick={() =>
+                                    switchRoom(
+                                        room as
+                                            | 'ceo'
+                                            | 'scout'
+                                            | 'accountant'
+                                            | 'pm'
+                                            | 'cmo'
+                                            | 'invention',
+                                    )
+                                }
+                                className="flex items-center gap-2.5 rounded-xl border px-3.5 py-3 text-left transition-all duration-150 hover:bg-white/[0.04]"
+                                style={{
+                                    borderColor: 'rgba(255,255,255,0.07)',
+                                    background: 'rgba(255,255,255,0.02)',
+                                    color: 'rgba(255,255,255,0.60)',
+                                }}
+                            >
+                                <Icon
+                                    className="h-4 w-4 shrink-0"
+                                    style={{ color: 'rgba(255,255,255,0.32)' }}
+                                />
+                                <span className="text-sm">{label}</span>
+                            </button>
+                        ),
+                    )}
+                </div>
+            </div>
+
             {/* MAIN CONTENT */}
-            <main className="mx-auto max-w-7xl px-6 py-8">
+            <main className="mx-auto max-w-5xl px-6 py-6">
                 {/* CONTEXTUAL HINTS */}
                 <div className="mb-8 space-y-3">
                     <GuideHint
@@ -2208,31 +2327,37 @@ function PortfolioView({
     const focusLines: string[] = leadingVenture?.staffFocusToday ?? [];
 
     return (
-        <div className="min-h-screen w-full pb-24" style={{ background: THEME.bg.primary }}>
+        <div className="min-h-screen w-full pb-24" style={{ background: '#0d0d0d' }}>
 
-            {/* ─── COMMAND HEADER ─────────────────────────────────── */}
-            <header className="border-b px-6 py-5" style={{ borderColor: THEME.border.subtle }}>
-                <div className="mx-auto max-w-7xl flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: 'rgba(116,86,255,0.12)' }}>
-                            <LayoutDashboard className="h-5 w-5" style={{ color: THEME.accent.primary }} />
-                        </div>
-                        <div>
-                            <h1 className="text-xl font-semibold tracking-tight" style={{ color: THEME.text.primary }}>Executive Overview</h1>
-                            <p className="text-[11px]" style={{ color: THEME.text.muted }}>
-                                AI Co-Founder Command Center · {ventureCount} venture{ventureCount !== 1 ? 's' : ''} · {synced} synced
-                            </p>
-                        </div>
-                    </div>
-                    {onNewVenture && (
-                        <button onClick={onNewVenture} className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all hover:opacity-90" style={{ background: THEME.accent.primary, color: '#fff' }}>
-                            <Sparkles className="h-3.5 w-3.5" /> New Venture
-                        </button>
-                    )}
-                </div>
-            </header>
+            {/* ─── PERPLEXITY-STYLE PORTFOLIO HERO ─────────────────── */}
+            <div className="mx-auto max-w-2xl px-6 pb-10 pt-16 text-center">
+                <h1
+                    className="mb-1 text-[2.5rem] font-light tracking-tight"
+                    style={{ color: 'rgba(255,255,255,0.88)' }}
+                >
+                    Deepchox C-Suite
+                </h1>
+                <p className="mb-10 text-sm" style={{ color: 'rgba(255,255,255,0.28)' }}>
+                    {ventureCount} venture{ventureCount !== 1 ? 's' : ''} &mdash; AI Co-Founder Command Center
+                </p>
 
-            <main className="mx-auto max-w-7xl space-y-12 px-6 py-8">
+                {onNewVenture && (
+                    <button
+                        onClick={onNewVenture}
+                        className="mb-10 inline-flex items-center gap-2 rounded-full border px-5 py-2 text-sm font-medium transition-all hover:bg-white/[0.06]"
+                        style={{
+                            borderColor: 'rgba(255,255,255,0.12)',
+                            color: 'rgba(255,255,255,0.70)',
+                            background: 'rgba(255,255,255,0.03)',
+                        }}
+                    >
+                        <Sparkles className="h-3.5 w-3.5" />
+                        New Venture
+                    </button>
+                )}
+            </div>
+
+            <main className="mx-auto max-w-5xl space-y-10 px-6 pb-8">
 
                 {/* ════════════════════════════════════════════════════════
                     § A  MORNING INTELLIGENCE BRIEF
