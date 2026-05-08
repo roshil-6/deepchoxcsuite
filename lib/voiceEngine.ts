@@ -1,5 +1,5 @@
 /**
- * Voice Engine - Enhanced TTS for Jarvis/Dexo experience
+ * Voice Engine - Enhanced TTS for Jarvis/Deepchox experience
  * Features: voice presets, chunked speech, emphasis parsing, voice caching
  */
 

@@ -51,7 +51,7 @@ function rail(s: string): string {
 
 /** Flat list kept for any code that still iterates APP_NAV_ITEMS */
 export const APP_NAV_ITEMS: NavItemDef[] = [
-    { room: 'dexo',               label: 'Dexo',                                           short: 'Dexo',      icon: Sparkles   },
+    { room: 'dexo',               label: 'Deepchox',                                           short: 'Deepchox',      icon: Sparkles   },
     { room: 'dashboard',          label: rail('Executive overview'),                        short: 'Overview',  icon: LayoutGrid },
     { room: 'desks_hub',          label: 'AI Desks',                                        short: 'Desks',     icon: Layers     },
     { room: 'dexo_daily',         label: 'Daily research',                                  short: 'Research',  icon: Globe      },
@@ -72,7 +72,7 @@ export const APP_NAV_GROUPS: NavGroup[] = [
         id: 'primary',
         label: null,
         items: [
-            { room: 'dexo',       label: 'Dexo',            short: 'Dexo',     icon: Sparkles },
+            { room: 'dexo',       label: 'Deepchox',            short: 'Deepchox',     icon: Sparkles },
             { room: 'dexo_daily', label: 'Daily research',  short: 'Research', icon: Globe    },
         ],
     },
@@ -108,7 +108,7 @@ export const APP_NAV_GROUPS: NavGroup[] = [
 ];
 
 export const WORKSPACE_TITLES: Record<string, string> = {
-    personal_assistant:  'Dexo',
+    personal_assistant:  'Deepchox',
     ceo:                 RESEARCH_STAFF.ceo.navTitle,
     pm:                  RESEARCH_STAFF.pm.navTitle,
     accountant:          RESEARCH_STAFF.accountant.navTitle,
@@ -117,14 +117,10 @@ export const WORKSPACE_TITLES: Record<string, string> = {
     dashboard:           'Executive overview',
     calendar:            'Calendar',
     suite_intelligence:  'AI team network',
-    dexo:                'Dexo',
+    dexo:                'Deepchox',
     dexo_daily:          'Daily research',
     reports:             'Knowledge base',
     intelligence_diary:  'Neural diary',
     desks_hub:           'AI Desks',
-    forge:               'Pitch and narrative forge',
-    wargame:             'Wargame',
-    founders_office:     'Founders office',
-    vc_gauntlet:         RESEARCH_STAFF.shark.navTitle,
     org_structure:       'Org structure',
 };

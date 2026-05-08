@@ -106,7 +106,7 @@ export function ChatWindow({ onProjectUpdate }: ChatWindowProps) {
           await submitDexoVenturePatch({
             ventureId: activeProject.id,
             source: 'legacy_chat_window',
-            model: 'Dexo',
+            model: 'Deepchox',
             summary: 'Legacy desk chat suggested an update',
             patch,
             updateProjectField,
@@ -147,7 +147,7 @@ export function ChatWindow({ onProjectUpdate }: ChatWindowProps) {
       timestamp: Date.now(),
     };
 
-    const paid = tokens.spend(TOKEN_COSTS.CHAT_MESSAGE, 'Dexo Intelligence');
+    const paid = tokens.spend(TOKEN_COSTS.CHAT_MESSAGE, 'Deepchox Intelligence');
     if (!paid.success) {
       setError(paid.message ?? 'Daily AI credits are used up.');
       setIsLoading(false);
@@ -212,7 +212,7 @@ ${fileContext}
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
-      addSystemLog(`Dexo Response: Analysis Complete.`, 'DEXO', 'success');
+      addSystemLog(`Deepchox Response: Analysis Complete.`, 'DEXO', 'success');
       await parseAndUpdateProject(assistantContent, activeRoom);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'SIGNAL_LOST';
@@ -240,7 +240,7 @@ ${fileContext}
               <Bot className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-bold tracking-tight text-[var(--text-primary)]">Dexo Intelligence</h2>
+              <h2 className="text-sm font-bold tracking-tight text-[var(--text-primary)]">Deepchox Intelligence</h2>
               <div className="flex items-center gap-1.5">
                 <span className="h-1 w-1 rounded-full bg-[var(--accent)] animate-pulse"></span>
                 <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--accent)]">Online</span>

@@ -17,7 +17,7 @@ export type KnowledgeGap = {
     field: VentureFieldKey;
     /** Short headline for UI */
     title: string;
-    /** What Dexo asks the founder */
+    /** What Deepchox asks the founder */
     prompt: string;
 };
 

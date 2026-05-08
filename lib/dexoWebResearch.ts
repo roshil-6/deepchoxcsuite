@@ -5,7 +5,7 @@ export type DexoWebSource = {
 };
 
 /**
- * Live web search for Dexo daily briefs. Set TAVILY_API_KEY (https://tavily.com) for results.
+ * Live web search for Deepchox daily briefs. Set TAVILY_API_KEY (https://tavily.com) for results.
  * Without a key, returns [] and the model is instructed not to fake fresh headlines.
  */
 export async function dexoWebSearch(query: string): Promise<DexoWebSource[]> {

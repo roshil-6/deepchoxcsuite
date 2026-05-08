@@ -1,6 +1,6 @@
 /**
  * Venture Priority / Focus Mode
- * Controls how Dexo, Jarvis analysis, and daily research frame every response.
+ * Controls how Deepchox, Jarvis analysis, and daily research frame every response.
  * Stored in project.roomPreferences.dexoPriority (+ dexoPriorityCustom for custom mode).
  */
 
@@ -105,7 +105,7 @@ Balance short-term actions with long-term strategy in every response.`,
     id: 'custom',
     label: 'Custom Focus',
     icon: '+',
-    tagline: 'Tell Dexo exactly what to work on',
+    tagline: 'Tell Deepchox exactly what to work on',
     description: 'Define your own AI focus — as specific or broad as you need',
     deskFocus: [],
     aiInstruction: '', // filled at runtime from roomPreferences.dexoPriorityCustom

@@ -75,7 +75,7 @@ export interface SystemState {
 
 export interface OfficeContextType {
   // State
-  activeRoom: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence' | 'desks_hub' | 'dexo_daily' | 'trivily';
+  activeRoom: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'dexo' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence' | 'desks_hub' | 'dexo_daily' | 'invention';
   activeProject: Project | null;
   allProjects: Project[];
   systemState: SystemState;
@@ -85,7 +85,7 @@ export interface OfficeContextType {
   pendingChat: { role: AgentRole; message: string } | null;
   setPendingChat: (val: { role: AgentRole; message: string } | null) => void;
 
-  /** When set, Dexo shows setup context and opens a converse turn (consumed when Dexo reads it). */
+  /** When set, Deepchox shows setup context and opens a converse turn (consumed when Deepchox reads it). */
   dexoBootstrap: DexoBootstrapPayload | null;
   setDexoBootstrap: (val: DexoBootstrapPayload | null) => void;
 
@@ -104,7 +104,7 @@ export interface OfficeContextType {
   setSuiteIntelOpenDesk: (v: string | null) => void;
 
   // Actions
-  switchRoom: (room: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence' | 'desks_hub' | 'dexo_daily' | 'trivily') => void;
+  switchRoom: (room: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'dexo' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence' | 'desks_hub' | 'dexo_daily' | 'invention') => void;
 
   /** Multi-desk AI staff run: merges research into venture sections (requires GROQ on server). */
   agentSyncRunning: boolean;
@@ -242,7 +242,7 @@ const OfficeContext = createContext<OfficeContextType | undefined>(undefined);
 // Context Provider Component
 export function OfficeProvider({ children }: { children: ReactNode }) {
   const [activeRoom, setActiveRoom] = useState<
-    AgentRole | 'dashboard' | 'calendar' | 'reports' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence' | 'desks_hub' | 'dexo_daily' | 'trivily'
+    AgentRole | 'dashboard' | 'calendar' | 'reports' | 'dexo' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence' | 'desks_hub' | 'dexo_daily' | 'invention'
   >('dexo');
   const [agentSyncRunning, setAgentSyncRunning] = useState(false);
   const [syncToastMessage, setSyncToastMessage] = useState<string | null>(null);
@@ -387,18 +387,14 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
         | 'dashboard'
         | 'calendar'
         | 'reports'
-        | 'founders_office'
         | 'dexo'
-        | 'forge'
-        | 'wargame'
-        | 'vc_gauntlet'
         | 'org_structure'
         | 'intelligence_diary'
         | 'personal_assistant'
         | 'suite_intelligence'
         | 'desks_hub'
         | 'dexo_daily'
-        | 'trivily'
+        | 'invention'
     ) => {
       setDeskSectionFocus(null);
       setSuiteIntelOpenDesk(null);
@@ -1097,7 +1093,7 @@ export function getAgentSystemPrompt(role: AgentRole, project?: Project | null):
     FORMAT: Clear headings, short bullets, optional message house (headline / sub / proof).`,
 
 
-    dexo: `You are Dexo, the Central Intelligence Brain of the Deepchox Suite (by northROSC LABS).
+    dexo: `You are Deepchox, the Central Intelligence Brain of the Deepchox Suite (by northROSC LABS).
     ROLE: You are the OMNISCIENT ORCHESTRATOR. You are not just an assistant; you are the strategic core.
     
     CORE DIRECTIVES:

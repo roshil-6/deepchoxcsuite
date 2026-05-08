@@ -85,7 +85,7 @@ export async function runDailyOfficeCycle(
                 greeting: '',
                 priorities: [],
                 criticalAlerts: [],
-                suggestedFocus: 'Tell Dexo what you are building before the office starts scoring progress.',
+                suggestedFocus: 'Tell Deepchox what you are building before the office starts scoring progress.',
             },
             progress: { percentage: 0, projectedDaysRemaining: 0, risk: 'Medium', paceScore: 0 },
             notifications: [],

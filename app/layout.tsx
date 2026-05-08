@@ -3,8 +3,6 @@ import Script from 'next/script';
 import { Inter, Playfair_Display, JetBrains_Mono, Syne } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
 import './globals.css';
-import { OfficeProvider } from '@/lib/OfficeContext';
-import { GuideProvider } from '@/components/ui/ContextualGuide';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import {
   SITE_BRAND,
@@ -35,7 +33,6 @@ const jetbrains = JetBrains_Mono({
   variable: '--font-jetbrains',
 });
 
-/** Landing / marketing wordmark — geometric display, not used app-wide */
 const syne = Syne({
   subsets: ['latin'],
   display: 'swap',
@@ -102,11 +99,7 @@ export default function RootLayout({
             dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }}
           />
           <ErrorBoundary>
-            <OfficeProvider>
-              <GuideProvider>
-                {children}
-              </GuideProvider>
-            </OfficeProvider>
+            {children}
           </ErrorBoundary>
         </body>
       </html>

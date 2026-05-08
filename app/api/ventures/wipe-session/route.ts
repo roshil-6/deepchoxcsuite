@@ -7,7 +7,7 @@ function sessionFrom(req: Request): string | null {
     return h && h.length >= 8 ? h : null;
 }
 
-/** POST — delete all ventures (and Dexo-linked rows) for this device session */
+/** POST — delete all ventures (and Deepchox-linked rows) for this device session */
 export async function POST(req: Request) {
     const missingDb = responseIfDatabaseNotConfigured();
     if (missingDb) return missingDb;

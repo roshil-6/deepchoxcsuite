@@ -148,11 +148,7 @@ export function AITeamNetwork({ embedded = false }: { embedded?: boolean }) {
     };
 
     const goToDesk = (role: string) => {
-        if (role === 'shark') {
-            switchRoom('vc_gauntlet');
-        } else {
-            switchRoom(role as Parameters<typeof switchRoom>[0]);
-        }
+        switchRoom(role as Parameters<typeof switchRoom>[0]);
     };
 
     return (
@@ -353,7 +349,7 @@ export function AITeamNetwork({ embedded = false }: { embedded?: boolean }) {
                     );
                 })}
 
-                {/* Center Badge for Dexo */}
+                {/* Center Badge for Deepchox */}
                 <motion.div
                     className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
                     animate={{ rotate: 360 }}

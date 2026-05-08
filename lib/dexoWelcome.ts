@@ -4,13 +4,13 @@ import { isVentureFoundationSparse } from '@/lib/ventureFoundation';
 import { readVenturePriority } from '@/lib/venturePriority';
 
 /** First line of the sparse-venture seed (must match `buildInitialDexoMessages`). */
-export const SPARSE_WELCOME_PREFIX = "Welcome — I'm Dexo, your AI co-founder in this workspace.";
+export const SPARSE_WELCOME_PREFIX = "Welcome — I'm Deepchox, your AI co-founder in this workspace.";
 
 /** First line of the non-sparse seed (must match `buildInitialDexoMessages`). */
-export const RICH_WELCOME_PREFIX = "Welcome — I'm Dexo.";
+export const RICH_WELCOME_PREFIX = "Welcome — I'm Deepchox.";
 
-/** Onboarding copy when the user has not saved a venture yet (Dexo desk + orb). */
-export const NO_VENTURE_WELCOME_PREFIX = "Hey — I'm Dexo. Let's create your venture together.";
+/** Onboarding copy when the user has not saved a venture yet (Deepchox desk + orb). */
+export const NO_VENTURE_WELCOME_PREFIX = "Hey — I'm Deepchox. Let's create your venture together.";
 
 /**
  * Mode-specific first question — replaces the generic "what do you want help with" opener.
@@ -37,7 +37,7 @@ export function shouldReplaceNoVentureSeedMessage(messages: DexoConvoMessage[]):
     return dexoMsgs[0].text.trim() !== canonical;
 }
 
-/** First messages when Dexo storage is empty — adapts to the active venture priority/focus mode. */
+/** First messages when Deepchox storage is empty — adapts to the active venture priority/focus mode. */
 export function buildInitialDexoMessages(project: Project): DexoConvoMessage[] {
     const sparse = isVentureFoundationSparse(project);
     const name   = project.name?.trim() || 'this venture';

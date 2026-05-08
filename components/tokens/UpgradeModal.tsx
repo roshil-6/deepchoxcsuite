@@ -58,7 +58,7 @@ export function UpgradeModal({ isOpen, onClose, triggerReason }: UpgradeModalPro
                             <Crown className="h-5 w-5 text-amber-400" />
                         </div>
                         <div>
-                            <h2 className="text-lg font-semibold text-slate-100">Dexo — Co-Founder Pro</h2>
+                            <h2 className="text-lg font-semibold text-slate-100">Deepchox — Co-Founder Pro</h2>
                             <p className="text-[12px] text-slate-500">Unlimited command-center AI (no daily token cap)</p>
                         </div>
                     </div>
@@ -129,16 +129,16 @@ export function UpgradeModal({ isOpen, onClose, triggerReason }: UpgradeModalPro
                     </button>
                 </div>
                 
-                               {/* Pro vs Free (Dexo metering) */}
+                               {/* Pro vs Free (Deepchox metering) */}
                 <div className="space-y-3 mb-6">
                     <div className="flex items-center gap-3 rounded-xl border border-slate-700/50 bg-slate-800/30 p-3">
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10">
                             <Infinity className="h-4 w-4 text-slate-300" />
                         </div>
                         <div>
-                            <p className="text-[13px] font-medium text-slate-200">Unlimited Dexo tokens</p>
+                            <p className="text-[13px] font-medium text-slate-200">Unlimited Deepchox tokens</p>
                             <p className="text-[10px] text-slate-500">
-                                Pro removes the {FREE_DAILY_TOKENS}/day cap — no per-analysis or per-message charges in Dexo
+                                Pro removes the {FREE_DAILY_TOKENS}/day cap — no per-analysis or per-message charges in Deepchox
                             </p>
                         </div>
                     </div>
@@ -148,7 +148,7 @@ export function UpgradeModal({ isOpen, onClose, triggerReason }: UpgradeModalPro
                             <Zap className="h-4 w-4 text-slate-300" />
                         </div>
                         <div>
-                            <p className="text-[13px] font-medium text-slate-200">Same Dexo features on Free</p>
+                            <p className="text-[13px] font-medium text-slate-200">Same Deepchox features on Free</p>
                             <p className="text-[10px] text-slate-500">
                                 Analyses, voice, chat, and history — Founder tier uses the costs above until the daily pool is used
                             </p>
@@ -162,7 +162,7 @@ export function UpgradeModal({ isOpen, onClose, triggerReason }: UpgradeModalPro
                         <div>
                             <p className="text-[13px] font-medium text-slate-200">Co-Founder Pro suite</p>
                             <p className="text-[10px] text-slate-500">
-                                Unlimited Dexo is part of Pro; this same plan is used across the app for billing, limits, and upcoming gateway checkout
+                                Unlimited Deepchox is part of Pro; this same plan is used across the app for billing, limits, and upcoming gateway checkout
                             </p>
                         </div>
                     </div>
@@ -173,8 +173,8 @@ export function UpgradeModal({ isOpen, onClose, triggerReason }: UpgradeModalPro
                     <p className="text-[10px] uppercase tracking-wider text-slate-600 mb-3">What's included</p>
                     <div className="space-y-2">
                         <FeatureRow icon="check" text={`Founder: ${FREE_DAILY_TOKENS} tokens/day with per-action pricing`} />
-                        <FeatureRow icon="check" text="Pro: unlimited Dexo analyses & messages" />
-                        <FeatureRow icon="check" text="Pro: Dexo daily research reports (web briefs, history, Dashboard tab)" />
+                        <FeatureRow icon="check" text="Pro: unlimited Deepchox analyses & messages" />
+                        <FeatureRow icon="check" text="Pro: Deepchox daily research reports (web briefs, history, Dashboard tab)" />
                         <FeatureRow icon="check" text="Voice, history, and venture context on both tiers" />
                         <FeatureRow icon="check" text="Aligns with main app Co-Founder Pro upgrade" />
                     </div>

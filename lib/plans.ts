@@ -18,7 +18,7 @@ export interface Plan {
         vcGauntlet: boolean;
         wargameNexus: boolean;
         intelligenceSuite: boolean;
-        /** Dexo daily research briefs: web pass, saved reports, dashboard tab. */
+        /** Deepchox daily research briefs: web pass, saved reports, dashboard tab. */
         dexoDailyBriefReports: boolean;
         wargameMultiRound: boolean;
         crossVentureIntelligence: boolean;
@@ -82,7 +82,7 @@ export const PRO_PLAN = PLANS.pro;
 export const PRO_INTELLIGENCE_FEATURES = [
     {
         key: 'dexoDailyBriefReports',
-        name: 'Dexo daily research reports',
+        name: 'Deepchox daily research reports',
         description:
             'Automated daily brief with live web research, dual-model synthesis, saved report history, and suggested venture updates — plus the Dashboard “Daily brief” tab.',
     },

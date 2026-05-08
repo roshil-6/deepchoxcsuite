@@ -34,7 +34,7 @@ export function HealthWidget({ strategic, financial, execution, needsSetup }: He
             {needsSetup ? (
                 <p className="mt-3 text-xs leading-relaxed text-[var(--muted)]">
                     Bars stay hidden until you&apos;ve added enough context (strategy narrative plus product, market, or
-                    finance notes). Open Dexo or the desks â€” scores based only on templates aren&apos;t shown so nothing
+                    finance notes). Open Deepchox or the desks â€” scores based only on templates aren&apos;t shown so nothing
                     feels invented.
                 </p>
             ) : (

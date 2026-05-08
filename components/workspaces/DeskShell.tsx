@@ -1,11 +1,11 @@
-﻿'use client';
+'use client';
 
 import React, { useEffect, useState } from 'react';
 
 export type DeskShellProps = {
     /** Optional kicker above the title */
     eyebrow?: string;
-    /** Main headline â€” e.g. "{Venture} Â· fund intelligence research staff" */
+    /** Main headline — e.g. "{Venture} · fund intelligence research staff" */
     title: string;
     description?: string;
     /** Renders below description with a light divider (tab pills, etc.) */
@@ -24,7 +24,7 @@ export type DeskShellProps = {
 };
 
 /**
- * Shared desk surface â€” clean header with role identity, helper copy, optional tabs.
+ * Shared desk surface — clean header with role identity, helper copy, optional tabs.
  * The design makes the AI role feel present: the description speaks in first person,
  * the layout gives the content room to breathe.
  */
@@ -38,7 +38,7 @@ export function DeskShell({
     className,
     bodyFlush,
     bodyClassName,
-    headerSpineClassName = 'bg-white/20',
+    headerSpineClassName = 'bg-[var(--accent)]/70',
     headerClassName,
 }: DeskShellProps) {
     const [entered, setEntered] = useState(false);
@@ -46,54 +46,46 @@ export function DeskShell({
 
     return (
         <div
-            className={`flex min-h-0 w-full min-w-0 flex-col overflow-hidden transition-all duration-300 ease-out ${className ?? ''}`}
-            style={{
-                opacity: entered ? 1 : 0,
-                transform: entered ? 'translateY(0)' : 'translateY(6px)',
-                background: '#111113',
-            }}
+            className={`executive-panel flex min-h-0 w-full min-w-0 flex-col overflow-hidden bg-[var(--bg-elevated)] transition-all duration-300 ease-out ${className ?? ''}`}
+            style={{ opacity: entered ? 1 : 0, transform: entered ? 'translateY(0)' : 'translateY(6px)' }}
         >
-            {/* â”€â”€ Desk header â”€â”€ */}
+            {/* ── Desk header ── */}
             <header
-                className={`shrink-0 px-5 py-4 sm:px-6 sm:py-5 ${headerClassName ?? ''}`}
-                style={{ background: '#111113' }}
+                className={`shrink-0 border-b border-[var(--border)] bg-[var(--bg-card)] px-5 py-4 sm:px-6 sm:py-5 ${headerClassName ?? ''}`}
             >
                 <div className="flex items-start gap-3">
-                    <div className={`mt-1 h-10 w-0.5 shrink-0 rounded-full ${headerSpineClassName}`} aria-hidden />
+                    <div className={`mt-1 h-10 w-1 shrink-0 rounded-full ${headerSpineClassName}`} aria-hidden />
                     <div className="min-w-0 flex-1">
                         {eyebrow ? (
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: '#5c5c6e' }}>
+                            <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--muted)]">
                                 {eyebrow}
                             </p>
                         ) : null}
                         <h1
-                            className={`text-[16px] font-semibold leading-snug tracking-tight sm:text-[17px] ${eyebrow ? 'mt-1' : ''}`}
-                            style={{ color: '#f2f2f5' }}
+                            className={`text-base font-semibold leading-snug tracking-tight text-[var(--text)] sm:text-[17px] ${eyebrow ? 'mt-1' : ''}`}
                         >
                             {title}
                         </h1>
                         {description ? (
-                            <p className="mt-1.5 max-w-2xl text-[13px] leading-relaxed" style={{ color: '#8c8c9e' }}>
+                            <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-[var(--muted)]">
                                 {description}
                             </p>
                         ) : null}
                     </div>
                 </div>
                 {tabs ? (
-                    <div className="mt-4 flex items-center gap-5 overflow-x-auto no-scrollbar" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '14px' }}>
-                        {tabs}
-                    </div>
+                    <div className="ml-5 mt-4 flex flex-wrap gap-1.5 pt-1">{tabs}</div>
                 ) : null}
             </header>
 
-            {/* â”€â”€ Desk body â”€â”€ */}
+            {/* ── Desk body ── */}
             <div className={`${bodyFlush ? 'p-0' : 'px-5 py-4 sm:px-6 sm:py-5'} ${bodyClassName ?? ''}`}>
                 {children}
             </div>
 
-            {/* â”€â”€ Desk footer â”€â”€ */}
+            {/* ── Desk footer ── */}
             {footer ? (
-                <div className="shrink-0 px-5 py-3 sm:px-6" style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: '#1c1c1f' }}>
+                <div className="shrink-0 border-t border-[var(--border)] bg-[var(--bg-card)] px-5 py-3 sm:px-6">
                     {footer}
                 </div>
             ) : null}
@@ -101,7 +93,7 @@ export function DeskShell({
     );
 }
 
-/** Tab control â€” flat text, no chrome, no box */
+/** Tab control — text-first, low chrome */
 export function DeskTabButton({
     active,
     onClick,
@@ -109,7 +101,7 @@ export function DeskTabButton({
     icon,
     type = 'button',
     className,
-    chroming: _chroming = 'default',
+    chroming = 'default',
 }: {
     active: boolean;
     onClick: () => void;
@@ -117,19 +109,31 @@ export function DeskTabButton({
     icon?: React.ReactNode;
     type?: 'button' | 'submit';
     className?: string;
+    /** `ghost` — no stroke (e.g. Relay header). */
     chroming?: 'default' | 'ghost';
 }) {
+    const ghost = chroming === 'ghost';
     return (
         <button
             type={type}
             onClick={onClick}
-            className={`inline-flex items-center gap-1.5 text-[13px] font-medium transition-colors duration-150 ${className ?? ''}`}
-            style={{ color: active ? '#f2f2f5' : '#5c5c6e', padding: 0, background: 'none', border: 'none' }}
-            onMouseEnter={(e) => { if (!active) e.currentTarget.style.color = '#8c8c9e'; }}
-            onMouseLeave={(e) => { if (!active) e.currentTarget.style.color = '#5c5c6e'; }}
+            className={`relative inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-medium transition-all duration-200 ${
+                ghost ? 'border-0' : 'border'
+            } ${
+                active
+                    ? ghost
+                        ? 'bg-[var(--accent-soft)] text-[var(--text)]'
+                        : 'border-[rgba(116,86,255,0.18)] bg-[var(--accent-soft)] text-[var(--text)]'
+                    : ghost
+                      ? 'bg-transparent text-[var(--muted)] hover:-translate-y-px hover:bg-[var(--accent-soft)] hover:text-[var(--text)]'
+                      : 'border-transparent bg-transparent text-[var(--muted)] hover:-translate-y-px hover:border-[var(--border)] hover:bg-[var(--accent-soft)] hover:text-[var(--text)]'
+            } ${className ?? ''}`}
         >
             {icon}
             {children}
+            {active && (
+                <span className="absolute bottom-0 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full bg-[var(--accent)]" />
+            )}
         </button>
     );
 }
@@ -143,4 +147,3 @@ export function DeskEmpty({ children, className }: { children: React.ReactNode; 
         </div>
     );
 }
-

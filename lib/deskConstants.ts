@@ -44,6 +44,5 @@ export const OPERATIONAL_CHAT_BAR_ROOMS: ReadonlySet<string> = new Set([
   'pm',
   'accountant',
   'scout',
-  'forge',
   'cmo',
 ]);

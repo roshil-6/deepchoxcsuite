@@ -49,7 +49,7 @@ export function VoiceSettingsPanel({ isOpen, onClose }: VoiceSettingsPanelProps)
         }
         
         setIsTesting(true);
-        const testText = "This is Dexo. I'm analyzing your venture and will provide strategic insights. Hold the mic to speak with me.";
+        const testText = "This is Deepchox. I'm analyzing your venture and will provide strategic insights. Hold the mic to speak with me.";
         
         try {
             await speak(testText, {
