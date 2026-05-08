@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { useAuth, useClerk } from '@clerk/nextjs';
 import { LandingPage } from '@/components/LandingPage';
 import { EngineeringPlatform } from '@/components/EngineeringPlatform';
-import { Sidebar } from '@/components/Sidebar';
+import { ResearchHub } from '@/components/ResearchHub';
+import { Sidebar, type AppView } from '@/components/Sidebar';
 
 // ── Loading overlay ────────────────────────────────────────────────────────────
 
@@ -15,7 +16,6 @@ function LoadingOverlay() {
       style={{ background: '#0d0d0d' }}
     >
       <div className="flex flex-col items-center gap-4">
-        {/* Brand */}
         <div className="flex flex-col items-center gap-1">
           <p
             className="text-[9px] font-semibold uppercase tracking-[0.2em]"
@@ -30,8 +30,6 @@ function LoadingOverlay() {
             Deepchox
           </h1>
         </div>
-
-        {/* Spinner */}
         <div
           className="mt-2 h-4 w-4 animate-spin rounded-full border border-zinc-700 border-t-teal-500"
           aria-hidden
@@ -48,6 +46,7 @@ export default function Home() {
   const { signOut } = useClerk();
 
   const [started, setStarted] = useState(false);
+  const [activeView, setActiveView] = useState<AppView>('engineering');
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
 
   // Auto-enter workspace when already signed in
@@ -63,25 +62,20 @@ export default function Home() {
     }
     setStarted(false);
     setSelectedProjectId(null);
+    setActiveView('engineering');
   };
 
-  // Auth loading
-  if (!isLoaded) {
-    return <LoadingOverlay />;
-  }
+  if (!isLoaded) return <LoadingOverlay />;
+  if (!started) return <LandingPage onContinueGuest={() => setStarted(true)} />;
 
-  // Not started — show landing
-  if (!started) {
-    return <LandingPage onContinueGuest={() => setStarted(true)} />;
-  }
-
-  // Workspace
   return (
     <div
       className="flex h-screen w-full overflow-hidden"
       style={{ background: '#0d0d0d' }}
     >
       <Sidebar
+        activeView={activeView}
+        onSwitchView={setActiveView}
         selectedProjectId={selectedProjectId}
         onSelectProject={(id) => setSelectedProjectId(id)}
         onNewProject={() => setSelectedProjectId(null)}
@@ -89,11 +83,15 @@ export default function Home() {
       />
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <EngineeringPlatform
-          key={selectedProjectId ?? '__new__'}
-          selectedProjectId={selectedProjectId}
-          onProjectCreated={(id) => setSelectedProjectId(id)}
-        />
+        {activeView === 'research' ? (
+          <ResearchHub />
+        ) : (
+          <EngineeringPlatform
+            key={selectedProjectId ?? '__new__'}
+            selectedProjectId={selectedProjectId}
+            onProjectCreated={(id) => setSelectedProjectId(id)}
+          />
+        )}
       </div>
     </div>
   );

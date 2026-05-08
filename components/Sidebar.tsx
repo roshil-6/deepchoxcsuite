@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, LogOut, PanelLeftClose, PanelLeftOpen, Clock, FolderOpen } from 'lucide-react';
+import { Plus, LogOut, PanelLeftClose, PanelLeftOpen, Clock, FolderOpen, Cpu, Search } from 'lucide-react';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -11,6 +11,8 @@ interface EngProjectMeta {
   domain: string;
   createdAt: number;
 }
+
+export type AppView = 'engineering' | 'research';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -59,15 +61,64 @@ const DOMAIN_SHORT: Record<string, string> = {
 // ── Props ──────────────────────────────────────────────────────────────────────
 
 interface SidebarProps {
+  activeView: AppView;
+  onSwitchView: (view: AppView) => void;
   selectedProjectId: string | null;
   onSelectProject: (id: string) => void;
   onNewProject: () => void;
   onLogout: () => void;
 }
 
+// ── Nav item ───────────────────────────────────────────────────────────────────
+
+function NavItem({
+  icon: Icon,
+  label,
+  active,
+  onClick,
+  collapsed,
+}: {
+  icon: React.ElementType;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+  collapsed: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={collapsed ? label : undefined}
+      className="flex h-8 w-full items-center gap-2.5 rounded-lg px-2.5 text-left text-xs transition-colors"
+      style={{
+        background: active ? 'rgba(255,255,255,0.07)' : 'transparent',
+        color: active ? 'rgba(255,255,255,0.88)' : 'rgba(255,255,255,0.40)',
+      }}
+    >
+      <Icon
+        className="h-3.5 w-3.5 shrink-0"
+        style={{ color: active ? 'rgba(20,184,166,0.90)' : 'rgba(255,255,255,0.30)' }}
+      />
+      {!collapsed && (
+        <span className={`truncate text-[12px] ${active ? 'font-medium' : 'font-normal'}`}>{label}</span>
+      )}
+      {!collapsed && active && (
+        <div className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: '#14B8A6' }} />
+      )}
+    </button>
+  );
+}
+
 // ── Component ──────────────────────────────────────────────────────────────────
 
-export function Sidebar({ selectedProjectId, onSelectProject, onNewProject, onLogout }: SidebarProps) {
+export function Sidebar({
+  activeView,
+  onSwitchView,
+  selectedProjectId,
+  onSelectProject,
+  onNewProject,
+  onLogout,
+}: SidebarProps) {
   const [projects, setProjects] = useState<EngProjectMeta[]>([]);
   const [collapsed, setCollapsed] = useState(false);
 
@@ -133,7 +184,7 @@ export function Sidebar({ selectedProjectId, onSelectProject, onNewProject, onLo
       <div className="shrink-0 px-2 pt-3 pb-2">
         <button
           type="button"
-          onClick={onNewProject}
+          onClick={() => { onNewProject(); onSwitchView('engineering'); }}
           className="flex h-9 w-full items-center gap-2 rounded-lg px-3 transition-all hover:opacity-90 active:scale-[0.97]"
           style={{
             background: 'rgba(20,184,166,0.09)',
@@ -143,11 +194,40 @@ export function Sidebar({ selectedProjectId, onSelectProject, onNewProject, onLo
           title="New project"
         >
           <Plus className="h-3.5 w-3.5 shrink-0" />
-          {!collapsed && (
-            <span className="truncate text-[13px] font-medium">New project</span>
-          )}
+          {!collapsed && <span className="truncate text-[13px] font-medium">New project</span>}
         </button>
       </div>
+
+      {/* ── Nav section ──────────────────────────────────────────────── */}
+      <div className="shrink-0 px-2 pb-2">
+        {!collapsed && (
+          <p
+            className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-widest"
+            style={{ color: 'rgba(255,255,255,0.20)' }}
+          >
+            Workspace
+          </p>
+        )}
+        <div className="space-y-0.5">
+          <NavItem
+            icon={Cpu}
+            label="Engineering OS"
+            active={activeView === 'engineering'}
+            onClick={() => onSwitchView('engineering')}
+            collapsed={collapsed}
+          />
+          <NavItem
+            icon={Search}
+            label="Research Hub"
+            active={activeView === 'research'}
+            onClick={() => onSwitchView('research')}
+            collapsed={collapsed}
+          />
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div className="mx-2 mb-2 border-b" style={{ borderColor: 'rgba(255,255,255,0.05)' }} />
 
       {/* ── Projects list ─────────────────────────────────────────────── */}
       {!collapsed && (
@@ -155,7 +235,7 @@ export function Sidebar({ selectedProjectId, onSelectProject, onNewProject, onLo
           {projects.length > 0 ? (
             <>
               {/* Section header */}
-              <div className="mb-2 mt-1 flex items-center justify-between px-2">
+              <div className="mb-2 flex items-center justify-between px-2">
                 <p
                   className="text-[10px] font-semibold uppercase tracking-widest"
                   style={{ color: 'rgba(255,255,255,0.22)' }}
@@ -173,16 +253,14 @@ export function Sidebar({ selectedProjectId, onSelectProject, onNewProject, onLo
               {/* Items */}
               <div className="space-y-px">
                 {projects.map((p) => {
-                  const active = selectedProjectId === p.id;
+                  const active = selectedProjectId === p.id && activeView === 'engineering';
                   return (
                     <button
                       key={p.id}
                       type="button"
-                      onClick={() => onSelectProject(p.id)}
+                      onClick={() => { onSelectProject(p.id); onSwitchView('engineering'); }}
                       className="group flex w-full flex-col rounded-lg px-3 py-2 text-left transition-colors hover:bg-white/[0.04]"
-                      style={{
-                        background: active ? 'rgba(255,255,255,0.07)' : 'transparent',
-                      }}
+                      style={{ background: active ? 'rgba(255,255,255,0.07)' : 'transparent' }}
                     >
                       {/* Title row */}
                       <div className="flex w-full items-center gap-2">
@@ -221,23 +299,17 @@ export function Sidebar({ selectedProjectId, onSelectProject, onNewProject, onLo
             </>
           ) : (
             /* Empty state */
-            <div className="flex flex-col items-center px-3 pt-8 text-center">
+            <div className="flex flex-col items-center px-3 pt-6 text-center">
               <div
                 className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl"
                 style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
               >
                 <FolderOpen className="h-5 w-5" style={{ color: 'rgba(255,255,255,0.18)' }} />
               </div>
-              <p
-                className="text-[11px] leading-relaxed"
-                style={{ color: 'rgba(255,255,255,0.28)' }}
-              >
+              <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.28)' }}>
                 No projects yet.
               </p>
-              <p
-                className="mt-0.5 text-[10px]"
-                style={{ color: 'rgba(255,255,255,0.18)' }}
-              >
+              <p className="mt-0.5 text-[10px]" style={{ color: 'rgba(255,255,255,0.18)' }}>
                 Describe any idea to build your first execution plan.
               </p>
             </div>
@@ -245,7 +317,7 @@ export function Sidebar({ selectedProjectId, onSelectProject, onNewProject, onLo
         </div>
       )}
 
-      {/* Spacer when collapsed */}
+      {/* Collapsed: spacer */}
       {collapsed && <div className="flex-1" />}
 
       {/* ── Footer ───────────────────────────────────────────────────── */}
@@ -261,9 +333,7 @@ export function Sidebar({ selectedProjectId, onSelectProject, onNewProject, onLo
           title="Sign out"
         >
           <LogOut className="h-3.5 w-3.5 shrink-0" />
-          {!collapsed && (
-            <span className="text-[12px]">Sign out</span>
-          )}
+          {!collapsed && <span className="text-[12px]">Sign out</span>}
         </button>
       </div>
     </aside>
