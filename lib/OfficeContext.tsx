@@ -75,7 +75,7 @@ export interface SystemState {
 
 export interface OfficeContextType {
   // State
-  activeRoom: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence' | 'desks_hub' | 'dexo_daily';
+  activeRoom: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence' | 'desks_hub' | 'dexo_daily' | 'invention';
   activeProject: Project | null;
   allProjects: Project[];
   systemState: SystemState;
@@ -104,7 +104,7 @@ export interface OfficeContextType {
   setSuiteIntelOpenDesk: (v: string | null) => void;
 
   // Actions
-  switchRoom: (room: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence' | 'desks_hub' | 'dexo_daily') => void;
+  switchRoom: (room: AgentRole | 'dashboard' | 'calendar' | 'reports' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence' | 'desks_hub' | 'dexo_daily' | 'invention') => void;
 
   /** Multi-desk AI staff run: merges research into venture sections (requires GROQ on server). */
   agentSyncRunning: boolean;
@@ -242,7 +242,7 @@ const OfficeContext = createContext<OfficeContextType | undefined>(undefined);
 // Context Provider Component
 export function OfficeProvider({ children }: { children: ReactNode }) {
   const [activeRoom, setActiveRoom] = useState<
-    AgentRole | 'dashboard' | 'calendar' | 'reports' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence' | 'desks_hub' | 'dexo_daily'
+    AgentRole | 'dashboard' | 'calendar' | 'reports' | 'founders_office' | 'dexo' | 'forge' | 'wargame' | 'vc_gauntlet' | 'org_structure' | 'intelligence_diary' | 'personal_assistant' | 'suite_intelligence' | 'desks_hub' | 'dexo_daily' | 'invention'
   >('dexo');
   const [agentSyncRunning, setAgentSyncRunning] = useState(false);
   const [syncToastMessage, setSyncToastMessage] = useState<string | null>(null);
@@ -398,6 +398,7 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
         | 'suite_intelligence'
         | 'desks_hub'
         | 'dexo_daily'
+        | 'invention'
     ) => {
       setDeskSectionFocus(null);
       setSuiteIntelOpenDesk(null);

@@ -17,6 +17,7 @@ import { VCGauntlet } from './VCGauntlet';
 import { OperationalDesk } from './OperationalDesk';
 import { IntelligenceDiary } from './IntelligenceDiary';
 import { CsuiteIntelligenceGuide } from './CsuiteIntelligenceGuide';
+import { InventionEngine } from './InventionEngine';
 import { RoomChrome } from './RoomChrome';
 import { getWorkspaceShellTheme } from '@/lib/roomThemes';
 import { WORKSPACE_TITLES } from '@/components/ui/appNav';
@@ -65,6 +66,8 @@ export function WorkspaceStage({
                 return <DexoRoom />;
             case 'suite_intelligence':
                 return <CsuiteIntelligenceGuide />;
+            case 'invention':
+                return <InventionEngine />;
             case 'ceo':
                 return (
                     <OperationalDesk>

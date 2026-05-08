@@ -13,6 +13,7 @@ import {
   LogOut,
   MessageSquare,
   GitBranch,
+  Rocket,
 } from 'lucide-react';
 import { StaffNotificationCenter } from '@/components/StaffNotificationCenter';
 import { sidebarPrimaryLabel } from '@/lib/researchStaffLabels';
@@ -90,6 +91,13 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
             onClick={() => switchRoom('suite_intelligence')}
           />
           <NavItem icon={<Sparkles className="w-4 h-4" />} label="Dexo" isActive={activeRoom === 'dexo'} onClick={() => switchRoom('dexo')} title="AI command center — analysis, voice, venture updates" />
+          <NavItem
+            icon={<Rocket className="w-4 h-4" />}
+            label="Invention Engine"
+            isActive={activeRoom === 'invention'}
+            onClick={() => switchRoom('invention')}
+            title="AI execution & engineering intelligence"
+          />
           <NavItem icon={<Notebook className="w-4 h-4" />} label="Neural Diary" isActive={activeRoom === 'intelligence_diary'} onClick={() => switchRoom('intelligence_diary')} />
           <NavItem icon={<FileText className="w-4 h-4" />} label="Knowledge Base" isActive={activeRoom === 'reports'} onClick={() => switchRoom('reports')} />
         </NavSection>
