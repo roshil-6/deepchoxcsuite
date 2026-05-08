@@ -28,7 +28,7 @@ export function DexoCommandCenter() {
             id: 'init',
             role: 'assistant',
             content:
-                'I’m Dexo — I can read across your venture and help you act. Ask in plain language, or tell me what to update (strategy, product, budget, market).',
+                'I’m Deepchox — I can read across your venture and help you act. Ask in plain language, or tell me what to update (strategy, product, budget, market).',
             timestamp: Date.now(),
         },
     ]);
@@ -68,7 +68,7 @@ export function DexoCommandCenter() {
                         await submitDexoVenturePatch({
                             ventureId: activeProject.id,
                             source: 'legacy_dexo_command_center',
-                            model: 'Dexo',
+                            model: 'Deepchox',
                             summary: 'Legacy command center suggested an update',
                             patch,
                             updateProjectField,
@@ -84,7 +84,7 @@ export function DexoCommandCenter() {
     const handleSendMessage = async () => {
         if (!inputValue.trim() || isLoading) return;
 
-        const paid = tokens.spend(TOKEN_COSTS.CHAT_MESSAGE, 'Dexo command center');
+        const paid = tokens.spend(TOKEN_COSTS.CHAT_MESSAGE, 'Deepchox command center');
         if (!paid.success) {
             setMessages((prev) => [
                 ...prev,
@@ -177,7 +177,7 @@ export function DexoCommandCenter() {
     return (
         <DeskShell
             className="min-h-0 flex-1"
-            eyebrow="Dexo"
+            eyebrow="Deepchox"
             title={deskHeadline(activeProject?.name, 'dexo')}
             description={deskHelpText('dexo')}
             bodyFlush
@@ -222,7 +222,7 @@ export function DexoCommandCenter() {
                                     handleSendMessage();
                                 }
                             }}
-                            placeholder="Message Dexo…"
+                            placeholder="Message Deepchox…"
                             rows={2}
                             className="min-h-[52px] flex-1 resize-none rounded-xl border border-brand-border bg-brand-input px-4 py-3 text-sm text-brand-text placeholder:text-brand-muted outline-none transition-colors focus:border-brand-teal/40 focus:ring-1 focus:ring-brand-teal/20"
                         />

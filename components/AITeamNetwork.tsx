@@ -353,7 +353,7 @@ export function AITeamNetwork({ embedded = false }: { embedded?: boolean }) {
                     );
                 })}
 
-                {/* Center Badge for Dexo */}
+                {/* Center Badge for Deepchox */}
                 <motion.div
                     className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
                     animate={{ rotate: 360 }}

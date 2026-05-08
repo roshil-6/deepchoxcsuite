@@ -283,7 +283,7 @@ export function PersonalAssistantChatProvider({ children }: { children: ReactNod
                             proposalOutcome = await submitDexoVenturePatch({
                                 ventureId: activeProject.id,
                                 source: 'personal_assistant',
-                                model: typeof paData.model === 'string' ? paData.model : 'Dexo',
+                                model: typeof paData.model === 'string' ? paData.model : 'Deepchox',
                                 summary: 'Personal Assistant suggested venture updates',
                                 patch: proposalPatch,
                                 updateProjectField,
@@ -297,7 +297,7 @@ export function PersonalAssistantChatProvider({ children }: { children: ReactNod
                         } else if (proposalOutcome?.applied) {
                             replyBody += `\n\n_Applied venture updates (${proposalOutcome.mode} mode)._`;
                         } else if (proposalOutcome) {
-                            replyBody += `\n\n_Pending your approval — check the floating Dexo approvals card (bottom of the screen)._`;
+                            replyBody += `\n\n_Pending your approval — check the floating Deepchox approvals card (bottom of the screen)._`;
                         } else {
                             replyBody += `\n\n_No venture field diff to apply._`;
                         }
@@ -336,7 +336,7 @@ export function PersonalAssistantChatProvider({ children }: { children: ReactNod
                             sparseContext: isVentureFoundationSparse(activeProject),
                             userMessage: `[Context note: ${errHint}]\n\n${modelUserContent}`,
                             conversationHistory: fallbackHistory,
-                            deskContextLine: 'Personal assistant channel routed through Dexo Jarvis fallback.',
+                            deskContextLine: 'Personal assistant channel routed through Deepchox Jarvis fallback.',
                         },
                     }),
                 });
@@ -359,7 +359,7 @@ export function PersonalAssistantChatProvider({ children }: { children: ReactNod
                     const out = await submitDexoVenturePatch({
                         ventureId: activeProject.id,
                         source: 'personal_assistant_fallback',
-                        model: 'Dexo',
+                        model: 'Deepchox',
                         summary: 'Personal Assistant fallback suggested updates',
                         patch,
                         updateProjectField,
@@ -375,7 +375,7 @@ export function PersonalAssistantChatProvider({ children }: { children: ReactNod
                     role: 'assistant',
                     content: text,
                     ts: Date.now(),
-                    model: 'Dexo',
+                    model: 'Deepchox',
                     channel: 'pa',
                 });
             } catch {
@@ -611,7 +611,7 @@ export function PAChatSurface({
                             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--muted)] [animation-delay:150ms]" />
                             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--muted)] [animation-delay:300ms]" />
                         </span>
-                        <span className="text-[12px] text-[var(--muted)]">Dexo Cofounder is thinking…</span>
+                        <span className="text-[12px] text-[var(--muted)]">Deepchox Cofounder is thinking…</span>
                     </div>
                 </div>
             )}

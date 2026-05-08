@@ -88,7 +88,7 @@ export function NameVentureModal({
                     <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between">
                             <div>
-                                <span className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#f2f2f5]">Dexo</span>
+                                <span className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#f2f2f5]">Deepchox</span>
                                 <span className="ml-2 font-sans text-[9px] font-semibold uppercase tracking-widest text-[var(--muted)]">AI Co-Founder</span>
                             </div>
                             <button
@@ -111,10 +111,10 @@ export function NameVentureModal({
                             ) : (
                                 <>
                                     <h2 id="name-venture-title" className="font-sans text-[15px] font-semibold text-[var(--text-primary)]">
-                                        Set a focus for Dexo
+                                        Set a focus for Deepchox
                                     </h2>
                                     <p className="mt-1 font-sans text-[12.5px] leading-relaxed text-[var(--text-secondary)]">
-                                        This shapes how Dexo frames its research and responses. You can change it anytime.
+                                        This shapes how Deepchox frames its research and responses. You can change it anytime.
                                     </p>
                                 </>
                             )}

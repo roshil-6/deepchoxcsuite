@@ -1,4 +1,4 @@
-// Token System - Freemium model for Dexo
+// Token System - Freemium model for Deepchox
 
 export {
     getTokenState,

@@ -39,7 +39,7 @@ function writeDismiss(projectId: number | string, sig: string) {
 const REMIND_LATER_MS = 24 * 60 * 60 * 1000;
 
 /**
- * When the venture record is missing key desk inputs, Dexo surfaces a co-founder-style prompt
+ * When the venture record is missing key desk inputs, Deepchox surfaces a co-founder-style prompt
  * with an inline reply that persists to the right field.
  */
 export function DexoKnowledgePromptModal() {
@@ -151,7 +151,7 @@ export function DexoKnowledgePromptModal() {
                     <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
                             <div>
-                                <span className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#f2f2f5]">Dexo</span>
+                                <span className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#f2f2f5]">Deepchox</span>
                                 <span className="ml-2 font-sans text-[9px] font-semibold uppercase tracking-widest text-zinc-600">Co-Founder</span>
                             </div>
                             <button
@@ -200,7 +200,7 @@ export function DexoKnowledgePromptModal() {
                             value={reply}
                             onChange={(e) => setReply(e.target.value)}
                             rows={4}
-                            placeholder="Share what you know â€” Dexo will save it to your venture record."
+                            placeholder="Share what you know â€” Deepchox will save it to your venture record."
                             className="w-full resize-y rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] px-4 py-3 font-sans text-[13px] leading-relaxed text-zinc-100 placeholder:text-zinc-600 focus:border-[rgba(255,255,255,0.07)] focus:outline-none focus:ring-1 focus:ring-[rgba(255,255,255,0.07)]"
                         />
                     </label>

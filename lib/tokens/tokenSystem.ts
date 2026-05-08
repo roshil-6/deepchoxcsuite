@@ -3,7 +3,7 @@ import { readSubscriptionIsPro, PLAN_STORAGE_KEY, emitSubscriptionChanged } from
 /**
  * Suite token / credit meter (client-side).
  *
- * Free: shared daily pool used by Dexo, desks, PA, Jarvis, Scout intel, etc.
+ * Free: shared daily pool used by Deepchox, desks, PA, Jarvis, Scout intel, etc.
  * Pro (paid, via Razorpay webhook → Clerk metadata): unlimited — no deductions.
  */
 

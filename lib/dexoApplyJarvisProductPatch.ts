@@ -3,7 +3,7 @@ import type { KanbanTask, Project } from '@/lib/db';
 import { parseProductPlan, serializeProductPlan } from '@/lib/productPlanDoc';
 import { DEXO_PATCHABLE_PROJECT_KEYS, patchFieldLabels, sanitizeDexoPatch, type DexoPatchContract } from '@/lib/dexoPatchSchema';
 
-const PM_STAMP = 'Dexo';
+const PM_STAMP = 'Deepchox';
 
 function mergeProductPlanField(current: string, proposed: string): string {
     const trimmed = proposed.trim();
@@ -105,7 +105,7 @@ function mergeAppendedDexoBlock(current: string, proposed: string): string | und
 
 export type DexoFullVenturePatch = DexoPatchContract;
 
-/** All venture fields Dexo may auto-apply after a converse turn (same merge style as manual Jarvis apply). */
+/** All venture fields Deepchox may auto-apply after a converse turn (same merge style as manual Jarvis apply). */
 export function dexoFullVenturePatchFromJarvis(project: Project, proposed: JarvisProposedUpdates): DexoPatchContract {
     const patch: DexoPatchContract = { ...dexoProductDeliveryPatchFromJarvis(project, proposed) };
 

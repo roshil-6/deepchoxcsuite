@@ -23,7 +23,7 @@ function PersonalAssistantLayout() {
                     onClick={() => switchRoom('dexo')}
                     className="rounded-lg bg-white/[0.06] px-4 py-2 text-sm font-medium text-[var(--text)] transition-colors hover:bg-white/[0.1]"
                 >
-                    Open Dexo
+                    Open Deepchox
                 </button>
             </div>
         );
@@ -64,7 +64,7 @@ function PersonalAssistantLayout() {
                     <span className="mx-1.5 text-white/20" aria-hidden>
                         ·
                     </span>
-                    <span>Dexo Cofounder</span>
+                    <span>Deepchox Cofounder</span>
                 </p>
                 <div className="flex shrink-0 flex-wrap justify-end gap-1">{modeTabs}</div>
             </header>

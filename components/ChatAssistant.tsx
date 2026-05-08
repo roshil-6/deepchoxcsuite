@@ -32,9 +32,9 @@ import { useReadAloud } from '@/lib/useReadAloud';
 import { useTokens } from '@/lib/tokens/useTokens';
 import { TOKEN_COSTS } from '@/lib/tokens/tokenSystem';
 
-const VENTURE_THREAD_WELCOME_TITLE = 'Dexo Â· venture thread';
+const VENTURE_THREAD_WELCOME_TITLE = 'Deepchox Â· venture thread';
 const VENTURE_THREAD_WELCOME_BODY =
-    "Same Dexo engine as the command center â€” strategy, files, and desk context in one thread. Use the bar below; read aloud on any reply when you want to listen.";
+    "Same Deepchox engine as the command center â€” strategy, files, and desk context in one thread. Use the bar below; read aloud on any reply when you want to listen.";
 
 interface Message {
     id: string;
@@ -330,7 +330,7 @@ export function ChatAssistant({
             const data = (await response.json()) as { ok?: boolean; report?: JarvisReport; error?: string };
 
             if (!data.ok || !data.report) {
-                throw new Error(data.error || 'Dexo (Jarvis) did not return a report');
+                throw new Error(data.error || 'Deepchox (Jarvis) did not return a report');
             }
 
             let assistantContent = data.report.voiceResponse || data.report.headline;
@@ -340,8 +340,8 @@ export function ChatAssistant({
                 const out = await submitDexoVenturePatch({
                     ventureId: activeProject.id,
                     source: 'desk_chat',
-                    model: 'Dexo',
-                    summary: `Dexo suggests: ${pending.join(' Â· ')}`,
+                    model: 'Deepchox',
+                    summary: `Deepchox suggests: ${pending.join(' Â· ')}`,
                     patch,
                     updateProjectField,
                 });
@@ -359,7 +359,7 @@ export function ChatAssistant({
                 role: 'assistant',
                 content: assistantContent,
                 timestamp: Date.now(),
-                model: 'Dexo',
+                model: 'Deepchox',
             };
 
             if (useExecutiveThread) {

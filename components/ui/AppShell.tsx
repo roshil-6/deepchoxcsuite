@@ -212,7 +212,7 @@ export function AppShell({ children, bottomBar, onLogout, onNewVenture }: Props)
 
             {bottomBar}
 
-            {/* Mobile Bottom Navigation â€” 4 clear items: Dexo, Overview, Desks, More */}
+            {/* Mobile Bottom Navigation â€” 4 clear items: Deepchox, Overview, Desks, More */}
             <MobileBottomNav onOpenMore={() => setMobileNav(true)} />
 
             <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} />

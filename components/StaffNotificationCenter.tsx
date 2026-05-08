@@ -122,7 +122,7 @@ export function StaffNotificationCenter({ className = '' }: { className?: string
                     className="inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-[11px] font-semibold transition" style={{ borderColor: 'rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.06)', color: '#f2f2f5' }}
                   >
                     <Sparkles className="h-3 w-3" aria-hidden />
-                    Set up in Dexo
+                    Set up in Deepchox
                   </button>
                   <button
                     type="button"

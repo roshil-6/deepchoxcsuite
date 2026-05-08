@@ -11,7 +11,7 @@ import type {
 } from '@/lib/db';
 
 /**
- * Every venture (`Project`) field Dexo may propose except `id` and `timestamp`
+ * Every venture (`Project`) field Deepchox may propose except `id` and `timestamp`
  * (identity / sort key — not AI-editable).
  */
 export type DexoPatchContract = Partial<

@@ -527,7 +527,7 @@ export function StrategyNotebook() {
                                 Hold off on mapping steps until the intent is clear.
                             </h3>
                             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400">
-                                Dexo should not invent a generic discovery-to-scale plan. First confirm what this venture is trying to achieve,
+                                Deepchox should not invent a generic discovery-to-scale plan. First confirm what this venture is trying to achieve,
                                 what problem it is actually solving, and the shape of the plan with the founder.
                             </p>
                             <div className="mt-4 flex flex-wrap gap-2">
@@ -543,7 +543,7 @@ export function StrategyNotebook() {
                                     onClick={() => switchRoom('dexo')}
                                     className="rounded-lg border border-white/10 bg-white/[0.05] px-3 py-2 text-xs font-semibold text-white/75 transition hover:bg-white/[0.05]"
                                 >
-                                    Discuss with Dexo
+                                    Discuss with Deepchox
                                 </button>
                             </div>
                             </div>
@@ -694,7 +694,7 @@ export function StrategyNotebook() {
         }
     };
 
-    /** Above app chrome (Dexo orb ~10049); true viewport overlay, not clipped by desk panels */
+    /** Above app chrome (Deepchox orb ~10049); true viewport overlay, not clipped by desk panels */
     const flowFullScreenPortal =
         focusKey === 'flow' && meta && typeof document !== 'undefined'
             ? createPortal(
@@ -912,7 +912,7 @@ export function StrategyNotebook() {
                                                 {hasClearPlanIntent
                                                     ? flowStats.steps > 0
                                                         ? 'Shape the sequence and dependencies you have actually agreed with the founder. This map stays linked to Product â†’ Planning.'
-                                                        : 'Your intent is clear enough to map the real plan now. Start adding the actual steps and dependencies you want Dexo to reason over.'
+                                                        : 'Your intent is clear enough to map the real plan now. Start adding the actual steps and dependencies you want Deepchox to reason over.'
                                                     : 'This stays blank until the venture intent is clear. No generic validate / MVP / launch filler gets created for you.'}
                                             </p>
                                         </div>
@@ -954,7 +954,7 @@ export function StrategyNotebook() {
                                                 }}
                                                 className="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800"
                                             >
-                                                Discuss with Dexo
+                                                Discuss with Deepchox
                                             </button>
                                         ) : null}
                                     </div>

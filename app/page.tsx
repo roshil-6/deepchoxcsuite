@@ -197,7 +197,7 @@ export default function Home() {
     switchRoom('dexo');
   }, [isLoaded, isSignedIn, hasStarted, switchRoom]);
 
-  /** Create a shell venture (optional name + focus priority) and open Dexo for chat-first setup. */
+  /** Create a shell venture (optional name + focus priority) and open Deepchox for chat-first setup. */
   const createVentureWithName = async (name: string, priorityId?: VenturePriorityId) => {
     if (ventureCreating) return;
     if (!isSignedIn) {

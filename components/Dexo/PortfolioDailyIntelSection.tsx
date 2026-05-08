@@ -100,7 +100,7 @@ export function PortfolioDailyIntelSection({
             </h2>
           </div>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--text-secondary)]">
-            Dexo pulls fresh web context via Tavily for each workspaceâ€”headlines, synthesis, and original sources. Open a
+            Deepchox pulls fresh web context via Tavily for each workspaceâ€”headlines, synthesis, and original sources. Open a
             venture for the full daily brief tab.
           </p>
         </div>
@@ -137,7 +137,7 @@ export function PortfolioDailyIntelSection({
                       </h3>
                     ) : (
                       <h3 className="mt-1 text-sm font-medium text-[var(--text-muted)]">
-                        {error ?? 'No brief yet â€” run Dexo daily pulse'}
+                        {error ?? 'No brief yet â€” run Deepchox daily pulse'}
                       </h3>
                     )}
                   </div>

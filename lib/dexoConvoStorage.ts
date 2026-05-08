@@ -1,5 +1,5 @@
 /**
- * Dexo chat persistence — PostgreSQL via `/api/dexo-convo` when `DATABASE_URL` is available,
+ * Deepchox chat persistence — PostgreSQL via `/api/dexo-convo` when `DATABASE_URL` is available,
  * with IndexedDB (Dexie) fallback so the app works offline or without Postgres.
  */
 

@@ -308,7 +308,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                                     </span>
                                     <span className="font-sans text-[13.5px] leading-relaxed text-zinc-400">
                                         <span className="font-medium text-zinc-200">Full workspace</span>
-                                        <span className="mt-0.5 block text-[12px] text-zinc-500">Every desk, Dexo chat, daily briefs, staff sync, calendar, ventures &amp; tools</span>
+                                        <span className="mt-0.5 block text-[12px] text-zinc-500">Every desk, Deepchox chat, daily briefs, staff sync, calendar, ventures &amp; tools</span>
                                     </span>
                                 </li>
                                 <li className="flex items-start gap-3">
@@ -317,7 +317,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                                     </span>
                                     <span className="font-sans text-[13.5px] leading-relaxed text-zinc-400">
                                         <span className="font-medium text-zinc-200">{FREE_DAILY_TOKENS} AI tokens/day</span>
-                                        <span className="mt-0.5 block text-[12px] text-zinc-500">Shared across Dexo chat and analysis â€” resets at midnight</span>
+                                        <span className="mt-0.5 block text-[12px] text-zinc-500">Shared across Deepchox chat and analysis â€” resets at midnight</span>
                                     </span>
                                 </li>
                             </ul>
@@ -382,7 +382,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                                                 Unlimited AI â€” no daily cap
                                             </p>
                                             <p className="mt-1.5 font-sans text-[12px] leading-relaxed text-zinc-400">
-                                                Dexo, analyses, and chat run freely â€” no meter, no resets.
+                                                Deepchox, analyses, and chat run freely â€” no meter, no resets.
                                             </p>
                                         </div>
                                     </div>

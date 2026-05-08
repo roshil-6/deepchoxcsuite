@@ -373,7 +373,7 @@ export function DexoResearchRoom({ embedded }: { embedded?: boolean }) {
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800">
               <Sparkles className="h-3.5 w-3.5 text-zinc-500" />
             </div>
-            <div className="text-[14px] font-medium text-zinc-400">Dexo</div>
+            <div className="text-[14px] font-medium text-zinc-400">Deepchox</div>
           </div>
           <div className="flex-1 space-y-4 overflow-y-auto p-4">
             {msgs.map(m => (

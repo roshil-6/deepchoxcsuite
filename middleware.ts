@@ -7,7 +7,7 @@ const SECURITY_HEADERS: Record<string, string> = {
   'X-Frame-Options': 'DENY',
   'X-XSS-Protection': '1; mode=block',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
-  // Mic must be allowed on self for Dexo / browser speech recognition; camera stays off.
+  // Mic must be allowed on self for Deepchox / browser speech recognition; camera stays off.
   // Turnstile / Clerk probes may request xr-spatial-tracking; allow * to avoid console policy violations.
   'Permissions-Policy': 'camera=(), microphone=(self), geolocation=(), xr-spatial-tracking=*',
   'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
@@ -28,7 +28,7 @@ const isPublicRoute = createRouteMatcher([
   '/api/health(.*)',
   '/api/clerk-health(.*)',
   /**
-   * Dexo gateway (Jarvis converse, convo sync, etc.) — must work for signed-out guests in the workspace.
+   * Deepchox gateway (Jarvis converse, convo sync, etc.) — must work for signed-out guests in the workspace.
    * Per-IP rate limits still apply via `AI_ROUTE_LIMITS` (`/api/dexo`).
    */
   '/api/dexo(.*)',

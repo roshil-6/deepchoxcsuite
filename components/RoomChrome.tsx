@@ -8,7 +8,7 @@ type RoomChromeProps = {
   children: React.ReactNode;
 };
 
-/** Optional inner frame: skipped for full-screen operational / Dexo modes. */
+/** Optional inner frame: skipped for full-screen operational / Deepchox modes. */
 export function RoomChrome({ immersive, chromeClass, children }: RoomChromeProps) {
   if (immersive) {
     return <div className="relative flex min-h-0 w-full flex-1 flex-col">{children}</div>;

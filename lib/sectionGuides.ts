@@ -12,36 +12,36 @@ export type SectionGuideStep = {
 
 const DASHBOARD: SectionGuideStep[] = [
     {
-        title: 'Dexo AI Co-Founder Briefing',
-        body: 'The first panel is your Dexo Intelligence Briefing — a live daily summary of what is happening in your venture. It shows the executive summary from your last Staff Sync, what Dexo recommends you focus on today, and any items that need your attention.',
-        lookFor: 'The large "Dexo — AI Co-Founder Briefing" panel at the very top of this page.',
+        title: 'Deepchox AI Co-Founder Briefing',
+        body: 'The first panel is your Deepchox Intelligence Briefing — a live daily summary of what is happening in your venture. It shows the executive summary from your last Staff Sync, what Deepchox recommends you focus on today, and any items that need your attention.',
+        lookFor: 'The large "Deepchox — AI Co-Founder Briefing" panel at the very top of this page.',
     },
     {
-        title: 'Ask Dexo anything — one click',
-        body: 'See the clickable question buttons below the briefing? Each one opens Dexo with a pre-loaded question about your venture. Click "What should I prioritize today?" to get an instant answer. You can also click "Open Dexo Briefing" to get a full structured debrief from your AI co-founder.',
+        title: 'Ask Deepchox anything — one click',
+        body: 'See the clickable question buttons below the briefing? Each one opens Deepchox with a pre-loaded question about your venture. Click "What should I prioritize today?" to get an instant answer. You can also click "Open Deepchox Briefing" to get a full structured debrief from your AI co-founder.',
         lookFor: 'The row of question buttons — "What should I prioritize today?", "Walk me through all findings", "What are the biggest risks?" and more.',
     },
     {
-        title: 'Dexo Research Guide — 5 desk findings',
-        body: 'Below the Intelligence Briefing you will find the Research Guide — this shows what each AI desk found during the last Staff Sync. Each card covers one area: Strategy, Market Intelligence, Product, Finance, and Growth. Click "Dexo Guide" on any card to understand what that finding means and how to act on it.',
-        lookFor: 'The 5 desk cards below the briefing panel — each has a "Dexo Guide" button and an "Ask Dexo" button.',
+        title: 'Deepchox Research Guide — 5 desk findings',
+        body: 'Below the Intelligence Briefing you will find the Research Guide — this shows what each AI desk found during the last Staff Sync. Each card covers one area: Strategy, Market Intelligence, Product, Finance, and Growth. Click "Deepchox Guide" on any card to understand what that finding means and how to act on it.',
+        lookFor: 'The 5 desk cards below the briefing panel — each has a "Deepchox Guide" button and an "Ask Deepchox" button.',
     },
     {
         title: 'Run Staff Sync to activate everything',
-        body: 'If the briefing shows "no sync yet", click Run Staff Sync. Your AI team will research your venture across all 5 desks and Dexo will brief you on what was found. This takes a few minutes and updates automatically.',
-        lookFor: 'The "Run Staff Sync" button in the Dexo briefing panel header, or the big CTA if no sync has been run yet.',
+        body: 'If the briefing shows "no sync yet", click Run Staff Sync. Your AI team will research your venture across all 5 desks and Deepchox will brief you on what was found. This takes a few minutes and updates automatically.',
+        lookFor: 'The "Run Staff Sync" button in the Deepchox briefing panel header, or the big CTA if no sync has been run yet.',
     },
     {
         title: 'Attention items need action',
-        body: 'If Dexo flags attention items — shown in amber — these are research signals that need a decision from you. Click "Ask Dexo" next to any item and Dexo will explain what it means and what to do.',
-        lookFor: 'Amber-bordered items inside the Dexo Intelligence Briefing panel.',
+        body: 'If Deepchox flags attention items — shown in amber — these are research signals that need a decision from you. Click "Ask Deepchox" next to any item and Deepchox will explain what it means and what to do.',
+        lookFor: 'Amber-bordered items inside the Deepchox Intelligence Briefing panel.',
     },
 ];
 
 const DEXO: SectionGuideStep[] = [
     {
-        title: 'Dexo command center',
-        body: 'Dexo reads your full venture record and produces cross-functional analysis — strategy gaps, product risks, finance flags, and market signals in one pass.',
+        title: 'Deepchox command center',
+        body: 'Deepchox reads your full venture record and produces cross-functional analysis — strategy gaps, product risks, finance flags, and market signals in one pass.',
         lookFor: 'Central orb and the analysis report area when a run completes.',
     },
     {
@@ -59,7 +59,7 @@ const DEXO: SectionGuideStep[] = [
 const CEO: SectionGuideStep[] = [
     {
         title: 'Strategy & direction desk',
-        body: 'Shape mission, narrative, phases, and priorities. Everything you save here feeds staff sync and Dexo.',
+        body: 'Shape mission, narrative, phases, and priorities. Everything you save here feeds staff sync and Deepchox.',
         lookFor: 'Hub tiles for strategic intent, vision, timeline, and narrative.',
     },
     {
@@ -143,7 +143,7 @@ const SCOUT: SectionGuideStep[] = [
     },
     {
         title: 'Token use',
-        body: 'Live market pulls may consume Dexo tokens on Founder; Pro removes the daily cap.',
+        body: 'Live market pulls may consume Deepchox tokens on Founder; Pro removes the daily cap.',
         lookFor: 'Cost hints near run or analyze buttons.',
     },
 ];
@@ -182,7 +182,7 @@ const CALENDAR: SectionGuideStep[] = [
 const REPORTS: SectionGuideStep[] = [
     {
         title: 'Knowledge base',
-        body: 'Long-form journal for founder notes and team directives. Both save on the venture for staff sync and Dexo.',
+        body: 'Long-form journal for founder notes and team directives. Both save on the venture for staff sync and Deepchox.',
         lookFor: 'Journal and Directives panels with save actions.',
     },
     {
@@ -213,7 +213,7 @@ const DIARY: SectionGuideStep[] = [
 const SUITE_INTEL: SectionGuideStep[] = [
     {
         title: 'AI team network',
-        body: 'Orientation for how desk agents, staff sync, and Dexo relate — use this when onboarding a co-founder or revisiting the stack.',
+        body: 'Orientation for how desk agents, staff sync, and Deepchox relate — use this when onboarding a co-founder or revisiting the stack.',
         lookFor: 'Accordion or section list per role.',
     },
     {
@@ -268,7 +268,7 @@ const ORG: SectionGuideStep[] = [
 const DEFAULT: SectionGuideStep[] = [
     {
         title: 'This workspace',
-        body: 'You are in a DeepChox room tied to your active venture. Explore panels and use the desk chat or Dexo for AI help.',
+        body: 'You are in a DeepChox room tied to your active venture. Explore panels and use the desk chat or Deepchox for AI help.',
         lookFor: 'Left rail to change rooms; bottom bar chat on research desks.',
     },
     {

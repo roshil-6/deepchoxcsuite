@@ -92,7 +92,7 @@ export interface JarvisReport {
 
 // ─── System prompts ──────────────────────────────────────────────────────────
 
-export const JARVIS_SYSTEM = `You are Dexo — the AI co-founder inside DEEPCHOX.
+export const JARVIS_SYSTEM = `You are Deepchox — the AI co-founder inside DEEPCHOX.
 
 In analyze mode, give a structured operating brief based only on what is in the venture snapshot.
 In converse mode, reply like a co-founder sitting beside the founder: plain words, calm tone, helpful guidance.
@@ -173,7 +173,7 @@ Rules:
 - Output JSON only. No markdown fence. No prose outside JSON.`;
 
 /** Compact system prompt for converse/chat mode — much smaller response, faster generation. */
-const DEXO_CHAT_SYSTEM = `You are Dexo — the AI co-founder inside DEEPCHOX.
+const DEXO_CHAT_SYSTEM = `You are Deepchox — the AI co-founder inside DEEPCHOX.
 
 Talk like a smart, grounded co-founder: plain English, direct, warm. No bullet-points, no consulting framing.
 
@@ -448,7 +448,7 @@ type RequestBody = {
   userMessage?: string;
   /** Previous Jarvis response headline (for continuity in converse mode) */
   previousHeadline?: string;
-  /** Last turns for multi-turn Dexo desk chat (`text` or `content` for each message). */
+  /** Last turns for multi-turn Deepchox desk chat (`text` or `content` for each message). */
   conversationHistory?: { role: string; text?: string; content?: string }[];
   /** Extracts from uploaded files (converse mode). */
   attachmentNotes?: string;
@@ -517,7 +517,7 @@ The founder is talking directly to you. Reply like a thoughtful cofounder.
             .slice(-14)
             .map((m) => {
               const isUser = m.role === 'user';
-              const label = isUser ? 'Founder' : 'Dexo';
+              const label = isUser ? 'Founder' : 'Deepchox';
               const txt = String(m.text ?? m.content ?? '').trim();
               return txt ? `${label}: ${txt}` : '';
             })
@@ -602,7 +602,7 @@ The founder is talking directly to you. Reply like a thoughtful cofounder.
       };
       if (!agentsUsed.gpt && !agentsUsed.claude) {
         return NextResponse.json(
-          { ok: false, error: 'Dexo could not produce a reply. Check AI API keys and try again.' },
+          { ok: false, error: 'Deepchox could not produce a reply. Check AI API keys and try again.' },
           { status: 502 },
         );
       }

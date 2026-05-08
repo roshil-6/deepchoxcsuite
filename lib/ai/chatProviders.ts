@@ -454,7 +454,7 @@ export function simulationResponse(messages: ChatMessage[], model: string | unde
 
   const lower = lastUserMessage.toLowerCase();
   if (lower.includes('hello') || lower.includes('hi')) {
-    mockResponse = 'Greetings. Dexo Core is online (Simulation Mode). How can I assist?';
+    mockResponse = 'Greetings. Deepchox Core is online (Simulation Mode). How can I assist?';
   } else if (lower.includes('investor') || lower.includes('pitch')) {
     mockResponse =
       'I can assist with that. I recommend focusing on your unit economics and clear value proposition. Shall I draft an outline?';

@@ -206,7 +206,7 @@ export function ReportsLibrary() {
                         </p>
                     </div>
                     <div className="flex shrink-0 flex-wrap items-center gap-1.5 sm:justify-end">
-                        <WorkspaceAiButton label="Dexo" className="border-white/[0.1] bg-white/[0.04] px-3 py-1.5 text-[11px] font-medium text-brand-text hover:bg-white/[0.08]" />
+                        <WorkspaceAiButton label="Deepchox" className="border-white/[0.1] bg-white/[0.04] px-3 py-1.5 text-[11px] font-medium text-brand-text hover:bg-white/[0.08]" />
                         <button
                             type="button"
                             onClick={handleSaveAll}

@@ -406,7 +406,7 @@ export function DexoDailyBriefPanel({
       {/* ── Top bar: label + actions ── */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-white/20">Dexo · Daily Research</p>
+          <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-white/20">Deepchox · Daily Research</p>
           <h2 className="mt-1 text-[22px] font-semibold leading-tight tracking-tight text-white/85">
             Venture breakdown
           </h2>
@@ -497,7 +497,7 @@ export function DexoDailyBriefPanel({
           {/* ── Follow-up questions ── */}
           {parseFollowUp(todayRow.followUpJson).length > 0 && (
             <div className="flex flex-col gap-3">
-              <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/18">Dexo wants to know</p>
+              <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/18">Deepchox wants to know</p>
               <ul className="flex flex-col gap-2.5">
                 {parseFollowUp(todayRow.followUpJson).map((q) => (
                   <li key={q} className="flex items-start gap-3">
@@ -536,7 +536,7 @@ export function DexoDailyBriefPanel({
               <div>
                 <p className="text-[12px] text-white/35">
                   <Zap className="mr-1 inline h-3 w-3 text-white/30" aria-hidden />
-                  {pendingHint ?? 'Dexo has venture updates ready'}
+                  {pendingHint ?? 'Deepchox has venture updates ready'}
                 </p>
               </div>
               <button
@@ -555,7 +555,7 @@ export function DexoDailyBriefPanel({
         <div className="flex flex-col gap-3">
           <p className="text-[14px] text-white/50">No research yet for today.</p>
           <p className="text-[13px] text-white/30">
-            Hit Run above — Dexo will do a web pass and build your breakdown.
+            Hit Run above — Deepchox will do a web pass and build your breakdown.
           </p>
         </div>
       ) : null}

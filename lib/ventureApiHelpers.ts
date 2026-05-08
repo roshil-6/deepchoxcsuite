@@ -32,7 +32,7 @@ export function sessionFrom(req: Request): string | null {
 /**
  * Verifies `ventureId` belongs to `sessionId`.
  * Returns a 403 NextResponse when ownership cannot be confirmed, or `null` when it is safe to proceed.
- * Call this in every Dexo route after parsing `ventureId` to prevent cross-user IDOR.
+ * Call this in every Deepchox route after parsing `ventureId` to prevent cross-user IDOR.
  */
 export async function assertVentureOwnership(
     ventureId: number,

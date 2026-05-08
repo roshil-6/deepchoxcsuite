@@ -90,7 +90,7 @@ export function Sidebar({ onLogout, onNewVenture }: SidebarProps) {
             isActive={activeRoom === 'suite_intelligence'}
             onClick={() => switchRoom('suite_intelligence')}
           />
-          <NavItem icon={<Sparkles className="w-4 h-4" />} label="Dexo" isActive={activeRoom === 'dexo'} onClick={() => switchRoom('dexo')} title="AI command center — analysis, voice, venture updates" />
+          <NavItem icon={<Sparkles className="w-4 h-4" />} label="Deepchox" isActive={activeRoom === 'dexo'} onClick={() => switchRoom('dexo')} title="AI command center — analysis, voice, venture updates" />
           <NavItem
             icon={<Rocket className="w-4 h-4" />}
             label="Invention Engine"

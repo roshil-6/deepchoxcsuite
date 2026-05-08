@@ -222,7 +222,7 @@ export function DesksHub() {
                         onMouseEnter={(e) => { e.currentTarget.style.color = '#f2f2f5'; }}
                         onMouseLeave={(e) => { e.currentTarget.style.color = '#5c5c6e'; }}
                     >
-                        Ask Dexo ←’
+                        Ask Deepchox ←’
                     </button>
                 </div>
             </div>
@@ -253,7 +253,7 @@ export function DesksHub() {
                 <DeskCard
                     desk={{
                         room: 'dexo' as 'ceo',
-                        label: 'Dexo',
+                        label: 'Deepchox',
                         role: 'AI Co-Founder',
                         description: 'Full-stack AI partner — synthesises every desk, runs daily research, and adapts to your current priority.',
                         Icon: Sparkles,

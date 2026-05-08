@@ -1,6 +1,6 @@
 import type { StaffAttentionItem } from '@/lib/db';
 
-/** Payload when opening Dexo from “Set up” so the room can show context + send one converse turn. */
+/** Payload when opening Deepchox from “Set up” so the room can show context + send one converse turn. */
 export type DexoBootstrapPayload = {
     /** Short heading — usually the staff attention title */
     title: string;
@@ -8,9 +8,9 @@ export type DexoBootstrapPayload = {
     detail: string;
     /** Which desk raised this setup context */
     sourceRole: StaffAttentionItem['role'];
-    /** Concrete info the founder should provide to Dexo now */
+    /** Concrete info the founder should provide to Deepchox now */
     requiredInfo: string[];
-    /** Message sent to Dexo as the first user turn */
+    /** Message sent to Deepchox as the first user turn */
     userMessage: string;
 };
 
@@ -47,9 +47,9 @@ export function buildDexoStaffAttentionBootstrap(item: StaffAttentionItem): Dexo
     const requiredBlock =
         requiredInfo.length > 0
             ? requiredInfo.map((line, i) => `${i + 1}. ${line}`).join('\n')
-            : '1. Confirm what is missing and what decision is blocked.\n2. Share any files/notes already prepared.\n3. Ask Dexo for the exact next action.';
+            : '1. Confirm what is missing and what decision is blocked.\n2. Share any files/notes already prepared.\n3. Ask Deepchox for the exact next action.';
     const userMessage =
-        `Staff sync flagged this on my ${item.role.toUpperCase()} desk — help me work through it with Dexo.\n\n` +
+        `Staff sync flagged this on my ${item.role.toUpperCase()} desk — help me work through it with Deepchox.\n\n` +
         `**${item.title}**\n\n${item.message}\n\n` +
         `Info I can provide now:\n${requiredBlock}\n\n` +
         `What should I do first? Name the desk (left navigation), the fields to update, and keep advice grounded in what is already saved in this venture.`;

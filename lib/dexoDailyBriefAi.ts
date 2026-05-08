@@ -45,7 +45,7 @@ export async function runDexoDailyBriefAi(opts: {
 The venture record is still thin. Frame this as an onboarding brief: help the founder clarify direction. Do not invent metrics.`
     : '';
 
-  const userPrompt = `Produce today's Dexo daily research breakdown for this venture.
+  const userPrompt = `Produce today's Deepchox daily research breakdown for this venture.
 
 RESEARCH_QUERY_USED: ${opts.researchQuery}
 
@@ -59,7 +59,7 @@ ${opts.ventureContext.slice(0, 14_000)}
 - Ground external claims in WEB_SOURCES when present; cite [n] inline.
 - If WEB_SOURCES is empty, note no live web hits and stick to venture data.
 - section action (the "Move"): one crisp verb-first sentence. Time-bound if possible.
-- summary: 1-2 sentences spoken as Dexo — direct, first-person, warm. E.g. "Here's what I found today on [topic]."
+- summary: 1-2 sentences spoken as Deepchox — direct, first-person, warm. E.g. "Here's what I found today on [topic]."
 - headline: sharp and specific — name the actual insight, not a generic title.
 - proposedUpdates: only high-value additive suggestions. Null when unsure.
 - voiceResponse: 2-3 sentences, casual check-in, invite reaction to one followUp question.

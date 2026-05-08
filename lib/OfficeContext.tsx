@@ -85,7 +85,7 @@ export interface OfficeContextType {
   pendingChat: { role: AgentRole; message: string } | null;
   setPendingChat: (val: { role: AgentRole; message: string } | null) => void;
 
-  /** When set, Dexo shows setup context and opens a converse turn (consumed when Dexo reads it). */
+  /** When set, Deepchox shows setup context and opens a converse turn (consumed when Deepchox reads it). */
   dexoBootstrap: DexoBootstrapPayload | null;
   setDexoBootstrap: (val: DexoBootstrapPayload | null) => void;
 
@@ -1097,7 +1097,7 @@ export function getAgentSystemPrompt(role: AgentRole, project?: Project | null):
     FORMAT: Clear headings, short bullets, optional message house (headline / sub / proof).`,
 
 
-    dexo: `You are Dexo, the Central Intelligence Brain of the Deepchox Suite (by northROSC LABS).
+    dexo: `You are Deepchox, the Central Intelligence Brain of the Deepchox Suite (by northROSC LABS).
     ROLE: You are the OMNISCIENT ORCHESTRATOR. You are not just an assistant; you are the strategic core.
     
     CORE DIRECTIVES:

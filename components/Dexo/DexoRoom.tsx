@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Dexo — AI Command Center
+ * Deepchox — AI Command Center
  * Jarvis-style: non-blocking, always-interruptible, reactive orb
  */
 
@@ -194,11 +194,11 @@ export function DexoRoom() {
     const [isMuted, setIsMuted]   = useState(false);
     const [inputText, setInputText] = useState('');
     const [convo, setConvo]       = useState<DexoConvoMessage[]>([]);
-    /** After Dexo speaks, reopen the mic automatically (Jarvis back-and-forth). */
+    /** After Deepchox speaks, reopen the mic automatically (Jarvis back-and-forth). */
     const [handsFree, setHandsFree] = useState(false);
     const [showVoiceSettings, setShowVoiceSettings] = useState(false);
     const voicePreset = useVoicePreset();
-    /** Shown after "Set up in Dexo" so the room feels scoped to that task */
+    /** Shown after "Set up in Deepchox" so the room feels scoped to that task */
     const [setupMission, setSetupMission] = useState<DexoBootstrapPayload | null>(null);
     /** Toggle between chat/analysis and daily research brief */
     const [view, setView] = useState<'chat' | 'daily'>('chat');
@@ -259,7 +259,7 @@ export function DexoRoom() {
     }, []);
 
     const onInterrupt = useCallback(() => {
-        // Dexo was interrupted — acknowledge it
+        // Deepchox was interrupted — acknowledge it
         setConvo((prev) => [...prev, { role: 'dexo', text: '— interrupted —', id: ++convoId.current }]);
     }, []);
 
@@ -356,7 +356,7 @@ export function DexoRoom() {
         void saveDexoConvo(activeProject.id, convo);
     }, [convo, activeProject?.id]);
 
-    // Auto-resize Dexo input textarea
+    // Auto-resize Deepchox input textarea
     useEffect(() => {
         const el = inputRef.current;
         if (!el) return;
@@ -451,8 +451,8 @@ export function DexoRoom() {
                     const out = await submitDexoVenturePatch({
                         ventureId: activeProject.id,
                         source: 'dexo_room',
-                        model: 'Dexo',
-                        summary: `Dexo suggests: ${pending.join(' · ')}`,
+                        model: 'Deepchox',
+                        summary: `Deepchox suggests: ${pending.join(' · ')}`,
                         patch,
                         updateProjectField,
                     });
@@ -497,7 +497,7 @@ export function DexoRoom() {
     // Keep runRef current for the pending-transcript effect
     runRef.current = run;
 
-    // Staff attention / "Set up now" — show mission banner + seed first Dexo converse turn
+    // Staff attention / "Set up now" — show mission banner + seed first Deepchox converse turn
     useEffect(() => {
         if (!dexoBootstrap || !activeProject?.id) return;
         const payload = dexoBootstrap;
@@ -560,7 +560,7 @@ export function DexoRoom() {
         }
     };
 
-    /** Ctrl+Shift+D while focus is inside Dexo: open mic (or interrupt and listen). */
+    /** Ctrl+Shift+D while focus is inside Deepchox: open mic (or interrupt and listen). */
     useEffect(() => {
         if (!activeProject?.id) return;
         const onKeyDown = (e: KeyboardEvent) => {
@@ -625,7 +625,7 @@ export function DexoRoom() {
                                         <ul className="mt-1.5 space-y-1.5">
                                             {(Array.isArray(setupMission.requiredInfo) && setupMission.requiredInfo.length > 0
                                                 ? setupMission.requiredInfo
-                                                : ['Confirm what is missing and ask Dexo for exact fields to update.']
+                                                : ['Confirm what is missing and ask Deepchox for exact fields to update.']
                                             ).map((line, idx) => (
                                                 <li key={`${idx}-${line}`} className="flex gap-2 text-[11px] text-[var(--text)]">
                                                     <span className="mt-[2px] h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent)]/80" aria-hidden />
@@ -635,7 +635,7 @@ export function DexoRoom() {
                                         </ul>
                                     </div>
                                     <p className="mt-2 text-[11px] text-[var(--muted)]">
-                                        Dexo is using this alert context plus your venture record. You can proceed here without going back.
+                                        Deepchox is using this alert context plus your venture record. You can proceed here without going back.
                                     </p>
                                 </div>
                                 <button
@@ -727,12 +727,12 @@ export function DexoRoom() {
                             />
                             <div className="min-w-0 flex-1">
                                 <div className="flex flex-wrap items-center gap-2">
-                                    <span className="font-sans text-[10px] font-bold uppercase tracking-[0.22em] text-[#7456ff]">Dexo</span>
+                                    <span className="font-sans text-[10px] font-bold uppercase tracking-[0.22em] text-[#7456ff]">Deepchox</span>
                                     <span className="rounded-full border border-[rgba(116,86,255,0.2)] bg-[rgba(116,86,255,0.08)] px-2 py-0.5 font-sans text-[9px] font-semibold uppercase tracking-widest text-[#9d88ff]">AI Co-Founder</span>
                                 </div>
                                 <div className="mt-1.5">
                                     <h1 className="font-sans text-[15px] font-semibold leading-snug tracking-tight text-[var(--text-primary)] sm:text-[17px]">
-                                        {activeProject?.name ?? 'Dexo'}
+                                        {activeProject?.name ?? 'Deepchox'}
                                     </h1>
                                     <p className="mt-1 font-sans text-[13px] leading-relaxed text-[var(--text-secondary)]">
                                         I'm here. Tell me what's on your mind.
@@ -770,7 +770,7 @@ export function DexoRoom() {
                             <button
                                 type="button"
                                 onClick={() => setHandsFree((h) => !h)}
-                                title="After Dexo speaks, mic opens automatically"
+                                title="After Deepchox speaks, mic opens automatically"
                                 className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-sans text-[11px] font-medium transition-all ${
                                     handsFree
                                         ? 'bg-[rgba(116,86,255,0.15)] text-[#c4b5fd] ring-1 ring-[rgba(116,86,255,0.3)]'
@@ -811,7 +811,7 @@ export function DexoRoom() {
                                             key={msg.id}
                                             className={`flex items-end gap-2.5 ${isUser ? 'justify-end' : 'justify-start'}`}
                                         >
-                                            {/* Dexo avatar */}
+                                            {/* Deepchox avatar */}
                                             {!isUser && (
                                                 <DexoAvatar size="xs" state="idle" pulse={false} className="mb-1" />
                                             )}
@@ -827,7 +827,7 @@ export function DexoRoom() {
                                             >
                                                 <p className="whitespace-pre-wrap">{msg.text}</p>
 
-                                                {/* Per-message speak/stop button — Dexo bubbles only */}
+                                                {/* Per-message speak/stop button — Deepchox bubbles only */}
                                                 {!isUser && !isInterrupted && (
                                                     <div className="mt-1.5 flex justify-end">
                                                         <button
@@ -856,7 +856,7 @@ export function DexoRoom() {
                                     );
                                 })}
 
-                                {/* Typing indicator — shown while Dexo is generating a reply */}
+                                {/* Typing indicator — shown while Deepchox is generating a reply */}
                                 {loading && convo[convo.length - 1]?.role === 'user' && (
                                     <div className="flex items-end gap-2.5 justify-start">
                                         <DexoAvatar size="xs" state="thinking" pulse={false} className="mb-1" />
@@ -965,9 +965,9 @@ export function DexoRoom() {
                                 placeholder={
                                     isListening   ? 'Speak now…'
                                     : isProcessing  ? 'Thinking…'
-                                    : isSpeaking    ? 'Dexo is speaking…'
+                                    : isSpeaking    ? 'Deepchox is speaking…'
                                     : loading       ? 'Analyzing venture…'
-                                    : 'Message Dexo…'
+                                    : 'Message Deepchox…'
                                 }
                                 className="min-h-[38px] min-w-0 flex-1 resize-none border-none bg-transparent px-1.5 py-2 font-sans text-[14px] leading-[1.45] text-[var(--text-primary)] placeholder:text-[var(--muted)] focus:outline-none focus:ring-0"
                                 style={{ maxHeight: '160px', overflowY: 'auto' }}

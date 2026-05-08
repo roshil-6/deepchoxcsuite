@@ -67,7 +67,7 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                 <div className="flex shrink-0 items-center justify-between border-b border-zinc-800/80 px-5 py-4 sm:px-6">
                     <div>
                         <p className="text-sm font-semibold text-white">Co-Founder Pro</p>
-                        <p className="mt-0.5 text-xs text-zinc-500">Remove the daily AI limit â€” use Dexo as much as you need, no cap</p>
+                        <p className="mt-0.5 text-xs text-zinc-500">Remove the daily AI limit â€” use Deepchox as much as you need, no cap</p>
                     </div>
                     <button
                         type="button"
@@ -103,7 +103,7 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                                         <Check className="mt-[3px] h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
                                         <div>
                                             <p className="text-[12.5px] font-medium leading-snug text-zinc-200">Full workspace</p>
-                                            <p className="mt-1 text-[11.5px] leading-relaxed text-zinc-500">Every desk, Dexo, daily briefs, staff sync, calendar &amp; tools</p>
+                                            <p className="mt-1 text-[11.5px] leading-relaxed text-zinc-500">Every desk, Deepchox, daily briefs, staff sync, calendar &amp; tools</p>
                                         </div>
                                     </li>
                                     <li className="flex items-start gap-2.5">

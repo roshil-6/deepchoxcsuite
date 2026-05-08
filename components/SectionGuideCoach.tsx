@@ -123,7 +123,7 @@ function CoachPanel({
             {/* Violet top accent */}
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(116,86,255,0.5)] to-transparent" aria-hidden />
 
-            {/* Dexo avatar + speech bubble */}
+            {/* Deepchox avatar + speech bubble */}
             <div className="flex items-start gap-2.5 border-b border-[var(--border)] px-3 pb-2.5 pt-3 sm:gap-3 sm:px-4 sm:pb-3 sm:pt-4">
                 <DexoAvatar
                     size="sm"
@@ -134,7 +134,7 @@ function CoachPanel({
                 <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-1">
                         <div>
-                            <span className="font-sans text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: '#f2f2f5' }}>Dexo</span>
+                            <span className="font-sans text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: '#f2f2f5' }}>Deepchox</span>
                             <span className="ml-1.5 font-sans text-[8px] font-semibold uppercase tracking-widest text-[var(--muted)]">Guide</span>
                         </div>
                         <div className="flex items-center gap-0.5">
@@ -154,7 +154,7 @@ function CoachPanel({
                                     }
                                 }}
                                 className="rounded-md p-1 text-[var(--muted)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--accent)]"
-                                aria-label={muted ? 'Unmute Dexo' : 'Mute Dexo'}
+                                aria-label={muted ? 'Unmute Deepchox' : 'Mute Deepchox'}
                                 title={muted ? 'Unmute' : 'Mute'}
                             >
                                 {muted ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}

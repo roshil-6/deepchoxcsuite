@@ -32,7 +32,7 @@ export function DexoChat() {
     const [messages, setMessages] = useState<Message[]>([{
         id: 'welcome',
         role: 'assistant',
-        content: "I am Dexo, your General Intelligence Core. How can I assist you today?",
+        content: "I am Deepchox, your General Intelligence Core. How can I assist you today?",
         timestamp: Date.now()
     }]);
     const [inputValue, setInputValue] = useState('');
@@ -49,7 +49,7 @@ export function DexoChat() {
     const handleSendMessage = async () => {
         if (!inputValue.trim() || isLoading) return;
 
-        const paid = tokens.spend(TOKEN_COSTS.CHAT_MESSAGE, 'Dexo chat');
+        const paid = tokens.spend(TOKEN_COSTS.CHAT_MESSAGE, 'Deepchox chat');
         if (!paid.success) {
             setMessages((prev) => [
                 ...prev,
@@ -81,7 +81,7 @@ export function DexoChat() {
         }, 1800);
 
         try {
-            // Simplified Project Context for Dexo
+            // Simplified Project Context for Deepchox
             const context = activeProject
                 ? `
                 Current Context:
@@ -98,7 +98,7 @@ export function DexoChat() {
                     action: 'chat',
                     payload: {
                         messages: [
-                            { role: 'system', content: `You are Dexo. A high-intelligence general assistant.` + context },
+                            { role: 'system', content: `You are Deepchox. A high-intelligence general assistant.` + context },
                             ...messages.map(m => ({ role: m.role, content: m.content })),
                             { role: 'user', content: userMessage.content }
                         ],
@@ -124,7 +124,7 @@ export function DexoChat() {
             setMessages(prev => [...prev, {
                 id: Date.now().toString(),
                 role: 'assistant',
-                content: 'Dexo Core erratic. Server connection failed.',
+                content: 'Deepchox Core erratic. Server connection failed.',
                 timestamp: Date.now()
             }]);
         } finally {
@@ -143,7 +143,7 @@ export function DexoChat() {
                 <div className="flex items-center gap-4">
                     <DexoAvatar size="md" state="idle" />
                     <div>
-                        <h2 className="text-lg font-bold tracking-tight" style={{ color: '#f2f2f5' }}>Dexo Core</h2>
+                        <h2 className="text-lg font-bold tracking-tight" style={{ color: '#f2f2f5' }}>Deepchox Core</h2>
                         <div className="flex items-center gap-2">
                             <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.35)' }}></span>
                             <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#5c5c6e' }}>General Intelligence Online</span>
@@ -209,7 +209,7 @@ export function DexoChat() {
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                        placeholder="Ask Dexo anything..."
+                        placeholder="Ask Deepchox anything..."
                         className="w-full bg-transparent border-none focus:ring-0 p-4 pr-14 text-sm text-zinc-100 placeholder:text-zinc-600 font-medium"
                         autoFocus
                     />
@@ -222,7 +222,7 @@ export function DexoChat() {
                     </button>
                 </div>
                 <p className="text-center text-[10px] text-zinc-600 mt-3 font-medium">
-                    Dexo can make mistakes. Consider checking important information.
+                    Deepchox can make mistakes. Consider checking important information.
                 </p>
             </div>
         </div>

@@ -9,7 +9,7 @@ type Props = {
 };
 
 const BOTTOM_NAV = [
-    { room: 'dexo'              as const, icon: Sparkles,       label: 'Dexo'      },
+    { room: 'dexo'              as const, icon: Sparkles,       label: 'Deepchox'      },
     { room: 'dashboard'         as const, icon: LayoutGrid,     label: 'Overview'  },
     { room: 'desks_hub'         as const, icon: Layers,         label: 'Desks'     },
     { room: 'personal_assistant' as const, icon: MessageSquare, label: 'Assistant' },

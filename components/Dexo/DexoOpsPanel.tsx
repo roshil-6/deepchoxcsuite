@@ -96,7 +96,7 @@ export function DexoOpsPanel({ activeProject }: { activeProject: Project }) {
           <p className="mt-1 text-[11px] text-[var(--text-tertiary)]">Source-backed daily brief cadence.</p>
           <ul className="mt-2 space-y-1 text-xs text-[var(--text-secondary)]">
             {!dailyBriefEnabled ? (
-              <li className="text-[var(--text-tertiary)]">Co-Founder Pro — unlock Dexo daily research reports.</li>
+              <li className="text-[var(--text-tertiary)]">Co-Founder Pro — unlock Deepchox daily research reports.</li>
             ) : daily.length === 0 ? (
               <li>No daily brief rows yet</li>
             ) : (
@@ -112,8 +112,8 @@ export function DexoOpsPanel({ activeProject }: { activeProject: Project }) {
       </div>
 
       <p className="rounded-lg border border-white/[0.08] bg-black/15 p-3 text-[11px] leading-relaxed text-[var(--text-tertiary)]">
-        External actions (email, calendar, CRM) are not part of this product surface. Venture changes flow through Dexo
-        proposals, the floating Dexo approvals card, and daily brief apply — not through outbound
+        External actions (email, calendar, CRM) are not part of this product surface. Venture changes flow through Deepchox
+        proposals, the floating Deepchox approvals card, and daily brief apply — not through outbound
         integrations.
       </p>
     </section>

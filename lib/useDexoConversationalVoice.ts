@@ -1,5 +1,5 @@
 /**
- * Dexo Conversational Voice System
+ * Deepchox Conversational Voice System
  * 
  * Human-like voice for DexoRoom with:
  * - Streaming LLM responses (500-800ms to first speech)
@@ -111,7 +111,7 @@ interface UseDexoConversationalVoiceOptions {
   onInterrupt?: () => void;
   onInterimRef?: MutableRefObject<((text: string) => void) | undefined>;
   projectContext?: { name: string; strategy?: string };
-  /** When true, Dexo “live talk” mode: recover mic after no-speech / accidental end where safe. */
+  /** When true, Deepchox “live talk” mode: recover mic after no-speech / accidental end where safe. */
   talkLiveModeRef?: MutableRefObject<boolean>;
   /** While true, do not auto-restart recognition (e.g. during API round-trip). */
   suspendAutoMicRestartRef?: MutableRefObject<boolean>;
@@ -231,7 +231,7 @@ export function useDexoConversationalVoice({
     onInterruptRef.current?.();
   }, []);
 
-  /** Dexo orb uses browser TTS outside this hook — keep barge-in / UI in sync. */
+  /** Deepchox orb uses browser TTS outside this hook — keep barge-in / UI in sync. */
   const markAssistantSpeaking = useCallback((speaking: boolean) => {
     isSpeakingRef.current = speaking;
     if (!speaking) {
@@ -395,7 +395,7 @@ export function useDexoConversationalVoice({
         }
       }
 
-      // Discard while Dexo's TTS is playing — mic is picking up speaker output.
+      // Discard while Deepchox's TTS is playing — mic is picking up speaker output.
       if (isSpeakingRef.current && (interim || finalText)) {
         interrupt();
         setInterimTranscript('');

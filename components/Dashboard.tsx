@@ -579,15 +579,15 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeRoom, allProjects.length]);
 
-    // Show Dexo welcome/guide pop-up when entering Executive Overview with an active project
+    // Show Deepchox welcome/guide pop-up when entering Executive Overview with an active project
     useEffect(() => {
         if (activeRoom !== 'dashboard' || !activeProject?.id) return;
         setDexoWelcomeStep(0);
         setShowDexoWelcome(true);
     }, [activeRoom, activeProject?.id]);
 
-    // Pre-load Dexo with a venture briefing whenever user enters Executive Overview
-    // so clicking "Open Dexo Briefing" instantly delivers context without extra input
+    // Pre-load Deepchox with a venture briefing whenever user enters Executive Overview
+    // so clicking "Open Deepchox Briefing" instantly delivers context without extra input
     useEffect(() => {
         if (activeRoom !== 'dashboard' || !activeProject?.agentStaffSnapshot) return;
         const summary = activeProject.agentStaffSnapshot.summary?.trim() ?? '';
@@ -855,8 +855,8 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         title: `Welcome back — ${activeProject.name}`,
                         subtitle: 'Your AI co-founder is ready',
                         body: hasSnap
-                            ? `Your AI team has researched Strategy, Market Intelligence, Product, Finance, and Growth. Scroll down to see what was found and ask Dexo to explain anything or recommend next steps.`
-                            : `This is your Executive Overview for ${activeProject.name}. Run a Staff Sync to activate your AI team — Dexo will research your venture across 5 desks and brief you daily.`,
+                            ? `Your AI team has researched Strategy, Market Intelligence, Product, Finance, and Growth. Scroll down to see what was found and ask Deepchox to explain anything or recommend next steps.`
+                            : `This is your Executive Overview for ${activeProject.name}. Run a Staff Sync to activate your AI team — Deepchox will research your venture across 5 desks and brief you daily.`,
                         cta: hasSnap ? null : 'Run Staff Sync now',
                         ctaAction: hasSnap ? null : () => { setShowDexoWelcome(false); runAgentStaffSync(); },
                     },
@@ -865,7 +865,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         title: 'Here is what your AI team found',
                         subtitle: 'Executive research summary',
                         body: summary.slice(0, 360) + (summary.length > 360 ? '…' : ''),
-                        cta: 'Get full briefing from Dexo',
+                        cta: 'Get full briefing from Deepchox',
                         ctaAction: () => {
                             setDexoBootstrap({ title: `Full Briefing — ${activeProject.name}`, detail: summary, sourceRole: 'ceo' as const, requiredInfo: [], userMessage: `Give me a complete co-founder briefing for ${activeProject.name}. What did each desk find? What are the top 3 actions I should take right now?` });
                             setShowDexoWelcome(false);
@@ -874,7 +874,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                     }] : []),
                     ...(focusLines.length > 0 ? [{
                         color: '#10b981',
-                        title: 'What Dexo recommends you do today',
+                        title: 'What Deepchox recommends you do today',
                         subtitle: 'Focus priorities from Staff Sync',
                         body: focusLines.slice(0, 3).map((l, i) => `${i + 1}. ${l}`).join('\n'),
                         cta: null,
@@ -885,7 +885,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         title: `${attn} thing${attn > 1 ? 's' : ''} need${attn === 1 ? 's' : ''} your decision`,
                         subtitle: 'Flagged by your AI team',
                         body: staffAttentionPending.slice(0, 2).map(a => `• ${a.title}\n  ${a.message.slice(0, 90)}${a.message.length > 90 ? '…' : ''}`).join('\n\n'),
-                        cta: 'Ask Dexo about these',
+                        cta: 'Ask Deepchox about these',
                         ctaAction: () => {
                             if (staffAttentionPending[0]) setDexoBootstrap(buildDexoStaffAttentionBootstrap(staffAttentionPending[0]));
                             setShowDexoWelcome(false);
@@ -895,9 +895,9 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                     {
                         color: '#7456ff',
                         title: 'Do you have anything specific in mind?',
-                        subtitle: 'Dexo is ready to help',
-                        body: 'Ask Dexo anything — what should I change, what are the risks, what should I build next? Dexo has your full venture context and will give you a direct, grounded answer.',
-                        cta: 'Ask Dexo now',
+                        subtitle: 'Deepchox is ready to help',
+                        body: 'Ask Deepchox anything — what should I change, what are the risks, what should I build next? Deepchox has your full venture context and will give you a direct, grounded answer.',
+                        cta: 'Ask Deepchox now',
                         ctaAction: () => { setShowDexoWelcome(false); switchRoom('dexo'); },
                     },
                 ];
@@ -947,7 +947,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 </div>
                                 <div className="min-w-0 flex-1 pt-1">
                                     <div className="flex flex-wrap items-center gap-2">
-                                        <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: step.color }}>Dexo</span>
+                                        <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: step.color }}>Deepchox</span>
                                         <span
                                             className="rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider"
                                             style={{ background: `${step.color}20`, color: step.color }}
@@ -978,7 +978,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     style={{ color: step.color }}
                                 >
                                     <Mic className="h-3.5 w-3.5" />
-                                    {dexoSpeaking ? 'Dexo is speaking…' : 'Hear Dexo read this'}
+                                    {dexoSpeaking ? 'Deepchox is speaking…' : 'Hear Deepchox read this'}
                                 </button>
                             </div>
 
@@ -1146,7 +1146,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 setCommandInput('');
                             }
                         }}
-                        placeholder={`Ask Dexo anything about ${activeProject.name}...`}
+                        placeholder={`Ask Deepchox anything about ${activeProject.name}...`}
                         className="w-full resize-none bg-transparent px-5 pt-4 pb-2 text-sm outline-none placeholder:text-white/25"
                         style={{ color: 'rgba(255,255,255,0.80)', caretColor: 'rgba(255,255,255,0.6)' }}
                     />
@@ -1155,7 +1155,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         style={{ borderColor: 'rgba(255,255,255,0.05)' }}
                     >
                         <span className="text-xs" style={{ color: 'rgba(255,255,255,0.22)' }}>
-                            Press Enter to open Dexo
+                            Press Enter to open Deepchox
                         </span>
                         <button
                             onClick={() => {
@@ -1274,7 +1274,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         <Sparkles className="h-5 w-5" style={{ color: THEME.accent.primary }} />
                                     </div>
                                     <div className="min-w-0">
-                                        <h2 className="text-[14px] font-semibold" style={{ color: THEME.text.primary }}>Dexo — AI Co-Founder Briefing</h2>
+                                        <h2 className="text-[14px] font-semibold" style={{ color: THEME.text.primary }}>Deepchox — AI Co-Founder Briefing</h2>
                                         <p className="text-[11px]" style={{ color: THEME.text.muted }}>
                                             {activeProject.agentStaffSnapshot
                                                 ? `Live venture intelligence · ${lastStaffSyncLabel || 'last sync'}`
@@ -1306,7 +1306,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         style={{ borderColor: 'rgba(116,86,255,0.35)', background: 'rgba(116,86,255,0.16)', color: THEME.accent.primary }}
                                     >
                                         <Sparkles className="h-3.5 w-3.5 shrink-0" />
-                                        Open Dexo Briefing
+                                        Open Deepchox Briefing
                                     </button>
                                 </div>
                             </div>
@@ -1326,11 +1326,11 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         </div>
                                     )}
 
-                                    {/* ── Dexo Focus Recommendations ── */}
+                                    {/* ── Deepchox Focus Recommendations ── */}
                                     {staffFocusLines.length > 0 && (
                                         <div className="px-5 py-4">
                                             <p className="mb-2.5 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: THEME.accent.primary }}>
-                                                Dexo Recommends — Focus Today
+                                                Deepchox Recommends — Focus Today
                                             </p>
                                             <ul className="space-y-2">
                                                 {staffFocusLines.slice(0, 4).map((line, i) => (
@@ -1369,7 +1369,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                             className="shrink-0 rounded-lg border px-2.5 py-1.5 text-[10px] font-semibold transition hover:opacity-80"
                                                             style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.10)', color: THEME.accent.primary }}
                                                         >
-                                                            Ask Dexo
+                                                            Ask Deepchox
                                                         </button>
                                                     </div>
                                                 ))}
@@ -1377,10 +1377,10 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         </div>
                                     )}
 
-                                    {/* ── Pre-set Dexo Questions ── */}
+                                    {/* ── Pre-set Deepchox Questions ── */}
                                     <div className="px-5 py-4">
                                         <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>
-                                            Ask Dexo Anything
+                                            Ask Deepchox Anything
                                         </p>
                                         <div className="flex flex-wrap gap-2">
                                             {([
@@ -1443,7 +1443,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     <div className="max-w-sm">
                                         <h3 className="text-base font-semibold" style={{ color: THEME.text.primary }}>Activate your AI co-founder</h3>
                                         <p className="mt-2 text-[13px] leading-relaxed" style={{ color: THEME.text.secondary }}>
-                                            Run a Staff Sync to let Dexo research your venture across 5 desks — Strategy, Market, Product, Finance, and Growth. Dexo will then brief you daily on findings, risks, and what to do next.
+                                            Run a Staff Sync to let Deepchox research your venture across 5 desks — Strategy, Market, Product, Finance, and Growth. Deepchox will then brief you daily on findings, risks, and what to do next.
                                         </p>
                                     </div>
                                     <div className="flex flex-wrap items-center justify-center gap-3">
@@ -1461,7 +1461,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                             className="flex items-center gap-2 rounded-xl border px-5 py-2.5 text-sm font-medium transition-all"
                                             style={{ borderColor: THEME.border.default, background: 'rgba(255,255,255,0.04)', color: THEME.text.secondary }}
                                         >
-                                            Open Dexo anyway
+                                            Open Deepchox anyway
                                         </button>
                                     </div>
                                 </div>
@@ -1497,7 +1497,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                             <div className="flex items-center gap-3 min-w-0">
                                                 <DexoAvatar size="sm" state="idle" pulse={false} />
                                                 <div className="min-w-0">
-                                                    <p className="text-[13px] font-semibold" style={{ color: THEME.text.primary }}>Dexo Co-Founder Guide</p>
+                                                    <p className="text-[13px] font-semibold" style={{ color: THEME.text.primary }}>Deepchox Co-Founder Guide</p>
                                                     <p className="text-[11px] font-medium" style={{ color: d.color }}>{d.label} · {d.role}</p>
                                                 </div>
                                             </div>
@@ -1525,7 +1525,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                 <p className="text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>{d.guide}</p>
                                             </div>
 
-                                            {/* Ask Dexo CTA */}
+                                            {/* Ask Deepchox CTA */}
                                             {d.snap?.trim() ? (
                                                 <button
                                                     type="button"
@@ -1544,7 +1544,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                     style={{ background: `linear-gradient(135deg, ${d.color}28, rgba(116,86,255,0.22))`, border: `1px solid ${d.color}35`, color: THEME.text.primary }}
                                                 >
                                                     <Sparkles className="h-4 w-4 shrink-0" style={{ color: d.color }} />
-                                                    Ask Dexo about this finding →
+                                                    Ask Deepchox about this finding →
                                                 </button>
                                             ) : (
                                                 <p className="text-center text-[11px]" style={{ color: THEME.text.muted }}>
@@ -1575,7 +1575,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                             <Cpu className="h-4 w-4" style={{ color: THEME.accent.primary }} />
                                         </div>
                                         <div className="min-w-0">
-                                            <h2 className="text-[13px] font-semibold" style={{ color: THEME.text.primary }}>Dexo Research Guide</h2>
+                                            <h2 className="text-[13px] font-semibold" style={{ color: THEME.text.primary }}>Deepchox Research Guide</h2>
                                             <p className="truncate text-[10px]" style={{ color: THEME.text.muted }}>
                                                 AI co-founder briefing · 5 desks{lastStaffSyncLabel ? ` · ${lastStaffSyncLabel}` : ''}
                                             </p>
@@ -1678,7 +1678,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                         style={{ borderColor: 'rgba(255,255,255,0.10)', background: 'rgba(255,255,255,0.05)', color: THEME.text.secondary }}
                                                     >
                                                         <Cpu className="h-3 w-3 shrink-0" style={{ color: THEME.accent.primary }} />
-                                                        Dexo Guide
+                                                        Deepchox Guide
                                                     </button>
                                                     {hasSnap && (
                                                         <button
@@ -1697,7 +1697,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                             style={{ borderColor: 'rgba(116,86,255,0.28)', background: 'rgba(116,86,255,0.10)', color: THEME.accent.primary }}
                                                         >
                                                             <Sparkles className="h-3 w-3 shrink-0" />
-                                                            Ask Dexo
+                                                            Ask Deepchox
                                                         </button>
                                                     )}
                                                 </div>
@@ -1743,7 +1743,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                 style={{ borderColor: 'rgba(116,86,255,0.28)', background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}
                                             >
                                                 <Sparkles className="h-3 w-3 shrink-0" />
-                                                Unpack with Dexo →
+                                                Unpack with Deepchox →
                                             </button>
                                         </div>
                                     </div>
@@ -1761,10 +1761,10 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     <Cpu className="h-7 w-7" style={{ color: THEME.accent.primary }} />
                                 </div>
                                 <div className="max-w-xs">
-                                    <h3 className="text-base font-semibold" style={{ color: THEME.text.primary }}>Dexo Research Guide</h3>
+                                    <h3 className="text-base font-semibold" style={{ color: THEME.text.primary }}>Deepchox Research Guide</h3>
                                     <p className="mt-1 text-[10px] font-semibold uppercase tracking-wider" style={{ color: THEME.text.muted }}>Source: Staff Sync · 5 desks</p>
                                     <p className="mt-2 text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
-                                        Run Staff Sync to activate your AI team. Each desk researches a functional area and Dexo guides you through what was found and how to act on it.
+                                        Run Staff Sync to activate your AI team. Each desk researches a functional area and Deepchox guides you through what was found and how to act on it.
                                     </p>
                                 </div>
                                 <button
@@ -1964,7 +1964,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                         className="shrink-0 text-[10px] font-semibold underline-offset-2 hover:underline"
                                                         style={{ color: THEME.accent.info }}
                                                     >
-                                                        Ask Dexo
+                                                        Ask Deepchox
                                                     </button>
                                                 </li>
                                             ))}
@@ -2044,7 +2044,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.10)', color: THEME.accent.primary }}
                                     >
                                         <Sparkles className="h-3.5 w-3.5" />
-                                        Open Dexo AI
+                                        Open Deepchox AI
                                     </button>
                                 </div>
 
@@ -2214,7 +2214,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     { id: 'finance', label: 'Finance', sub: 'Budget', icon: Wallet, color: THEME.chart.emerald, room: 'accountant' as const },
                                     { id: 'product', label: 'Product', sub: 'Roadmap', icon: Layers, color: THEME.chart.amber, room: 'pm' as const },
                                     { id: 'pa', label: 'Assistant', sub: 'Support', icon: MessageSquare, color: THEME.chart.cyan, room: 'personal_assistant' as const },
-                                    { id: 'dexo', label: 'Dexo AI', sub: 'Command', icon: Cpu, color: THEME.accent.primary, room: 'dexo' as const },
+                                    { id: 'dexo', label: 'Deepchox AI', sub: 'Command', icon: Cpu, color: THEME.accent.primary, room: 'dexo' as const },
                                 ] as const).map(({ label, sub, icon: Icon, color, room }) => (
                                     <button
                                         key={label}
@@ -2363,7 +2363,7 @@ function PortfolioView({
                     § A  MORNING INTELLIGENCE BRIEF
                          Daily Tavily-backed web research per venture.
                          Read the headline, check the sources, then open
-                         the venture to discuss findings with Dexo.
+                         the venture to discuss findings with Deepchox.
                 ════════════════════════════════════════════════════════ */}
                 <section>
                     {/* Section title row */}
@@ -2376,13 +2376,13 @@ function PortfolioView({
                             </div>
                             <div className="mt-1.5 space-y-1">
                                 <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
-                                    Dexo searched the web for each venture and returned real headlines with verified source links — live market intelligence, not AI-generated summaries.
+                                    Deepchox searched the web for each venture and returned real headlines with verified source links — live market intelligence, not AI-generated summaries.
                                 </p>
                                 <p className="text-[11px]" style={{ color: THEME.text.muted }}>
                                     <span className="font-semibold" style={{ color: THEME.text.primary }}>Source:</span>{' '}Tavily live web search · runs daily per venture · every card links to the original article
                                 </p>
                                 <p className="text-[11px] font-medium" style={{ color: THEME.accent.info }}>
-                                    → Click any source link to read the article. Open a venture card to discuss the findings with Dexo.
+                                    → Click any source link to read the article. Open a venture card to discuss the findings with Deepchox.
                                 </p>
                             </div>
                         </div>
@@ -2396,7 +2396,7 @@ function PortfolioView({
                             <div className="max-w-sm">
                                 <p className="font-semibold" style={{ color: THEME.text.primary }}>No ventures yet</p>
                                 <p className="mt-1.5 text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
-                                    Create a venture and run a Staff Sync — Dexo will pull live market research from the web and generate a daily briefing for it here.
+                                    Create a venture and run a Staff Sync — Deepchox will pull live market research from the web and generate a daily briefing for it here.
                                 </p>
                             </div>
                             {onNewVenture && (
@@ -2542,7 +2542,7 @@ function PortfolioView({
                          Signals your AI team flagged that need your input.
                          These are not notifications — each item is a
                          specific finding that requires a human decision.
-                         "Discuss →" opens Dexo for that venture directly.
+                         "Discuss →" opens Deepchox for that venture directly.
                 ════════════════════════════════════════════════════════ */}
                 {(allAttentionItems.length > 0 || focusLines.length > 0) && (
                     <section>
@@ -2565,7 +2565,7 @@ function PortfolioView({
                                         <span className="font-semibold" style={{ color: THEME.text.primary }}>Source:</span>{' '}Auto-flagged by AI desks during Staff Sync · the colored badge shows which desk raised each item and why it was escalated
                                     </p>
                                     <p className="text-[11px] font-medium" style={{ color: THEME.accent.info }}>
-                                        → Click "Discuss →" on any item to open Dexo for that venture and build a concrete plan together.
+                                        → Click "Discuss →" on any item to open Deepchox for that venture and build a concrete plan together.
                                     </p>
                                 </div>
                             </div>
@@ -2631,13 +2631,13 @@ function PortfolioView({
                                 </div>
                             )}
 
-                            {/* Dexo's recommended actions today */}
+                            {/* Deepchox's recommended actions today */}
                             {focusLines.length > 0 && (
                                 <div className="flex flex-col overflow-hidden rounded-2xl border" style={{ borderColor: THEME.border.subtle }}>
                                     <div className="flex items-start gap-2.5 border-b px-5 py-3.5" style={{ borderColor: THEME.border.subtle, background: 'rgba(116,86,255,0.05)' }}>
                                         <Target className="h-4 w-4 mt-0.5 shrink-0" style={{ color: THEME.accent.primary }} />
                                         <div>
-                                            <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>Dexo's Recommended Actions</p>
+                                            <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>Deepchox's Recommended Actions</p>
                                             <p className="text-[10px] mt-0.5" style={{ color: THEME.text.muted }}>
                                                 What your AI co-founder thinks you should do today for <span style={{ color: THEME.accent.primary }}>{leadingVenture?.name ?? 'your venture'}</span> — ordered by priority
                                             </p>
@@ -2866,7 +2866,7 @@ function PortfolioView({
                                         { role: 'accountant' as const, label: 'Finance',  sub: 'Budget & Runway',    icon: Wallet,    color: THEME.chart.emerald },
                                         { role: 'pm'         as const, label: 'Product',  sub: 'Roadmap & Features', icon: Layers,    color: THEME.chart.amber   },
                                         { role: 'cmo'        as const, label: 'Growth',   sub: 'GTM & Acquisition',  icon: Megaphone, color: THEME.chart.rose    },
-                                        { role: null,                  label: 'Dexo AI',  sub: 'Discuss & Plan',     icon: Cpu,       color: THEME.accent.primary },
+                                        { role: null,                  label: 'Deepchox AI',  sub: 'Discuss & Plan',     icon: Cpu,       color: THEME.accent.primary },
                                     ] as const).map(({ role, label, sub, icon: Icon, color }) => (
                                         <button key={label} type="button"
                                             onClick={() => {

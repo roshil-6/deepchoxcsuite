@@ -24,7 +24,7 @@ function parsePatch(raw: unknown): DexoPatchContract | null {
 }
 
 /**
- * Floating approvals dock: review Dexo-suggested venture patches (Approve / Reject only).
+ * Floating approvals dock: review Deepchox-suggested venture patches (Approve / Reject only).
  * Render once from OfficeShell â€” no mode selector; chat + manual edits stay the two paths.
  */
 export function DexoPendingChangesFloating({ activeProject }: { activeProject: Project }) {
@@ -250,7 +250,7 @@ export function DexoPendingChangesFloating({ activeProject }: { activeProject: P
             <div className="custom-scrollbar max-h-[min(48vh,360px)] overflow-y-auto px-2.5 py-2">
               {sorted.length === 0 ? (
                 <p className="px-1 py-4 text-center text-[10px] leading-relaxed text-[var(--text-muted)]">
-                  No pending suggestions. Use Dexo or edit desks directly.
+                  No pending suggestions. Use Deepchox or edit desks directly.
                 </p>
               ) : (
                 <ul className="space-y-2">

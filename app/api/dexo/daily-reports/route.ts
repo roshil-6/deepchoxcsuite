@@ -12,7 +12,7 @@ export async function GET(req: Request) {
 
   if (!(await hasDailyBriefEntitlement())) {
     return NextResponse.json(
-      { ok: false, error: 'pro_required', upgrade: true, message: 'Dexo daily reports are a Co-Founder Pro feature.' },
+      { ok: false, error: 'pro_required', upgrade: true, message: 'Deepchox daily reports are a Co-Founder Pro feature.' },
       { status: 403 },
     );
   }

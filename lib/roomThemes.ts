@@ -187,7 +187,7 @@ const SHELL_DEFAULT: WorkspaceShellTheme = {
 };
 
 export function getWorkspaceShellTheme(activeRoom: string): WorkspaceShellTheme {
-  /** Dexo: near-black, no shell grid — particle wave canvas owns the bg */
+  /** Deepchox: near-black, no shell grid — particle wave canvas owns the bg */
   if (activeRoom === 'dexo') {
     return {
       wash: 'from-[#1e1e1e] to-[#212121]',
@@ -230,7 +230,7 @@ export function getWorkspaceShellTheme(activeRoom: string): WorkspaceShellTheme 
     ...SHELL_DEFAULT,
     ...p,
     immersive: p.immersive ?? SHELL_DEFAULT.immersive,
-    /** Dexo: single flat surface — hide shell grid so it doesn’t clash with the left rail / chat split */
+    /** Deepchox: single flat surface — hide shell grid so it doesn’t clash with the left rail / chat split */
     ...(activeRoom === 'dexo' ? { gridOpacity: '0' } : {}),
   };
 }

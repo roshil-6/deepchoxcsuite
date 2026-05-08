@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Floating Dexo launcher — crisp vector mark + expandable chat (no canvas noise).
+ * Floating Deepchox launcher — crisp vector mark + expandable chat (no canvas noise).
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -116,7 +116,7 @@ function speakUtteranceLine(line: string, signal: AbortSignal): Promise<void> {
     });
 }
 
-/** Spoken Dexo replies in live voice mode — strips markdown noise. */
+/** Spoken Deepchox replies in live voice mode — strips markdown noise. */
 async function speakDexoResponseAloud(text: string, signal: AbortSignal): Promise<void> {
     if (typeof window === 'undefined') return;
     const stripped = text.replace(/[*_`#[\]]/g, ' ').replace(/\s+/g, ' ').trim();
@@ -291,8 +291,8 @@ function FloatingChat({
         const p = activeProjectRef.current;
         const vn = p?.name?.trim();
         const greet = vn
-            ? `Hi! I'm Dexo — welcome to your live voice session for ${vn}. I'm listening. Ask me to update any part of this venture, run research, or refine your strategy, and I'll work through it with you in real time. When you're done, tap End session or say end session.`
-            : `Hi! I'm Dexo. Let's create your venture together — tell me what you're exploring or the problem you care about. When you're ready, use New venture in the sidebar to save a workspace. I'm listening live. When you're finished, tap End session or say end session.`;
+            ? `Hi! I'm Deepchox — welcome to your live voice session for ${vn}. I'm listening. Ask me to update any part of this venture, run research, or refine your strategy, and I'll work through it with you in real time. When you're done, tap End session or say end session.`
+            : `Hi! I'm Deepchox. Let's create your venture together — tell me what you're exploring or the problem you care about. When you're ready, use New venture in the sidebar to save a workspace. I'm listening live. When you're finished, tap End session or say end session.`;
 
         skipPersistRef.current = true;
         setMessages([{ role: 'dexo', text: greet, id: ++msgId.current }]);
@@ -510,7 +510,7 @@ function FloatingChat({
             });
             const data = (await res.json()) as { ok: boolean; report?: JarvisReport; error?: string };
             if (!data.ok || !data.report) {
-                dexoReply = data.error ?? 'Dexo could not complete that turn.';
+                dexoReply = data.error ?? 'Deepchox could not complete that turn.';
                 setMessages((prev) => [...prev, { role: 'dexo', text: dexoReply, id: ++msgId.current }]);
             } else {
                 let reply = data.report.voiceResponse;
@@ -521,8 +521,8 @@ function FloatingChat({
                         const out = await submitDexoVenturePatch({
                             ventureId: project.id,
                             source: 'dexo_orb',
-                            model: 'Dexo',
-                            summary: `Dexo suggests: ${pending.join(' · ')}`,
+                            model: 'Deepchox',
+                            summary: `Deepchox suggests: ${pending.join(' · ')}`,
                             patch,
                             updateProjectField,
                         });
@@ -571,7 +571,7 @@ function FloatingChat({
             }
         }
 
-        // Chat mode: speak Dexo's reply aloud (respects mute toggle)
+        // Chat mode: speak Deepchox's reply aloud (respects mute toggle)
         if (variant === 'chat' && dexoReply && !mutedRef.current) {
             speechAborterRef.current?.abort();
             const ac = new AbortController();
@@ -612,9 +612,9 @@ function FloatingChat({
     const statusLine =
         variant === 'talk'
             ? isListening
-                ? 'Live · listening — speak anytime; interrupts Dexo'
+                ? 'Live · listening — speak anytime; interrupts Deepchox'
                 : isSpeaking
-                  ? 'Live · Dexo speaking — speak to interrupt'
+                  ? 'Live · Deepchox speaking — speak to interrupt'
                   : loading
                     ? DEXO_LOADING_TAGLINES[loadingTick]
                     : 'Live · ready'
@@ -647,7 +647,7 @@ function FloatingChat({
                     </div>
                     <div className="min-w-0">
                         <p className="truncate text-[13px] font-semibold tracking-tight text-zinc-900">
-                            Dexo {variant === 'talk' ? '· Live voice' : ''}
+                            Deepchox {variant === 'talk' ? '· Live voice' : ''}
                         </p>
                         <p className="truncate text-[10px] text-zinc-500">NorthROSC Labs · DeepChox AI</p>
                         <p className="mt-0.5 truncate text-[10px] font-medium tabular-nums text-teal-700/90">{statusLine}</p>
@@ -683,7 +683,7 @@ function FloatingChat({
                             <MessageSquarePlus className="h-3.5 w-3.5" strokeWidth={1.75} />
                         </button>
                     )}
-                    {/* Mute / unmute Dexo voice */}
+                    {/* Mute / unmute Deepchox voice */}
                     <button
                         type="button"
                         onClick={toggleMute}
@@ -694,8 +694,8 @@ function FloatingChat({
                                   ? 'text-teal-600 hover:text-teal-800'
                                   : 'text-zinc-500 hover:text-zinc-800'
                         }`}
-                        title={muted ? 'Unmute Dexo' : 'Mute Dexo'}
-                        aria-label={muted ? 'Unmute Dexo' : 'Mute Dexo'}
+                        title={muted ? 'Unmute Deepchox' : 'Mute Deepchox'}
+                        aria-label={muted ? 'Unmute Deepchox' : 'Mute Deepchox'}
                     >
                         {muted
                             ? <VolumeX className="h-3.5 w-3.5" strokeWidth={1.75} />
@@ -727,7 +727,7 @@ function FloatingChat({
                         <p className="max-w-[248px] text-center text-[12px] leading-relaxed text-zinc-500">
                             {activeProject?.id
                                 ? 'Messages stay in context for this venture. Ask for updates, decisions, or a concise read on where things stand.'
-                                : 'Exploring without a saved venture — Dexo helps you clarify ideas. Use New venture when you want a named workspace and full analysis.'}
+                                : 'Exploring without a saved venture — Deepchox helps you clarify ideas. Use New venture when you want a named workspace and full analysis.'}
                         </p>
                     </div>
                 )}
@@ -771,7 +771,7 @@ function FloatingChat({
             <div className="shrink-0 border-t border-zinc-200 bg-white px-3 py-2.5">
                 {variant === 'talk' && (
                     <p className="mb-2 hidden text-[10px] leading-snug text-zinc-500 sm:block">
-                        Mic stays active in the background: you can <span className="font-semibold text-zinc-700">interrupt</span> Dexo while it speaks. Use
+                        Mic stays active in the background: you can <span className="font-semibold text-zinc-700">interrupt</span> Deepchox while it speaks. Use
                         headphones to reduce echo. Say <span className="font-semibold text-zinc-700">end session</span> or tap{' '}
                         <span className="font-semibold text-zinc-700">End</span> when finished.
                     </p>
@@ -828,7 +828,7 @@ function FloatingChat({
                                 ? 'Listening…'
                                 : variant === 'talk'
                                   ? 'Or type a command — same live thread'
-                                  : 'Type or use the mic — same thread as Dexo room'
+                                  : 'Type or use the mic — same thread as Deepchox room'
                         }
                         className="min-h-[32px] min-w-0 flex-1 resize-none border-none bg-transparent px-0.5 py-1.5 text-[13px] text-zinc-900 placeholder:text-zinc-400 focus:outline-none"
                         style={{ maxHeight: '80px', overflowY: 'auto' }}
@@ -972,7 +972,7 @@ export function FloatingDexoOrb() {
                     className="absolute bottom-[calc(100%+12px)] right-0 w-[min(calc(100vw-1.5rem),17.5rem)] rounded-xl border border-zinc-200 bg-gradient-to-b from-white to-zinc-50 p-3 shadow-[0_20px_40px_rgba(15,23,42,0.15)]"
                     style={{ animation: 'dexo-chat-enter 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards' }}
                 >
-                    <p className="text-[12px] font-semibold text-zinc-900">How should Dexo help?</p>
+                    <p className="text-[12px] font-semibold text-zinc-900">How should Deepchox help?</p>
                     <p className="mt-0.5 text-[10px] leading-snug text-zinc-500">
                         Chat or live voice — uses your saved venture when you have one, or helps you explore before you name it.
                     </p>
@@ -1032,11 +1032,11 @@ export function FloatingDexoOrb() {
                     <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(116,86,255,0.6)] to-transparent" aria-hidden />
                     <div className="flex items-start gap-3 p-3.5">
                         <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-zinc-100 ring-2 ring-[rgba(116,86,255,0.35)]">
-                            <img src="/dexo-avatar.jpg" alt="Dexo" className="h-full w-full object-cover object-top" />
+                            <img src="/dexo-avatar.jpg" alt="Deepchox" className="h-full w-full object-cover object-top" />
                         </div>
                         <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1.5">
-                                <span className="font-sans text-[9px] font-bold uppercase tracking-[0.22em] text-[#7456ff]">Dexo</span>
+                                <span className="font-sans text-[9px] font-bold uppercase tracking-[0.22em] text-[#7456ff]">Deepchox</span>
                                 <span className="font-sans text-[8px] font-semibold uppercase tracking-widest text-zinc-600">AI Co-Founder</span>
                             </div>
                             <p className="mt-1.5 font-sans text-[12px] leading-relaxed text-zinc-200">
@@ -1071,7 +1071,7 @@ export function FloatingDexoOrb() {
                         animation: 'dexo-chat-enter 0.2s ease-out forwards',
                     }}
                 >
-                    <p className="text-[12px] font-semibold tracking-tight text-zinc-900">Dexo</p>
+                    <p className="text-[12px] font-semibold tracking-tight text-zinc-900">Deepchox</p>
                     <p className="mt-0.5 text-[10px] leading-snug text-zinc-500">AI co-founder · venture context</p>
                     {activeProject?.name ? (
                         <p className="mt-1.5 truncate text-[11px] text-zinc-600" title={activeProject.name}>
@@ -1100,10 +1100,10 @@ export function FloatingDexoOrb() {
                 />
                 <button
                     type="button"
-                    title={fabPanel !== 'none' ? 'Close Dexo' : 'Open Dexo'}
+                    title={fabPanel !== 'none' ? 'Close Deepchox' : 'Open Deepchox'}
                     aria-haspopup="dialog"
                     aria-expanded={fabPanel !== 'none'}
-                    aria-label={fabPanel !== 'none' ? 'Close Dexo' : 'Open Dexo'}
+                    aria-label={fabPanel !== 'none' ? 'Close Deepchox' : 'Open Deepchox'}
                     onPointerDown={onPointerDown}
                     onPointerMove={onPointerMove}
                     onPointerUp={onPointerUp}

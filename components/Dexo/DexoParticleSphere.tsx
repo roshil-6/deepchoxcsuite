@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Shared 3D-ish particle sphere for Dexo — tuned to fill the circular viewport edge-to-edge.
+ * Shared 3D-ish particle sphere for Deepchox — tuned to fill the circular viewport edge-to-edge.
  */
 
 import React, { useEffect, useRef } from 'react';

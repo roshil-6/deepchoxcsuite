@@ -1,6 +1,6 @@
 /**
  * Venture persistence: PostgreSQL via `/api/ventures/*` + `x-deepchox-session`.
- * Dexo thread fallback when API down: localStorage (see convo fallback below).
+ * Deepchox thread fallback when API down: localStorage (see convo fallback below).
  */
 
 export * from './projectTypes';
@@ -62,7 +62,7 @@ async function ensureDexieMigrated(): Promise<void> {
   await migrateOnce;
 }
 
-// --- Dexo / desk conversation fallback (when Postgres dexo-convo API unavailable) ---
+// --- Deepchox / desk conversation fallback (when Postgres dexo-convo API unavailable) ---
 const CONVO_FB = 'deepchox-convo-fb-v1:';
 
 function convoFallbackKey(projectId: number): string {
