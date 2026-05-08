@@ -76,9 +76,9 @@ import { pickEnglishPlaybackVoice, resumeSpeechSynthIfNeeded } from '@/lib/voice
 import { DexoAvatar } from '@/components/Dexo/DexoAvatar';
 import { buildDexoStaffAttentionBootstrap } from '@/lib/dexoStaffAttentionPrompt';
 import { buildDexoJarvisVentureContext } from '@/lib/dexoJarvisContext';
-import { readVenturePriority, getPriorityById } from '@/lib/venturePriority';
 import { FocusBriefingPanel } from '@/components/FocusBriefingPanel';
-import { DexoResearchRoom } from '@/components/DexoResearchRoom';
+import { DexoDailyBriefPanel } from '@/components/Dexo/DexoDailyBriefPanel';
+import { DexoOpsPanel } from '@/components/Dexo/DexoOpsPanel';
 import { PortfolioDailyIntelSection } from '@/components/Dexo/PortfolioDailyIntelSection';
 
 // ============================================================================
@@ -161,11 +161,11 @@ const THEME = {
         muted: 'var(--text-muted)',
     },
     accent: {
-        primary: 'rgba(255,255,255,0.75)',
-        secondary: 'rgba(255,255,255,0.55)',
-        tertiary: 'rgba(255,255,255,0.45)',
-        info: 'rgba(255,255,255,0.35)',
-        warning: 'rgba(255,255,255,0.25)',
+        primary: 'var(--accent-violet)',
+        secondary: 'var(--accent-violet)',
+        tertiary: '#8b74ff',
+        info: '#7456ff',
+        warning: '#5f43df',
     },
     border: {
         subtle: 'rgba(255,255,255,0.08)',
@@ -173,17 +173,17 @@ const THEME = {
         strong: 'rgba(255,255,255,0.14)',
     },
     chart: {
-        emerald: '#34d399',
-        violet: '#94a3b8',
-        amber: '#fbbf24',
-        blue: '#38bdf8',
-        rose: '#f87171',
-        cyan: '#67e8f9',
+        emerald: '#7456ff',
+        violet: '#7456ff',
+        amber: '#9d88ff',
+        blue: '#8b74ff',
+        rose: '#5f43df',
+        cyan: '#a696ff',
         slate: '#94a3b8',
     },
 } as const;
 
-/** Map snapshot desk labels ←' research room for quick navigation from the overview card */
+/** Map snapshot desk labels → research room for quick navigation from the overview card */
 const SNAPSHOT_DESK_ROOMS: Record<string, AgentRole> = {
     Strategy: 'ceo',
     Market: 'scout',
@@ -259,14 +259,18 @@ function Card({ children, className = '', interactive = false, onClick, id }: Ca
             onClick={onClick}
             id={id}
             className={`
-                relative overflow-hidden rounded-xl border
+                relative overflow-hidden rounded-2xl border
                 ${interactive ? 'cursor-pointer' : ''}
-                transition-colors duration-150
+                transition-all duration-300 ease-out
+                ${isHovered && interactive ? 'translate-y-[-2px]' : ''}
                 ${className}
             `}
             style={{
-                background: isHovered && interactive ? '#201f28' : '#1c1c1f',
-                borderColor: isHovered && interactive ? 'rgba(255,255,255,0.11)' : 'rgba(255,255,255,0.07)',
+                background: `linear-gradient(180deg, ${THEME.bg.elevated} 0%, ${THEME.bg.tertiary} 100%)`,
+                borderColor: isHovered && interactive ? THEME.border.strong : THEME.border.default,
+                boxShadow: isHovered && interactive
+                    ? '0 12px 32px rgba(0,0,0,0.4), 0 4px 8px rgba(0,0,0,0.2)'
+                    : '0 4px 16px rgba(0,0,0,0.2)',
             }}
         >
             {children}
@@ -292,11 +296,11 @@ function MetricCard({
     delay?: number;
 }) {
     const colorMap = {
-        emerald: { bg: 'rgba(255,255,255,0.05)', text: 'rgba(255,255,255,0.65)', glow: 'none' },
-        violet: { bg: 'rgba(255,255,255,0.05)', text: '#94a3b8', glow: 'rgba(255,255,255,0.03)' },
-        amber: { bg: 'rgba(255,255,255,0.05)', text: 'rgba(255,255,255,0.65)', glow: 'none' },
-        blue: { bg: 'rgba(255,255,255,0.05)', text: 'rgba(255,255,255,0.65)', glow: 'none' },
-        rose: { bg: 'rgba(255,255,255,0.05)', text: 'rgba(255,255,255,0.65)', glow: 'none' },
+        emerald: { bg: 'rgba(16,185,129,0.1)', text: '#10B981', glow: 'rgba(16,185,129,0.06)' },
+        violet: { bg: 'rgba(139,92,246,0.1)', text: '#8B5CF6', glow: 'rgba(139,92,246,0.06)' },
+        amber: { bg: 'rgba(245,158,11,0.1)', text: '#F59E0B', glow: 'rgba(245,158,11,0.06)' },
+        blue: { bg: 'rgba(59,130,246,0.1)', text: '#3B82F6', glow: 'rgba(59,130,246,0.06)' },
+        rose: { bg: 'rgba(244,63,94,0.1)', text: '#F43F5E', glow: 'rgba(244,63,94,0.06)' },
     };
     const c = colorMap[color];
     const [entered, setEntered] = useState(false);
@@ -311,7 +315,7 @@ function MetricCard({
             className="transition-all duration-500 ease-out"
             style={{
                 opacity: entered ? 1 : 0,
-                transform: entered ? 'translateY(0)' : 'translateY(8px)',
+                transform: entered ? 'translateY(0)' : 'translateY(12px)',
             }}
         >
             <Card interactive className="p-5 group/metric">
@@ -325,7 +329,7 @@ function MetricCard({
                     {trend && (
                         <div
                             className="flex items-center gap-1 text-xs font-medium"
-                            style={{ color: trendUp ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.28)' }}
+                            style={{ color: trendUp ? THEME.accent.primary : THEME.accent.warning }}
                         >
                             {trendUp ? <TrendingUp className="h-3 w-3" /> : <TrendingUp className="h-3 w-3 rotate-180" />}
                             {trend}
@@ -333,10 +337,10 @@ function MetricCard({
                     )}
                 </div>
                 <div className="mt-4">
-                    <div className="text-2xl font-semibold tracking-tight transition-colors duration-200" style={{ color: '#f2f2f5' }}>
+                    <div className="text-2xl font-semibold tracking-tight transition-colors duration-200" style={{ color: THEME.text.primary }}>
                         {value}
                     </div>
-                    <div className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                    <div className="mt-1 text-sm" style={{ color: THEME.text.secondary }}>
                         {label}
                     </div>
                 </div>
@@ -357,11 +361,11 @@ function SectionHeader({
     return (
         <div className="mb-5 flex items-end justify-between">
             <div>
-                <h2 className="text-lg font-semibold tracking-tight" style={{ color: '#f2f2f5' }}>
+                <h2 className="text-lg font-semibold tracking-tight" style={{ color: THEME.text.primary }}>
                     {title}
                 </h2>
                 {subtitle && (
-                    <p className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                    <p className="mt-1 text-sm" style={{ color: THEME.text.secondary }}>
                         {subtitle}
                     </p>
                 )}
@@ -374,7 +378,7 @@ function SectionHeader({
 function ProgressBar({
     value,
     max = 100,
-    color = 'rgba(255,255,255,0.75)',
+    color = THEME.accent.primary,
     size = 'md',
     showLabel = true,
 }: {
@@ -402,7 +406,7 @@ function ProgressBar({
                 />
             </div>
             {showLabel && (
-                <div className="mt-2 flex justify-between text-xs" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                <div className="mt-2 flex justify-between text-xs" style={{ color: THEME.text.secondary }}>
                     <span>{Math.round(percentage)}% complete</span>
                     <span>
                         {value}/{max}
@@ -421,10 +425,10 @@ function StatusBadge({
     label?: string;
 }) {
     const config = {
-        active: { bg: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.70)', dot: 'rgba(255,255,255,0.55)' },
-        pending: { bg: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.50)', dot: 'rgba(255,255,255,0.35)' },
+        active: { bg: 'rgba(16,185,129,0.15)', color: '#10B981', dot: '#10B981' },
+        pending: { bg: 'rgba(245,158,11,0.15)', color: '#F59E0B', dot: '#F59E0B' },
         idle: { bg: 'rgba(100,116,139,0.15)', color: '#94A3B8', dot: '#64748B' },
-        warning: { bg: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.45)', dot: 'rgba(255,255,255,0.30)' },
+        warning: { bg: 'rgba(239,68,68,0.15)', color: '#EF4444', dot: '#EF4444' },
     };
     const c = config[status];
 
@@ -464,7 +468,7 @@ function CircularProgress({
     max = 100,
     size = 120,
     strokeWidth = 8,
-    color = 'rgba(255,255,255,0.75)',
+    color = THEME.accent.primary,
     label,
 }: {
     value: number;
@@ -504,10 +508,10 @@ function CircularProgress({
                 />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-2xl font-semibold" style={{ color: '#f2f2f5' }}>
+                <span className="text-2xl font-semibold" style={{ color: THEME.text.primary }}>
                     {Math.round(percentage)}%
                 </span>
-                {label && <span className="text-xs" style={{ color: 'rgba(255,255,255,0.55)' }}>{label}</span>}
+                {label && <span className="text-xs" style={{ color: THEME.text.secondary }}>{label}</span>}
             </div>
         </div>
     );
@@ -572,11 +576,11 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeRoom, allProjects.length]);
 
-    // Dexo welcome modal is available on-demand (triggered via header button), not auto-shown
+    // Show Dexo welcome/guide pop-up when entering Executive Overview with an active project
     useEffect(() => {
         if (activeRoom !== 'dashboard' || !activeProject?.id) return;
         setDexoWelcomeStep(0);
-        // setShowDexoWelcome(true); // disabled — too intrusive on every visit
+        setShowDexoWelcome(true);
     }, [activeRoom, activeProject?.id]);
 
     // Pre-load Dexo with a venture briefing whenever user enters Executive Overview
@@ -676,8 +680,8 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
         const progress = phases.filter((p) => p.status === 'in_progress').length;
         const done = phases.filter((p) => p.status === 'done').length;
         return [
-            { name: 'Done', value: done, fill: 'rgba(255,255,255,0.45)' },
-            { name: 'In Progress', value: progress, fill: 'rgba(255,255,255,0.45)' },
+            { name: 'Done', value: done, fill: THEME.chart.emerald },
+            { name: 'In Progress', value: progress, fill: THEME.chart.amber },
             { name: 'Planned', value: planned, fill: THEME.chart.slate },
         ].filter((d) => d.value > 0);
     }, [phases]);
@@ -686,8 +690,8 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
         if (!priTotal) return [];
         const open = Math.max(0, priTotal - priDone);
         return [
-            { name: 'Complete', value: priDone, fill: 'rgba(255,255,255,0.45)' },
-            { name: 'Open', value: open, fill: 'rgba(255,255,255,0.45)' },
+            { name: 'Complete', value: priDone, fill: THEME.chart.emerald },
+            { name: 'Open', value: open, fill: THEME.chart.rose },
         ].filter((d) => d.value > 0);
     }, [priTotal, priDone]);
 
@@ -711,35 +715,35 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
             {
                 label: 'Strategy',
                 pct: strategyCoverage,
-                fill: 'rgba(255,255,255,0.45)',
+                fill: THEME.chart.violet,
                 icon: Lightbulb,
                 hint: clip(snap?.ceo) || 'Mission, phases, priorities',
             },
             {
                 label: 'Market',
                 pct: pct(p?.marketInsights),
-                fill: 'rgba(255,255,255,0.45)',
+                fill: THEME.chart.blue,
                 icon: Globe,
                 hint: clip(snap?.scout) || 'Competitors, signals, landscape',
             },
             {
                 label: 'Finance',
                 pct: pct(p?.budget),
-                fill: 'rgba(255,255,255,0.45)',
+                fill: THEME.chart.emerald,
                 icon: Wallet,
                 hint: clip(snap?.accountant) || 'Runway, burn, capital',
             },
             {
                 label: 'Product',
                 pct: pct(p?.productPlan),
-                fill: 'rgba(255,255,255,0.45)',
+                fill: THEME.chart.amber,
                 icon: Layers,
                 hint: clip(snap?.pm) || 'Roadmap, shipping cadence',
             },
             {
                 label: 'Growth',
                 pct: growthPct,
-                fill: 'rgba(255,255,255,0.45)',
+                fill: THEME.chart.rose,
                 icon: Megaphone,
                 hint: clip(snap?.cmo) || 'GTM, positioning, pitch',
             },
@@ -747,11 +751,6 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     }, [activeProject]);
 
     const staffFocusLines = activeProject?.staffFocusToday?.filter((s) => s?.trim()) ?? [];
-
-    const activePriorityDef = useMemo(() => {
-        const { priorityId } = readVenturePriority(activeProject);
-        return priorityId ? getPriorityById(priorityId) : undefined;
-    }, [activeProject]);
 
     const kanbanTasks = useMemo(() => {
         const raw = activeProject?.kanban;
@@ -831,9 +830,9 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
     return (
         <div
             className="min-h-screen w-full pb-24"
-            style={{ background: '#111113' }}
+            style={{ background: THEME.bg.primary }}
         >
-            {/* â"€â"€ DEXO OVERVIEW GUIDE POP-UP â"€â"€ renders directly on the page */}
+            {/* ── DEXO OVERVIEW GUIDE POP-UP ── renders directly on the page */}
             {showDexoWelcome && (() => {
                 const hasSnap = !!activeProject.agentStaffSnapshot;
                 const summary = activeProject.agentStaffSnapshot?.summary?.trim() ?? '';
@@ -849,7 +848,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                     ctaAction: (() => void) | null;
                 }> = [
                     {
-                        color: '#94a3b8',
+                        color: '#7456ff',
                         title: `Welcome back — ${activeProject.name}`,
                         subtitle: 'Your AI co-founder is ready',
                         body: hasSnap
@@ -859,7 +858,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         ctaAction: hasSnap ? null : () => { setShowDexoWelcome(false); runAgentStaffSync(); },
                     },
                     ...(hasSnap && summary ? [{
-                        color: '#94a3b8',
+                        color: '#7456ff',
                         title: 'Here is what your AI team found',
                         subtitle: 'Executive research summary',
                         body: summary.slice(0, 360) + (summary.length > 360 ? '…' : ''),
@@ -891,7 +890,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         },
                     }] : []),
                     {
-                        color: '#94a3b8',
+                        color: '#7456ff',
                         title: 'Do you have anything specific in mind?',
                         subtitle: 'Dexo is ready to help',
                         body: 'Ask Dexo anything — what should I change, what are the risks, what should I build next? Dexo has your full venture context and will give you a direct, grounded answer.',
@@ -958,12 +957,12 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     onClick={() => { window.speechSynthesis?.cancel(); setDexoSpeaking(false); setShowDexoWelcome(false); }}
                                     className="shrink-0 flex h-8 w-8 items-center justify-center rounded-xl transition hover:bg-white/[0.08]"
                                     style={{ color: 'rgba(255,255,255,0.35)' }}
-                                >âœ•</button>
+                                >✕</button>
                             </div>
 
                             {/* Body */}
                             <div
-                                className="mx-6 mb-4 rounded-xl px-5 py-4"
+                                className="mx-6 mb-4 rounded-2xl border px-5 py-4"
                                 style={{ borderColor: `${step.color}18`, background: `${step.color}0A` }}
                             >
                                 <p className="whitespace-pre-line text-[13px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.75)' }}>
@@ -1002,7 +1001,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                             onClick={() => { window.speechSynthesis?.cancel(); setDexoSpeaking(false); setDexoWelcomeStep(s => s - 1); }}
                                             className="rounded-xl border px-4 py-2 text-[12px] font-medium transition hover:bg-white/[0.06]"
                                             style={{ borderColor: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.5)' }}
-                                        >← Back</button>
+                                        >← Back</button>
                                     )}
                                     {!isLast ? (
                                         <button
@@ -1010,7 +1009,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                             onClick={() => { window.speechSynthesis?.cancel(); setDexoSpeaking(false); setDexoWelcomeStep(s => s + 1); }}
                                             className="rounded-xl px-5 py-2 text-[12px] font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
                                             style={{ background: step.color, color: '#fff' }}
-                                        >Next ←'</button>
+                                        >Next →</button>
                                     ) : (
                                         <button
                                             type="button"
@@ -1025,7 +1024,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         type="button"
                                         onClick={step.ctaAction}
                                         className="flex items-center gap-1.5 rounded-xl border px-4 py-2 text-[12px] font-semibold transition-all hover:opacity-80 active:scale-[0.98]"
-                                        style={{ borderColor: 'rgba(255,255,255,0.14)', background: 'rgba(255,255,255,0.07)', color: '#f2f2f5' }}
+                                        style={{ borderColor: 'rgba(116,86,255,0.35)', background: 'rgba(116,86,255,0.14)', color: '#a78bfa' }}
                                     >
                                         <Sparkles className="h-3.5 w-3.5 shrink-0" />
                                         {step.cta}
@@ -1045,57 +1044,66 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
             })()}
 
             {/* HEADER */}
-            <header style={{ background: '#111113', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 py-4">
-                    <div className="flex items-center gap-3 min-w-0">
-                        <DexoAvatar size="sm" state="idle" pulse={false} />
-                        <div className="min-w-0">
-                            <h1 className="text-[15px] font-semibold tracking-tight truncate" style={{ color: '#f2f2f5' }}>
+            <header className="sticky top-0 z-40 border-b backdrop-blur-xl" style={{ background: 'rgba(30,30,30,0.88)', borderColor: THEME.border.subtle }}>
+                <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+                    <div className="flex items-center gap-4">
+                        <div
+                            className="flex h-10 w-10 items-center justify-center rounded-xl"
+                            style={{ background: 'rgba(116,86,255,0.10)' }}
+                        >
+                            <LayoutDashboard className="h-5 w-5" style={{ color: THEME.accent.secondary }} />
+                        </div>
+                        <div>
+                            <h1 className="text-xl font-semibold tracking-tight" style={{ color: THEME.text.primary }}>
                                 {activeProject.name}
                             </h1>
-                            <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.28)' }}>
-                                {new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}
-                            </p>
+                            <div className="flex items-center gap-3 text-xs" style={{ color: THEME.text.tertiary }}>
+                                <span className="flex items-center gap-1.5">
+                                    <span className="relative flex h-1.5 w-1.5">
+                                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-50" style={{ background: THEME.accent.primary }} />
+                                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full" style={{ background: THEME.accent.primary }} />
+                                    </span>
+                                    Executive overview
+                                </span>
+                                <span>·</span>
+                                <span>{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-5">
-                        <button
-                            type="button"
-                            onClick={() => { setDexoWelcomeStep(0); setShowDexoWelcome(true); }}
-                            className="text-[12px] transition-opacity hover:opacity-60"
-                            style={{ color: 'rgba(255,255,255,0.38)' }}
-                        >
-                            Guide
-                        </button>
+                    <div className="flex items-center gap-3">
                         <button
                             onClick={() => runAgentStaffSync()}
                             disabled={agentSyncRunning}
-                            className="flex items-center gap-1.5 text-[12px] transition-opacity hover:opacity-60 disabled:opacity-25"
-                            style={{ color: 'rgba(255,255,255,0.38)' }}
+                            className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all"
+                            style={{
+                                background: agentSyncRunning ? 'rgba(46,41,34,0.06)' : 'rgba(116,86,255,0.10)',
+                                color: THEME.text.primary,
+                                opacity: agentSyncRunning ? 0.6 : 1,
+                            }}
                         >
-                            <RefreshCw className={`h-3 w-3 ${agentSyncRunning ? 'animate-spin' : ''}`} />
-                            {agentSyncRunning ? 'Syncing...' : 'Sync'}
+                            <RefreshCw className={`h-4 w-4 ${agentSyncRunning ? 'animate-spin' : ''}`} />
+                            {agentSyncRunning ? 'Syncing...' : 'Sync Staff'}
                         </button>
                         <WorkspaceAiButton />
                     </div>
                 </div>
 
                 {/* TAB NAVIGATION */}
-                <div className="mx-auto max-w-7xl px-3 sm:px-6">
-                    <div className="flex gap-0.5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <div className="mx-auto max-w-7xl px-6">
+                    <div className="flex gap-1">
                         {dashboardTabs.map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className="relative shrink-0 px-3 sm:px-4 py-2.5 sm:py-3 text-[13px] sm:text-[14px] font-medium transition-colors"
-                                style={{ color: activeTab === tab.id ? '#f2f2f5' : '#8c8c9e' }}
+                                className="relative px-4 py-3 text-sm font-medium transition-colors"
+                                style={{ color: activeTab === tab.id ? THEME.text.primary : THEME.text.muted }}
                             >
                                 {tab.label}
                                 {activeTab === tab.id && (
                                     <div
-                                        className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full"
-                                        style={{ background: '#f2f2f5' }}
+                                        className="absolute bottom-0 left-0 right-0 h-0.5"
+                                        style={{ background: THEME.accent.primary }}
                                     />
                                 )}
                             </button>
@@ -1105,14 +1113,14 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
             </header>
 
             {/* MAIN CONTENT */}
-            <main className="mx-auto max-w-7xl px-3 sm:px-6 py-4 sm:py-5">
+            <main className="mx-auto max-w-7xl px-6 py-8">
                 {/* CONTEXTUAL HINTS */}
-                <div className="mb-3 flex flex-col gap-2">
+                <div className="mb-8 space-y-3">
                     <GuideHint
                         id="dash-no-strategy"
                         when={!hasIntent && !narrativeRich}
                         variant="tip"
-                        message="Add a strategic foundation in the CEO desk to unlock AI research."
+                        message="Your venture needs a strategic foundation. Open the CEO desk to define your vision and goals."
                         action="Open CEO Desk"
                         onAction={() => switchRoom('ceo')}
                     />
@@ -1120,7 +1128,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                         id="dash-no-sync"
                         when={!activeProject?.agentStaffSnapshot && hasIntent}
                         variant="info"
-                        message="Run Staff Sync to activate your AI team across all desks."
+                        message="Run Staff Sync to activate your AI team and populate all desks with insights."
                         action="Sync Now"
                         onAction={() => runAgentStaffSync()}
                     />
@@ -1128,73 +1136,274 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
 
                 {/* OVERVIEW TAB */}
                 {activeTab === 'overview' && (
-                    <div className="flex flex-col gap-4">
+                    <div className="space-y-6">
+                        {/* ── DEXO INTELLIGENCE PANEL ── */}
+                        <div
+                            className="overflow-hidden rounded-2xl border"
+                            style={{ borderColor: 'rgba(116,86,255,0.28)', background: 'rgba(10,10,16,0.92)' }}
+                        >
+                            {/* Panel header */}
+                            <div
+                                className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4"
+                                style={{ borderColor: 'rgba(116,86,255,0.13)', background: 'linear-gradient(135deg, rgba(116,86,255,0.16) 0%, rgba(116,86,255,0.05) 100%)' }}
+                            >
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <div
+                                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                                        style={{ background: 'rgba(116,86,255,0.28)', boxShadow: '0 0 0 1px rgba(116,86,255,0.35)' }}
+                                    >
+                                        <Sparkles className="h-5 w-5" style={{ color: THEME.accent.primary }} />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <h2 className="text-[14px] font-semibold" style={{ color: THEME.text.primary }}>Dexo — AI Co-Founder Briefing</h2>
+                                        <p className="text-[11px]" style={{ color: THEME.text.muted }}>
+                                            {activeProject.agentStaffSnapshot
+                                                ? `Live venture intelligence · ${lastStaffSyncLabel || 'last sync'}`
+                                                : 'Run Staff Sync to activate your briefing'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex shrink-0 items-center gap-2">
+                                    {activeProject.agentStaffSnapshot && (
+                                        <span className="flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[10px] font-semibold"
+                                            style={{ borderColor: 'rgba(52,211,153,0.25)', background: 'rgba(52,211,153,0.08)', color: '#34d399' }}>
+                                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" aria-hidden />
+                                            Live
+                                        </span>
+                                    )}
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setDexoBootstrap({
+                                                title: `Full Venture Briefing — ${activeProject.name}`,
+                                                detail: activeProject.agentStaffSnapshot?.summary ?? '',
+                                                sourceRole: 'ceo',
+                                                requiredInfo: [],
+                                                userMessage: `Give me a complete co-founder briefing for ${activeProject.name}. Cover:\n1. What is happening right now across all research desks?\n2. What are the 3 most important findings I should know?\n3. What actions do you recommend I take today?\n4. Are there any risks or opportunities I'm missing?\n\nBe direct, specific, and focused on what matters most.`,
+                                            });
+                                            switchRoom('dexo');
+                                        }}
+                                        className="flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-[12px] font-semibold transition-all hover:opacity-80 active:scale-[0.98]"
+                                        style={{ borderColor: 'rgba(116,86,255,0.35)', background: 'rgba(116,86,255,0.16)', color: THEME.accent.primary }}
+                                    >
+                                        <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                                        Open Dexo Briefing
+                                    </button>
+                                </div>
+                            </div>
 
-                        {/* â"€â"€ DEXO RESEARCH GUIDE â"€â"€ */}
+                            {activeProject.agentStaffSnapshot ? (
+                                <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+
+                                    {/* ── Today's Summary ── */}
+                                    {aiSummaryExcerpt && (
+                                        <div className="px-5 py-4">
+                                            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>
+                                                Executive Summary
+                                            </p>
+                                            <p className="text-[13px] leading-relaxed" style={{ color: THEME.text.secondary }}>
+                                                {aiSummaryExcerpt.slice(0, 400)}{aiSummaryExcerpt.length > 400 ? '…' : ''}
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {/* ── Dexo Focus Recommendations ── */}
+                                    {staffFocusLines.length > 0 && (
+                                        <div className="px-5 py-4">
+                                            <p className="mb-2.5 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: THEME.accent.primary }}>
+                                                Dexo Recommends — Focus Today
+                                            </p>
+                                            <ul className="space-y-2">
+                                                {staffFocusLines.slice(0, 4).map((line, i) => (
+                                                    <li key={i} className="flex items-start gap-2.5 text-[12px]" style={{ color: THEME.text.secondary }}>
+                                                        <span
+                                                            className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full"
+                                                            style={{ background: THEME.accent.primary }}
+                                                        />
+                                                        {line}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    {/* ── Attention items ── */}
+                                    {staffAttentionPending.length > 0 && (
+                                        <div className="px-5 py-4">
+                                            <p className="mb-2.5 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: '#f59e0b' }}>
+                                                {staffAttentionPending.length} Item{staffAttentionPending.length > 1 ? 's' : ''} Need Your Attention
+                                            </p>
+                                            <div className="space-y-2.5">
+                                                {staffAttentionPending.slice(0, 3).map((a) => (
+                                                    <div key={a.id} className="flex items-start gap-3 rounded-xl border px-3.5 py-3"
+                                                        style={{ borderColor: 'rgba(245,158,11,0.18)', background: 'rgba(245,158,11,0.05)' }}>
+                                                        <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: '#f59e0b' }} />
+                                                        <div className="min-w-0 flex-1">
+                                                            <p className="text-[12px] font-semibold leading-snug" style={{ color: THEME.text.primary }}>{a.title}</p>
+                                                            <p className="mt-0.5 text-[11px] leading-snug" style={{ color: THEME.text.secondary }}>
+                                                                {a.message.slice(0, 120)}{a.message.length > 120 ? '…' : ''}
+                                                            </p>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => { setDexoBootstrap(buildDexoStaffAttentionBootstrap(a)); switchRoom('dexo'); }}
+                                                            className="shrink-0 rounded-lg border px-2.5 py-1.5 text-[10px] font-semibold transition hover:opacity-80"
+                                                            style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.10)', color: THEME.accent.primary }}
+                                                        >
+                                                            Ask Dexo
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* ── Pre-set Dexo Questions ── */}
+                                    <div className="px-5 py-4">
+                                        <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>
+                                            Ask Dexo Anything
+                                        </p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {([
+                                                {
+                                                    label: 'What should I prioritize today?',
+                                                    msg: `Looking at all the research for ${activeProject.name}, what is the single most important thing I should prioritize today and why? Be specific and direct.`,
+                                                },
+                                                {
+                                                    label: 'Walk me through all findings',
+                                                    msg: `Give me a full walkthrough of all research findings across all 5 desks for ${activeProject.name} — Strategy, Market Intelligence, Product, Finance, and Growth. For each desk: what did you find, and what action do you recommend?`,
+                                                },
+                                                {
+                                                    label: 'What are the biggest risks?',
+                                                    msg: `Based on the latest Staff Sync for ${activeProject.name}, what are the top 3 risks I should be aware of right now? For each risk, tell me how serious it is and what I should do.`,
+                                                },
+                                                {
+                                                    label: 'Do I need to change anything?',
+                                                    msg: `Based on the research findings for ${activeProject.name}, what are the most important changes I should make — in strategy, product direction, marketing, or finances? Tell me specifically what to change and why.`,
+                                                },
+                                                {
+                                                    label: 'How is the venture performing?',
+                                                    msg: `Give me an honest, direct assessment of how ${activeProject.name} is performing across all areas — strategy, market position, product, finances, and growth. What's working and what isn't?`,
+                                                },
+                                                {
+                                                    label: 'What opportunities am I missing?',
+                                                    msg: `Based on everything the AI team has researched for ${activeProject.name}, what are the biggest opportunities I might be missing or underestimating right now?`,
+                                                },
+                                            ] as const).map((q) => (
+                                                <button
+                                                    key={q.label}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setDexoBootstrap({
+                                                            title: `${q.label} — ${activeProject.name}`,
+                                                            detail: activeProject.agentStaffSnapshot?.summary ?? '',
+                                                            sourceRole: 'ceo',
+                                                            requiredInfo: [],
+                                                            userMessage: q.msg,
+                                                        });
+                                                        switchRoom('dexo');
+                                                    }}
+                                                    className="rounded-xl border px-3 py-1.5 text-[11px] font-medium transition-all hover:opacity-80"
+                                                    style={{ borderColor: 'rgba(116,86,255,0.20)', background: 'rgba(116,86,255,0.07)', color: THEME.text.secondary }}
+                                                >
+                                                    {q.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                /* No sync yet — big clear CTA */
+                                <div className="flex flex-col items-center gap-5 px-6 py-10 text-center">
+                                    <div
+                                        className="flex h-16 w-16 items-center justify-center rounded-2xl"
+                                        style={{ background: 'rgba(116,86,255,0.14)', boxShadow: '0 0 0 1px rgba(116,86,255,0.22)' }}
+                                    >
+                                        <Sparkles className="h-8 w-8" style={{ color: THEME.accent.primary }} />
+                                    </div>
+                                    <div className="max-w-sm">
+                                        <h3 className="text-base font-semibold" style={{ color: THEME.text.primary }}>Activate your AI co-founder</h3>
+                                        <p className="mt-2 text-[13px] leading-relaxed" style={{ color: THEME.text.secondary }}>
+                                            Run a Staff Sync to let Dexo research your venture across 5 desks — Strategy, Market, Product, Finance, and Growth. Dexo will then brief you daily on findings, risks, and what to do next.
+                                        </p>
+                                    </div>
+                                    <div className="flex flex-wrap items-center justify-center gap-3">
+                                        <button
+                                            onClick={() => runAgentStaffSync()}
+                                            disabled={agentSyncRunning}
+                                            className="flex items-center gap-2 rounded-xl border px-6 py-2.5 text-sm font-semibold transition-all active:scale-[0.98]"
+                                            style={{ borderColor: 'rgba(116,86,255,0.35)', background: 'rgba(116,86,255,0.16)', color: THEME.accent.primary, opacity: agentSyncRunning ? 0.6 : 1 }}
+                                        >
+                                            <RefreshCw className={`h-4 w-4 shrink-0 ${agentSyncRunning ? 'animate-spin' : ''}`} />
+                                            {agentSyncRunning ? 'Running Staff Sync…' : 'Run Staff Sync'}
+                                        </button>
+                                        <button
+                                            onClick={() => switchRoom('dexo')}
+                                            className="flex items-center gap-2 rounded-xl border px-5 py-2.5 text-sm font-medium transition-all"
+                                            style={{ borderColor: THEME.border.default, background: 'rgba(255,255,255,0.04)', color: THEME.text.secondary }}
+                                        >
+                                            Open Dexo anyway
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* ── DEXO RESEARCH GUIDE ── */}
 
                         {/* Popup guide overlay — renders on top of page via fixed positioning */}
                         {openGuideKey && activeProject.agentStaffSnapshot && (() => {
                             const DESK_DEFS = [
-                                { key: 'ceo',        label: 'Strategic Direction', role: 'CEO',             covers: 'Vision, mission, and competitive positioning',        snap: activeProject.agentStaffSnapshot!.desks.ceo,        color: 'rgba(255,255,255,0.45)',  room: 'ceo'        as const, icon: Lightbulb, guide: "Use this to set or challenge your strategy. It shapes every other decision — read it first when you're unsure about direction."                    },
-                                { key: 'scout',      label: 'Market Intelligence', role: 'Scout',           covers: 'Competitor signals, trends, and market opportunities', snap: activeProject.agentStaffSnapshot!.desks.scout,      color: 'rgba(255,255,255,0.45)',    room: 'scout'      as const, icon: Globe,     guide: 'Use this to spot threats before they hit and validate your market assumptions. Check it before any competitive or go-to-market decision.'             },
-                                { key: 'pm',         label: 'Product Insights',    role: 'Product Manager', covers: 'Roadmap priorities, features, and user problems',      snap: activeProject.agentStaffSnapshot!.desks.pm,         color: 'rgba(255,255,255,0.45)',   room: 'pm'         as const, icon: Layers,    guide: 'Use this to decide what to build next and what to cut. It directly informs your roadmap and sprint priorities.'                                      },
-                                { key: 'accountant', label: 'Finance & Runway',    role: 'Accountant',      covers: 'Budget, burn rate, and revenue model signals',        snap: activeProject.agentStaffSnapshot!.desks.accountant, color: 'rgba(255,255,255,0.45)', room: 'accountant' as const, icon: Wallet,    guide: 'Read this before any spending or pricing decision. It shows your real financial constraints and revenue opportunities.'                               },
-                                { key: 'cmo',        label: 'Growth & GTM',        role: 'CMO',             covers: 'Channels, acquisition, and marketing strategy',       snap: activeProject.agentStaffSnapshot!.desks.cmo,        color: 'rgba(255,255,255,0.45)',    room: 'cmo'        as const, icon: Megaphone, guide: 'Use this to pick channels and craft messaging before investing in any marketing or sales motion.'                                                    },
+                                { key: 'ceo',        label: 'Strategic Direction', role: 'CEO',             covers: 'Vision, mission, and competitive positioning',        snap: activeProject.agentStaffSnapshot!.desks.ceo,        color: THEME.chart.violet,  room: 'ceo'        as const, icon: Lightbulb, guide: "Use this to set or challenge your strategy. It shapes every other decision — read it first when you're unsure about direction."                    },
+                                { key: 'scout',      label: 'Market Intelligence', role: 'Scout',           covers: 'Competitor signals, trends, and market opportunities', snap: activeProject.agentStaffSnapshot!.desks.scout,      color: THEME.chart.blue,    room: 'scout'      as const, icon: Globe,     guide: 'Use this to spot threats before they hit and validate your market assumptions. Check it before any competitive or go-to-market decision.'             },
+                                { key: 'pm',         label: 'Product Insights',    role: 'Product Manager', covers: 'Roadmap priorities, features, and user problems',      snap: activeProject.agentStaffSnapshot!.desks.pm,         color: THEME.chart.amber,   room: 'pm'         as const, icon: Layers,    guide: 'Use this to decide what to build next and what to cut. It directly informs your roadmap and sprint priorities.'                                      },
+                                { key: 'accountant', label: 'Finance & Runway',    role: 'Accountant',      covers: 'Budget, burn rate, and revenue model signals',        snap: activeProject.agentStaffSnapshot!.desks.accountant, color: THEME.chart.emerald, room: 'accountant' as const, icon: Wallet,    guide: 'Read this before any spending or pricing decision. It shows your real financial constraints and revenue opportunities.'                               },
+                                { key: 'cmo',        label: 'Growth & GTM',        role: 'CMO',             covers: 'Channels, acquisition, and marketing strategy',       snap: activeProject.agentStaffSnapshot!.desks.cmo,        color: THEME.chart.rose,    room: 'cmo'        as const, icon: Megaphone, guide: 'Use this to pick channels and craft messaging before investing in any marketing or sales motion.'                                                    },
                             ] as const;
                             const d = DESK_DEFS.find(x => x.key === openGuideKey);
                             if (!d) return null;
                             return (
                                 <div
                                     className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center"
-                                    style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(14px)' }}
+                                    style={{ background: 'rgba(0,0,0,0.70)', backdropFilter: 'blur(6px)' }}
                                     onClick={() => setOpenGuideKey(null)}
                                 >
                                     <div
-                                        className="w-full max-w-lg overflow-hidden rounded-2xl"
-                                        style={{
-                                            background: 'rgba(16,15,20,0.97)',
-                                            border: '1px solid rgba(255,255,255,0.10)',
-                                            boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 32px 80px rgba(0,0,0,0.7), 0 8px 24px rgba(0,0,0,0.4)',
-                                        }}
+                                        className="w-full max-w-md overflow-hidden rounded-2xl border"
+                                        style={{ background: 'rgba(16,16,20,0.99)', borderColor: `${d.color}40`, boxShadow: `0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px ${d.color}25` }}
                                         onClick={e => e.stopPropagation()}
                                     >
-                                        {/* Top hairline accent */}
-                                        <div className="h-[2px] w-full" style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.18) 40%, rgba(255,255,255,0.10) 70%, transparent 100%)' }} />
-
                                         {/* Popup header */}
-                                        <div className="flex items-center justify-between gap-3 px-6 py-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                                            <div className="flex items-center gap-3.5 min-w-0">
+                                        <div className="flex items-start justify-between gap-3 border-b px-5 py-4" style={{ borderColor: `${d.color}18`, background: `linear-gradient(135deg, ${d.color}12, ${d.color}06)` }}>
+                                            <div className="flex items-center gap-3 min-w-0">
                                                 <DexoAvatar size="sm" state="idle" pulse={false} />
                                                 <div className="min-w-0">
-                                                    <div className="flex items-center gap-2 mb-0.5">
-                                                        <p className="text-[11px] font-bold uppercase tracking-[0.18em]" style={{ color: 'rgba(255,255,255,0.22)' }}>Dexo Guide</p>
-                                                    </div>
-                                                    <p className="text-[14px] font-semibold leading-snug" style={{ color: '#f2f2f5' }}>{d.label}</p>
-                                                    <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.32)' }}>{d.role}</p>
+                                                    <p className="text-[13px] font-semibold" style={{ color: THEME.text.primary }}>Dexo Co-Founder Guide</p>
+                                                    <p className="text-[11px] font-medium" style={{ color: d.color }}>{d.label} · {d.role}</p>
                                                 </div>
                                             </div>
                                             <button
                                                 type="button"
                                                 onClick={() => setOpenGuideKey(null)}
-                                                className="shrink-0 flex h-8 w-8 items-center justify-center rounded-xl transition hover:bg-white/[0.07]"
-                                                style={{ color: 'rgba(255,255,255,0.28)' }}
+                                                className="shrink-0 flex h-7 w-7 items-center justify-center rounded-lg text-[13px] font-bold transition hover:bg-white/10"
+                                                style={{ color: THEME.text.muted }}
                                             >
                                                 ✕
                                             </button>
                                         </div>
 
                                         {/* Popup body */}
-                                        <div className="space-y-2.5 px-6 py-5">
+                                        <div className="space-y-3 px-5 py-4">
                                             {/* What this covers */}
-                                            <div className="rounded-xl px-4 py-3.5" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                                                <p className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.22em]" style={{ color: 'rgba(255,255,255,0.25)' }}>What this desk covers</p>
-                                                <p className="text-[13px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.60)' }}>{d.covers}</p>
+                                            <div className="rounded-xl border px-4 py-3" style={{ borderColor: `${d.color}18`, background: `${d.color}08` }}>
+                                                <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.14em]" style={{ color: d.color }}>What this desk covers</p>
+                                                <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>{d.covers}</p>
                                             </div>
 
                                             {/* How to use */}
-                                            <div className="rounded-xl px-4 py-3.5" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                                                <p className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.22em]" style={{ color: 'rgba(255,255,255,0.25)' }}>How to use this finding</p>
-                                                <p className="text-[13px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>{d.guide}</p>
+                                            <div className="rounded-xl border px-4 py-3" style={{ borderColor: 'rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.03)' }}>
+                                                <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>How to use this finding</p>
+                                                <p className="text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>{d.guide}</p>
                                             </div>
 
                                             {/* Ask Dexo CTA */}
@@ -1212,14 +1421,14 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                         setOpenGuideKey(null);
                                                         switchRoom('dexo');
                                                     }}
-                                                    className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 text-[13px] font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
-                                                    style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.82)' }}
+                                                    className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-[13px] font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
+                                                    style={{ background: `linear-gradient(135deg, ${d.color}28, rgba(116,86,255,0.22))`, border: `1px solid ${d.color}35`, color: THEME.text.primary }}
                                                 >
-                                                    <Sparkles className="h-4 w-4 shrink-0" style={{ color: 'rgba(255,255,255,0.50)' }} />
+                                                    <Sparkles className="h-4 w-4 shrink-0" style={{ color: d.color }} />
                                                     Ask Dexo about this finding →
                                                 </button>
                                             ) : (
-                                                <p className="text-center text-[11px] py-1" style={{ color: 'rgba(255,255,255,0.28)' }}>
+                                                <p className="text-center text-[11px]" style={{ color: THEME.text.muted }}>
                                                     Run Staff Sync to generate a finding for this desk.
                                                 </p>
                                             )}
@@ -1229,28 +1438,27 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             );
                         })()}
 
-                        {/* ── SECTION LABEL: RESEARCH BRIEF ── */}
-                        <div className="flex items-center gap-3 pt-1">
-                            <span className="text-[9px] font-bold uppercase tracking-[0.28em]" style={{ color: 'rgba(255,255,255,0.18)' }}>Research Brief</span>
-                            <div className="h-px flex-1" style={{ background: 'rgba(255,255,255,0.05)' }} />
-                        </div>
-
                         {activeProject.agentStaffSnapshot ? (
                             <div
-                                className="overflow-hidden rounded-xl border"
-                                style={{ border: '1px solid rgba(255,255,255,0.07)', background: '#1c1c1f' }}
+                                className="overflow-hidden rounded-2xl border"
+                                style={{ borderColor: 'rgba(116,86,255,0.18)', background: 'rgba(12,12,16,0.85)' }}
                             >
                                 {/* Section header */}
                                 <div
-                                    className="flex flex-wrap items-center justify-between gap-3 px-4 py-3.5 sm:px-5"
-                                    style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+                                    className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-4 sm:px-6"
+                                    style={{ borderColor: 'rgba(116,86,255,0.10)', background: 'linear-gradient(135deg, rgba(116,86,255,0.10) 0%, rgba(116,86,255,0.04) 100%)' }}
                                 >
                                     <div className="flex min-w-0 items-center gap-3">
-                                        <DexoAvatar size="xs" state="idle" pulse={false} />
+                                        <div
+                                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                                            style={{ background: 'rgba(116,86,255,0.22)', boxShadow: '0 0 0 1px rgba(116,86,255,0.28)' }}
+                                        >
+                                            <Cpu className="h-4 w-4" style={{ color: THEME.accent.primary }} />
+                                        </div>
                                         <div className="min-w-0">
-                                            <h2 className="text-[13px] font-semibold" style={{ color: '#f2f2f5' }}>Research Brief</h2>
-                                            <p className="truncate text-[10px]" style={{ color: 'rgba(255,255,255,0.28)' }}>
-                                                5 desks{lastStaffSyncLabel ? ` · ${lastStaffSyncLabel}` : ''}
+                                            <h2 className="text-[13px] font-semibold" style={{ color: THEME.text.primary }}>Dexo Research Guide</h2>
+                                            <p className="truncate text-[10px]" style={{ color: THEME.text.muted }}>
+                                                AI co-founder briefing · 5 desks{lastStaffSyncLabel ? ` · ${lastStaffSyncLabel}` : ''}
                                             </p>
                                         </div>
                                     </div>
@@ -1267,93 +1475,112 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                 });
                                                 switchRoom('dexo');
                                             }}
-                                            className="text-[11px] font-medium transition-opacity hover:opacity-60"
-                                            style={{ color: 'rgba(255,255,255,0.40)' }}
+                                            className="flex items-center gap-1.5 rounded-xl border px-3 py-2 text-[11px] font-semibold transition-all hover:opacity-80"
+                                            style={{ borderColor: 'rgba(116,86,255,0.32)', background: 'rgba(116,86,255,0.14)', color: THEME.accent.primary }}
                                         >
-                                            Full briefing
+                                            <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                                            <span className="hidden sm:inline">Full briefing</span>
+                                            <span className="sm:hidden">Brief</span>
                                         </button>
                                         <button
                                             type="button"
                                             onClick={() => runAgentStaffSync()}
                                             disabled={agentSyncRunning}
-                                            className="flex items-center gap-1.5 text-[11px] transition-opacity hover:opacity-60 disabled:opacity-25"
-                                            style={{ color: 'rgba(255,255,255,0.30)' }}
+                                            className="flex items-center gap-1.5 rounded-xl border px-3 py-2 text-[11px] font-medium transition-all hover:opacity-70"
+                                            style={{ borderColor: THEME.border.default, background: 'rgba(255,255,255,0.05)', color: THEME.text.muted, opacity: agentSyncRunning ? 0.5 : 1 }}
                                         >
-                                            <RefreshCw className={`h-3 w-3 ${agentSyncRunning ? 'animate-spin' : ''}`} />
-                                            {agentSyncRunning ? 'Syncing...' : 'Refresh'}
+                                            <RefreshCw className={`h-3 w-3 shrink-0 ${agentSyncRunning ? 'animate-spin' : ''}`} />
+                                            <span className="hidden sm:inline">{agentSyncRunning ? 'Syncing…' : 'Refresh'}</span>
                                         </button>
                                     </div>
                                 </div>
 
-                                {/* Desk list — clean horizontal rows */}
-                                <div className="flex flex-col">
+                                {/* Desk cards — 1 col mobile, 2 col sm+ */}
+                                <div className="grid gap-px bg-[rgba(255,255,255,0.04)] sm:grid-cols-2">
                                     {([
-                                        { key: 'ceo',        label: 'Strategic Direction', role: 'CEO',             snap: activeProject.agentStaffSnapshot.desks.ceo,        room: 'ceo'        as const, icon: Lightbulb },
-                                        { key: 'scout',      label: 'Market Intelligence', role: 'Scout',           snap: activeProject.agentStaffSnapshot.desks.scout,      room: 'scout'      as const, icon: Globe     },
-                                        { key: 'pm',         label: 'Product Insights',    role: 'Product Manager', snap: activeProject.agentStaffSnapshot.desks.pm,         room: 'pm'         as const, icon: Layers    },
-                                        { key: 'accountant', label: 'Finance & Runway',    role: 'Accountant',      snap: activeProject.agentStaffSnapshot.desks.accountant, room: 'accountant' as const, icon: Wallet    },
-                                        { key: 'cmo',        label: 'Growth & GTM',        role: 'CMO',             snap: activeProject.agentStaffSnapshot.desks.cmo,        room: 'cmo'        as const, icon: Megaphone },
-                                    ] as const).map(({ key, label, role, snap, room, icon: DeskIcon }, idx, arr) => {
+                                        { key: 'ceo',        label: 'Strategic Direction', role: 'CEO',             sub: 'Vision · positioning · strategy',       snap: activeProject.agentStaffSnapshot.desks.ceo,        color: THEME.chart.violet,  room: 'ceo'        as const, icon: Lightbulb },
+                                        { key: 'scout',      label: 'Market Intelligence', role: 'Scout',           sub: 'Competitors · trends · opportunities',  snap: activeProject.agentStaffSnapshot.desks.scout,      color: THEME.chart.blue,    room: 'scout'      as const, icon: Globe     },
+                                        { key: 'pm',         label: 'Product Insights',    role: 'Product Manager', sub: 'Roadmap · features · user problems',    snap: activeProject.agentStaffSnapshot.desks.pm,         color: THEME.chart.amber,   room: 'pm'         as const, icon: Layers    },
+                                        { key: 'accountant', label: 'Finance & Runway',    role: 'Accountant',      sub: 'Budget · burn · revenue signals',       snap: activeProject.agentStaffSnapshot.desks.accountant, color: THEME.chart.emerald, room: 'accountant' as const, icon: Wallet    },
+                                        { key: 'cmo',        label: 'Growth & GTM',        role: 'CMO',             sub: 'Channels · marketing · acquisition',    snap: activeProject.agentStaffSnapshot.desks.cmo,        color: THEME.chart.rose,    room: 'cmo'        as const, icon: Megaphone },
+                                    ] as const).map(({ key, label, role, sub, snap, color, room, icon: DeskIcon }) => {
                                         const hasSnap = !!snap?.trim();
-                                        const isLast = idx === arr.length - 1;
                                         return (
-                                            <div
-                                                key={key}
-                                                className="group flex items-start gap-4 py-4 cursor-pointer transition-colors duration-150 -mx-4 sm:-mx-5 px-4 sm:px-5 hover:bg-white/[0.02]"
-                                                style={!isLast ? { borderBottom: '1px solid rgba(255,255,255,0.05)' } : {}}
-                                                onClick={() => switchRoom(room)}
-                                            >
-                                                {/* Icon */}
-                                                <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                                                    <DeskIcon className="h-3 w-3" style={{ color: 'rgba(255,255,255,0.35)' }} strokeWidth={1.75} />
+                                            <div key={key} className="flex flex-col bg-[rgba(14,14,18,0.97)] p-4 sm:p-5">
+                                                {/* Card header row */}
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <div className="flex min-w-0 items-center gap-2.5">
+                                                        <div
+                                                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl"
+                                                            style={{ background: `${color}16`, boxShadow: `0 0 0 1px ${color}20` }}
+                                                        >
+                                                            <DeskIcon className="h-3.5 w-3.5" style={{ color }} />
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className="truncate text-[12px] font-semibold" style={{ color: THEME.text.primary }}>{label}</p>
+                                                            <p className="text-[10px] font-medium" style={{ color }}>{role}</p>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => switchRoom(room)}
+                                                        className="shrink-0 rounded-lg border px-2 py-1 text-[10px] font-semibold transition-all hover:opacity-80"
+                                                        style={{ borderColor: `${color}30`, background: `${color}0E`, color }}
+                                                    >
+                                                        Open →
+                                                    </button>
                                                 </div>
 
-                                                {/* Text */}
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-baseline gap-2 mb-0.5">
-                                                        <span className="text-[13px] font-medium" style={{ color: '#f2f2f5' }}>{label}</span>
-                                                        <span className="text-[9px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.20)' }}>{role}</span>
-                                                    </div>
+                                                {/* Desk sub-label */}
+                                                <p className="mt-1.5 text-[10px]" style={{ color: THEME.text.muted }}>{sub}</p>
+
+                                                {/* Research finding */}
+                                                <div className="mt-3 flex-1">
                                                     {hasSnap ? (
-                                                        <p className="text-[12px] leading-relaxed line-clamp-2" style={{ color: 'rgba(255,255,255,0.38)' }}>
-                                                            {snap!.trim()}
-                                                        </p>
+                                                        <>
+                                                            <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.12em]" style={{ color }}>Research Finding</p>
+                                                            <p className="text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>
+                                                                {snap!.trim().length > 240 ? `${snap!.trim().slice(0, 237)}…` : snap!.trim()}
+                                                            </p>
+                                                        </>
                                                     ) : (
-                                                        <p className="text-[11px] italic" style={{ color: 'rgba(255,255,255,0.18)' }}>No research yet</p>
+                                                        <p className="text-[11px] italic" style={{ color: THEME.text.muted }}>
+                                                            No research yet — run Staff Sync.
+                                                        </p>
                                                     )}
                                                 </div>
 
-                                                {/* Hover actions */}
-                                                <div className="flex shrink-0 items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-150 mt-0.5">
+                                                {/* Action row — wraps on narrow screens */}
+                                                <div className="mt-4 flex flex-wrap items-center gap-2">
                                                     <button
                                                         type="button"
-                                                        onClick={e => { e.stopPropagation(); setOpenGuideKey(key); }}
-                                                        className="text-[10px] transition-colors"
-                                                        style={{ color: 'rgba(255,255,255,0.30)' }}
+                                                        onClick={() => setOpenGuideKey(key)}
+                                                        className="flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition-all hover:opacity-80"
+                                                        style={{ borderColor: 'rgba(255,255,255,0.10)', background: 'rgba(255,255,255,0.05)', color: THEME.text.secondary }}
                                                     >
-                                                        Guide
+                                                        <Cpu className="h-3 w-3 shrink-0" style={{ color: THEME.accent.primary }} />
+                                                        Dexo Guide
                                                     </button>
                                                     {hasSnap && (
                                                         <button
                                                             type="button"
-                                                            onClick={e => {
-                                                                e.stopPropagation();
+                                                            onClick={() => {
                                                                 setDexoBootstrap({
-                                                                    title: `${label} — ${activeProject.name}`,
+                                                                    title: `${label} Finding — ${activeProject.name}`,
                                                                     detail: snap!.trim(),
                                                                     sourceRole: key as 'ceo'|'pm'|'accountant'|'cmo'|'scout',
                                                                     requiredInfo: [],
-                                                                    userMessage: `I am reviewing the ${label} research for ${activeProject.name}.\n\nFinding:\n"${snap!.trim().slice(0, 400)}"\n\nWhat does this mean and what's the single most important action?`,
+                                                                    userMessage: `I am reviewing the ${label} research from my last Staff Sync for ${activeProject.name}.\n\nFinding:\n"${snap!.trim().slice(0, 400)}"\n\nExplain what this means and tell me:\n1. What does this mean for my business right now?\n2. What is the single most important action to take?\n3. Any immediate risks or opportunities?\n\nBe specific and grounded in what is already saved in this venture.`,
                                                                 });
                                                                 switchRoom('dexo');
                                                             }}
-                                                            className="text-[10px] transition-colors"
-                                                            style={{ color: 'rgba(255,255,255,0.30)' }}
+                                                            className="flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-semibold transition-all hover:opacity-80"
+                                                            style={{ borderColor: 'rgba(116,86,255,0.28)', background: 'rgba(116,86,255,0.10)', color: THEME.accent.primary }}
                                                         >
+                                                            <Sparkles className="h-3 w-3 shrink-0" />
                                                             Ask Dexo
                                                         </button>
                                                     )}
-                                                    <ChevronRight className="h-3.5 w-3.5" style={{ color: 'rgba(255,255,255,0.18)' }} strokeWidth={1.5} />
                                                 </div>
                                             </div>
                                         );
@@ -1364,14 +1591,18 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 {activeProject.agentStaffSnapshot.summary?.trim() && (
                                     <div
                                         className="border-t px-4 py-4 sm:px-6"
-                                        style={{ borderColor: 'rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.03)' }}
+                                        style={{ borderColor: 'rgba(116,86,255,0.10)', background: 'rgba(116,86,255,0.06)' }}
                                     >
                                         <div className="flex flex-wrap items-start justify-between gap-3">
                                             <div className="min-w-0 flex-1">
                                                 <div className="mb-2 flex flex-wrap items-center gap-2">
-                                                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'rgba(255,255,255,0.28)' }}>Synthesis</p>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <Sparkles className="h-3.5 w-3.5 shrink-0" style={{ color: THEME.accent.primary }} />
+                                                        <p className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: THEME.accent.primary }}>Executive Synthesis</p>
+                                                    </div>
+                                                    <span className="text-[10px]" style={{ color: THEME.text.muted }}>Cross-desk summary by AI chief of staff</span>
                                                 </div>
-                                                <p className="text-[12px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                                                <p className="text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>
                                                     {activeProject.agentStaffSnapshot.summary.trim().length > 300
                                                         ? `${activeProject.agentStaffSnapshot.summary.trim().slice(0, 297)}…`
                                                         : activeProject.agentStaffSnapshot.summary.trim()}
@@ -1389,47 +1620,51 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                     });
                                                     switchRoom('dexo');
                                                 }}
-                                                className="text-[11px] transition-opacity hover:opacity-60"
-                                                style={{ color: 'rgba(255,255,255,0.35)' }}
+                                                className="shrink-0 flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-[11px] font-semibold transition-all hover:opacity-80"
+                                                style={{ borderColor: 'rgba(116,86,255,0.28)', background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}
                                             >
-                                                Ask Dexo →</button>
+                                                <Sparkles className="h-3 w-3 shrink-0" />
+                                                Unpack with Dexo →
+                                            </button>
                                         </div>
                                     </div>
                                 )}
                             </div>
                         ) : (
                             <div
-                                className="flex flex-col items-center gap-5 rounded-xl px-6 py-12 text-center"
-                                style={{ borderColor: 'rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.025)' }}
+                                className="flex flex-col items-center gap-5 rounded-2xl border px-6 py-12 text-center"
+                                style={{ borderColor: 'rgba(116,86,255,0.18)', background: 'rgba(116,86,255,0.04)' }}
                             >
-                                <DexoAvatar size="lg" state="idle" pulse={false} />
-                                <div>
-                                    <h3 className="text-[14px] font-semibold" style={{ color: '#f2f2f5' }}>No research yet</h3>
-                                    <p className="mt-0.5 text-[12px]" style={{ color: 'rgba(255,255,255,0.30)' }}>Run Staff Sync to activate all 5 desks</p>
+                                <div
+                                    className="flex h-14 w-14 items-center justify-center rounded-2xl"
+                                    style={{ background: 'rgba(116,86,255,0.16)', boxShadow: '0 0 0 1px rgba(116,86,255,0.22)' }}
+                                >
+                                    <Cpu className="h-7 w-7" style={{ color: THEME.accent.primary }} />
+                                </div>
+                                <div className="max-w-xs">
+                                    <h3 className="text-base font-semibold" style={{ color: THEME.text.primary }}>Dexo Research Guide</h3>
+                                    <p className="mt-1 text-[10px] font-semibold uppercase tracking-wider" style={{ color: THEME.text.muted }}>Source: Staff Sync · 5 desks</p>
+                                    <p className="mt-2 text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
+                                        Run Staff Sync to activate your AI team. Each desk researches a functional area and Dexo guides you through what was found and how to act on it.
+                                    </p>
                                 </div>
                                 <button
                                     onClick={() => runAgentStaffSync()}
                                     disabled={agentSyncRunning}
-                                    className="flex items-center gap-2 text-[13px] font-medium transition-opacity hover:opacity-70 disabled:opacity-30"
-                                    style={{ color: 'rgba(255,255,255,0.55)' }}
+                                    className="flex items-center gap-2 rounded-xl border px-6 py-2.5 text-sm font-semibold transition-all active:scale-[0.98]"
+                                    style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.14)', color: THEME.accent.primary, opacity: agentSyncRunning ? 0.6 : 1 }}
                                 >
-                                    <RefreshCw className={`h-3.5 w-3.5 ${agentSyncRunning ? 'animate-spin' : ''}`} />
-                                    {agentSyncRunning ? 'Analysing...' : 'Run Staff Sync'}
+                                    <RefreshCw className={`h-4 w-4 shrink-0 ${agentSyncRunning ? 'animate-spin' : ''}`} />
+                                    {agentSyncRunning ? 'Analysing…' : 'Run Staff Sync now'}
                                 </button>
                             </div>
                         )}
 
 
-                        {/* ── SECTION LABEL: METRICS ── */}
-                        <div className="flex items-center gap-3 pt-1">
-                            <span className="text-[9px] font-bold uppercase tracking-[0.28em]" style={{ color: 'rgba(255,255,255,0.18)' }}>Metrics</span>
-                            <div className="h-px flex-1" style={{ background: 'rgba(255,255,255,0.05)' }} />
-                        </div>
-
                         {/* ── KPI COMMAND STRIP ── */}
                         <div
-                            className="grid grid-cols-2 divide-x overflow-hidden rounded-xl lg:grid-cols-4"
-                            style={{ borderColor: 'rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
+                            className="grid grid-cols-2 divide-x overflow-hidden rounded-2xl border lg:grid-cols-4"
+                            style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.03)' }}
                         >
                             {[
                                 {
@@ -1437,21 +1672,21 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     value: foundationSparse ? 'Needed' : `${animatedScore}%`,
                                     sub: foundationSparse ? 'Add venture data to unlock' : 'Strategy · phases · priorities',
                                     icon: Target,
-                                    accent: 'rgba(255,255,255,0.45)',
+                                    accent: THEME.chart.violet,
                                 },
                                 {
                                     label: foundationSparse ? 'Phase timeline' : 'Phases complete',
                                     value: foundationSparse ? 'Pending' : `${phaseDone} / ${phaseTotal || 0}`,
                                     sub: foundationSparse ? 'Define your roadmap phases' : phaseActive > 0 ? `${phaseActive} active now` : 'All planned',
                                     icon: Layers,
-                                    accent: 'rgba(255,255,255,0.45)',
+                                    accent: THEME.chart.blue,
                                 },
                                 {
                                     label: foundationSparse ? 'Executive priorities' : 'Priorities done',
                                     value: foundationSparse ? 'Pending' : `${priDone} / ${priTotal || 0}`,
                                     sub: foundationSparse ? 'Add priorities in CEO desk' : priTotal > 0 ? `${Math.round((priDone / priTotal) * 100)}% complete` : 'None set yet',
                                     icon: CheckCircle2,
-                                    accent: 'rgba(255,255,255,0.45)',
+                                    accent: THEME.chart.emerald,
                                 },
                                 {
                                     label: staffSyncAt ? 'Last AI research sync' : 'AI staff sync',
@@ -1462,131 +1697,160 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         : 'Never synced',
                                     sub: staffSyncAt ? lastStaffSyncLabel ?? '—' : 'Run sync to populate desks',
                                     icon: Clock,
-                                    accent: 'rgba(255,255,255,0.45)',
+                                    accent: THEME.chart.amber,
                                 },
                             ].map(({ label, value, sub, icon: Icon, accent }, i) => (
-                                <div key={i} className="flex items-start gap-3 px-5 py-4" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                                <div key={i} className="flex items-start gap-3 px-5 py-4" style={{ borderColor: THEME.border.subtle }}>
                                     <div
-                                        className="mt-0.5 shrink-0"
+                                        className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                                        style={{ background: `${accent}14` }}
                                     >
-                                        <Icon className="h-4 w-4" style={{ color: 'rgba(255,255,255,0.25)' }} />
+                                        <Icon className="h-4 w-4" style={{ color: accent }} />
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="text-[9px] font-medium uppercase tracking-[0.18em]" style={{ color: 'rgba(255,255,255,0.30)' }}>{label}</p>
-                                        <p className="mt-0.5 text-[22px] font-semibold leading-none tabular-nums tracking-tight" style={{ color: '#f2f2f5' }}>{value}</p>
-                                        <p className="mt-1 truncate text-[11px]" style={{ color: 'rgba(255,255,255,0.30)' }}>{sub}</p>
+                                        <p className="text-[10px] font-medium uppercase tracking-[0.12em]" style={{ color: THEME.text.muted }}>{label}</p>
+                                        <p className="mt-0.5 text-lg font-semibold leading-none tabular-nums" style={{ color: THEME.text.primary }}>{value}</p>
+                                        <p className="mt-1 truncate text-[11px]" style={{ color: THEME.text.muted }}>{sub}</p>
                                     </div>
                                 </div>
                             ))}
                         </div>
 
-                        {/* ── SECTION LABEL: INTELLIGENCE ── */}
-                        <div className="flex items-center gap-3 pt-1">
-                            <span className="text-[9px] font-bold uppercase tracking-[0.28em]" style={{ color: 'rgba(255,255,255,0.18)' }}>Intelligence</span>
-                            <div className="h-px flex-1" style={{ background: 'rgba(255,255,255,0.05)' }} />
-                        </div>
-
-                        {/* ── VENTURE CONTEXT + COMMAND CENTER ── */}
-                        <div className="grid gap-3 sm:gap-4 lg:grid-cols-[1fr_300px]">
-                            {/* LEFT — Research context */}
+                        {/* ── HERO GRID: Venture brief + Command center ── */}
+                        <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
+                            {/* LEFT — Venture brief */}
                             <div
-                                className="flex flex-col gap-4 overflow-hidden rounded-xl p-5"
-                                style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.025)' }}
+                                className="flex flex-col gap-5 overflow-hidden rounded-2xl border p-6"
+                                style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
                             >
-                                {/* Active research focus — user-defined, drives all AI research */}
-                                <div className="flex items-start justify-between gap-3">
-                                    <div className="min-w-0">
-                                        <p className="text-[9px] font-medium uppercase tracking-[0.20em]" style={{ color: 'rgba(255,255,255,0.25)' }}>
-                                            Research focus
+                                {/* Direction + phase */}
+                                <div className="flex items-start justify-between gap-4">
+                                    <div className="min-w-0 flex-1">
+                                        <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>
+                                            Strategic direction
                                         </p>
-                                        {activePriorityDef ? (
-                                            <>
-                                                <p className="mt-1 text-[15px] font-semibold leading-tight" style={{ color: '#f2f2f5' }}>
-                                                    {activePriorityDef.label}
-                                                </p>
-                                                <p className="mt-0.5 text-[12px]" style={{ color: 'rgba(255,255,255,0.30)' }}>
-                                                    {activePriorityDef.tagline}
-                                                </p>
-                                            </>
+                                        {strategicExcerpt ? (
+                                            <p className="text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
+                                                {strategicExcerpt.slice(0, 300)}{strategicExcerpt.length > 300 ? '…' : ''}
+                                            </p>
                                         ) : (
-                                            <p className="mt-1 text-[13px]" style={{ color: 'rgba(255,255,255,0.30)' }}>
-                                                No focus set — Dexo runs full-stack research
+                                            <p className="text-sm" style={{ color: THEME.text.muted }}>
+                                                No strategic intent yet — add your vision in the CEO desk.
                                             </p>
                                         )}
                                     </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => switchRoom('dexo')}
-                                        className="shrink-0 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition hover:opacity-80"
-                                        style={{ borderColor: 'rgba(255,255,255,0.10)', background: 'rgba(255,255,255,0.05)', color: '#f2f2f5' }}
-                                    >
-                                        Change
-                                    </button>
+                                    <div className="flex shrink-0 flex-col items-end gap-2">
+                                        {currentPhaseInfo && (
+                                            <div
+                                                className="rounded-lg border px-2.5 py-1.5 text-right"
+                                                style={{ borderColor: `${THEME.chart.violet}30`, background: `${THEME.chart.violet}0D` }}
+                                            >
+                                                <p className="text-[9px] uppercase tracking-wider" style={{ color: THEME.chart.violet }}>{currentPhaseInfo.sub}</p>
+                                                <p className="mt-0.5 text-[12px] font-semibold leading-tight" style={{ color: THEME.text.primary }}>
+                                                    {currentPhaseInfo.title.slice(0, 28)}
+                                                </p>
+                                            </div>
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={() => switchRoom('ceo')}
+                                            className="text-[11px] font-medium underline-offset-2 transition hover:underline"
+                                            style={{ color: THEME.accent.info }}
+                                        >
+                                            CEO desk →
+                                        </button>
+                                    </div>
                                 </div>
 
-                                <div className="h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
-
-                                {/* Today's research output — 3 lines max, truncated */}
-                                {staffFocusLines.length > 0 ? (
-                                    <div>
-                                        <p className="mb-2 text-[9px] font-medium uppercase tracking-[0.20em]" style={{ color: 'rgba(255,255,255,0.25)' }}>
-                                            Today
+                                {/* AI summary + focus today */}
+                                <div
+                                    className="rounded-xl border p-4"
+                                    style={{
+                                        borderColor: 'rgba(116,86,255,0.18)',
+                                        background: 'linear-gradient(135deg, rgba(116,86,255,0.08) 0%, rgba(116,86,255,0.03) 100%)',
+                                    }}
+                                >
+                                    <div className="mb-3 flex items-center justify-between gap-2">
+                                        <div className="flex items-center gap-1.5">
+                                            <Sparkles className="h-3.5 w-3.5" style={{ color: THEME.accent.primary }} />
+                                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.accent.primary }}>
+                                                AI staff snapshot
+                                            </p>
+                                        </div>
+                                        {lastStaffSyncLabel && (
+                                            <span className="text-[10px]" style={{ color: THEME.text.muted }}>
+                                                {lastStaffSyncLabel}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {aiSummaryExcerpt ? (
+                                        <p className="text-[13px] leading-relaxed" style={{ color: THEME.text.secondary }}>
+                                            {aiSummaryExcerpt.slice(0, 350)}{aiSummaryExcerpt.length > 350 ? '…' : ''}
                                         </p>
+                                    ) : (
+                                        <div className="flex items-center justify-between gap-4">
+                                            <p className="text-[13px]" style={{ color: THEME.text.muted }}>
+                                                Run Staff Sync to generate an AI research brief across all desks.
+                                            </p>
+                                            <button
+                                                onClick={() => runAgentStaffSync()}
+                                                disabled={agentSyncRunning}
+                                                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-semibold transition-all"
+                                                style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary, opacity: agentSyncRunning ? 0.6 : 1 }}
+                                            >
+                                                <RefreshCw className={`h-3 w-3 ${agentSyncRunning ? 'animate-spin' : ''}`} />
+                                                Sync
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Focus today */}
+                                {staffFocusLines.length > 0 && (
+                                    <div>
+                                        <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>Focus today</p>
                                         <ul className="space-y-1.5">
-                                            {staffFocusLines.slice(0, 3).map((line, i) => (
-                                                <li key={i} className="flex items-start gap-2 text-[12px] leading-snug" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                                                    <span className="mt-[5px] h-1 w-1 shrink-0 rounded-full" style={{ background: 'rgba(255,255,255,0.30)' }} />
-                                                    {line.length > 90 ? `${line.slice(0, 87)}…` : line}
+                                            {staffFocusLines.slice(0, 5).map((line, i) => (
+                                                <li key={i} className="flex items-start gap-2 text-[13px] leading-snug" style={{ color: THEME.text.secondary }}>
+                                                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: THEME.accent.primary }} />
+                                                    {line}
                                                 </li>
                                             ))}
                                         </ul>
                                     </div>
-                                ) : (
-                                    <div className="flex items-center justify-between gap-3">
-                                        <p className="text-[12px]" style={{ color: 'rgba(255,255,255,0.30)' }}>
-                                            No research yet — run Staff Sync to generate insights.
-                                        </p>
-                                        <button
-                                            type="button"
-                                            onClick={() => runAgentStaffSync()}
-                                            disabled={agentSyncRunning}
-                                            className="shrink-0 flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition hover:opacity-80"
-                                            style={{ borderColor: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.55)', opacity: agentSyncRunning ? 0.5 : 1 }}
-                                        >
-                                            <RefreshCw className={`h-3 w-3 ${agentSyncRunning ? 'animate-spin' : ''}`} />
-                                            Sync
-                                        </button>
-                                    </div>
                                 )}
 
-                                {/* Pending items — title only, no verbose AI text */}
+                                {/* Attention items */}
                                 {staffAttentionPending.length > 0 && (
-                                    <>
-                                        <div className="h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
-                                        <div>
-                                            <p className="mb-1.5 text-[9px] font-medium uppercase tracking-[0.20em]" style={{ color: 'rgba(255,255,255,0.25)' }}>
-                                                Pending · {staffAttentionPending.length}
+                                    <div
+                                        className="rounded-xl border p-3.5"
+                                        style={{ borderColor: 'rgba(245,158,11,0.2)', background: 'rgba(245,158,11,0.06)' }}
+                                    >
+                                        <div className="mb-2 flex items-center gap-1.5">
+                                            <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: '#f59e0b' }} />
+                                            <p className="text-[11px] font-semibold" style={{ color: '#f59e0b' }}>
+                                                {staffAttentionPending.length} item{staffAttentionPending.length > 1 ? 's' : ''} need attention
                                             </p>
-                                            <ul className="space-y-0.5">
-                                                {staffAttentionPending.slice(0, 3).map((a) => (
-                                                    <li key={a.id}>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => { setDexoBootstrap(buildDexoStaffAttentionBootstrap(a)); switchRoom('dexo'); }}
-                                                            className="group flex w-full items-center justify-between gap-3 rounded-lg py-1.5 text-left transition"
-                                                        >
-                                                            <span className="min-w-0 flex-1 truncate text-[12px]" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                                                                {a.title}
-                                                            </span>
-                                                            <span className="shrink-0 text-[10px] font-medium opacity-0 transition-opacity group-hover:opacity-100" style={{ color: '#94a3b8' }}>
-                                                                Ask Dexo ←'
-                                                            </span>
-                                                        </button>
-                                                    </li>
-                                                ))}
-                                            </ul>
                                         </div>
-                                    </>
+                                        <ul className="space-y-1.5">
+                                            {staffAttentionPending.slice(0, 3).map((a) => (
+                                                <li key={a.id} className="flex items-start justify-between gap-3">
+                                                    <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
+                                                        <span className="font-medium" style={{ color: THEME.text.primary }}>{a.title}</span>
+                                                        {' — '}{a.message.slice(0, 80)}{a.message.length > 80 ? '…' : ''}
+                                                    </p>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => { setDexoBootstrap(buildDexoStaffAttentionBootstrap(a)); switchRoom('dexo'); }}
+                                                        className="shrink-0 text-[10px] font-semibold underline-offset-2 hover:underline"
+                                                        style={{ color: THEME.accent.info }}
+                                                    >
+                                                        Ask Dexo
+                                                    </button>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
                                 )}
                             </div>
 
@@ -1594,21 +1858,21 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             <div className="flex flex-col gap-4">
                                 {/* Health ring */}
                                 <div
-                                    className="flex items-center gap-4 rounded-xl p-5"
-                                    style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.025)' }}
+                                    className="flex items-center gap-4 rounded-2xl border p-5"
+                                    style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
                                 >
                                     <CircularProgress
                                         value={executionScore}
                                         size={88}
                                         strokeWidth={7}
-                                        color="rgba(255,255,255,0.55)"
+                                        color={executionScore > 70 ? THEME.accent.primary : executionScore > 40 ? THEME.chart.amber : THEME.chart.rose}
                                     />
                                     <div>
-                                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'rgba(255,255,255,0.30)' }}>Venture health</p>
-                                        <p className="mt-1 text-base font-semibold" style={{ color: '#f2f2f5' }}>
+                                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>Venture health</p>
+                                        <p className="mt-1 text-base font-semibold" style={{ color: THEME.text.primary }}>
                                             {executionScore > 70 ? 'Strong' : executionScore > 40 ? 'Developing' : foundationSparse ? 'Setup needed' : 'Needs work'}
                                         </p>
-                                        <p className="mt-0.5 text-[11px]" style={{ color: 'rgba(255,255,255,0.30)' }}>
+                                        <p className="mt-0.5 text-[11px]" style={{ color: THEME.text.muted }}>
                                             Based on strategy, phases &amp; priorities
                                         </p>
                                     </div>
@@ -1616,10 +1880,10 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
 
                                 {/* Desk coverage */}
                                 <div
-                                    className="flex-1 rounded-xl p-5"
-                                    style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.025)' }}
+                                    className="flex-1 rounded-2xl border p-5"
+                                    style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
                                 >
-                                    <p className="mb-3 text-[9px] font-semibold uppercase tracking-[0.20em]" style={{ color: 'rgba(255,255,255,0.30)' }}>Desk coverage</p>
+                                    <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>Desk coverage</p>
                                     <div className="space-y-3">
                                         {deskCoverage.map((desk) => {
                                             const room = SNAPSHOT_DESK_ROOMS[desk.label];
@@ -1638,15 +1902,15 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                                     </div>
                                                     <div className="min-w-0 flex-1">
                                                         <div className="flex items-center justify-between gap-1 mb-0.5">
-                                                            <span className="text-[12px] font-medium" style={{ color: 'rgba(255,255,255,0.55)' }}>{desk.label}</span>
-                                                            <span className="text-[10px] tabular-nums" style={{ color: desk.pct === 100 ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.30)' }}>
+                                                            <span className="text-[12px] font-medium" style={{ color: THEME.text.secondary }}>{desk.label}</span>
+                                                            <span className="text-[10px] tabular-nums" style={{ color: desk.pct === 100 ? THEME.accent.primary : THEME.text.muted }}>
                                                                 {desk.pct}%
                                                             </span>
                                                         </div>
                                                         <div className="h-1 overflow-hidden rounded-full" style={{ background: 'rgba(255,255,255,0.07)' }}>
                                                             <div
                                                                 className="h-full rounded-full transition-all duration-700"
-                                                                style={{ width: `${desk.pct}%`, background: 'rgba(255,255,255,0.45)' }}
+                                                                style={{ width: `${desk.pct}%`, background: desk.pct === 100 ? THEME.accent.primary : desk.fill }}
                                                             />
                                                         </div>
                                                     </div>
@@ -1657,8 +1921,8 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                     <button
                                         type="button"
                                         onClick={() => switchRoom('dexo')}
-                                        className="mt-4 flex w-full items-center justify-center gap-1.5 py-2 text-[12px] font-medium transition-opacity hover:opacity-60"
-                                        style={{ color: 'rgba(255,255,255,0.40)' }}
+                                        className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl border py-2 text-[12px] font-semibold transition-all hover:opacity-80"
+                                        style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.10)', color: THEME.accent.primary }}
                                     >
                                         <Sparkles className="h-3.5 w-3.5" />
                                         Open Dexo AI
@@ -1668,20 +1932,20 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 {/* Recent activity */}
                                 {systemLogs.length > 0 && (
                                     <div
-                                        className="rounded-xl p-5"
-                                        style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.025)' }}
+                                        className="rounded-2xl border p-5"
+                                        style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
                                     >
-                                        <p className="mb-3 text-[9px] font-semibold uppercase tracking-[0.20em]" style={{ color: 'rgba(255,255,255,0.30)' }}>Recent activity</p>
+                                        <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>Recent activity</p>
                                         <ul className="space-y-2">
                                             {systemLogs.slice(0, 4).map((log, i) => (
                                                 <li key={log.id} className="flex items-start gap-2">
                                                     <span
                                                         className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full"
-                                                        style={{ background: 'rgba(255,255,255,0.25)' }}
+                                                        style={{ background: i === 0 ? THEME.accent.primary : THEME.text.muted }}
                                                     />
                                                     <div className="min-w-0">
-                                                        <p className="truncate text-[12px]" style={{ color: 'rgba(255,255,255,0.55)' }}>{log.message}</p>
-                                                        <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.30)' }}>
+                                                        <p className="truncate text-[12px]" style={{ color: THEME.text.secondary }}>{log.message}</p>
+                                                        <p className="text-[10px]" style={{ color: THEME.text.muted }}>
                                                             {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                         </p>
                                                     </div>
@@ -1693,34 +1957,26 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                             </div>
                         </div>
 
-                        {/* ── SECTION LABEL: OPERATIONS ── */}
-                        {((livingOffice && livingOffice.brief.greeting !== 'No venture selected.') || upcomingEvents.length > 0 || kanbanTasks.length > 0) && (
-                            <div className="flex items-center gap-3 pt-1">
-                                <span className="text-[9px] font-bold uppercase tracking-[0.28em]" style={{ color: 'rgba(255,255,255,0.18)' }}>Operations</span>
-                                <div className="h-px flex-1" style={{ background: 'rgba(255,255,255,0.05)' }} />
-                            </div>
-                        )}
-
                         {/* ── OPERATIONS ROW (living office + delivery) ── */}
                         {((livingOffice && livingOffice.brief.greeting !== 'No venture selected.') || upcomingEvents.length > 0 || kanbanTasks.length > 0) && (
                             <div className="grid gap-5 lg:grid-cols-3">
                                 {/* Operational brief */}
                                 {livingOffice && livingOffice.brief.greeting !== 'No venture selected.' && (
                                     <div
-                                        className="rounded-xl p-5"
-                                        style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.025)' }}
+                                        className="rounded-2xl border p-5"
+                                        style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
                                     >
-                                        <p className="mb-3 text-[9px] font-semibold uppercase tracking-[0.20em]" style={{ color: 'rgba(255,255,255,0.30)' }}>Daily brief</p>
-                                        <p className="text-[13px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>{livingOffice.brief.greeting}</p>
-                                        <div className="mt-3 border-l-2 pl-3" style={{ borderColor: 'rgba(255,255,255,0.15)' }}>
-                                            <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.75)' }}>Focus</p>
-                                            <p className="mt-1 text-[13px] font-medium" style={{ color: '#f2f2f5' }}>{livingOffice.brief.suggestedFocus}</p>
+                                        <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>Daily brief</p>
+                                        <p className="text-[13px] leading-relaxed" style={{ color: THEME.text.secondary }}>{livingOffice.brief.greeting}</p>
+                                        <div className="mt-3 rounded-xl border px-3 py-2.5" style={{ borderColor: THEME.border.default, background: 'rgba(116,86,255,0.08)' }}>
+                                            <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: THEME.accent.primary }}>Focus</p>
+                                            <p className="mt-1 text-[13px] font-medium" style={{ color: THEME.text.primary }}>{livingOffice.brief.suggestedFocus}</p>
                                         </div>
                                         {livingOffice.brief.priorities.length > 0 && (
                                             <ul className="mt-3 space-y-1">
                                                 {livingOffice.brief.priorities.slice(0, 3).map((p, i) => (
-                                                    <li key={i} className="flex items-start gap-2 text-[12px]" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                                                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: 'rgba(255,255,255,0.30)' }} />
+                                                    <li key={i} className="flex items-start gap-2 text-[12px]" style={{ color: THEME.text.secondary }}>
+                                                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: THEME.text.muted }} />
                                                         {p}
                                                     </li>
                                                 ))}
@@ -1732,22 +1988,22 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 {/* Upcoming events */}
                                 {upcomingEvents.length > 0 && (
                                     <div
-                                        className="rounded-xl p-5"
-                                        style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.025)' }}
+                                        className="rounded-2xl border p-5"
+                                        style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
                                     >
                                         <div className="mb-3 flex items-center justify-between">
-                                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'rgba(255,255,255,0.30)' }}>Upcoming</p>
-                                            <button type="button" onClick={() => switchRoom('calendar')} className="text-[10px] font-medium" style={{ color: 'rgba(255,255,255,0.38)' }}>View all ←'</button>
+                                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>Upcoming</p>
+                                            <button type="button" onClick={() => switchRoom('calendar')} className="text-[10px] font-medium" style={{ color: THEME.accent.info }}>View all →</button>
                                         </div>
                                         <ul className="space-y-2.5">
                                             {upcomingEvents.slice(0, 4).map((ev, idx) => (
                                                 <li key={`${ev.date}-${idx}`} className="flex items-start gap-2.5">
-                                                    <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                                                        <Calendar className="h-3.5 w-3.5" style={{ color: 'rgba(255,255,255,0.45)' }} />
+                                                    <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md" style={{ background: 'rgba(52,211,153,0.12)' }}>
+                                                        <Calendar className="h-3.5 w-3.5" style={{ color: '#34d399' }} />
                                                     </div>
                                                     <div>
-                                                        <p className="text-[12px] font-medium leading-snug" style={{ color: '#f2f2f5' }}>{ev.title}</p>
-                                                        <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.30)' }}>
+                                                        <p className="text-[12px] font-medium leading-snug" style={{ color: THEME.text.primary }}>{ev.title}</p>
+                                                        <p className="text-[10px]" style={{ color: THEME.text.muted }}>
                                                             {new Date(ev.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · {ev.type}
                                                         </p>
                                                     </div>
@@ -1760,43 +2016,46 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                 {/* Delivery board */}
                                 {kanbanTasks.length > 0 && (
                                     <div
-                                        className="rounded-xl p-5"
-                                        style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.025)' }}
+                                        className="rounded-2xl border p-5"
+                                        style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
                                     >
                                         <div className="mb-3 flex items-center justify-between">
-                                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'rgba(255,255,255,0.30)' }}>Delivery board</p>
-                                            <button type="button" onClick={() => switchRoom('pm')} className="text-[10px] font-medium" style={{ color: 'rgba(255,255,255,0.38)' }}>Open PM ←'</button>
+                                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>Delivery board</p>
+                                            <button type="button" onClick={() => switchRoom('pm')} className="text-[10px] font-medium" style={{ color: THEME.accent.info }}>Open PM →</button>
                                         </div>
                                         <div className="grid grid-cols-2 gap-2">
-                                            {([['To do', kanbanCounts.todo, 'rgba(255,255,255,0.30)'], ['In progress', kanbanCounts.in_progress, 'rgba(255,255,255,0.45)'], ['Next up', kanbanCounts.next, 'rgba(255,255,255,0.45)'], ['Done', kanbanCounts.completed, 'rgba(255,255,255,0.45)']] as const).map(([label, n, color]) => (
+                                            {([['To do', kanbanCounts.todo, THEME.text.muted], ['In progress', kanbanCounts.in_progress, THEME.chart.amber], ['Next up', kanbanCounts.next, THEME.chart.blue], ['Done', kanbanCounts.completed, THEME.chart.emerald]] as const).map(([label, n, color]) => (
                                                 <div
                                                     key={label}
                                                     className="rounded-xl border px-3 py-2.5 text-center"
-                                                    style={{ borderColor: 'rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.04)' }}
+                                                    style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.04)' }}
                                                 >
-                                                    <p className="text-xl font-semibold tabular-nums" style={{ color: '#f2f2f5' }}>{n}</p>
+                                                    <p className="text-xl font-semibold tabular-nums" style={{ color: THEME.text.primary }}>{n}</p>
                                                     <p className="mt-0.5 text-[10px] font-medium" style={{ color }}>{label}</p>
                                                 </div>
                                             ))}
                                         </div>
                                         <div className="mt-3">
-                                            <div className="mb-1 flex justify-between text-[10px]" style={{ color: 'rgba(255,255,255,0.30)' }}>
+                                            <div className="mb-1 flex justify-between text-[10px]" style={{ color: THEME.text.muted }}>
                                                 <span>Phase progress</span>
                                                 <span>{phaseDone}/{phaseTotal || 0}</span>
                                             </div>
-                                            <ProgressBar value={phaseDone} max={phaseTotal || 1} color={'rgba(255,255,255,0.45)'} />
+                                            <ProgressBar value={phaseDone} max={phaseTotal || 1} color={THEME.chart.violet} />
                                         </div>
                                     </div>
                                 )}
                             </div>
                         )}
 
-                        {/* â"€â"€ AI TOOLS â"€â"€ */}
+                        {/* ── AI TOOLS ── */}
                         <div
-                            className="overflow-hidden rounded-xl"
-                            style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.025)' }}
+                            className="overflow-hidden rounded-2xl border"
+                            style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
                         >
-                            <div className="grid grid-cols-3 divide-x sm:grid-cols-5" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                            <div className="border-b px-5 py-3.5" style={{ borderColor: THEME.border.subtle }}>
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>AI Tools</p>
+                            </div>
+                            <div className="grid grid-cols-3 divide-x sm:grid-cols-5" style={{ borderColor: THEME.border.subtle }}>
                                 {DASH_AI_TOOLS.map(({ label, desc, url, Logo, color }) => (
                                     <a
                                         key={label}
@@ -1804,7 +2063,7 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="group flex flex-col items-center gap-2 border-r px-3 py-5 text-center transition-all last:border-r-0 hover:bg-[rgba(255,255,255,0.04)]"
-                                        style={{ borderColor: 'rgba(255,255,255,0.06)' }}
+                                        style={{ borderColor: THEME.border.subtle }}
                                     >
                                         <div
                                             className="flex h-9 w-9 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-110"
@@ -1813,34 +2072,37 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                             <Logo size={20} />
                                         </div>
                                         <div>
-                                            <p className="text-[12px] font-semibold" style={{ color: '#f2f2f5' }}>{label}</p>
-                                            <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.30)' }}>{desc}</p>
+                                            <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>{label}</p>
+                                            <p className="text-[10px]" style={{ color: THEME.text.muted }}>{desc}</p>
                                         </div>
                                     </a>
                                 ))}
                             </div>
                         </div>
 
-                        {/* â"€â"€ QUICK ACTIONS â"€â"€ */}
+                        {/* ── QUICK ACTIONS ── */}
                         <div
-                            className="overflow-hidden rounded-xl"
-                            style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.025)' }}
+                            className="overflow-hidden rounded-2xl border"
+                            style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}
                         >
+                            <div className="border-b px-5 py-3.5" style={{ borderColor: THEME.border.subtle }}>
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: THEME.text.muted }}>Workspace</p>
+                            </div>
                             <div className="grid grid-cols-2 divide-x divide-y sm:grid-cols-3 lg:grid-cols-6">
                                 {([
-                                    { id: 'ceo', label: 'CEO', sub: 'Strategy', icon: Lightbulb, color: 'rgba(255,255,255,0.45)', room: 'ceo' as const },
-                                    { id: 'scout', label: 'Scout', sub: 'Market', icon: Globe, color: 'rgba(255,255,255,0.45)', room: 'scout' as const },
-                                    { id: 'finance', label: 'Finance', sub: 'Budget', icon: Wallet, color: 'rgba(255,255,255,0.45)', room: 'accountant' as const },
-                                    { id: 'product', label: 'Product', sub: 'Roadmap', icon: Layers, color: 'rgba(255,255,255,0.45)', room: 'pm' as const },
+                                    { id: 'ceo', label: 'CEO', sub: 'Strategy', icon: Lightbulb, color: THEME.chart.violet, room: 'ceo' as const },
+                                    { id: 'scout', label: 'Scout', sub: 'Market', icon: Globe, color: THEME.chart.blue, room: 'scout' as const },
+                                    { id: 'finance', label: 'Finance', sub: 'Budget', icon: Wallet, color: THEME.chart.emerald, room: 'accountant' as const },
+                                    { id: 'product', label: 'Product', sub: 'Roadmap', icon: Layers, color: THEME.chart.amber, room: 'pm' as const },
                                     { id: 'pa', label: 'Assistant', sub: 'Support', icon: MessageSquare, color: THEME.chart.cyan, room: 'personal_assistant' as const },
-                                    { id: 'dexo', label: 'Dexo AI', sub: 'Command', icon: Cpu, color: 'rgba(255,255,255,0.75)', room: 'dexo' as const },
+                                    { id: 'dexo', label: 'Dexo AI', sub: 'Command', icon: Cpu, color: THEME.accent.primary, room: 'dexo' as const },
                                 ] as const).map(({ label, sub, icon: Icon, color, room }) => (
                                     <button
                                         key={label}
                                         type="button"
                                         onClick={() => switchRoom(room)}
                                         className="group flex flex-col items-center gap-2 border-[rgba(255,255,255,0.06)] py-5 text-center transition-all hover:bg-[rgba(255,255,255,0.04)]"
-                                        style={{ borderColor: 'rgba(255,255,255,0.06)' }}
+                                        style={{ borderColor: THEME.border.subtle }}
                                     >
                                         <div
                                             className="flex h-9 w-9 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-110"
@@ -1849,8 +2111,8 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                                             <Icon className="h-4 w-4" style={{ color }} />
                                         </div>
                                         <div>
-                                            <p className="text-[12px] font-semibold" style={{ color: '#f2f2f5' }}>{label}</p>
-                                            <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.30)' }}>{sub}</p>
+                                            <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>{label}</p>
+                                            <p className="text-[10px]" style={{ color: THEME.text.muted }}>{sub}</p>
                                         </div>
                                     </button>
                                 ))}
@@ -1883,8 +2145,9 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
                 )}
 
                 {activeTab === 'dexo_daily' && (
-                    <div className="min-h-[70vh] overflow-hidden rounded-lg">
-                        <DexoResearchRoom embedded />
+                    <div className="space-y-6">
+                        <DexoOpsPanel activeProject={activeProject} />
+                        <DexoDailyBriefPanel activeProject={activeProject} autoRunPulse />
                     </div>
                 )}
             </main>
@@ -1898,11 +2161,11 @@ export function Dashboard({ onNewVenture }: { onNewVenture?: () => void }) {
 // ============================================================================
 
 const PORTFOLIO_DESK_ACCENTS: Record<'ceo' | 'accountant' | 'pm' | 'cmo' | 'scout', string> = {
-    ceo: 'rgba(255,255,255,0.45)',
-    accountant: 'rgba(255,255,255,0.45)',
-    pm: 'rgba(255,255,255,0.45)',
-    cmo: 'rgba(255,255,255,0.45)',
-    scout: 'rgba(255,255,255,0.45)',
+    ceo: THEME.chart.violet,
+    accountant: THEME.chart.emerald,
+    pm: THEME.chart.amber,
+    cmo: THEME.chart.rose,
+    scout: THEME.chart.blue,
 };
 
 function PortfolioView({
@@ -1922,7 +2185,7 @@ function PortfolioView({
     const deskStats = useMemo(() => aggregatePortfolioDeskStats(allProjects), [allProjects]);
 
     const portfolioComposition = [
-        { name: 'Active', value: withStrategy, fill: 'rgba(255,255,255,0.45)' },
+        { name: 'Active', value: withStrategy, fill: THEME.chart.emerald },
         { name: 'Draft', value: draft, fill: THEME.chart.slate },
     ].filter((d) => d.value > 0);
 
@@ -1947,53 +2210,72 @@ function PortfolioView({
     return (
         <div className="min-h-screen w-full pb-24" style={{ background: THEME.bg.primary }}>
 
-            {/* â"€â"€â"€ COMMAND HEADER â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */}
-            <header className="border-b px-6 py-5" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+            {/* ─── COMMAND HEADER ─────────────────────────────────── */}
+            <header className="border-b px-6 py-5" style={{ borderColor: THEME.border.subtle }}>
                 <div className="mx-auto max-w-7xl flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                            <LayoutDashboard className="h-5 w-5" style={{ color: 'rgba(255,255,255,0.75)' }} />
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: 'rgba(116,86,255,0.12)' }}>
+                            <LayoutDashboard className="h-5 w-5" style={{ color: THEME.accent.primary }} />
                         </div>
                         <div>
-                            <h1 className="text-xl font-semibold tracking-tight" style={{ color: '#f2f2f5' }}>Executive Overview</h1>
-                            <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.30)' }}>
+                            <h1 className="text-xl font-semibold tracking-tight" style={{ color: THEME.text.primary }}>Executive Overview</h1>
+                            <p className="text-[11px]" style={{ color: THEME.text.muted }}>
                                 AI Co-Founder Command Center · {ventureCount} venture{ventureCount !== 1 ? 's' : ''} · {synced} synced
                             </p>
                         </div>
                     </div>
                     {onNewVenture && (
-                        <button onClick={onNewVenture} className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all hover:opacity-90" style={{ background: 'rgba(255,255,255,0.75)', color: '#fff' }}>
+                        <button onClick={onNewVenture} className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all hover:opacity-90" style={{ background: THEME.accent.primary, color: '#fff' }}>
                             <Sparkles className="h-3.5 w-3.5" /> New Venture
                         </button>
                     )}
                 </div>
             </header>
 
-            <main className="mx-auto max-w-7xl flex flex-col gap-8 px-3 sm:px-6 py-4 sm:py-6">
+            <main className="mx-auto max-w-7xl space-y-12 px-6 py-8">
 
-                {/* â"€â"€ Morning Intel Brief â"€â"€ */}
+                {/* ════════════════════════════════════════════════════════
+                    § A  MORNING INTELLIGENCE BRIEF
+                         Daily Tavily-backed web research per venture.
+                         Read the headline, check the sources, then open
+                         the venture to discuss findings with Dexo.
+                ════════════════════════════════════════════════════════ */}
                 <section>
-                    <div className="mb-4 flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: '#22d3ee' }}>Daily Intel</span>
-                            <span className="text-sm font-semibold" style={{ color: '#f2f2f5' }}>Morning Intelligence Brief</span>
+                    {/* Section title row */}
+                    <div className="mb-6 flex items-start gap-4 border-b pb-5" style={{ borderColor: THEME.border.subtle }}>
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[12px] font-bold" style={{ background: 'rgba(6,182,212,0.12)', color: '#22d3ee' }}>A</div>
+                        <div className="flex-1 min-w-0">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                <h2 className="text-[15px] font-semibold tracking-tight" style={{ color: THEME.text.primary }}>Morning Intelligence Brief</h2>
+                                <span className="rounded-full border px-2.5 py-0.5 text-[10px] font-medium" style={{ borderColor: 'rgba(6,182,212,0.2)', color: '#22d3ee' }}>Powered by Tavily · refreshed daily</span>
+                            </div>
+                            <div className="mt-1.5 space-y-1">
+                                <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
+                                    Dexo searched the web for each venture and returned real headlines with verified source links — live market intelligence, not AI-generated summaries.
+                                </p>
+                                <p className="text-[11px]" style={{ color: THEME.text.muted }}>
+                                    <span className="font-semibold" style={{ color: THEME.text.primary }}>Source:</span>{' '}Tavily live web search · runs daily per venture · every card links to the original article
+                                </p>
+                                <p className="text-[11px] font-medium" style={{ color: THEME.accent.info }}>
+                                    → Click any source link to read the article. Open a venture card to discuss the findings with Dexo.
+                                </p>
+                            </div>
                         </div>
-                        <span className="rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider" style={{ borderColor: 'rgba(6,182,212,0.25)', color: '#22d3ee' }}>Tavily · live</span>
                     </div>
                     <PortfolioDailyIntelSection allProjects={allProjects} onOpenVenture={setActiveProject} />
                     {allProjects.length === 0 && (
-                        <div className="flex flex-col items-center gap-4 rounded-xl py-16 text-center" style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.025)' }}>
-                            <div className="flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                                <Globe className="h-7 w-7" style={{ color: 'rgba(255,255,255,0.75)' }} />
+                        <div className="flex flex-col items-center gap-4 rounded-2xl border py-16 text-center" style={{ borderColor: THEME.border.subtle, background: 'rgba(116,86,255,0.04)' }}>
+                            <div className="flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: 'rgba(116,86,255,0.12)' }}>
+                                <Globe className="h-7 w-7" style={{ color: THEME.accent.primary }} />
                             </div>
                             <div className="max-w-sm">
-                                <p className="font-semibold" style={{ color: '#f2f2f5' }}>No ventures yet</p>
-                                <p className="mt-1.5 text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                                <p className="font-semibold" style={{ color: THEME.text.primary }}>No ventures yet</p>
+                                <p className="mt-1.5 text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
                                     Create a venture and run a Staff Sync — Dexo will pull live market research from the web and generate a daily briefing for it here.
                                 </p>
                             </div>
                             {onNewVenture && (
-                                <button onClick={onNewVenture} className="flex items-center gap-2 rounded-xl border px-5 py-2.5 text-sm font-semibold" style={{ borderColor: 'rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.75)' }}>
+                                <button onClick={onNewVenture} className="flex items-center gap-2 rounded-xl border px-5 py-2.5 text-sm font-semibold" style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}>
                                     <Sparkles className="h-4 w-4" /> Create venture
                                 </button>
                             )}
@@ -2001,36 +2283,58 @@ function PortfolioView({
                     )}
                 </section>
 
-                {/* â"€â"€ AI Research Desk Briefing â"€â"€ */}
+                {/* ════════════════════════════════════════════════════════
+                    § B  AI RESEARCH DESK BRIEFING
+                         What each AI staff member independently researched
+                         and concluded during the last Staff Sync.
+                         Each desk covers a distinct functional area —
+                         click "Open desk" to continue the research thread.
+                ════════════════════════════════════════════════════════ */}
                 {leadingVenture?.agentStaffSnapshot && (
                     <section>
-                        <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
-                            <div className="flex items-center gap-2 min-w-0">
-                                <span className="text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: 'rgba(255,255,255,0.75)' }}>Desk Research</span>
-                                <span className="text-sm font-semibold truncate" style={{ color: '#f2f2f5' }}>{leadingVenture.name}</span>
-                            </div>
-                            <div className="flex items-center gap-2 shrink-0">
-                                <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.30)' }}>
-                                    {new Date(leadingVenture.agentStaffSnapshot.at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
-                                </span>
-                                <button
-                                    onClick={() => setActiveProject(leadingVenture)}
-                                    className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-semibold transition-all hover:opacity-80"
-                                    style={{ color: 'rgba(255,255,255,0.40)' }}
-                                >
-                                    <Sparkles className="h-3 w-3" /> Full briefing
-                                </button>
+                        <div className="mb-6 flex items-start gap-4 border-b pb-5" style={{ borderColor: THEME.border.subtle }}>
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[12px] font-bold" style={{ background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}>B</div>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <h2 className="text-[15px] font-semibold tracking-tight" style={{ color: THEME.text.primary }}>
+                                        AI Research Desk Briefing
+                                        <span className="ml-2 text-[12px] font-normal" style={{ color: THEME.text.muted }}>— {leadingVenture.name}</span>
+                                    </h2>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px]" style={{ color: THEME.text.muted }}>
+                                            Synced {new Date(leadingVenture.agentStaffSnapshot.at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+                                        </span>
+                                        <button
+                                            onClick={() => setActiveProject(leadingVenture)}
+                                            className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-semibold transition-all hover:opacity-80"
+                                            style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.10)', color: THEME.accent.primary }}
+                                        >
+                                            <Sparkles className="h-3 w-3" /> Full briefing
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="mt-1.5 space-y-1">
+                                    <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
+                                        Six AI specialists each researched a separate part of your business and wrote their own conclusions. Each card shows exactly what that desk found.
+                                    </p>
+                                    <p className="text-[11px]" style={{ color: THEME.text.muted }}>
+                                        <span className="font-semibold" style={{ color: THEME.text.primary }}>Source:</span>{' '}Last Staff Sync for {leadingVenture.name} · {new Date(leadingVenture.agentStaffSnapshot.at).toLocaleDateString(undefined, { dateStyle: 'medium' })} · generated from your venture data and AI analysis
+                                    </p>
+                                    <p className="text-[11px] font-medium" style={{ color: THEME.accent.info }}>
+                                        → Read the finding. Click "Open desk →" to continue the research or ask follow-up questions directly.
+                                    </p>
+                                </div>
                             </div>
                         </div>
 
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                             {([
-                                { key: 'scout',      label: 'Market Intelligence',  role: 'Scout',           covers: 'Competitor signals · trends · opportunities', finds: 'Use this to spot threats early and validate market assumptions before committing to any direction.',      color: 'rgba(255,255,255,0.45)',    room: 'scout'      as const, icon: Globe     },
-                                { key: 'ceo',        label: 'Strategic Direction',  role: 'CEO',             covers: 'Mission · vision · positioning',              finds: 'Use this to set or challenge your strategy — it shapes every other decision across the whole business.',   color: 'rgba(255,255,255,0.45)',  room: 'ceo'        as const, icon: Lightbulb },
-                                { key: 'pm',         label: 'Product Insights',     role: 'Product Manager', covers: 'Roadmap · features · user problems',          finds: 'Use this to decide what ships next and what gets cut. It directly drives your roadmap and sprint focus.',   color: 'rgba(255,255,255,0.45)',   room: 'pm'         as const, icon: Layers    },
-                                { key: 'accountant', label: 'Finance & Runway',     role: 'Accountant',      covers: 'Budget · burn · revenue signals',             finds: 'Read this before any spending or pricing call — it shows your real constraints and revenue opportunities.',   color: 'rgba(255,255,255,0.45)', room: 'accountant' as const, icon: Wallet    },
-                                { key: 'cmo',        label: 'Growth & GTM',         role: 'CMO',             covers: 'Marketing · channels · acquisition',          finds: 'Use this to pick your channels and craft messaging before spending anything on marketing or sales.',          color: 'rgba(255,255,255,0.45)',    room: 'cmo'        as const, icon: Megaphone },
-                                { key: 'summary',    label: 'Executive Synthesis',  role: 'Chief of Staff',  covers: 'Cross-desk synthesis · executive brief',      finds: 'Read this first — it synthesizes all six desks into one brief. The fastest way to see the full picture.',    color: 'rgba(255,255,255,0.75)', room: null,                  icon: Cpu       },
+                                { key: 'scout',      label: 'Market Intelligence',  role: 'Scout',           covers: 'Competitor signals · trends · opportunities', finds: 'Use this to spot threats early and validate market assumptions before committing to any direction.',      color: THEME.chart.blue,    room: 'scout'      as const, icon: Globe     },
+                                { key: 'ceo',        label: 'Strategic Direction',  role: 'CEO',             covers: 'Mission · vision · positioning',              finds: 'Use this to set or challenge your strategy — it shapes every other decision across the whole business.',   color: THEME.chart.violet,  room: 'ceo'        as const, icon: Lightbulb },
+                                { key: 'pm',         label: 'Product Insights',     role: 'Product Manager', covers: 'Roadmap · features · user problems',          finds: 'Use this to decide what ships next and what gets cut. It directly drives your roadmap and sprint focus.',   color: THEME.chart.amber,   room: 'pm'         as const, icon: Layers    },
+                                { key: 'accountant', label: 'Finance & Runway',     role: 'Accountant',      covers: 'Budget · burn · revenue signals',             finds: 'Read this before any spending or pricing call — it shows your real constraints and revenue opportunities.',   color: THEME.chart.emerald, room: 'accountant' as const, icon: Wallet    },
+                                { key: 'cmo',        label: 'Growth & GTM',         role: 'CMO',             covers: 'Marketing · channels · acquisition',          finds: 'Use this to pick your channels and craft messaging before spending anything on marketing or sales.',          color: THEME.chart.rose,    room: 'cmo'        as const, icon: Megaphone },
+                                { key: 'summary',    label: 'Executive Synthesis',  role: 'Chief of Staff',  covers: 'Cross-desk synthesis · executive brief',      finds: 'Read this first — it synthesizes all six desks into one brief. The fastest way to see the full picture.',    color: THEME.accent.primary, room: null,                  icon: Cpu       },
                             ] as const).map(({ key, label, role, covers, finds, color, room, icon: DeskIcon }) => {
                                 const snap = key === 'summary'
                                     ? leadingVenture.agentStaffSnapshot.summary
@@ -2038,9 +2342,9 @@ function PortfolioView({
                                 const hasContent = !!snap?.trim();
                                 return (
                                     <div key={key}
-                                        className="flex flex-col overflow-hidden rounded-xl"
+                                        className="flex flex-col overflow-hidden rounded-2xl border"
                                         style={{
-                                            borderColor: hasContent ? `${color}35` : 'rgba(255,255,255,0.06)',
+                                            borderColor: hasContent ? `${color}35` : THEME.border.subtle,
                                             background: hasContent ? `${color}07` : 'rgba(255,255,255,0.02)',
                                         }}
                                     >
@@ -2051,8 +2355,8 @@ function PortfolioView({
                                                     <DeskIcon className="h-4 w-4" style={{ color }} />
                                                 </div>
                                                 <div>
-                                                    <p className="text-[12px] font-semibold leading-tight" style={{ color: '#f2f2f5' }}>{label}</p>
-                                                    <p className="text-[10px] font-medium" style={{ color: "rgba(255,255,255,0.35)" }}>{role}</p>
+                                                    <p className="text-[12px] font-semibold leading-tight" style={{ color: THEME.text.primary }}>{label}</p>
+                                                    <p className="text-[10px] font-medium" style={{ color }}>{role}</p>
                                                 </div>
                                             </div>
                                             {room && (
@@ -2062,7 +2366,7 @@ function PortfolioView({
                                                     className="shrink-0 rounded-lg border px-2.5 py-1 text-[10px] font-semibold transition-all hover:opacity-80"
                                                     style={{ borderColor: `${color}35`, background: `${color}12`, color }}
                                                 >
-                                                    Open desk ←'
+                                                    Open desk →
                                                 </button>
                                             )}
                                         </div>
@@ -2076,17 +2380,17 @@ function PortfolioView({
                                                         <p className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.14em]" style={{ color }}>
                                                             Research Finding
                                                         </p>
-                                                        <p className="text-[12px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                                                        <p className="text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>
                                                             {snap!.trim().length > 400 ? `${snap!.trim().slice(0, 397)}…` : snap!.trim()}
                                                         </p>
                                                     </div>
                                                     {/* Why it matters reasoning block */}
                                                     <div className="mt-auto space-y-1.5 rounded-xl border px-3 py-2.5" style={{ borderColor: `${color}20`, background: `${color}08` }}>
-                                                        <p className="text-[10px] leading-snug" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                                                        <p className="text-[10px] leading-snug" style={{ color: THEME.text.secondary }}>
                                                             <span className="font-bold" style={{ color }}>How to use this · </span>
                                                             {finds}
                                                         </p>
-                                                        <p className="text-[9px]" style={{ color: 'rgba(255,255,255,0.30)' }}>
+                                                        <p className="text-[9px]" style={{ color: THEME.text.muted }}>
                                                             Covers: {covers}
                                                         </p>
                                                     </div>
@@ -2094,8 +2398,8 @@ function PortfolioView({
                                             ) : (
                                                 <div className="flex flex-1 flex-col items-center justify-center gap-2 py-6 text-center">
                                                     <DeskIcon className="h-7 w-7 opacity-15" style={{ color }} />
-                                                    <p className="text-[11px] font-medium" style={{ color: 'rgba(255,255,255,0.30)' }}>No research yet</p>
-                                                    <p className="max-w-[180px] text-[10px] leading-snug" style={{ color: 'rgba(255,255,255,0.30)' }}>
+                                                    <p className="text-[11px] font-medium" style={{ color: THEME.text.muted }}>No research yet</p>
+                                                    <p className="max-w-[180px] text-[10px] leading-snug" style={{ color: THEME.text.muted }}>
                                                         Run Staff Sync · covers {covers}
                                                     </p>
                                                 </div>
@@ -2108,27 +2412,51 @@ function PortfolioView({
                     </section>
                 )}
 
-                {/* â"€â"€ Decision Queue â"€â"€ */}
+                {/* ════════════════════════════════════════════════════════
+                    § C  DECISION QUEUE
+                         Signals your AI team flagged that need your input.
+                         These are not notifications — each item is a
+                         specific finding that requires a human decision.
+                         "Discuss →" opens Dexo for that venture directly.
+                ════════════════════════════════════════════════════════ */}
                 {(allAttentionItems.length > 0 || focusLines.length > 0) && (
                     <section>
-                        <div className="mb-4 flex items-center gap-3 flex-wrap">
-                            <span className="text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: '#f59e0b' }}>Decisions</span>
-                            <span className="text-sm font-semibold" style={{ color: '#f2f2f5' }}>Decision Queue</span>
-                            {allAttentionItems.length > 0 && (
-                                <span className="rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider" style={{ borderColor: 'rgba(245,158,11,0.3)', background: 'rgba(245,158,11,0.10)', color: '#f59e0b' }}>
-                                    {allAttentionItems.length} pending
-                                </span>
-                            )}
+                        <div className="mb-6 flex items-start gap-4 border-b pb-5" style={{ borderColor: THEME.border.subtle }}>
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[12px] font-bold" style={{ background: 'rgba(245,158,11,0.12)', color: '#f59e0b' }}>C</div>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <h2 className="text-[15px] font-semibold tracking-tight" style={{ color: THEME.text.primary }}>Decision Queue</h2>
+                                    {allAttentionItems.length > 0 && (
+                                        <span className="rounded-full border px-2.5 py-0.5 text-[10px] font-semibold" style={{ borderColor: 'rgba(245,158,11,0.3)', background: 'rgba(245,158,11,0.10)', color: '#f59e0b' }}>
+                                            {allAttentionItems.length} item{allAttentionItems.length !== 1 ? 's' : ''} need your call
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="mt-1.5 space-y-1">
+                                    <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
+                                        Specific risks, opportunities, and open questions your AI team raised that need a human decision — not automated alerts, these are real research findings.
+                                    </p>
+                                    <p className="text-[11px]" style={{ color: THEME.text.muted }}>
+                                        <span className="font-semibold" style={{ color: THEME.text.primary }}>Source:</span>{' '}Auto-flagged by AI desks during Staff Sync · the colored badge shows which desk raised each item and why it was escalated
+                                    </p>
+                                    <p className="text-[11px] font-medium" style={{ color: THEME.accent.info }}>
+                                        → Click "Discuss →" on any item to open Dexo for that venture and build a concrete plan together.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="grid gap-5 lg:grid-cols-[1fr_340px]">
 
                             {/* Flagged signals */}
                             {allAttentionItems.length > 0 && (
-                                <div className="overflow-hidden rounded-xl" style={{ borderColor: 'rgba(245,158,11,0.25)' }}>
-                                    <div className="flex items-center gap-2 border-b px-4 py-3" style={{ borderColor: 'rgba(245,158,11,0.15)', background: 'rgba(245,158,11,0.06)' }}>
-                                        <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: '#f59e0b' }} />
-                                        <span className="text-[11px] font-semibold" style={{ color: '#f59e0b' }}>Flagged for your decision</span>
+                                <div className="overflow-hidden rounded-2xl border" style={{ borderColor: 'rgba(245,158,11,0.25)' }}>
+                                    <div className="flex items-start gap-2.5 border-b px-5 py-3.5" style={{ borderColor: 'rgba(245,158,11,0.15)', background: 'rgba(245,158,11,0.06)' }}>
+                                        <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" style={{ color: '#f59e0b' }} />
+                                        <div>
+                                            <p className="text-[12px] font-semibold" style={{ color: '#f59e0b' }}>Signals flagged for your decision</p>
+                                            <p className="text-[10px]" style={{ color: 'rgba(245,158,11,0.7)' }}>Each badge shows which AI desk raised it · left border color = desk type</p>
+                                        </div>
                                     </div>
                                     <div>
                                         {allAttentionItems.map((a: any) => {
@@ -2150,25 +2478,25 @@ function PortfolioView({
                                                                 <span className="rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide" style={{ background: `${roleAccent}15`, color: roleAccent }}>
                                                                     {roleLabel}
                                                                 </span>
-                                                                <span className="rounded-md px-2 py-0.5 text-[10px] font-medium" style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.55)' }}>
+                                                                <span className="rounded-md px-2 py-0.5 text-[10px] font-medium" style={{ background: 'rgba(255,255,255,0.07)', color: THEME.text.secondary }}>
                                                                     {a.ventureName}
                                                                 </span>
                                                                 {createdAgo && (
-                                                                    <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.30)' }}>{createdAgo}</span>
+                                                                    <span className="text-[10px]" style={{ color: THEME.text.muted }}>{createdAgo}</span>
                                                                 )}
                                                             </div>
                                                             {/* Signal title */}
-                                                            <p className="text-[13px] font-semibold leading-snug" style={{ color: '#f2f2f5' }}>{a.title}</p>
+                                                            <p className="text-[13px] font-semibold leading-snug" style={{ color: THEME.text.primary }}>{a.title}</p>
                                                             {/* Full message — not truncated */}
-                                                            <p className="mt-1.5 text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>{a.message}</p>
+                                                            <p className="mt-1.5 text-[11px] leading-relaxed" style={{ color: THEME.text.secondary }}>{a.message}</p>
                                                         </div>
                                                         <button
                                                             type="button"
                                                             onClick={() => { setActiveProject(a.ventureRef); switchRoom('dexo'); }}
                                                             className="shrink-0 rounded-xl border px-3 py-2 text-[11px] font-semibold transition-all hover:opacity-80"
-                                                            style={{ color: 'rgba(255,255,255,0.40)' }}
+                                                            style={{ borderColor: 'rgba(116,86,255,0.3)', background: 'rgba(116,86,255,0.10)', color: THEME.accent.primary }}
                                                         >
-                                                            Discuss ←'
+                                                            Discuss →
                                                         </button>
                                                     </div>
                                                 </div>
@@ -2180,25 +2508,32 @@ function PortfolioView({
 
                             {/* Dexo's recommended actions today */}
                             {focusLines.length > 0 && (
-                                <div className="flex flex-col overflow-hidden rounded-xl" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-                                    <div className="flex items-center gap-2 border-b px-4 py-3" style={{ borderColor: 'rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.15)' }}>
-                                        <Target className="h-3.5 w-3.5 shrink-0" style={{ color: 'rgba(255,255,255,0.75)' }} />
-                                        <span className="text-[11px] font-semibold" style={{ color: '#f2f2f5' }}>Dexo&apos;s focus picks</span>
-                                        <span className="ml-auto text-[10px]" style={{ color: 'rgba(255,255,255,0.30)' }}>{leadingVenture?.name ?? 'venture'}</span>
+                                <div className="flex flex-col overflow-hidden rounded-2xl border" style={{ borderColor: THEME.border.subtle }}>
+                                    <div className="flex items-start gap-2.5 border-b px-5 py-3.5" style={{ borderColor: THEME.border.subtle, background: 'rgba(116,86,255,0.05)' }}>
+                                        <Target className="h-4 w-4 mt-0.5 shrink-0" style={{ color: THEME.accent.primary }} />
+                                        <div>
+                                            <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>Dexo's Recommended Actions</p>
+                                            <p className="text-[10px] mt-0.5" style={{ color: THEME.text.muted }}>
+                                                What your AI co-founder thinks you should do today for <span style={{ color: THEME.accent.primary }}>{leadingVenture?.name ?? 'your venture'}</span> — ordered by priority
+                                            </p>
+                                            <p className="text-[10px] mt-0.5" style={{ color: THEME.text.muted }}>
+                                                <span className="font-semibold" style={{ color: THEME.text.secondary }}>Source:</span> Synthesised from latest Staff Sync across all desks
+                                            </p>
+                                        </div>
                                     </div>
-                                    <ol className="flex-1 divide-y" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                                    <ol className="flex-1 divide-y" style={{ borderColor: THEME.border.subtle }}>
                                         {focusLines.slice(0, 7).map((line, i) => (
                                             <li key={i} className="flex items-start gap-3 px-5 py-3.5">
-                                                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold tabular-nums" style={{ background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.75)' }}>
+                                                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold tabular-nums" style={{ background: 'rgba(116,86,255,0.15)', color: THEME.accent.primary }}>
                                                     {i + 1}
                                                 </span>
-                                                <p className="text-[12px] leading-snug" style={{ color: 'rgba(255,255,255,0.55)' }}>{line}</p>
+                                                <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>{line}</p>
                                             </li>
                                         ))}
                                     </ol>
-                                    <div className="border-t px-5 py-3" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-                                        <button type="button" onClick={() => leadingVenture && setActiveProject(leadingVenture)} className="text-[11px] font-semibold" style={{ color: 'rgba(255,255,255,0.38)' }}>
-                                            Open {leadingVenture?.name ?? 'venture'} to discuss these ←'
+                                    <div className="border-t px-5 py-3" style={{ borderColor: THEME.border.subtle }}>
+                                        <button type="button" onClick={() => leadingVenture && setActiveProject(leadingVenture)} className="text-[11px] font-semibold" style={{ color: THEME.accent.info }}>
+                                            Open {leadingVenture?.name ?? 'venture'} to discuss these →
                                         </button>
                                     </div>
                                 </div>
@@ -2207,26 +2542,44 @@ function PortfolioView({
                     </section>
                 )}
 
-                {/* â"€â"€ Venture Workspaces â"€â"€ */}
+                {/* ════════════════════════════════════════════════════════
+                    § D  VENTURE WORKSPACES
+                         State of each workspace + desk research coverage.
+                         Click any venture to open it. Coverage bar shows
+                         how many AI desks have active research for it.
+                ════════════════════════════════════════════════════════ */}
                 <section>
-                    <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: 'rgba(255,255,255,0.45)' }}>Workspaces</span>
-                            <span className="text-sm font-semibold" style={{ color: '#f2f2f5' }}>Venture Workspaces</span>
+                    <div className="mb-6 flex items-start gap-4 border-b pb-5" style={{ borderColor: THEME.border.subtle }}>
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[12px] font-bold" style={{ background: 'rgba(16,185,129,0.12)', color: THEME.chart.emerald }}>D</div>
+                        <div className="flex-1 min-w-0">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                <h2 className="text-[15px] font-semibold tracking-tight" style={{ color: THEME.text.primary }}>Venture Workspaces</h2>
+                                {onNewVenture && (
+                                    <button onClick={onNewVenture} className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold hover:opacity-80" style={{ background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}>
+                                        <Sparkles className="h-3 w-3" /> New venture
+                                    </button>
+                                )}
+                            </div>
+                            <div className="mt-1.5 space-y-1">
+                                <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
+                                    Every workspace your AI co-founder is actively working on. Desk coverage tells you how thoroughly each venture has been researched — 5/5 means all functional areas are briefed.
+                                </p>
+                                <p className="text-[11px]" style={{ color: THEME.text.muted }}>
+                                    <span className="font-semibold" style={{ color: THEME.text.primary }}>Source:</span>{' '}Your venture data + Staff Sync results · coverage updates automatically after each sync
+                                </p>
+                                <p className="text-[11px] font-medium" style={{ color: THEME.accent.info }}>
+                                    → Click any venture to enter it. Use the coverage sidebar to jump to any under-researched desk.
+                                </p>
+                            </div>
                         </div>
-                        {onNewVenture && (
-                            <button onClick={onNewVenture} className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold hover:opacity-80" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.75)' }}>
-                                <Sparkles className="h-3 w-3" /> New venture
-                            </button>
-                        )}
                     </div>
                     <div className="grid gap-5 lg:grid-cols-[1fr_280px]">
                         {/* Venture cards grid */}
-                        <div className="overflow-hidden rounded-xl" style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.025)' }}>
+                        <div className="overflow-hidden rounded-2xl border" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
                             {allProjects.length === 0 ? (
                                 <div className="flex flex-col items-center gap-3 py-14 text-center">
-                                    <Briefcase className="h-8 w-8" style={{ color: 'rgba(255,255,255,0.30)' }} />
-                                    <p className="text-sm" style={{ color: 'rgba(255,255,255,0.30)' }}>No ventures yet.</p>
+                                    <Briefcase className="h-8 w-8" style={{ color: THEME.text.muted }} />
+                                    <p className="text-sm" style={{ color: THEME.text.muted }}>No ventures yet.</p>
                                 </div>
                             ) : (
                                 <div className="grid gap-px bg-[rgba(255,255,255,0.05)] sm:grid-cols-2">
@@ -2245,35 +2598,35 @@ function PortfolioView({
                                             >
                                                 <div className="flex items-start justify-between gap-2">
                                                     <div className="flex items-center gap-2.5">
-                                                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl" style={{ background: hasStrategy ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.06)' }}>
-                                                            <Briefcase className="h-4 w-4" style={{ color: hasStrategy ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.30)' }} />
+                                                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl" style={{ background: hasStrategy ? 'rgba(116,86,255,0.12)' : 'rgba(255,255,255,0.06)' }}>
+                                                            <Briefcase className="h-4 w-4" style={{ color: hasStrategy ? THEME.accent.primary : THEME.text.muted }} />
                                                         </div>
                                                         <div>
-                                                            <p className="font-semibold leading-snug" style={{ color: '#f2f2f5' }}>{project.name}</p>
-                                                            <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.30)' }}>{new Date(project.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                                                            <p className="font-semibold leading-snug" style={{ color: THEME.text.primary }}>{project.name}</p>
+                                                            <p className="text-[10px]" style={{ color: THEME.text.muted }}>{new Date(project.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</p>
                                                         </div>
                                                     </div>
                                                     <StatusBadge status={hasStrategy ? 'active' : 'pending'} />
                                                 </div>
                                                 {excerpt ? (
-                                                    <p className="line-clamp-2 text-[12px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>{excerpt.slice(0, 180)}{excerpt.length > 180 ? '…' : ''}</p>
+                                                    <p className="line-clamp-2 text-[12px] leading-relaxed" style={{ color: THEME.text.secondary }}>{excerpt.slice(0, 180)}{excerpt.length > 180 ? '…' : ''}</p>
                                                 ) : (
-                                                    <p className="text-[12px]" style={{ color: 'rgba(255,255,255,0.30)' }}>No strategy yet — open CEO desk.</p>
+                                                    <p className="text-[12px]" style={{ color: THEME.text.muted }}>No strategy yet — open CEO desk.</p>
                                                 )}
                                                 <div className="flex items-center justify-between gap-2">
                                                     <div className="flex items-center gap-2">
                                                         {hasSynced ? (
-                                                            <span className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.75)' }}>
+                                                            <span className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ background: 'rgba(116,86,255,0.12)', color: THEME.accent.primary }}>
                                                                 <Zap className="h-2.5 w-2.5" /> Synced {syncAgo}
                                                             </span>
                                                         ) : (
-                                                            <span className="rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.30)' }}>Not synced</span>
+                                                            <span className="rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ background: 'rgba(255,255,255,0.07)', color: THEME.text.muted }}>Not synced</span>
                                                         )}
                                                         {coveredDesks > 0 && (
-                                                            <span className="text-[10px] font-medium" style={{ color: 'rgba(255,255,255,0.30)' }}>{coveredDesks}/5 desks</span>
+                                                            <span className="text-[10px] font-medium" style={{ color: THEME.text.muted }}>{coveredDesks}/5 desks</span>
                                                         )}
                                                     </div>
-                                                    <span className="flex items-center gap-0.5 text-[11px] font-medium opacity-0 transition-opacity group-hover:opacity-100" style={{ color: 'rgba(255,255,255,0.38)' }}>
+                                                    <span className="flex items-center gap-0.5 text-[11px] font-medium opacity-0 transition-opacity group-hover:opacity-100" style={{ color: THEME.accent.info }}>
                                                         Open <ChevronRight className="h-3.5 w-3.5" />
                                                     </span>
                                                 </div>
@@ -2286,10 +2639,10 @@ function PortfolioView({
 
                         {/* Research desk coverage sidebar */}
                         <div className="flex flex-col gap-4">
-                            <div className="overflow-hidden rounded-xl" style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.025)' }}>
-                                <div className="border-b px-5 py-3.5" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-                                    <p className="text-[12px] font-semibold" style={{ color: '#f2f2f5' }}>Research Desk Coverage</p>
-                                    <p className="mt-0.5 text-[10px]" style={{ color: 'rgba(255,255,255,0.30)' }}>% of ventures with AI research at each desk</p>
+                            <div className="overflow-hidden rounded-2xl border" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
+                                <div className="border-b px-5 py-3.5" style={{ borderColor: THEME.border.subtle }}>
+                                    <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>Research Desk Coverage</p>
+                                    <p className="mt-0.5 text-[10px]" style={{ color: THEME.text.muted }}>% of ventures with AI research at each desk</p>
                                 </div>
                                 <div>
                                     {(['ceo', 'accountant', 'pm', 'cmo', 'scout'] as const).map((role) => {
@@ -2301,15 +2654,15 @@ function PortfolioView({
                                             <button type="button" key={role}
                                                 onClick={() => { const t = firstProjectNeedingRole(allProjects, role); if (t) { setActiveProject(t); switchRoom(role); } }}
                                                 className="group flex w-full items-center gap-3 border-b px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-[rgba(255,255,255,0.03)]"
-                                                style={{ borderColor: 'rgba(255,255,255,0.06)' }}
+                                                style={{ borderColor: THEME.border.subtle }}
                                             >
                                                 <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md" style={{ background: `${accent}14` }}>
                                                     <BarChart2 className="h-3 w-3" style={{ color: accent }} />
                                                 </div>
                                                 <div className="min-w-0 flex-1">
                                                     <div className="flex items-center justify-between gap-1 mb-1">
-                                                        <p className="text-[11px] font-medium" style={{ color: '#f2f2f5' }}>{row.navTitle}</p>
-                                                        <span className="text-[10px] tabular-nums font-semibold" style={{ color: pct === 100 ? accent : 'rgba(255,255,255,0.30)' }}>{stat.total === 0 ? '—' : `${pct}%`}</span>
+                                                        <p className="text-[11px] font-medium" style={{ color: THEME.text.primary }}>{row.navTitle}</p>
+                                                        <span className="text-[10px] tabular-nums font-semibold" style={{ color: pct === 100 ? accent : THEME.text.muted }}>{stat.total === 0 ? '—' : `${pct}%`}</span>
                                                     </div>
                                                     <div className="h-1 overflow-hidden rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
                                                         <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${accent}99, ${accent})` }} />
@@ -2322,11 +2675,11 @@ function PortfolioView({
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 {[
-                                    { label: 'Ventures', value: String(ventureCount), accent: 'rgba(255,255,255,0.45)' },
-                                    { label: 'AI Synced', value: String(synced),       accent: 'rgba(255,255,255,0.45)'  },
+                                    { label: 'Ventures', value: String(ventureCount), accent: THEME.chart.violet },
+                                    { label: 'AI Synced', value: String(synced),       accent: THEME.chart.amber  },
                                 ].map(({ label, value, accent }) => (
-                                    <div key={label} className="rounded-xl border p-3 text-center" style={{ borderColor: 'rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.03)' }}>
-                                        <p className="text-xl font-bold tabular-nums" style={{ color: '#f2f2f5' }}>{value}</p>
+                                    <div key={label} className="rounded-xl border p-3 text-center" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.03)' }}>
+                                        <p className="text-xl font-bold tabular-nums" style={{ color: THEME.text.primary }}>{value}</p>
                                         <p className="text-[10px] font-medium" style={{ color: accent }}>{label}</p>
                                     </div>
                                 ))}
@@ -2335,28 +2688,42 @@ function PortfolioView({
                     </div>
                 </section>
 
-                {/* â"€â"€ Tools & Workspace Navigator â"€â"€ */}
+                {/* ════════════════════════════════════════════════════════
+                    § E  AI TOOLS DIRECTORY + WORKSPACE NAVIGATOR
+                         Quick-launch AI tools and jump to any desk room.
+                ════════════════════════════════════════════════════════ */}
                 <section>
-                    <div className="mb-4 flex items-center gap-2">
-                        <span className="text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: 'rgba(255,255,255,0.30)' }}>Tools</span>
-                        <span className="text-sm font-semibold" style={{ color: '#f2f2f5' }}>Workspace Navigator</span>
+                    <div className="mb-6 flex items-start gap-4 border-b pb-5" style={{ borderColor: THEME.border.subtle }}>
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[12px] font-bold" style={{ background: 'rgba(255,255,255,0.07)', color: THEME.text.secondary }}>E</div>
+                        <div>
+                            <h2 className="text-[15px] font-semibold tracking-tight" style={{ color: THEME.text.primary }}>Tools &amp; Workspace Navigator</h2>
+                            <div className="mt-1.5 space-y-1">
+                                <p className="text-[12px] leading-snug" style={{ color: THEME.text.secondary }}>
+                                    External AI tools for manual research, and instant navigation to any AI desk room across all your ventures.
+                                </p>
+                                <p className="text-[11px] font-medium" style={{ color: THEME.accent.info }}>
+                                    → Use AI tools to research manually. Click any desk button to jump straight into that room and continue AI-driven research.
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    <div className="flex flex-col gap-4">
+                    <div className="space-y-5">
                         {/* AI Tools row */}
                         <div>
-                            <div className="overflow-hidden rounded-xl" style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.025)' }}>
+                            <p className="mb-2.5 text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: THEME.text.muted }}>AI Tools Directory</p>
+                            <div className="overflow-hidden rounded-2xl border" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
                                 <div className="grid grid-cols-3 sm:grid-cols-5">
                                     {DASH_AI_TOOLS.map(({ label, desc, url, Logo, color }) => (
                                         <a key={label} href={url} target="_blank" rel="noopener noreferrer"
                                             className="group flex flex-col items-center gap-2.5 border-r px-4 py-6 text-center transition-all last:border-r-0 hover:bg-[rgba(255,255,255,0.04)]"
-                                            style={{ borderColor: 'rgba(255,255,255,0.06)' }}
+                                            style={{ borderColor: THEME.border.subtle }}
                                         >
                                             <div className="flex h-11 w-11 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-110" style={{ background: `${color}14` }}>
                                                 <Logo size={24} />
                                             </div>
                                             <div>
-                                                <p className="text-[13px] font-semibold" style={{ color: '#f2f2f5' }}>{label}</p>
-                                                <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.30)' }}>{desc}</p>
+                                                <p className="text-[13px] font-semibold" style={{ color: THEME.text.primary }}>{label}</p>
+                                                <p className="text-[10px]" style={{ color: THEME.text.muted }}>{desc}</p>
                                             </div>
                                         </a>
                                     ))}
@@ -2365,16 +2732,16 @@ function PortfolioView({
                         </div>
                         {/* Desk navigator */}
                         <div>
-                            <p className="mb-2.5 text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.30)' }}>Desk Navigator — Jump to any room</p>
-                            <div className="overflow-hidden rounded-xl" style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.025)' }}>
+                            <p className="mb-2.5 text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: THEME.text.muted }}>Desk Navigator — Jump to any room</p>
+                            <div className="overflow-hidden rounded-2xl border" style={{ borderColor: THEME.border.subtle, background: 'rgba(255,255,255,0.02)' }}>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
                                     {([
-                                        { role: 'ceo'        as const, label: 'CEO Desk', sub: 'Strategy & Vision',  icon: Lightbulb, color: 'rgba(255,255,255,0.45)'  },
-                                        { role: 'scout'      as const, label: 'Scout',    sub: 'Market Research',    icon: Globe,     color: 'rgba(255,255,255,0.45)'    },
-                                        { role: 'accountant' as const, label: 'Finance',  sub: 'Budget & Runway',    icon: Wallet,    color: 'rgba(255,255,255,0.45)' },
-                                        { role: 'pm'         as const, label: 'Product',  sub: 'Roadmap & Features', icon: Layers,    color: 'rgba(255,255,255,0.45)'   },
-                                        { role: 'cmo'        as const, label: 'Growth',   sub: 'GTM & Acquisition',  icon: Megaphone, color: 'rgba(255,255,255,0.45)'    },
-                                        { role: null,                  label: 'Dexo AI',  sub: 'Discuss & Plan',     icon: Cpu,       color: 'rgba(255,255,255,0.75)' },
+                                        { role: 'ceo'        as const, label: 'CEO Desk', sub: 'Strategy & Vision',  icon: Lightbulb, color: THEME.chart.violet  },
+                                        { role: 'scout'      as const, label: 'Scout',    sub: 'Market Research',    icon: Globe,     color: THEME.chart.blue    },
+                                        { role: 'accountant' as const, label: 'Finance',  sub: 'Budget & Runway',    icon: Wallet,    color: THEME.chart.emerald },
+                                        { role: 'pm'         as const, label: 'Product',  sub: 'Roadmap & Features', icon: Layers,    color: THEME.chart.amber   },
+                                        { role: 'cmo'        as const, label: 'Growth',   sub: 'GTM & Acquisition',  icon: Megaphone, color: THEME.chart.rose    },
+                                        { role: null,                  label: 'Dexo AI',  sub: 'Discuss & Plan',     icon: Cpu,       color: THEME.accent.primary },
                                     ] as const).map(({ role, label, sub, icon: Icon, color }) => (
                                         <button key={label} type="button"
                                             onClick={() => {
@@ -2383,14 +2750,14 @@ function PortfolioView({
                                                 if (target) { setActiveProject(target); switchRoom(role); }
                                             }}
                                             className="group flex flex-col items-center gap-2 border-r border-b py-5 text-center transition-all last-of-type:border-r-0 hover:bg-[rgba(255,255,255,0.04)]"
-                                            style={{ borderColor: 'rgba(255,255,255,0.06)' }}
+                                            style={{ borderColor: THEME.border.subtle }}
                                         >
                                             <div className="flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-110" style={{ background: `${color}14` }}>
                                                 <Icon className="h-4.5 w-4.5" style={{ color }} />
                                             </div>
                                             <div>
-                                                <p className="text-[12px] font-semibold" style={{ color: '#f2f2f5' }}>{label}</p>
-                                                <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.30)' }}>{sub}</p>
+                                                <p className="text-[12px] font-semibold" style={{ color: THEME.text.primary }}>{label}</p>
+                                                <p className="text-[10px]" style={{ color: THEME.text.muted }}>{sub}</p>
                                             </div>
                                         </button>
                                     ))}
@@ -2418,13 +2785,13 @@ function AnalyticsTab({
     switchRoom,
 }: any) {
     return (
-        <div className="flex flex-col gap-4">
-            <div className="grid gap-4 lg:grid-cols-2">
+        <div className="space-y-6">
+            <div className="grid gap-6 lg:grid-cols-2">
                 {/* PHASE STATUS */}
-                <Card className="p-5">
+                <Card className="p-6">
                     <SectionHeader
                         title="Phase Status"
-                        subtitle="Timeline distribution"
+                        subtitle="Timeline distribution across phases"
                     />
                     {phasePieData.length > 0 ? (
                         <div className="h-72 min-h-[288px] min-w-0">
@@ -2450,8 +2817,8 @@ function AnalyticsTab({
                             </div>
                         ) : (
                             <div className="flex h-72 flex-col items-center justify-center">
-                                <Layers className="h-12 w-12 opacity-20" style={{ color: 'rgba(255,255,255,0.30)' }} />
-                            <p className="mt-4 text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                                <Layers className="h-12 w-12 opacity-20" style={{ color: THEME.text.muted }} />
+                            <p className="mt-4 text-sm" style={{ color: THEME.text.tertiary }}>
                                 No phases defined yet
                             </p>
                         </div>
@@ -2459,10 +2826,10 @@ function AnalyticsTab({
                 </Card>
 
                 {/* PRIORITY COMPLETION */}
-                <Card className="p-5">
+                <Card className="p-6">
                     <SectionHeader
                         title="Priority Completion"
-                        subtitle="Open vs completed"
+                        subtitle="Open vs completed priorities"
                     />
                     {priorityPieData.length > 0 ? (
                         <div className="h-72 min-h-[288px] min-w-0">
@@ -2488,8 +2855,8 @@ function AnalyticsTab({
                             </div>
                         ) : (
                             <div className="flex h-72 flex-col items-center justify-center">
-                                <Target className="h-12 w-12 opacity-20" style={{ color: 'rgba(255,255,255,0.30)' }} />
-                            <p className="mt-4 text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                                <Target className="h-12 w-12 opacity-20" style={{ color: THEME.text.muted }} />
+                            <p className="mt-4 text-sm" style={{ color: THEME.text.tertiary }}>
                                 No priorities listed yet
                             </p>
                         </div>
@@ -2506,11 +2873,11 @@ function AnalyticsTab({
                     />
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {[
-                            ['Strategy', activeProject.agentStaffSnapshot.desks.ceo, 'rgba(255,255,255,0.45)'],
-                            ['Product', activeProject.agentStaffSnapshot.desks.pm, 'rgba(255,255,255,0.45)'],
-                            ['Finance', activeProject.agentStaffSnapshot.desks.accountant, 'rgba(255,255,255,0.45)'],
-                            ['Market', activeProject.agentStaffSnapshot.desks.scout, 'rgba(255,255,255,0.45)'],
-                            ['Growth', activeProject.agentStaffSnapshot.desks.cmo, 'rgba(255,255,255,0.45)'],
+                            ['Strategy', activeProject.agentStaffSnapshot.desks.ceo, THEME.chart.violet],
+                            ['Product', activeProject.agentStaffSnapshot.desks.pm, THEME.chart.amber],
+                            ['Finance', activeProject.agentStaffSnapshot.desks.accountant, THEME.chart.emerald],
+                            ['Market', activeProject.agentStaffSnapshot.desks.scout, THEME.chart.blue],
+                            ['Growth', activeProject.agentStaffSnapshot.desks.cmo, THEME.chart.rose],
                         ].map(([label, text, color]) =>
                             text?.trim() ? (
                                 <div
@@ -2521,10 +2888,10 @@ function AnalyticsTab({
                                         borderLeft: `3px solid ${color}`,
                                     }}
                                 >
-                                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide" style={{ color: 'rgba(255,255,255,0.30)' }}>
+                                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide" style={{ color: THEME.text.muted }}>
                                         {label as string}
                                     </p>
-                                    <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                                    <p className="text-sm leading-relaxed" style={{ color: THEME.text.secondary }}>
                                         {text as string}
                                     </p>
                                 </div>
@@ -2539,16 +2906,16 @@ function AnalyticsTab({
                 <SectionHeader title="Operational Desks" />
                 <div className="grid gap-3 sm:grid-cols-2">
                     {[
-                        { agent: agents.ceo, room: 'ceo', status: activeProject.strategy ? 'active' : 'pending', accent: 'rgba(255,255,255,0.45)' },
-                        { agent: agents.scout, room: 'scout', status: activeProject.marketInsights ? 'active' : 'idle', accent: 'rgba(255,255,255,0.45)' },
-                        { agent: agents.accountant, room: 'accountant', status: activeProject.budget ? 'active' : 'pending', accent: 'rgba(255,255,255,0.45)' },
-                        { agent: agents.pm, room: 'pm', status: activeProject.productPlan ? 'active' : 'idle', accent: 'rgba(255,255,255,0.45)' },
+                        { agent: agents.ceo, room: 'ceo', status: activeProject.strategy ? 'active' : 'pending', accent: THEME.chart.violet },
+                        { agent: agents.scout, room: 'scout', status: activeProject.marketInsights ? 'active' : 'idle', accent: THEME.chart.blue },
+                        { agent: agents.accountant, room: 'accountant', status: activeProject.budget ? 'active' : 'pending', accent: THEME.chart.emerald },
+                        { agent: agents.pm, room: 'pm', status: activeProject.productPlan ? 'active' : 'idle', accent: THEME.chart.amber },
                     ].map(({ agent, room, status, accent }) => (
                         <button
                             key={room}
                             onClick={() => switchRoom(room)}
                             className="flex items-center gap-4 rounded-xl border border-[var(--border)] bg-[rgba(255,255,255,0.06)] p-4 text-left transition-all hover:bg-[rgba(255,255,255,0.09)]"
-                            style={{ borderColor: 'rgba(255,255,255,0.06)' }}
+                            style={{ borderColor: THEME.border.subtle }}
                         >
                             <div
                                 className="flex h-12 w-12 items-center justify-center rounded-xl"
@@ -2557,20 +2924,20 @@ function AnalyticsTab({
                                 {agent.icon}
                             </div>
                             <div className="flex-1">
-                                <p className="font-medium" style={{ color: '#f2f2f5' }}>
+                                <p className="font-medium" style={{ color: THEME.text.primary }}>
                                     {agent.title}
                                 </p>
                                 <div className="mt-1 flex items-center gap-2">
                                     <span
                                         className="h-2 w-2 rounded-full"
-                                        style={{ background: status === 'active' ? accent : 'rgba(255,255,255,0.30)' }}
+                                        style={{ background: status === 'active' ? accent : THEME.text.muted }}
                                     />
-                                    <span className="text-xs capitalize" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                                    <span className="text-xs capitalize" style={{ color: THEME.text.secondary }}>
                                         {status}
                                     </span>
                                 </div>
                             </div>
-                            <ChevronRight className="h-5 w-5" style={{ color: 'rgba(255,255,255,0.30)' }} />
+                            <ChevronRight className="h-5 w-5" style={{ color: THEME.text.muted }} />
                         </button>
                     ))}
                 </div>
@@ -2593,7 +2960,7 @@ function ActivityTab({ systemLogs, chartUid }: any) {
     }, [systemLogs]);
 
     return (
-        <div className="flex flex-col gap-4">
+        <div className="space-y-6">
             {/* ACTIVITY CHART */}
             <Card className="p-6">
                 <SectionHeader title="Activity by Source" />
@@ -2601,26 +2968,26 @@ function ActivityTab({ systemLogs, chartUid }: any) {
                     <div className="h-80 min-h-[320px] min-w-0">
                         <ResponsiveContainer width="100%" height="100%" minHeight={320} minWidth={0}>
                             <BarChart data={activityBySource} margin={{ top: 8, right: 8, left: 0, bottom: 24 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke={'rgba(255,255,255,0.06)'} vertical={false} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.border.subtle} vertical={false} />
                                 <XAxis
                                     dataKey="name"
-                                    tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.35)' }}
+                                    tick={{ fontSize: 11, fill: THEME.text.tertiary }}
                                     interval={0}
                                     angle={-20}
                                     textAnchor="end"
                                 />
-                                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.35)' }} />
+                                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: THEME.text.tertiary }} />
                                 <Tooltip {...CHART_TOOLTIP} />
                                 <Bar dataKey="count" radius={[6, 6, 0, 0]} maxBarSize={48}>
                                     {activityBySource.map((_, i) => (
                                         <Cell
                                             key={i}
                                             fill={[
-                                                'rgba(255,255,255,0.45)',
-                                                'rgba(255,255,255,0.45)',
-                                                'rgba(255,255,255,0.45)',
-                                                'rgba(255,255,255,0.45)',
-                                                'rgba(255,255,255,0.45)',
+                                                THEME.chart.emerald,
+                                                THEME.chart.violet,
+                                                THEME.chart.blue,
+                                                THEME.chart.amber,
+                                                THEME.chart.rose,
                                                 THEME.chart.cyan,
                                             ][i % 6]}
                                         />
@@ -2631,8 +2998,8 @@ function ActivityTab({ systemLogs, chartUid }: any) {
                     </div>
                 ) : (
                     <div className="flex h-80 flex-col items-center justify-center">
-                        <Activity className="h-12 w-12 opacity-20" style={{ color: 'rgba(255,255,255,0.30)' }} />
-                        <p className="mt-4 text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                        <Activity className="h-12 w-12 opacity-20" style={{ color: THEME.text.muted }} />
+                        <p className="mt-4 text-sm" style={{ color: THEME.text.tertiary }}>
                             No activity data yet
                         </p>
                     </div>
@@ -2644,7 +3011,7 @@ function ActivityTab({ systemLogs, chartUid }: any) {
                 <SectionHeader title="Activity Log" />
                 <div className="space-y-3">
                     {systemLogs.length === 0 ? (
-                        <p className="py-8 text-center text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                        <p className="py-8 text-center text-sm" style={{ color: THEME.text.tertiary }}>
                             No activity recorded yet
                         </p>
                     ) : (
@@ -2652,27 +3019,27 @@ function ActivityTab({ systemLogs, chartUid }: any) {
                             <div
                                 key={log.id}
                                 className="flex items-start gap-4 rounded-xl border p-4"
-                                style={{ borderColor: 'rgba(255,255,255,0.06)' }}
+                                style={{ borderColor: THEME.border.subtle }}
                             >
                                 <div
                                     className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
                                     style={{ background: 'rgba(255,255,255,0.06)' }}
                                 >
-                                    <Activity className="h-4 w-4" style={{ color: 'rgba(255,255,255,0.35)' }} />
+                                    <Activity className="h-4 w-4" style={{ color: THEME.text.tertiary }} />
                                 </div>
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2">
                                         <span
                                             className="rounded-full px-2 py-0.5 text-[10px] font-medium uppercase"
-                                            style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.55)' }}
+                                            style={{ background: 'rgba(255,255,255,0.08)', color: THEME.text.secondary }}
                                         >
                                             {log.source}
                                         </span>
-                                        <span className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                                        <span className="text-xs" style={{ color: THEME.text.tertiary }}>
                                             {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </span>
                                     </div>
-                                    <p className="mt-1 text-sm" style={{ color: '#f2f2f5' }}>
+                                    <p className="mt-1 text-sm" style={{ color: THEME.text.primary }}>
                                         {log.message}
                                     </p>
                                 </div>
@@ -2733,4 +3100,3 @@ function DashMessageSection({
 }
 
 export default Dashboard;
-
