@@ -567,7 +567,7 @@ function LoadingView({ elapsed }: { elapsed: number }) {
   const wave = elapsed < 30 ? 1 : elapsed < 70 ? 2 : 3;
 
   return (
-    <div className="flex flex-col items-center justify-center py-24 text-center">
+    <div className="flex min-h-full flex-col items-center justify-center py-16 text-center">
       <div className="mb-10">
         <div
           className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full"
@@ -641,11 +641,15 @@ function HomeView({
   }, [idea, domain, onSubmit]);
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-16 text-center">
-      <h1 className="mb-2 text-[2.4rem] font-light tracking-tight" style={{ color: 'rgba(255,255,255,0.88)' }}>
+    <div className="flex min-h-full flex-col items-center justify-center px-4 py-12">
+    <div className="w-full max-w-3xl text-center">
+      <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'rgba(255,255,255,0.22)' }}>
+        northROSC LABS
+      </p>
+      <h1 className="mb-3 text-[2.8rem] font-light tracking-tight" style={{ color: 'rgba(255,255,255,0.90)' }}>
         Deepchox
       </h1>
-      <p className="mb-10 text-sm" style={{ color: 'rgba(255,255,255,0.28)' }}>
+      <p className="mb-10 text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.30)' }}>
         AI Engineering Operating System &mdash; describe any idea, get a complete execution plan
       </p>
 
@@ -716,13 +720,14 @@ function HomeView({
           <button
             key={i}
             onClick={() => { setIdea(s.label); setDomain(s.domain); textareaRef.current?.focus(); }}
-            className="rounded-xl border px-4 py-3 text-left text-sm transition-all duration-150 hover:bg-white/[0.04]"
-            style={{ borderColor: 'rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)', color: 'rgba(255,255,255,0.55)' }}
+            className="rounded-xl border px-4 py-3.5 text-left text-sm transition-all duration-150 hover:bg-white/[0.04] hover:border-white/[0.12]"
+            style={{ borderColor: 'rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)', color: 'rgba(255,255,255,0.50)' }}
           >
             {s.label}
           </button>
         ))}
       </div>
+    </div>
     </div>
   );
 }
@@ -741,61 +746,73 @@ function ResultView({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col" style={{ background: '#0d0d0d' }}>
-      {/* Result header */}
-      <div className="border-b px-6 py-4" style={{ borderColor: 'rgba(255,255,255,0.06)', background: '#0d0d0d' }}>
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
-          <div className="min-w-0">
-            <h2 className="truncate text-sm font-medium" style={{ color: 'rgba(255,255,255,0.85)' }}>{project.title}</h2>
-            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.28)' }}>
-              {project.domain} &middot; {Math.round(result.durationMs / 1000)}s &middot; {result.codeFiles.length} files &middot; {result.phases.length} phases
-            </p>
-          </div>
-          <button
-            onClick={onReset}
-            className="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-all"
-            style={{ borderColor: 'rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.45)' }}
-          >
-            <RotateCcw className="h-3 w-3" />
-            New idea
-          </button>
-        </div>
-
-        {/* Tabs */}
-        <div className="mx-auto mt-3 flex max-w-5xl gap-0">
-          {TABS.map(({ id, label }) => (
-            <button
-              key={id}
-              onClick={() => setTab(id)}
-              className="relative px-4 py-2 text-xs transition-colors"
-              style={{ color: tab === id ? 'rgba(255,255,255,0.88)' : 'rgba(255,255,255,0.32)' }}
-            >
-              {label}
-              {tab === id && (
-                <div className="absolute bottom-0 left-2 right-2 h-[1.5px] rounded-full" style={{ background: 'rgba(255,255,255,0.75)' }} />
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Agent trace bar */}
-      <div className="border-b px-6 py-2" style={{ borderColor: 'rgba(255,255,255,0.04)', background: 'rgba(255,255,255,0.01)' }}>
-        <div className="mx-auto flex max-w-5xl items-center gap-3 overflow-x-auto">
-          {result.agentTrace.map((a) => (
-            <div key={a.agent} className="flex shrink-0 items-center gap-1.5">
-              {a.ok
-                ? <CheckCircle2 className="h-3 w-3" style={{ color: 'rgba(52,211,153,0.60)' }} />
-                : <XCircle className="h-3 w-3" style={{ color: 'rgba(239,68,68,0.60)' }} />
-              }
-              <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>{a.agent}</span>
-              <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.18)' }}>{(a.durationMs / 1000).toFixed(1)}s</span>
+      {/* Sticky result header */}
+      <div
+        className="sticky top-0 z-10 shrink-0 border-b px-6 pt-4 pb-0"
+        style={{ borderColor: 'rgba(255,255,255,0.06)', background: '#0d0d0d' }}
+      >
+        <div className="mx-auto max-w-5xl">
+          {/* Title row */}
+          <div className="flex items-start justify-between gap-4 pb-3">
+            <div className="min-w-0">
+              <h2 className="truncate text-sm font-medium" style={{ color: 'rgba(255,255,255,0.85)' }}>
+                {project.title}
+              </h2>
+              <div className="mt-1 flex flex-wrap items-center gap-2">
+                <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.28)' }}>
+                  {project.domain} &middot; {Math.round(result.durationMs / 1000)}s &middot; {result.codeFiles.length} files &middot; {result.phases.length} phases
+                </span>
+                {/* Inline agent trace */}
+                <div className="hidden items-center gap-2 overflow-x-auto sm:flex">
+                  {result.agentTrace.map((a) => (
+                    <div key={a.agent} className="flex shrink-0 items-center gap-1">
+                      {a.ok
+                        ? <CheckCircle2 className="h-2.5 w-2.5" style={{ color: 'rgba(52,211,153,0.55)' }} />
+                        : <XCircle className="h-2.5 w-2.5" style={{ color: 'rgba(239,68,68,0.55)' }} />
+                      }
+                      <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                        {a.agent} {(a.durationMs / 1000).toFixed(1)}s
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-          ))}
+            <button
+              onClick={onReset}
+              className="flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-all hover:bg-white/[0.04]"
+              style={{ borderColor: 'rgba(255,255,255,0.09)', color: 'rgba(255,255,255,0.40)' }}
+            >
+              <RotateCcw className="h-3 w-3" />
+              New idea
+            </button>
+          </div>
+
+          {/* Tab strip — borderless underline style */}
+          <div className="flex gap-0">
+            {TABS.map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                onClick={() => setTab(id)}
+                className="relative flex items-center gap-1.5 px-3.5 py-2.5 text-xs transition-colors"
+                style={{ color: tab === id ? 'rgba(255,255,255,0.88)' : 'rgba(255,255,255,0.30)' }}
+              >
+                <Icon className="h-3 w-3 shrink-0" />
+                {label}
+                {tab === id && (
+                  <div
+                    className="absolute bottom-0 left-1 right-1 h-[1.5px] rounded-full"
+                    style={{ background: 'rgba(255,255,255,0.70)' }}
+                  />
+                )}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Tab content */}
-      <div className="flex-1 overflow-y-auto">
+      {/* Tab content — fills remaining height */}
+      <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="mx-auto max-w-5xl px-6 py-8">
           {tab === 'overview'     && <OverviewTab result={result} />}
           {tab === 'architecture' && <ArchitectureTab result={result} />}
@@ -871,7 +888,7 @@ export function EngineeringPlatform({ selectedProjectId }: { selectedProjectId?:
   };
 
   if (state === 'loading') return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto" style={{ background: '#0d0d0d' }}>
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto" style={{ background: '#0d0d0d' }}>
       <LoadingView elapsed={elapsed} />
     </div>
   );
@@ -881,7 +898,7 @@ export function EngineeringPlatform({ selectedProjectId }: { selectedProjectId?:
   );
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto" style={{ background: '#0d0d0d' }}>
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto" style={{ background: '#0d0d0d' }}>
       <HomeView onSubmit={handleSubmit} />
     </div>
   );
