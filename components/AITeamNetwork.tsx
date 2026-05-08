@@ -148,11 +148,7 @@ export function AITeamNetwork({ embedded = false }: { embedded?: boolean }) {
     };
 
     const goToDesk = (role: string) => {
-        if (role === 'shark') {
-            switchRoom('vc_gauntlet');
-        } else {
-            switchRoom(role as Parameters<typeof switchRoom>[0]);
-        }
+        switchRoom(role as Parameters<typeof switchRoom>[0]);
     };
 
     return (

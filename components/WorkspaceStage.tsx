@@ -9,11 +9,8 @@ import { CalendarView } from './CalendarView';
 import { Dashboard } from './Dashboard';
 import { ReportsLibrary } from './ReportsLibrary';
 
-import { FoundersOffice } from './FoundersOffice';
 import { DexoRoom } from './Dexo/DexoRoom';
 import { PitchDeckForge } from './PitchDeckForge';
-import { WargameNexus } from './WargameNexus';
-import { VCGauntlet } from './VCGauntlet';
 import { OperationalDesk } from './OperationalDesk';
 import { IntelligenceDiary } from './IntelligenceDiary';
 import { CsuiteIntelligenceGuide } from './CsuiteIntelligenceGuide';
@@ -46,20 +43,8 @@ export function WorkspaceStage({
                 return <ReportsLibrary />;
             case 'calendar':
                 return <CalendarView />;
-            case 'founders_office':
-                return <FoundersOffice />;
             case 'dexo':
                 return <DexoRoom />;
-            case 'forge':
-                return (
-                    <OperationalDesk>
-                        <PitchDeckForge />
-                    </OperationalDesk>
-                );
-            case 'wargame':
-                return <WargameNexus />;
-            case 'vc_gauntlet':
-                return <VCGauntlet />;
             case 'intelligence_diary':
                 return <IntelligenceDiary />;
             case 'personal_assistant':

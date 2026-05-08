@@ -122,9 +122,5 @@ export const WORKSPACE_TITLES: Record<string, string> = {
     reports:             'Knowledge base',
     intelligence_diary:  'Neural diary',
     desks_hub:           'AI Desks',
-    forge:               'Pitch and narrative forge',
-    wargame:             'Wargame',
-    founders_office:     'Founders office',
-    vc_gauntlet:         RESEARCH_STAFF.shark.navTitle,
     org_structure:       'Org structure',
 };

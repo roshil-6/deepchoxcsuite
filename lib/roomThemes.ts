@@ -108,33 +108,12 @@ export function getChatRailTheme(activeRoom: string): ChatRailTheme {
       emptyPrompt: 'Synthesize market moves, competitors, or what to validate next.',
       placeholder: 'Ask about market and intel…',
     },
-    forge: {
-      agentRole: 'cmo',
-      roleLabel: RESEARCH_STAFF.cmo.navTitle,
-      subtitle: 'Pitch forge — narrative and slides.',
-      emptyPrompt: 'Sharpen story, ideal customer, or deck flow before you ship.',
-      placeholder: 'Shape narrative or deck…',
-    },
-    wargame: {
-      agentRole: 'dexo',
-      roleLabel: RESEARCH_STAFF.dexo.navTitle,
-      subtitle: 'Wargame — stress-test assumptions.',
-      emptyPrompt: 'Explore scenarios, second-order effects, or who wins if plans shift.',
-      placeholder: 'Frame a wargame question…',
-    },
     dexo: {
       agentRole: 'dexo',
       roleLabel: RESEARCH_STAFF.dexo.navTitle,
       subtitle: 'Suite-wide questions.',
       emptyPrompt: 'Ask across desks when the question does not fit a single area.',
       placeholder: 'Ask across desks…',
-    },
-    founders_office: {
-      agentRole: 'dexo',
-      roleLabel: RESEARCH_STAFF.dexo.navTitle,
-      subtitle: 'Founders office — alignment and priorities.',
-      emptyPrompt: 'Align founders on focus, tradeoffs, or what to decide next.',
-      placeholder: 'Steer the founders conversation…',
     },
     personal_assistant: {
       agentRole: 'dexo',
@@ -149,13 +128,6 @@ export function getChatRailTheme(activeRoom: string): ChatRailTheme {
       subtitle: 'How the workspace fits together.',
       emptyPrompt: 'Ask how a desk, sync, or report fits into the bigger picture.',
       placeholder: 'Ask how this works…',
-    },
-    vc_gauntlet: {
-      agentRole: 'shark',
-      roleLabel: RESEARCH_STAFF.shark.navTitle,
-      subtitle: 'Investor-style rehearsal.',
-      emptyPrompt: 'Stress-test pitch, metrics, and investor objections.',
-      placeholder: 'Rehearse investor questions…',
     },
   };
 
@@ -211,9 +183,6 @@ export function getWorkspaceShellTheme(activeRoom: string): WorkspaceShellTheme 
 
   const immersiveRooms = new Set([
     'dexo',
-    'forge',
-    'wargame',
-    'founders_office',
     'ceo',
     'pm',
     'accountant',

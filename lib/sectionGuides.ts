@@ -292,16 +292,13 @@ export const SECTION_GUIDES: Record<string, SectionGuideStep[]> = {
     reports: REPORTS,
     intelligence_diary: DIARY,
     suite_intelligence: SUITE_INTEL,
-    wargame: WARGAME,
-    vc_gauntlet: VC_GAUNTLET,
-    founders_office: FOUNDERS,
     org_structure: ORG,
     __default: DEFAULT,
 };
 
 export function getSectionGuideSteps(room: string): SectionGuideStep[] {
     if (room === 'personal_assistant') return SECTION_GUIDES.dexo;
-    if (room === 'shark') return SECTION_GUIDES.vc_gauntlet;
+    if (room === 'shark') return VC_GAUNTLET;
     const steps = SECTION_GUIDES[room];
     if (steps?.length) return steps;
     return SECTION_GUIDES.__default;
