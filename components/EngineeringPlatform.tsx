@@ -47,12 +47,12 @@ const DOMAINS = [
 ];
 
 const SUGGESTIONS = [
-  { label: 'Autonomous drone swarm coordination system',  domain: 'aerospace' },
-  { label: 'Real-time AI vision pipeline for robotics',   domain: 'robotics'  },
-  { label: 'Distributed IoT sensor mesh with edge AI',    domain: 'iot'       },
-  { label: 'LLM-powered code review automation platform', domain: 'ai'        },
-  { label: 'Smart grid optimization using reinforcement learning', domain: 'industrial' },
-  { label: 'Decentralized AI inference marketplace',      domain: 'web3'      },
+  { label: 'Autonomous drone swarm with real-time collision avoidance',  domain: 'aerospace' },
+  { label: 'Computer vision pipeline for industrial defect detection',    domain: 'robotics'  },
+  { label: 'Edge AI sensor mesh for predictive equipment maintenance',    domain: 'iot'       },
+  { label: 'Self-healing microservices platform with AI observability',   domain: 'ai'        },
+  { label: 'Reinforcement learning engine for smart grid load balancing', domain: 'industrial' },
+  { label: 'On-chain AI inference marketplace with verifiable compute',   domain: 'web3'      },
 ];
 
 // ── Agent pipeline config ──────────────────────────────────────────────────────
@@ -563,8 +563,26 @@ function ValidationTab({ result }: { result: OrchestrationResult }) {
 
 // ── Loading view ───────────────────────────────────────────────────────────────
 
+const WAVE_LABELS: Record<number, string> = {
+  1: 'Wave 1 — Analysis',
+  2: 'Wave 2 — Design & Code',
+  3: 'Wave 3 — Production',
+};
+
+const LOADING_MESSAGES = [
+  'Decomposing your system into subsystems…',
+  'Researching the optimal technology stack…',
+  'Designing the full architecture…',
+  'Generating production-ready code…',
+  'Planning the execution workflow…',
+  'Building deployment configurations…',
+  'Writing documentation…',
+  'Validating the complete plan…',
+];
+
 function LoadingView({ elapsed }: { elapsed: number }) {
   const wave = elapsed < 30 ? 1 : elapsed < 70 ? 2 : 3;
+  const msgIdx = Math.min(Math.floor(elapsed / 11), LOADING_MESSAGES.length - 1);
 
   return (
     <div className="flex min-h-full flex-col items-center justify-center py-16 text-center">
@@ -575,16 +593,19 @@ function LoadingView({ elapsed }: { elapsed: number }) {
         >
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-transparent" style={{ borderTopColor: 'rgba(255,255,255,0.60)' }} />
         </div>
-        <p className="text-sm font-light" style={{ color: 'rgba(255,255,255,0.50)' }}>
-          Running {AGENTS.filter((a) => a.wave <= wave).length} of 8 agents&hellip; {elapsed}s
+        <p className="text-sm font-light" style={{ color: 'rgba(255,255,255,0.65)' }}>
+          {LOADING_MESSAGES[msgIdx]}
+        </p>
+        <p className="mt-1.5 text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>
+          {AGENTS.filter((a) => a.wave <= wave).length} of 8 agents active &middot; {elapsed}s elapsed
         </p>
       </div>
 
-      <div className="w-full max-w-md space-y-2">
+      <div className="w-full max-w-md space-y-3">
         {[1, 2, 3].map((w) => (
           <div key={w}>
             <p className="mb-1.5 text-left text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.18)' }}>
-              Wave {w}
+              {WAVE_LABELS[w]}
             </p>
             <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
               {AGENTS.filter((a) => a.wave === w).map((a) => {
@@ -649,8 +670,9 @@ function HomeView({
       <h1 className="mb-3 text-[2.8rem] font-light tracking-tight" style={{ color: 'rgba(255,255,255,0.90)' }}>
         Deepchox
       </h1>
-      <p className="mb-10 text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.30)' }}>
-        AI Engineering Operating System &mdash; describe any idea, get a complete execution plan
+      <p className="mb-10 text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.32)' }}>
+        Turn any engineering idea into a complete execution plan&nbsp;&mdash;
+        architecture, production code, deployment configs, and docs in under 90 seconds.
       </p>
 
       {/* Input box */}
@@ -669,30 +691,34 @@ function HomeView({
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           onKeyDown={(e) => { if (e.key === 'Enter' && e.metaKey) submit(); }}
-          placeholder="Describe your idea, invention, system, or engineering concept..."
+          placeholder="What are you building? Describe any idea — software, hardware, AI system, robotics, aerospace, biotech..."
           className="w-full resize-none bg-transparent px-5 pt-4 pb-2 text-sm outline-none placeholder:text-white/20"
           style={{ color: 'rgba(255,255,255,0.82)', caretColor: 'rgba(255,255,255,0.6)', minHeight: 100 }}
         />
         <div className="flex items-center justify-between border-t px-4 py-2.5" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
-          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.20)' }}>
-            8 agents &middot; Claude + GPT-4o &middot; ~60-90s
+          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.18)' }}>
+            8 agents &middot; Claude&nbsp;+&nbsp;GPT-4o &middot; 7 deliverables &middot; ~90s
           </span>
           <button
             onClick={submit}
             disabled={!idea.trim()}
-            className="flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium transition-all duration-150"
+            className="flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold transition-all duration-150"
             style={{
-              background: idea.trim() ? 'rgba(255,255,255,0.90)' : 'rgba(255,255,255,0.07)',
-              color: idea.trim() ? '#0d0d0d' : 'rgba(255,255,255,0.25)',
+              background: idea.trim() ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.07)',
+              color: idea.trim() ? '#0d0d0d' : 'rgba(255,255,255,0.22)',
+              cursor: idea.trim() ? 'pointer' : 'not-allowed',
             }}
           >
             <Play className="h-3 w-3" />
-            Execute
+            Build it
           </button>
         </div>
       </div>
 
       {/* Domain selector */}
+      <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.20)' }}>
+        Select domain
+      </p>
       <div className="mb-10 flex flex-wrap justify-center gap-1.5">
         {DOMAINS.map(({ id, label, icon: Icon }) => (
           <button
@@ -713,7 +739,7 @@ function HomeView({
 
       {/* Suggestions */}
       <p className="mb-3 text-left text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.20)' }}>
-        Try an example
+        Start from an example
       </p>
       <div className="grid gap-2 sm:grid-cols-2">
         {SUGGESTIONS.map((s, i) => (
@@ -760,7 +786,7 @@ function ResultView({
               </h2>
               <div className="mt-1 flex flex-wrap items-center gap-2">
                 <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.28)' }}>
-                  {project.domain} &middot; {Math.round(result.durationMs / 1000)}s &middot; {result.codeFiles.length} files &middot; {result.phases.length} phases
+                  {project.domain} &middot; {result.codeFiles.length} code files &middot; {result.phases.length} phases &middot; {result.risks.length} risks identified &middot; {Math.round(result.durationMs / 1000)}s
                 </span>
                 {/* Inline agent trace */}
                 <div className="hidden items-center gap-2 overflow-x-auto sm:flex">
@@ -784,7 +810,7 @@ function ResultView({
               style={{ borderColor: 'rgba(255,255,255,0.09)', color: 'rgba(255,255,255,0.40)' }}
             >
               <RotateCcw className="h-3 w-3" />
-              New idea
+              New project
             </button>
           </div>
 
@@ -829,11 +855,23 @@ function ResultView({
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export function EngineeringPlatform({ selectedProjectId }: { selectedProjectId?: string | null }) {
-  const [state, setState] = useState<'home' | 'loading' | 'result'>('home');
+export function EngineeringPlatform({
+  selectedProjectId,
+  onProjectCreated,
+}: {
+  selectedProjectId?: string | null;
+  onProjectCreated?: (id: string) => void;
+}) {
+  // Initialise both state and project together so they're always in sync
   const [currentProject, setCurrentProject] = useState<EngProject | null>(() => {
     if (!selectedProjectId) return null;
     return loadProjects().find((p) => p.id === selectedProjectId) ?? null;
+  });
+
+  const [state, setState] = useState<'home' | 'loading' | 'result'>(() => {
+    if (!selectedProjectId) return 'home';
+    const p = loadProjects().find((proj) => proj.id === selectedProjectId);
+    return p?.result ? 'result' : 'home';
   });
   const [elapsed, setElapsed] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -875,12 +913,13 @@ export function EngineeringPlatform({ selectedProjectId }: { selectedProjectId?:
 
       setCurrentProject(done);
       setState('result');
+      onProjectCreated?.(done.id);
     } catch {
       setState('home');
     } finally {
       stopTimer();
     }
-  }, []);
+  }, [onProjectCreated]);
 
   const handleReset = () => {
     setCurrentProject(null);
