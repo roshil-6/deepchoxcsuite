@@ -4,6 +4,7 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { DexoParticleCanvas } from '@/components/Dexo/DexoParticleSphere';
 import { useZepConversationalVoice } from '@/lib/useZepVoice';
 import { useOffice } from '@/lib/OfficeContext';
+import { useTheme } from '@/lib/ThemeContext';
 import { Mic, X, Send, Command, Sparkles } from 'lucide-react';
 
 interface ZepCommand {
@@ -21,6 +22,8 @@ export function ZepFloatingOrb() {
   const [confirmCommand, setConfirmCommand] = useState<ZepCommand | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const { activeProject, switchRoom, createNewProject, runAgentStaffSync, updateProjectField, setActiveProject, patchActiveProject } = useOffice();
+  const { theme } = useTheme();
+  const dark = theme === 'dark';
 
   const {
     voiceState,
@@ -255,7 +258,11 @@ Available actions: switch rooms (ceo, pm, accountant, scout, cmo, dexo, shark, r
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full border border-slate-200/90 bg-white shadow-[0_8px_30px_-8px_rgba(15,23,42,0.18)] transition hover:scale-105 hover:shadow-[0_12px_36px_-10px_rgba(13,148,136,0.25)]"
+          className={`fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full border transition hover:scale-105 ${
+            dark
+              ? 'border-slate-700 bg-slate-800 shadow-[0_8px_30px_-8px_rgba(0,0,0,0.4)] hover:shadow-[0_12px_36px_-10px_rgba(45,212,191,0.3)]'
+              : 'border-slate-200/90 bg-white shadow-[0_8px_30px_-8px_rgba(15,23,42,0.18)] hover:shadow-[0_12px_36px_-10px_rgba(13,148,136,0.25)]'
+          }`}
           aria-label="Open Zep"
         >
           <DexoParticleCanvas mode="floating" size={48} active={false} />
@@ -264,28 +271,34 @@ Available actions: switch rooms (ceo, pm, accountant, scout, cmo, dexo, shark, r
 
       {/* Chat Panel */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 flex h-[500px] w-[380px] flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_20px_50px_-20px_rgba(15,23,42,0.2)]">
+        <div className={`fixed bottom-6 right-6 z-50 flex h-[500px] w-[380px] flex-col overflow-hidden rounded-2xl border shadow-[0_20px_50px_-20px_rgba(0,0,0,0.3)] ${
+          dark
+            ? 'border-slate-700 bg-slate-900'
+            : 'border-slate-200/90 bg-white shadow-[0_20px_50px_-20px_rgba(15,23,42,0.2)]'
+        }`}>
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/80 px-4 py-3">
+          <div className={`flex items-center justify-between border-b px-4 py-3 ${dark ? 'border-slate-700 bg-slate-800/80' : 'border-slate-100 bg-slate-50/80'}`}>
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-slate-200/80">
+              <div className={`flex h-8 w-8 items-center justify-center rounded-full shadow-sm ring-1 ${dark ? 'bg-slate-700 ring-slate-600' : 'bg-white ring-slate-200/80'}`}>
                 <Command className="h-4 w-4 text-teal-600" />
               </div>
-              <span className="font-semibold text-slate-800">Zep</span>
+              <span className={`font-semibold ${dark ? 'text-slate-200' : 'text-slate-800'}`}>Zep</span>
             </div>
-            <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-slate-700">
+            <button onClick={() => setIsOpen(false)} className={dark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-700'}>
               <X className="h-4 w-4" />
             </button>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 space-y-3 overflow-y-auto bg-[#f4f5f8] p-4">
+          <div className={`flex-1 space-y-3 overflow-y-auto p-4 ${dark ? 'bg-[#0f1115]' : 'bg-[#f4f5f8]'}`}>
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[14px] leading-relaxed ${
                   m.role === 'user'
-                    ? 'bg-slate-900 text-white shadow-sm'
-                    : 'border border-slate-200/90 bg-white text-slate-700 shadow-sm'
+                    ? 'bg-teal-600 text-white shadow-sm'
+                    : dark
+                      ? 'border border-slate-700 bg-slate-800 text-slate-200 shadow-sm'
+                      : 'border border-slate-200/90 bg-white text-slate-700 shadow-sm'
                 }`}>
                   {m.text.split('\n').map((line, j) => (
                     <div key={j}>{line || <br />}</div>
@@ -300,7 +313,7 @@ Available actions: switch rooms (ceo, pm, accountant, scout, cmo, dexo, shark, r
                 <button onClick={confirm} className="rounded-lg bg-teal-600 px-3 py-1.5 text-[13px] font-semibold text-white shadow-sm hover:bg-teal-700">
                   Confirm
                 </button>
-                <button onClick={cancel} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[13px] font-medium text-slate-600 hover:bg-slate-50">
+                <button onClick={cancel} className={`rounded-lg border px-3 py-1.5 text-[13px] font-medium ${dark ? 'border-slate-600 bg-slate-800 text-slate-300 hover:bg-slate-700' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}`}>
                   Cancel
                 </button>
               </div>
@@ -308,7 +321,7 @@ Available actions: switch rooms (ceo, pm, accountant, scout, cmo, dexo, shark, r
 
             {processing && (
               <div className="flex justify-start">
-                <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-slate-500 shadow-sm">
+                <div className={`flex items-center gap-2 rounded-2xl border px-3 py-2 shadow-sm ${dark ? 'border-slate-700 bg-slate-800 text-slate-400' : 'border-slate-200 bg-white text-slate-500'}`}>
                   <Sparkles className="h-4 w-4 animate-pulse text-teal-500" />
                   <span className="text-[13px]">Thinking...</span>
                 </div>
@@ -318,12 +331,16 @@ Available actions: switch rooms (ceo, pm, accountant, scout, cmo, dexo, shark, r
           </div>
 
           {/* Input */}
-          <div className="border-t border-slate-200 bg-white p-3">
+          <div className={`border-t p-3 ${dark ? 'border-slate-700 bg-slate-800' : 'border-slate-200 bg-white'}`}>
             <div className="flex items-end gap-2">
               <button
                 onClick={isListening ? stopListening : startListening}
                 className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${
-                  isListening ? 'border-red-200 bg-red-50 text-red-600' : 'border-slate-200 bg-slate-50 text-slate-500'
+                  isListening
+                    ? 'border-red-200 bg-red-50 text-red-600'
+                    : dark
+                      ? 'border-slate-600 bg-slate-700 text-slate-400'
+                      : 'border-slate-200 bg-slate-50 text-slate-500'
                 }`}
               >
                 <Mic className={`h-4 w-4 ${isListening ? 'animate-pulse' : ''}`} />
@@ -340,18 +357,24 @@ Available actions: switch rooms (ceo, pm, accountant, scout, cmo, dexo, shark, r
                 placeholder={isListening ? 'Listening...' : 'Type a command...'}
                 rows={1}
                 disabled={processing}
-                className="max-h-24 flex-1 resize-none rounded-lg border border-transparent bg-slate-50 px-2 py-1.5 text-[14px] text-slate-800 placeholder:text-slate-400 outline-none focus:border-teal-300/50 focus:bg-white"
+                className={`max-h-24 flex-1 resize-none rounded-lg border border-transparent px-2 py-1.5 text-[14px] outline-none focus:border-teal-300/50 ${
+                  dark
+                    ? 'bg-slate-700 text-slate-200 placeholder:text-slate-500 focus:bg-slate-600'
+                    : 'bg-slate-50 text-slate-800 placeholder:text-slate-400 focus:bg-white'
+                }`}
               />
               <button
                 onClick={() => void handleCommand(input)}
                 disabled={processing || !input.trim()}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-white shadow-sm hover:bg-slate-800 disabled:opacity-30"
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg shadow-sm hover:opacity-90 disabled:opacity-30 ${
+                  dark ? 'bg-teal-600 text-white' : 'bg-slate-900 text-white'
+                }`}
               >
                 <Send className="h-4 w-4" />
               </button>
             </div>
             {isListening && (
-              <div className="mt-2 text-center text-[12px] text-slate-500">
+              <div className={`mt-2 text-center text-[12px] ${dark ? 'text-slate-500' : 'text-slate-500'}`}>
                 {interimTranscript || 'Listening...'}
               </div>
             )}
