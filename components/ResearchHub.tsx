@@ -7,6 +7,7 @@ import {
   Layers, Battery, Wifi, Globe, Cpu,
 } from 'lucide-react';
 import type { ResearchResult } from '@/app/api/research/route';
+import { useTheme } from '@/lib/ThemeContext';
 
 // ── Research fields ───────────────────────────────────────────────────────────
 
@@ -74,89 +75,74 @@ function getImage(url: string, idx: number): string {
   return `https://images.unsplash.com/${DEFAULT_IMAGES[idx % DEFAULT_IMAGES.length]}?w=400&h=250&fit=crop&q=60`;
 }
 
-function relevanceDots(score: number) {
-  const n = Math.max(1, Math.min(5, Math.round(score * 5)));
-  return (
-    <div className="flex items-center gap-0.5" title={`Relevance ${Math.round(score * 100)}%`}>
-      {[1, 2, 3, 4, 5].map((i) => (
-        <span
-          key={i}
-          className={`h-1 w-1 rounded-full ${i <= n ? 'bg-teal-500' : 'bg-slate-200'}`}
-        />
-      ))}
-    </div>
-  );
-}
-
 // ── Article card ───────────────────────────────────────────────────────────────
 
-function ArticleCard({ item, index }: { item: ResearchResult; index: number }) {
+function ArticleCard({ item, index, dark }: { item: ResearchResult; index: number; dark: boolean }) {
   const [loaded, setLoaded] = useState(false);
   const image = getImage(item.url, index);
   const domain = getDomain(item.url);
-  const pct = Math.round(item.score * 100);
 
   return (
     <a
       href={item.url}
       target="_blank"
       rel="noreferrer"
-      className="group relative block overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_20px_-6px_rgba(15,23,42,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:border-teal-300/50 hover:shadow-[0_12px_32px_-12px_rgba(15,23,42,0.12)]"
+      className={`group block overflow-hidden rounded-xl border transition-all duration-200 hover:-translate-y-0.5 ${
+        dark
+          ? 'border-slate-800 bg-slate-900/50 hover:border-slate-700'
+          : 'border-slate-200 bg-white hover:border-slate-300'
+      }`}
     >
-      <div className="relative h-36 overflow-hidden bg-gradient-to-br from-slate-100 to-slate-50">
+      <div className={`relative h-32 overflow-hidden ${dark ? 'bg-slate-800' : 'bg-slate-100'}`}>
         <img
           src={image}
           alt=""
-          className={`h-full w-full object-cover transition duration-300 group-hover:scale-[1.03] ${loaded ? 'opacity-100' : 'opacity-0'}`}
+          className={`h-full w-full object-cover transition duration-300 group-hover:scale-[1.02] ${loaded ? 'opacity-100' : 'opacity-0'}`}
           onLoad={() => setLoaded(true)}
           loading="lazy"
         />
         {!loaded && (
-          <div className="absolute inset-0 flex items-center justify-center text-xs font-medium text-slate-400">
+          <div className={`absolute inset-0 flex items-center justify-center text-xs ${dark ? 'text-slate-600' : 'text-slate-400'}`}>
             …
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/55 via-transparent to-transparent" />
-        <span className="absolute left-2.5 top-2.5 rounded-full bg-white/95 px-2 py-0.5 text-[10px] font-semibold tracking-tight text-slate-700 shadow-sm ring-1 ring-slate-200/80 backdrop-blur-sm">
+        <div className={`absolute inset-0 bg-gradient-to-t ${dark ? 'from-slate-900' : 'from-white'} via-transparent to-transparent`} />
+        <span className={`absolute left-2.5 top-2.5 rounded-md px-2 py-0.5 text-[10px] font-medium shadow-sm ${dark ? 'bg-slate-800/90 text-slate-300' : 'bg-white/90 text-slate-600'}`}>
           {domain}
         </span>
       </div>
-      <div className="p-3.5">
-        <h3 className="mb-1.5 line-clamp-2 text-[13px] font-semibold leading-snug text-slate-900 group-hover:text-teal-800">
+      <div className="p-3">
+        <h3 className={`mb-1 line-clamp-2 text-[13px] font-medium leading-snug ${dark ? 'text-slate-200' : 'text-slate-900'}`}>
           {item.title}
         </h3>
         {item.snippet && (
-          <p className="mb-3 line-clamp-2 text-[12px] leading-relaxed text-slate-500">
+          <p className={`mb-2 line-clamp-2 text-[12px] leading-relaxed ${dark ? 'text-slate-500' : 'text-slate-500'}`}>
             {item.snippet}
           </p>
         )}
-        <div className="flex items-center justify-between gap-2 border-t border-slate-100 pt-2.5">
+        <div className="flex items-center justify-between gap-2">
           {item.publishedDate ? (
-            <span className="flex items-center gap-1 text-[11px] font-medium text-slate-400">
-              <Clock className="h-3 w-3 shrink-0" />
+            <span className={`flex items-center gap-1 text-[11px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
+              <Clock className="h-3 w-3" />
               {new Date(item.publishedDate).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
             </span>
           ) : <span />}
-          <div className="flex items-center gap-2">
-            {relevanceDots(item.score)}
-            <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-slate-600">
-              {pct}%
-            </span>
-          </div>
+          <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${dark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
+            {Math.round(item.score * 100)}%
+          </span>
         </div>
       </div>
     </a>
   );
 }
 
-function SkeletonCard() {
+function SkeletonCard({ dark }: { dark?: boolean }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm">
-      <div className="h-36 animate-pulse bg-slate-100" />
-      <div className="space-y-2 p-3.5">
-        <div className="h-4 w-3/4 animate-pulse rounded-lg bg-slate-100" />
-        <div className="h-3 w-full animate-pulse rounded-lg bg-slate-100" />
-        <div className="h-3 w-1/2 animate-pulse rounded-lg bg-slate-100" />
+    <div className={`overflow-hidden rounded-xl border ${dark ? 'border-slate-800' : 'border-slate-200'}`}>
+      <div className={`h-32 ${dark ? 'bg-slate-800' : 'bg-slate-100'}`} />
+      <div className="space-y-2 p-3">
+        <div className={`h-4 w-3/4 rounded ${dark ? 'bg-slate-800' : 'bg-slate-100'}`} />
+        <div className={`h-3 w-full rounded ${dark ? 'bg-slate-800' : 'bg-slate-100'}`} />
       </div>
     </div>
   );
@@ -168,10 +154,12 @@ function FieldSection({
   field,
   state,
   onRefresh,
+  dark,
 }: {
   field: typeof FIELDS[number];
   state: FieldState;
   onRefresh: () => void;
+  dark: boolean;
 }) {
   const Icon = field.icon;
 
@@ -180,12 +168,12 @@ function FieldSection({
       {/* Section header */}
       <div className="mb-4 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-slate-200/90">
-            <Icon className="h-4 w-4 text-teal-600" />
+          <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${dark ? 'bg-slate-800' : 'bg-slate-100'}`}>
+            <Icon className={`h-4 w-4 ${dark ? 'text-slate-400' : 'text-slate-600'}`} />
           </div>
           <div>
-            <h2 className="text-[15px] font-semibold text-slate-900">{field.label}</h2>
-            <p className="text-[11px] text-slate-500">
+            <h2 className={`text-[15px] font-medium ${dark ? 'text-slate-200' : 'text-slate-900'}`}>{field.label}</h2>
+            <p className={`text-[11px] ${dark ? 'text-slate-500' : 'text-slate-500'}`}>
               {state.results.length} articles
               {state.updatedAt && <> · Updated {timeAgo(state.updatedAt)}</>}
             </p>
@@ -194,7 +182,11 @@ function FieldSection({
         <button
           onClick={onRefresh}
           disabled={state.loading}
-          className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/90 bg-white px-3 py-1.5 text-[12px] font-semibold text-slate-600 shadow-sm transition-colors hover:border-teal-200 hover:text-teal-800 disabled:opacity-50"
+          className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[12px] font-medium transition-colors ${
+            dark
+              ? 'border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-700'
+              : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+          } disabled:opacity-50`}
         >
           <RefreshCw className={`h-3 w-3 ${state.loading ? 'animate-spin' : ''}`} />
           Refresh
@@ -203,30 +195,30 @@ function FieldSection({
 
       {/* Summary */}
       {state.answer && (
-        <div className="mb-4 rounded-2xl border border-slate-200/90 bg-gradient-to-br from-white to-slate-50/80 p-4 shadow-sm ring-1 ring-white/80">
-          <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.14em] text-teal-700/80">What we found</p>
-          <p className="text-[13px] leading-relaxed text-slate-700">{state.answer}</p>
+        <div className={`mb-4 rounded-xl border p-4 ${dark ? 'border-slate-800 bg-slate-900/50' : 'border-slate-200 bg-white'}`}>
+          <p className={`mb-1 text-[10px] font-medium uppercase tracking-[0.1em] ${dark ? 'text-slate-500' : 'text-slate-500'}`}>Summary</p>
+          <p className={`text-[13px] leading-relaxed ${dark ? 'text-slate-300' : 'text-slate-700'}`}>{state.answer}</p>
         </div>
       )}
 
       {/* Error */}
       {state.error && !state.loading && (
-        <div className="mb-4 rounded-2xl border border-red-200 bg-red-50/80 p-3 text-[13px] text-red-800">
+        <div className={`mb-4 rounded-xl border p-3 text-[13px] ${dark ? 'border-red-900/30 bg-red-950/20 text-red-400' : 'border-red-200 bg-red-50 text-red-600'}`}>
           Something went wrong. Try refreshing.
         </div>
       )}
 
       {/* Loading */}
       {state.loading && state.results.length === 0 && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {[...Array(4)].map((_, i) => <SkeletonCard key={i} dark={dark} />)}
         </div>
       )}
 
       {/* Results */}
       {state.results.length > 0 && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {state.results.map((item, i) => <ArticleCard key={i} item={item} index={i} />)}
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {state.results.map((item, i) => <ArticleCard key={i} item={item} index={i} dark={dark} />)}
         </div>
       )}
     </section>
@@ -239,6 +231,9 @@ const REFRESH_MS = 5 * 60 * 1000;
 const DEFAULT_FIELDS: FieldId[] = ['ai-ml', 'space'];
 
 export function ResearchHub() {
+  const { theme } = useTheme();
+  const dark = theme === 'dark';
+
   const [selected, setSelected] = useState<Set<FieldId>>(new Set(DEFAULT_FIELDS));
   const [states, setStates] = useState<Record<string, FieldState>>({});
   const [query, setQuery] = useState('');
@@ -319,20 +314,20 @@ export function ResearchHub() {
   const active = FIELDS.filter(f => selected.has(f.id));
 
   return (
-    <div className="flex h-full flex-col bg-[#e8e9ed] text-slate-800">
+    <div className={`flex h-full flex-col transition-colors duration-300 ${dark ? 'bg-[#0d0d0d]' : 'bg-[#f5f5f7]'}`}>
       {/* Header */}
-      <div className="shrink-0 border-b border-slate-200/90 bg-[#e8e9ed]/95 px-4 py-4 backdrop-blur-md">
+      <div className={`shrink-0 border-b px-5 py-4 backdrop-blur-md transition-colors duration-300 ${dark ? 'border-slate-800 bg-[#0d0d0d]/95' : 'border-slate-200 bg-white/80'}`}>
         <div className="mx-auto max-w-6xl">
-          <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+          <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h1 className="text-base font-semibold tracking-tight text-slate-900">Research</h1>
-              <p className="mt-0.5 max-w-lg text-[12px] leading-relaxed text-slate-600">
-                Like a prompt-to-brief studio: pick lanes or describe what you want to ship — we pull clean sources and refresh every few minutes.
+              <h1 className={`text-lg font-medium ${dark ? 'text-slate-200' : 'text-slate-900'}`}>Research</h1>
+              <p className={`mt-0.5 max-w-lg text-[13px] ${dark ? 'text-slate-500' : 'text-slate-500'}`}>
+                Track news across tech. Updates every 5 minutes.
               </p>
             </div>
             <button
               onClick={refreshAll}
-              className="text-[12px] font-semibold text-teal-700 underline decoration-teal-300/70 underline-offset-4 hover:text-teal-900"
+              className={`text-[13px] font-medium transition-colors ${dark ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700'}`}
             >
               Refresh all
             </button>
@@ -345,13 +340,21 @@ export function ResearchHub() {
               value={query}
               onChange={e => setQuery(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') void doCustomSearch(); }}
-              placeholder="Ask in plain language — markets, tech, competitors…"
-              className="flex-1 rounded-xl border border-slate-200/90 bg-white px-3.5 py-2.5 text-[14px] text-slate-900 shadow-sm outline-none ring-0 placeholder:text-slate-400 focus:border-teal-400/60 focus:ring-2 focus:ring-teal-400/20"
+              placeholder="Search anything..."
+              className={`flex-1 rounded-lg border px-4 py-2.5 text-[14px] outline-none transition-colors ${
+                dark
+                  ? 'border-slate-800 bg-slate-900 text-slate-200 placeholder:text-slate-600 focus:border-slate-700'
+                  : 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-slate-300'
+              }`}
             />
             <button
               onClick={doCustomSearch}
               disabled={!query.trim() || customLoading}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-4 py-2.5 text-[13px] font-semibold text-white shadow-md transition hover:bg-slate-800 disabled:opacity-40"
+              className={`inline-flex items-center gap-1.5 rounded-lg px-4 py-2.5 text-[13px] font-medium transition-colors disabled:opacity-40 ${
+                dark
+                  ? 'bg-slate-200 text-slate-900 hover:bg-white'
+                  : 'bg-slate-900 text-white hover:bg-slate-800'
+              }`}
             >
               {customLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
               Search
@@ -359,7 +362,7 @@ export function ResearchHub() {
           </div>
 
           {/* Topic buttons */}
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-2">
             {FIELDS.map(f => {
               const isActive = selected.has(f.id);
               const Icon = f.icon;
@@ -367,10 +370,14 @@ export function ResearchHub() {
                 <button
                   key={f.id}
                   onClick={() => toggle(f.id)}
-                  className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-[12px] font-semibold transition ${
+                  className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[13px] font-medium transition-colors ${
                     isActive
-                      ? 'border-teal-300/80 bg-white text-teal-900 shadow-sm ring-1 ring-teal-200/60'
-                      : 'border-transparent bg-white/60 text-slate-600 hover:bg-white hover:text-slate-900'
+                      ? dark
+                        ? 'border-slate-600 bg-slate-800 text-slate-200'
+                        : 'border-slate-300 bg-slate-100 text-slate-900'
+                      : dark
+                        ? 'border-slate-800 bg-transparent text-slate-500 hover:border-slate-700 hover:text-slate-400'
+                        : 'border-transparent bg-slate-100/50 text-slate-600 hover:bg-slate-100'
                   }`}
                 >
                   <Icon className="h-3.5 w-3.5" />
@@ -383,46 +390,46 @@ export function ResearchHub() {
       </div>
 
       {/* Content */}
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5">
+      <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
         <div className="mx-auto max-w-6xl">
           {/* Custom search results */}
           {(customResults.length > 0 || customLoading) && (
             <div className="mb-10">
               <div className="mb-3 flex flex-wrap items-center gap-2">
-                <Search className="h-4 w-4 text-teal-600" />
-                <span className="text-[14px] font-semibold text-slate-900">Results for &ldquo;{query}&rdquo;</span>
-                <span className="rounded-full bg-slate-200/80 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
+                <Search className={`h-4 w-4 ${dark ? 'text-slate-500' : 'text-slate-400'}`} />
+                <span className={`text-[15px] font-medium ${dark ? 'text-slate-200' : 'text-slate-900'}`}>Results for &ldquo;{query}&rdquo;</span>
+                <span className={`rounded-md px-2 py-0.5 text-[11px] font-medium ${dark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-600'}`}>
                   {customResults.length}
                 </span>
               </div>
 
               {customSummary && (
-                <div className="mb-4 rounded-2xl border border-slate-200/90 bg-white p-4 shadow-sm">
-                  <p className="text-[13px] leading-relaxed text-slate-700">{customSummary}</p>
+                <div className={`mb-4 rounded-xl border p-4 ${dark ? 'border-slate-800 bg-slate-900/50' : 'border-slate-200 bg-white'}`}>
+                  <p className={`text-[13px] leading-relaxed ${dark ? 'text-slate-300' : 'text-slate-700'}`}>{customSummary}</p>
                 </div>
               )}
 
               {customLoading && customResults.length === 0 && (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {[...Array(4)].map((_, i) => <SkeletonCard key={i} dark={dark} />)}
                 </div>
               )}
 
               {customResults.length > 0 && (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {customResults.map((item, i) => <ArticleCard key={i} item={item} index={i} />)}
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {customResults.map((item, i) => <ArticleCard key={i} item={item} index={i} dark={dark} />)}
                 </div>
               )}
 
-              <div className="my-8 border-b border-slate-200/80" />
+              <div className={`my-8 border-t ${dark ? 'border-slate-800' : 'border-slate-200'}`} />
             </div>
           )}
 
           {/* Empty state */}
           {active.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-slate-300/80 bg-white/50 py-16 text-center">
-              <p className="text-[14px] font-medium text-slate-600">Choose a topic above to open a live lane</p>
-              <p className="mt-1 text-[12px] text-slate-500">11 curated tracks · additive — mix as many as you like</p>
+            <div className={`rounded-xl border border-dashed py-16 text-center ${dark ? 'border-slate-800' : 'border-slate-300'}`}>
+              <p className={`text-[14px] font-medium ${dark ? 'text-slate-400' : 'text-slate-600'}`}>Choose a topic to get started</p>
+              <p className={`mt-1 text-[13px] ${dark ? 'text-slate-500' : 'text-slate-500'}`}>11 curated research lanes available</p>
             </div>
           )}
 
@@ -433,6 +440,7 @@ export function ResearchHub() {
               field={f}
               state={states[f.id] ?? EMPTY}
               onRefresh={() => void search(f.id, f.query)}
+              dark={dark}
             />
           ))}
         </div>

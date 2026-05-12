@@ -61,7 +61,7 @@ const DOMAIN_LABEL: Record<string, string> = {
 
 function SectionLabel({ children, dark }: { children: React.ReactNode; dark: boolean }) {
   return (
-    <p className={`mb-1 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
+    <p className={`mb-1 px-2 text-[10px] font-medium uppercase tracking-[0.1em] ${dark ? 'text-slate-500' : 'text-slate-500'}`}>
       {children}
     </p>
   );
@@ -82,26 +82,21 @@ function NavBtn({
       type="button"
       onClick={onClick}
       title={collapsed ? label : undefined}
-      className={`flex h-8 w-full items-center gap-2.5 rounded-xl px-2.5 text-left transition-all duration-150 ${
+      className={`flex h-9 w-full items-center gap-2.5 rounded-lg px-3 text-left transition-all duration-200 ${
         active
           ? dark
-            ? 'bg-slate-800 text-white shadow-sm ring-1 ring-slate-700'
-            : 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/90'
+            ? 'bg-slate-800 text-slate-200'
+            : 'bg-white text-slate-900 shadow-sm'
           : dark
-            ? 'text-slate-400 hover:bg-slate-800/70 hover:text-slate-200'
-            : 'text-slate-500 hover:bg-white/70 hover:text-slate-700'
+            ? 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-300'
+            : 'text-slate-600 hover:bg-white/60 hover:text-slate-900'
       }`}
     >
-      <Icon
-        className={`h-3.5 w-3.5 shrink-0 ${active ? (dark ? 'text-teal-400' : 'text-teal-600') : dark ? 'text-slate-500' : 'text-slate-400'}`}
-      />
+      <Icon className="h-4 w-4 shrink-0 opacity-70" />
       {!collapsed && (
-        <span className={`flex-1 truncate text-[12.5px] ${active ? 'font-semibold' : 'font-normal'}`}>
+        <span className={`flex-1 truncate text-[13px] ${active ? 'font-medium' : 'font-normal'}`}>
           {label}
         </span>
-      )}
-      {!collapsed && active && (
-        <span className={`ml-auto h-1.5 w-1.5 shrink-0 rounded-full ${dark ? 'bg-teal-400 shadow-[0_0_6px_rgba(45,212,191,0.5)]' : 'bg-gradient-to-br from-teal-400 to-teal-600 shadow-[0_0_6px_rgba(13,148,136,0.5)]'}`} />
       )}
     </button>
   );
@@ -147,29 +142,29 @@ export function Sidebar({
     <aside
       className={`relative flex h-full shrink-0 flex-col border-r transition-colors duration-300 ${
         dark
-          ? 'border-slate-800 bg-[#0f0f11] shadow-[inset_-1px_0_0_rgba(255,255,255,0.03)]'
-          : 'border-slate-200/90 bg-[#dfe1e8] shadow-[inset_-1px_0_0_rgba(255,255,255,0.45)]'
+          ? 'border-slate-800 bg-[#111114]'
+          : 'border-slate-200 bg-white'
       }`}
       style={{
-        width: collapsed ? 52 : 240,
-        transition: 'width 0.18s cubic-bezier(0.4,0,0.2,1), background-color 0.3s',
+        width: collapsed ? 56 : 260,
+        transition: 'width 0.2s ease, background-color 0.3s',
         overflow: 'hidden',
       }}
     >
 
       {/* ── Brand header ──────────────────────────────────────────────── */}
       <div
-        className={`flex shrink-0 items-center justify-between border-b px-3 py-4 backdrop-blur-sm transition-colors duration-300 ${
-          dark ? 'border-slate-800 bg-[#0f0f11]/90' : 'border-slate-200/80 bg-[#dfe1e8]/90'
+        className={`flex shrink-0 items-center justify-between border-b px-4 py-4 ${
+          dark ? 'border-slate-800' : 'border-slate-100'
         }`}
-        style={{ minHeight: 56 }}
+        style={{ minHeight: 64 }}
       >
         {!collapsed && (
-          <div className="min-w-0 select-none pl-0.5">
-            <span className={`block text-[9px] font-semibold uppercase tracking-[0.2em] ${dark ? 'text-slate-500' : 'text-slate-500'}`}>
+          <div className="min-w-0 select-none">
+            <span className={`block text-[10px] font-medium uppercase tracking-[0.15em] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
               northROSC LABS
             </span>
-            <span className={`block text-[15px] font-semibold tracking-tight ${dark ? 'text-slate-200' : 'text-slate-900'}`}>
+            <span className={`block text-[16px] font-semibold tracking-tight ${dark ? 'text-slate-200' : 'text-slate-900'}`}>
               Deepchox
             </span>
           </div>
@@ -179,19 +174,19 @@ export function Sidebar({
           <button
             type="button"
             onClick={toggleTheme}
-            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors ${
-              dark ? 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' : 'text-slate-500 hover:bg-white/80 hover:text-slate-800'
+            className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
+              dark ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-500 hover:bg-slate-100'
             }`}
-            title={dark ? 'Switch to light' : 'Switch to dark'}
+            title={dark ? 'Light mode' : 'Dark mode'}
           >
-            {dark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+            {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
           {/* Collapse Toggle */}
           <button
             type="button"
             onClick={() => setCollapsed((c) => !c)}
-            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors ${
-              dark ? 'text-slate-500 hover:bg-slate-800 hover:text-slate-300' : 'text-slate-500 hover:bg-white/80 hover:text-slate-800'
+            className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
+              dark ? 'text-slate-500 hover:bg-slate-800' : 'text-slate-400 hover:bg-slate-100'
             }`}
             title={collapsed ? 'Expand' : 'Collapse'}
           >
@@ -201,21 +196,21 @@ export function Sidebar({
       </div>
 
       {/* ── Scrollable body ───────────────────────────────────────────── */}
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden">
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden px-3 py-4">
 
         {/* Views nav */}
-        <div className="shrink-0 px-2 pt-4 pb-1">
-          {!collapsed && <SectionLabel dark={dark}>Views</SectionLabel>}
-          <div className="space-y-1">
+        <div className="mb-6">
+          {!collapsed && <SectionLabel dark={dark}>Workspace</SectionLabel>}
+          <div className="mt-2 space-y-1">
             <NavBtn
-              icon={Cpu} label="Engineering OS"
+              icon={Cpu} label="Engineering"
               active={activeView === 'engineering'}
               onClick={() => onSwitchView('engineering')}
               collapsed={collapsed}
               dark={dark}
             />
             <NavBtn
-              icon={Search} label="Research Hub"
+              icon={Search} label="Research"
               active={activeView === 'research'}
               onClick={() => onSwitchView('research')}
               collapsed={collapsed}
@@ -225,20 +220,18 @@ export function Sidebar({
         </div>
 
         {/* Divider */}
-        <div className={`mx-3 my-3 shrink-0 border-b transition-colors duration-300 ${dark ? 'border-slate-800' : 'border-slate-300/50'}`} />
+        {!collapsed && <div className={`mb-6 border-t ${dark ? 'border-slate-800' : 'border-slate-100'}`} />}
 
         {/* Projects */}
-        <div className="min-h-0 shrink-0 px-2">
+        <div className="min-h-0 flex-1">
           {!collapsed ? (
             <>
-              {/* Section header with inline + */}
-              <div className="mb-1.5 flex items-center justify-between px-2">
-                <span className={`text-[10px] font-semibold uppercase tracking-[0.12em] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
+              {/* Section header */}
+              <div className="mb-3 flex items-center justify-between px-2">
+                <span className={`text-[11px] font-medium uppercase tracking-[0.1em] ${dark ? 'text-slate-500' : 'text-slate-500'}`}>
                   Projects
                   {projects.length > 0 && (
-                    <span className={`ml-1.5 rounded-full px-1.5 py-px text-[9px] font-bold tabular-nums ring-1 ${
-                      dark ? 'bg-slate-800 text-slate-400 ring-slate-700' : 'bg-white/90 text-slate-500 ring-slate-200/80'
-                    }`}>
+                    <span className={`ml-2 rounded-md px-1.5 py-0.5 text-[10px] ${dark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
                       {projects.length}
                     </span>
                   )}
@@ -246,12 +239,12 @@ export function Sidebar({
                 <button
                   type="button"
                   onClick={handleNewProject}
-                  className={`flex h-5 w-5 items-center justify-center rounded-md transition-colors ${
-                    dark ? 'text-slate-500 hover:bg-slate-800 hover:text-slate-300' : 'text-slate-500 hover:bg-white/80 hover:text-slate-800'
+                  className={`flex h-6 w-6 items-center justify-center rounded-md transition-colors ${
+                    dark ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-500 hover:bg-slate-100'
                   }`}
                   title="New project"
                 >
-                  <Plus className="h-3.5 w-3.5" />
+                  <Plus className="h-4 w-4" />
                 </button>
               </div>
 
@@ -264,44 +257,27 @@ export function Sidebar({
                         key={p.id}
                         type="button"
                         onClick={() => handleSelectProject(p.id)}
-                        className={`group flex w-full flex-col rounded-xl px-3 py-2 text-left transition-all ${
+                        className={`group flex w-full flex-col rounded-lg px-3 py-2.5 text-left transition-all ${
                           active
                             ? dark
-                              ? 'bg-slate-800 shadow-sm ring-1 ring-slate-700'
-                              : 'bg-white shadow-sm ring-1 ring-slate-200/90'
+                              ? 'bg-slate-800'
+                              : 'bg-white shadow-sm'
                             : dark
-                              ? 'hover:bg-slate-800/50'
-                              : 'hover:bg-white/60'
+                              ? 'hover:bg-slate-800/30'
+                              : 'hover:bg-slate-50'
                         }`}
                       >
                         <div className="flex w-full items-center gap-2">
-                          <span
-                            className={`h-1.5 w-1.5 shrink-0 rounded-full transition-colors ${
-                              active
-                                ? dark
-                                  ? 'bg-teal-400 shadow-[0_0_6px_rgba(45,212,191,0.45)]'
-                                  : 'bg-gradient-to-br from-teal-400 to-teal-600 shadow-[0_0_6px_rgba(13,148,136,0.45)]'
-                                : dark ? 'bg-slate-600' : 'bg-slate-300'
-                            }`}
-                          />
-                          <span
-                            className={`min-w-0 flex-1 truncate text-[12px] leading-snug ${
-                              active
-                                ? dark ? 'font-semibold text-slate-200' : 'font-semibold text-slate-900'
-                                : dark ? 'font-normal text-slate-400' : 'font-normal text-slate-600'
-                            }`}
-                          >
+                          <span className={`min-w-0 flex-1 truncate text-[13px] ${active ? (dark ? 'text-slate-200' : 'text-slate-900') : dark ? 'text-slate-400' : 'text-slate-600'}`}>
                             {p.title}
                           </span>
                         </div>
-                        <div className="mt-0.5 flex items-center gap-2 pl-[18px]">
-                          <span className={`rounded-md px-1.5 py-px text-[9px] font-semibold uppercase tracking-wide ${
-                            dark ? 'bg-slate-800 text-slate-400' : 'bg-slate-200/80 text-slate-600'
-                          }`}>
+                        <div className="mt-1 flex items-center gap-2">
+                          <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${dark ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-500'}`}>
                             {DOMAIN_LABEL[p.domain] ?? p.domain.slice(0, 3).toUpperCase()}
                           </span>
-                          <span className={`flex items-center gap-1 text-[9px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
-                            <Clock className="h-2.5 w-2.5 shrink-0" />
+                          <span className={`flex items-center gap-1 text-[11px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
+                            <Clock className="h-3 w-3" />
                             {relativeTime(p.createdAt)}
                           </span>
                         </div>
@@ -310,62 +286,54 @@ export function Sidebar({
                   })}
                 </div>
               ) : (
-                <div className="flex flex-col items-center py-6 text-center">
-                  <div className={`mb-3 flex h-9 w-9 items-center justify-center rounded-xl border shadow-sm ${
-                    dark ? 'border-slate-700 bg-slate-800/50' : 'border-slate-200/90 bg-white/80'
-                  }`}>
-                    <FolderOpen className={`h-4 w-4 ${dark ? 'text-slate-600' : 'text-slate-400'}`} />
+                <div className="flex flex-col items-center py-8 text-center">
+                  <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${dark ? 'bg-slate-800' : 'bg-slate-50'}`}>
+                    <FolderOpen className={`h-5 w-5 ${dark ? 'text-slate-600' : 'text-slate-400'}`} />
                   </div>
-                  <p className={`text-[11px] ${dark ? 'text-slate-500' : 'text-slate-500'}`}>
+                  <p className={`text-[13px] ${dark ? 'text-slate-500' : 'text-slate-500'}`}>
                     No projects yet
                   </p>
                   <button
                     type="button"
                     onClick={handleNewProject}
-                    className={`mt-2 text-[11px] font-medium transition-colors hover:underline ${dark ? 'text-teal-400' : 'text-teal-700'}`}
+                    className={`mt-2 text-[13px] transition-colors ${dark ? 'text-slate-400 hover:text-slate-300' : 'text-slate-600 hover:text-slate-900'}`}
                   >
-                    Start building →
+                    Create project →
                   </button>
                 </div>
               )}
             </>
           ) : (
-            /* Collapsed: just the + icon */
-            <div className="flex justify-center py-2">
+            /* Collapsed: icon buttons */
+            <div className="flex flex-col items-center gap-2">
               <button
                 type="button"
                 onClick={handleNewProject}
-                className={`flex h-7 w-7 items-center justify-center rounded-md transition-colors ${
-                  dark ? 'text-slate-500 hover:bg-slate-800' : 'text-slate-500 hover:bg-white/80'
+                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
+                  dark ? 'text-slate-500 hover:bg-slate-800' : 'text-slate-400 hover:bg-slate-100'
                 }`}
                 title="New project"
               >
-                <Plus className="h-3.5 w-3.5" />
+                <Plus className="h-4 w-4" />
               </button>
             </div>
           )}
         </div>
-
-        {/* Flexible space pushes footer down */}
-        <div className="flex-1" />
       </div>
 
       {/* ── Footer ────────────────────────────────────────────────────── */}
-      <div className={`shrink-0 border-t p-2 transition-colors duration-300 ${
-        dark ? 'border-slate-800 bg-[#0f0f11]/60' : 'border-slate-200/80 bg-[#dfe1e8]/60'
-      }`}>
+      <div className={`border-t p-3 ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
         <button
           type="button"
           onClick={onLogout}
-          className={`flex h-9 w-full items-center gap-2.5 rounded-xl px-3 transition-colors ${
+          className={`flex h-10 w-full items-center gap-2.5 rounded-lg px-3 transition-colors ${
             dark
-              ? 'text-slate-500 hover:bg-slate-800 hover:text-slate-300'
-              : 'text-slate-500 hover:bg-white/70 hover:text-slate-700'
+              ? 'text-slate-500 hover:bg-slate-800 hover:text-slate-400'
+              : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
           }`}
-          title="Sign out"
         >
-          <LogOut className="h-3.5 w-3.5 shrink-0" />
-          {!collapsed && <span className="text-[12px]">Sign out</span>}
+          <LogOut className="h-4 w-4 shrink-0" />
+          {!collapsed && <span className="text-[13px]">Sign out</span>}
         </button>
       </div>
 
