@@ -32,10 +32,28 @@ interface FieldState {
   answer: string | null;
   loading: boolean;
   error: boolean;
+  errorMessage?: string;
   updatedAt: number | null;
 }
 
 const EMPTY: FieldState = { results: [], answer: null, loading: false, error: false, updatedAt: null };
+
+// Debug API issues
+async function debugFetch(url: string, options: RequestInit) {
+  console.log('Fetching:', url, options);
+  try {
+    const res = await fetch(url, options);
+    console.log('Response status:', res.status, res.statusText);
+    if (!res.ok) {
+      const text = await res.text();
+      console.error('Error response:', text);
+    }
+    return res;
+  } catch (err) {
+    console.error('Fetch error:', err);
+    throw err;
+  }
+}
 
 function getDomain(url: string) {
   try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return url; }
@@ -204,7 +222,8 @@ function FieldSection({
       {/* Error */}
       {state.error && !state.loading && (
         <div className={`mb-4 rounded-xl border p-3 text-[13px] ${dark ? 'border-red-900/30 bg-red-950/20 text-red-400' : 'border-red-200 bg-red-50 text-red-600'}`}>
-          Something went wrong. Try refreshing.
+          <p className="font-medium">Error: {state.errorMessage || 'Unknown error'}</p>
+          <p className="text-xs mt-1 opacity-70">Check console for details. Try refreshing.</p>
         </div>
       )}
 
@@ -243,18 +262,23 @@ export function ResearchHub() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const search = useCallback(async (id: string, q: string) => {
-    setStates(p => ({ ...p, [id]: { ...(p[id] ?? EMPTY), loading: true, error: false } }));
+    setStates(p => ({ ...p, [id]: { ...(p[id] ?? EMPTY), loading: true, error: false, errorMessage: undefined } }));
     try {
       const r = await fetch('/api/research', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: q, maxResults: 8 }),
       });
-      if (!r.ok) throw new Error('fail');
+      if (!r.ok) {
+        const errorText = await r.text();
+        console.error('API error:', r.status, errorText);
+        throw new Error(`HTTP ${r.status}: ${errorText}`);
+      }
       const d = await r.json() as { results: ResearchResult[]; answer: string | null };
       setStates(p => ({ ...p, [id]: { results: d.results, answer: d.answer, loading: false, error: false, updatedAt: Date.now() } }));
-    } catch {
-      setStates(p => ({ ...p, [id]: { ...(p[id] ?? EMPTY), loading: false, error: true } }));
+    } catch (err: any) {
+      console.error('Search error:', err);
+      setStates(p => ({ ...p, [id]: { ...(p[id] ?? EMPTY), loading: false, error: true, errorMessage: err.message } }));
     }
   }, []);
 
