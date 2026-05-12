@@ -36,16 +36,16 @@ function saveProjects(projects: EngProject[]) {
 // ── Domain config ──────────────────────────────────────────────────────────────
 
 const DOMAINS = [
-  { id: 'software',   label: 'Software',   icon: Code2,         color: '#60a5fa' },
-  { id: 'ai',         label: 'AI / ML',    icon: Bot,           color: '#a78bfa' },
-  { id: 'hardware',   label: 'Hardware',   icon: Cpu,           color: '#34d399' },
-  { id: 'robotics',   label: 'Robotics',   icon: Zap,           color: '#fbbf24' },
-  { id: 'aerospace',  label: 'Aerospace',  icon: Rocket,        color: '#f87171' },
-  { id: 'biotech',    label: 'Biotech',    icon: FlaskConical,  color: '#4ade80' },
-  { id: 'iot',        label: 'IoT',        icon: Wifi,          color: '#38bdf8' },
-  { id: 'industrial', label: 'Industrial', icon: Factory,       color: '#fb923c' },
-  { id: 'web3',       label: 'Web3',       icon: Globe,         color: '#c084fc' },
-  { id: 'saas',       label: 'SaaS',       icon: Layers,        color: '#2dd4bf' },
+  { id: 'software',   label: 'Software',   icon: Code2 },
+  { id: 'ai',         label: 'AI / ML',    icon: Bot },
+  { id: 'hardware',   label: 'Hardware',   icon: Cpu },
+  { id: 'robotics',   label: 'Robotics',   icon: Zap },
+  { id: 'aerospace',  label: 'Aerospace',  icon: Rocket },
+  { id: 'biotech',    label: 'Biotech',    icon: FlaskConical },
+  { id: 'iot',        label: 'IoT',        icon: Wifi },
+  { id: 'industrial', label: 'Industrial', icon: Factory },
+  { id: 'web3',       label: 'Web3',       icon: Globe },
+  { id: 'saas',       label: 'SaaS',       icon: Layers },
 ];
 
 const SUGGESTIONS = [
@@ -1109,6 +1109,8 @@ function HomeView({ onSubmit }: { onSubmit: (idea: string, domain: string) => vo
   const [domain, setDomain]   = useState('software');
   const [focused, setFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { theme } = useTheme();
+  const dark = theme === 'dark';
 
   const submit = useCallback(() => {
     if (!idea.trim()) return;
@@ -1118,30 +1120,29 @@ function HomeView({ onSubmit }: { onSubmit: (idea: string, domain: string) => vo
   const activeDomain = DOMAINS.find(d => d.id === domain);
 
   return (
-    <div className="flex min-h-full flex-col items-center justify-center px-4 py-12">
+    <div className={`flex min-h-full flex-col items-center justify-center px-4 py-12 transition-colors duration-300 ${dark ? 'bg-[#0a0a0a]' : 'bg-[#f5f5f7]'}`}>
       <div className="w-full max-w-3xl">
 
         {/* Brand */}
         <div className="mb-10 text-center">
-          <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.28em]" style={{ color: 'rgba(20,184,166,0.65)' }}>
+          <p className={`mb-1.5 text-[10px] font-medium uppercase tracking-[0.2em] ${dark ? 'text-neutral-500' : 'text-neutral-400'}`}>
             northROSC LABS
           </p>
-          <h1 className="mb-4 text-[3rem] font-bold tracking-tight" style={{ color: '#0f172a' }}>
+          <h1 className={`mb-4 text-[3rem] font-bold tracking-tight ${dark ? 'text-neutral-100' : 'text-neutral-900'}`}>
             Deepchox
           </h1>
-          <p className="mx-auto max-w-xl text-sm font-medium leading-[1.8]" style={{ color: '#64748b' }}>
-            Prompt an idea like you would for a landing page or app — Deepchox runs <strong className="text-slate-800">eight specialist agents</strong> in three waves and hands you architecture, code, deploy configs, and docs you can actually ship.
+          <p className={`mx-auto max-w-xl text-sm font-medium leading-[1.8] ${dark ? 'text-neutral-400' : 'text-neutral-600'}`}>
+            Prompt an idea like you would for a landing page or app — Deepchox runs <strong className={dark ? 'text-neutral-300' : 'text-neutral-800'}>eight specialist agents</strong> in three waves and hands you architecture, code, deploy configs, and docs you can actually ship.
           </p>
         </div>
 
         {/* Input */}
         <div
-          className="mb-5 overflow-hidden rounded-2xl border text-left transition-all duration-200"
-          style={{
-            borderColor: focused ? 'rgba(20,184,166,0.50)' : 'rgba(15,23,42,0.09)',
-            background:  focused ? 'rgba(20,184,166,0.025)' : '#f1f5f9',
-            boxShadow:   focused ? '0 0 0 4px rgba(20,184,166,0.07)' : 'none',
-          }}
+          className={`mb-5 overflow-hidden rounded-xl border text-left transition-all duration-200 ${
+            focused
+              ? dark ? 'border-neutral-600 bg-[#141414]' : 'border-neutral-300 bg-white'
+              : dark ? 'border-[#262626] bg-[#141414]' : 'border-neutral-200 bg-white'
+          }`}
         >
           <textarea
             ref={textareaRef}
@@ -1152,34 +1153,33 @@ function HomeView({ onSubmit }: { onSubmit: (idea: string, domain: string) => vo
             onBlur={() => setFocused(false)}
             onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submit(); }}
             placeholder="Describe what you're building — software system, hardware device, AI pipeline, robotics platform, aerospace application, biotech tool..."
-            className="w-full resize-none bg-transparent px-5 pt-5 pb-3 text-sm font-medium outline-none placeholder:text-slate-400"
-            style={{ color: '#0f172a', caretColor: '#14B8A6', minHeight: 110 }}
+            className={`w-full resize-none bg-transparent px-5 pt-5 pb-3 text-sm font-medium outline-none ${dark ? 'text-neutral-200 placeholder:text-neutral-600' : 'text-neutral-900 placeholder:text-neutral-400'}`}
+            style={{ minHeight: 110 }}
           />
-          <div className="flex items-center justify-between border-t px-5 py-3" style={{ borderColor: 'rgba(15,23,42,0.06)' }}>
+          <div className={`flex items-center justify-between border-t px-5 py-3 ${dark ? 'border-[#262626]' : 'border-neutral-100'}`}>
             <div className="flex items-center gap-2">
               {activeDomain && (
-                <span className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: '#94a3b8' }}>
-                  <activeDomain.icon className="h-3 w-3" style={{ color: activeDomain.color + 'aa' }} />
+                <span className={`flex items-center gap-1.5 text-xs font-medium ${dark ? 'text-neutral-500' : 'text-neutral-500'}`}>
+                  <activeDomain.icon className="h-3 w-3" />
                   {activeDomain.label}
                 </span>
               )}
-              <span className="text-xs font-semibold text-slate-400">
+              <span className={`text-xs font-medium ${dark ? 'text-neutral-600' : 'text-neutral-400'}`}>
                 &middot; 8 agents · Claude + GPT-4o · ~90s
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="hidden text-[10px] font-semibold sm:block" style={{ color: '#94a3b8' }}>
+              <span className={`hidden text-[10px] font-medium sm:block ${dark ? 'text-neutral-600' : 'text-neutral-400'}`}>
                 ⌘ Enter
               </span>
               <button
                 onClick={submit}
                 disabled={!idea.trim()}
-                className="flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-bold transition-all duration-150"
-                style={{
-                  background: idea.trim() ? 'rgba(20,184,166,0.92)' : 'rgba(15,23,42,0.07)',
-                  color:      idea.trim() ? '#0a0a0a' : '#cbd5e1',
-                  cursor:     idea.trim() ? 'pointer' : 'not-allowed',
-                }}
+                className={`flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs font-medium transition-all duration-150 ${
+                  idea.trim()
+                    ? dark ? 'bg-neutral-200 text-neutral-900 hover:bg-white' : 'bg-neutral-900 text-white hover:bg-neutral-800'
+                    : dark ? 'bg-[#1a1a1a] text-neutral-600' : 'bg-neutral-100 text-neutral-400'
+                }`}
               >
                 <Play className="h-3 w-3" />
                 Build it
@@ -1188,26 +1188,29 @@ function HomeView({ onSubmit }: { onSubmit: (idea: string, domain: string) => vo
           </div>
         </div>
 
-        {/* Domain selector */}
+        {/* Domain selector - Neutral colors */}
         <div className="mb-10">
-          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: '#94a3b8' }}>
+          <p className={`mb-3 text-[10px] font-medium uppercase tracking-[0.1em] ${dark ? 'text-neutral-500' : 'text-neutral-500'}`}>
             Engineering Domain
           </p>
           <div className="flex flex-wrap gap-2">
-            {DOMAINS.map(({ id, label, icon: Icon, color }) => {
+            {DOMAINS.map(({ id, label, icon: Icon }) => {
               const active = domain === id;
               return (
                 <button
                   key={id}
                   onClick={() => setDomain(id)}
-                  className="flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-bold transition-all duration-150"
-                  style={{
-                    borderColor: active ? `${color}55` : 'rgba(15,23,42,0.08)',
-                    background:  active ? `${color}14` : 'transparent',
-                    color:       active ? color : '#64748b',
-                  }}
+                  className={`flex items-center gap-1.5 rounded-lg border px-3.5 py-1.5 text-xs font-medium transition-all duration-150 ${
+                    active
+                      ? dark
+                        ? 'border-neutral-600 bg-[#1a1a1a] text-neutral-200'
+                        : 'border-neutral-300 bg-neutral-100 text-neutral-900'
+                      : dark
+                        ? 'border-[#262626] bg-transparent text-neutral-500 hover:border-neutral-600 hover:text-neutral-400'
+                        : 'border-neutral-200 bg-transparent text-neutral-600 hover:border-neutral-300 hover:text-neutral-900'
+                  }`}
                 >
-                  <Icon className="h-3 w-3" />
+                  <Icon className="h-3 w-3 opacity-70" />
                   {label}
                 </button>
               );
@@ -1215,36 +1218,32 @@ function HomeView({ onSubmit }: { onSubmit: (idea: string, domain: string) => vo
           </div>
         </div>
 
-        {/* Suggestions */}
+        {/* Suggestions - Neutral colors */}
         <div>
-          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: '#94a3b8' }}>
+          <p className={`mb-3 text-[10px] font-medium uppercase tracking-[0.1em] ${dark ? 'text-neutral-500' : 'text-neutral-500'}`}>
             Try an Example
           </p>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {SUGGESTIONS.map((s, i) => {
-              const dom = DOMAINS.find(d => d.id === s.domain);
-              return (
-                <button
-                  key={i}
-                  onClick={() => { setIdea(s.label); setDomain(s.domain); textareaRef.current?.focus(); }}
-                  className="group rounded-2xl border px-4 py-4 text-left transition-all duration-150 hover:bg-slate-50/90"
-                  style={{ borderColor: 'rgba(15,23,42,0.07)', background: '#ffffff' }}
-                >
-                  <div className="mb-2.5 flex items-center gap-1.5">
-                    {dom && <dom.icon className="h-3 w-3 shrink-0" style={{ color: `${dom.color}99` }} />}
-                    <span
-                      className="rounded-md px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider"
-                      style={{ background: dom ? `${dom.color}15` : 'rgba(15,23,42,0.06)', color: dom ? `${dom.color}cc` : '#64748b' }}
-                    >
-                      {s.tag}
-                    </span>
-                  </div>
-                  <p className="text-sm font-semibold leading-snug" style={{ color: '#64748b' }}>
-                    {s.label}
-                  </p>
-                </button>
-              );
-            })}
+          <div className="grid gap-3 sm:grid-cols-2">
+            {SUGGESTIONS.map((s, i) => (
+              <button
+                key={i}
+                onClick={() => { setIdea(s.label); setDomain(s.domain); textareaRef.current?.focus(); }}
+                className={`group rounded-xl border px-4 py-4 text-left transition-all duration-150 ${
+                  dark
+                    ? 'border-[#262626] bg-[#141414] hover:border-[#333] hover:bg-[#1a1a1a]'
+                    : 'border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-50'
+                }`}
+              >
+                <div className="mb-2">
+                  <span className={`rounded px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider ${dark ? 'bg-[#1a1a1a] text-neutral-500' : 'bg-neutral-100 text-neutral-500'}`}>
+                    {s.tag}
+                  </span>
+                </div>
+                <p className={`text-sm font-medium leading-snug ${dark ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                  {s.label}
+                </p>
+              </button>
+            ))}
           </div>
         </div>
 
@@ -1277,10 +1276,7 @@ function ResultView({ project, onReset }: { project: EngProject; onReset: () => 
               <div className="mt-2 flex flex-wrap items-center gap-2.5">
                 {/* Domain pill */}
                 {dom && (
-                  <span
-                    className="flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest"
-                    style={{ background: `${dom.color}15`, color: `${dom.color}cc` }}
-                  >
+                  <span className={`flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider ${dark ? 'bg-[#1a1a1a] text-neutral-400' : 'bg-neutral-100 text-neutral-600'}`}>
                     <dom.icon className="h-2.5 w-2.5" />
                     {dom.label}
                   </span>
