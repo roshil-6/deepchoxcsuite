@@ -8,6 +8,7 @@ import { ResearchHub } from '@/components/ResearchHub';
 import { Sidebar, type AppView } from '@/components/Sidebar';
 import { ZepFloatingOrb } from '@/components/Zep/ZepFloatingOrb';
 import { OfficeProvider } from '@/lib/OfficeContext';
+import { ThemeProvider, useTheme } from '@/lib/ThemeContext';
 
 // ── Loading overlay ────────────────────────────────────────────────────────────
 
@@ -37,6 +38,55 @@ function LoadingOverlay() {
           aria-hidden
         />
       </div>
+    </div>
+  );
+}
+
+// ── Themed Layout (accesses theme context) ───────────────────────────────────
+
+function ThemedLayout({
+  activeView,
+  setActiveView,
+  selectedProjectId,
+  setSelectedProjectId,
+  handleLogout,
+}: {
+  activeView: AppView;
+  setActiveView: (v: AppView) => void;
+  selectedProjectId: string | null;
+  setSelectedProjectId: (id: string | null) => void;
+  handleLogout: () => void;
+}) {
+  const { theme } = useTheme();
+
+  return (
+    <div
+      className={`flex h-screen w-full overflow-hidden transition-colors duration-300 ${
+        theme === 'dark' ? 'bg-[#0d0d0d]' : 'bg-[#e8e9ed]'
+      }`}
+    >
+      <Sidebar
+        activeView={activeView}
+        onSwitchView={setActiveView}
+        selectedProjectId={selectedProjectId}
+        onSelectProject={(id) => setSelectedProjectId(id)}
+        onNewProject={() => setSelectedProjectId(null)}
+        onLogout={() => void handleLogout()}
+      />
+
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        {activeView === 'research' ? (
+          <ResearchHub />
+        ) : (
+          <EngineeringPlatform
+            key={selectedProjectId ?? '__new__'}
+            selectedProjectId={selectedProjectId}
+            onProjectCreated={(id) => setSelectedProjectId(id)}
+          />
+        )}
+      </div>
+
+      <ZepFloatingOrb />
     </div>
   );
 }
@@ -71,33 +121,16 @@ export default function Home() {
   if (!started) return <LandingPage onContinueGuest={() => setStarted(true)} />;
 
   return (
-    <OfficeProvider>
-      <div
-        className="flex h-screen w-full overflow-hidden bg-[#e8e9ed]"
-      >
-        <Sidebar
+    <ThemeProvider>
+      <OfficeProvider>
+        <ThemedLayout
           activeView={activeView}
-          onSwitchView={setActiveView}
+          setActiveView={setActiveView}
           selectedProjectId={selectedProjectId}
-          onSelectProject={(id) => setSelectedProjectId(id)}
-          onNewProject={() => setSelectedProjectId(null)}
-          onLogout={() => void handleLogout()}
+          setSelectedProjectId={setSelectedProjectId}
+          handleLogout={handleLogout}
         />
-
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-          {activeView === 'research' ? (
-            <ResearchHub />
-          ) : (
-            <EngineeringPlatform
-              key={selectedProjectId ?? '__new__'}
-              selectedProjectId={selectedProjectId}
-              onProjectCreated={(id) => setSelectedProjectId(id)}
-            />
-          )}
-        </div>
-
-        <ZepFloatingOrb />
-      </div>
-    </OfficeProvider>
+      </OfficeProvider>
+    </ThemeProvider>
   );
 }

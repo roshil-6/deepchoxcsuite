@@ -9,6 +9,7 @@ import {
   Terminal, Network, BarChart3, BookOpen, Shield,
 } from 'lucide-react';
 import type { OrchestrationResult, SystemNode, CodeFile, WorkflowPhase, DeploymentConfig, Risk } from '@/app/api/orchestrate/route';
+import { useTheme } from '@/lib/ThemeContext';
 
 // ── Local project storage ──────────────────────────────────────────────────────
 
@@ -200,54 +201,155 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
-function Badge({ label, color = 'rgba(15,23,42,0.07)' }: { label: string; color?: string }) {
+function Badge({ label, color = 'rgba(15,23,42,0.07)', dark }: { label: string; color?: string; dark?: boolean }) {
   return (
     <span
       className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest"
-      style={{ background: color, color: '#0f172a' }}
+      style={{ background: color, color: dark ? '#e2e8f0' : '#0f172a' }}
     >
       {label}
     </span>
   );
 }
 
-function SectionTitle({ children, sub }: { children: React.ReactNode; sub?: string }) {
+function SectionTitle({ children, sub, dark }: { children: React.ReactNode; sub?: string; dark?: boolean }) {
   return (
     <div className="mb-5">
       <div className="flex items-center gap-2">
-        <div className="h-4 w-[3px] rounded-full" style={{ background: 'linear-gradient(to bottom, rgba(20,184,166,0.90), rgba(20,184,166,0.30))' }} />
-        <h3 className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
+        <div className="h-4 w-[3px] rounded-full" style={{ background: dark ? 'linear-gradient(to bottom, #2dd4bf, #0f766e)' : 'linear-gradient(to bottom, rgba(20,184,166,0.90), rgba(20,184,166,0.30))' }} />
+        <h3 className={`text-[11px] font-bold uppercase tracking-[0.14em] ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
           {children}
         </h3>
       </div>
       {sub && (
-        <p className="mt-1 pl-3.5 text-xs font-medium text-slate-500">{sub}</p>
+        <p className={`mt-1 pl-3.5 text-xs font-medium ${dark ? 'text-slate-500' : 'text-slate-500'}`}>{sub}</p>
       )}
     </div>
   );
 }
 
-function Prose({ children }: { children: React.ReactNode }) {
+function Prose({ children, dark }: { children: React.ReactNode; dark?: boolean }) {
   return (
-    <p className="text-sm font-medium leading-[1.75] text-slate-600">
+    <p className={`text-sm font-medium leading-[1.75] ${dark ? 'text-slate-300' : 'text-slate-600'}`}>
       {children}
     </p>
   );
 }
 
-function Card({ children, className = '', glow = false }: { children: React.ReactNode; className?: string; glow?: boolean }) {
+function Card({ children, className = '', glow = false, dark }: { children: React.ReactNode; className?: string; glow?: boolean; dark?: boolean }) {
   return (
     <div
       className={`rounded-2xl border p-5 ${className}`}
       style={{
-        borderColor: 'rgba(15,23,42,0.07)',
-        background: '#ffffff',
+        borderColor: dark ? 'rgba(51,65,85,0.5)' : 'rgba(15,23,42,0.07)',
+        background: dark ? '#0f172a' : '#ffffff',
         boxShadow: glow
-          ? '0 1px 2px rgba(15,23,42,0.04), 0 8px 24px -8px rgba(15,23,42,0.08), 0 0 0 1px rgba(13,148,136,0.06) inset'
-          : '0 1px 2px rgba(15,23,42,0.04), 0 6px 20px -6px rgba(15,23,42,0.07)',
+          ? dark
+            ? '0 1px 2px rgba(0,0,0,0.2), 0 8px 24px -8px rgba(0,0,0,0.4), 0 0 0 1px rgba(45,212,191,0.1) inset'
+            : '0 1px 2px rgba(15,23,42,0.04), 0 8px 24px -8px rgba(15,23,42,0.08), 0 0 0 1px rgba(13,148,136,0.06) inset'
+          : dark
+            ? '0 1px 2px rgba(0,0,0,0.2), 0 6px 20px -6px rgba(0,0,0,0.3)'
+            : '0 1px 2px rgba(15,23,42,0.04), 0 6px 20px -6px rgba(15,23,42,0.07)',
       }}
     >
       {children}
+    </div>
+  );
+}
+
+// New SystemCard component with improved design
+function SystemCard({ sys, index, dark }: { sys: SystemNode; index: number; dark?: boolean }) {
+  const typeColors: Record<string, string> = {
+    firmware: '#f59e0b',
+    hardware: '#3b82f6',
+    ai: '#8b5cf6',
+    service: '#10b981',
+    frontend: '#ec4899',
+    database: '#f97316',
+    default: '#14b8a6',
+  };
+
+  const color = typeColors[sys.type.toLowerCase()] || typeColors.default;
+
+  return (
+    <div
+      className={`group relative overflow-hidden rounded-2xl border p-5 transition-all duration-300 hover:scale-[1.02] ${
+        dark
+          ? 'hover:border-slate-600 hover:shadow-[0_8px_30px_-8px_rgba(0,0,0,0.5)]'
+          : 'hover:border-slate-300 hover:shadow-[0_8px_30px_-8px_rgba(15,23,42,0.12)]'
+      }`}
+      style={{
+        borderColor: dark ? 'rgba(51,65,85,0.5)' : 'rgba(15,23,42,0.08)',
+        background: dark
+          ? 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)'
+          : 'linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)',
+        boxShadow: dark
+          ? '0 2px 4px rgba(0,0,0,0.2), 0 6px 12px -4px rgba(0,0,0,0.3)'
+          : '0 2px 4px rgba(15,23,42,0.04), 0 6px 12px -4px rgba(15,23,42,0.08)',
+      }}
+    >
+      {/* Top accent line */}
+      <div
+        className="absolute left-0 right-0 top-0 h-1"
+        style={{ background: `linear-gradient(to right, ${color}, ${color}66)` }}
+      />
+
+      {/* Icon / Number */}
+      <div className="mb-4 flex items-center justify-between">
+        <div
+          className="flex h-10 w-10 items-center justify-center rounded-xl text-sm font-bold"
+          style={{
+            background: dark ? `${color}22` : `${color}15`,
+            color: color,
+            boxShadow: `0 2px 8px -2px ${color}40`,
+          }}
+        >
+          {index + 1}
+        </div>
+        <span
+          className="rounded-lg px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
+          style={{
+            background: dark ? `${color}22` : `${color}15`,
+            color: color,
+          }}
+        >
+          {sys.type}
+        </span>
+      </div>
+
+      {/* Title */}
+      <h4 className={`mb-2 text-[15px] font-bold leading-tight ${dark ? 'text-slate-200' : 'text-slate-900'}`}>
+        {sys.name}
+      </h4>
+
+      {/* Description */}
+      <p className={`mb-4 text-[13px] leading-relaxed ${dark ? 'text-slate-400' : 'text-slate-600'}`}>
+        {sys.description}
+      </p>
+
+      {/* Connections */}
+      {sys.connections.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 pt-3 border-t" style={{ borderColor: dark ? 'rgba(51,65,85,0.3)' : 'rgba(15,23,42,0.06)' }}>
+          <span className={`text-[10px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>Connects to:</span>
+          {sys.connections.slice(0, 3).map((c) => (
+            <span
+              key={c}
+              className="rounded-md px-2 py-0.5 text-[10px] font-medium"
+              style={{
+                background: dark ? 'rgba(51,65,85,0.4)' : 'rgba(15,23,42,0.06)',
+                color: dark ? '#94a3b8' : '#64748b',
+              }}
+            >
+              {c}
+            </span>
+          ))}
+          {sys.connections.length > 3 && (
+            <span className={`text-[10px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
+              +{sys.connections.length - 3} more
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -294,62 +396,36 @@ const SEVERITY_DOT: Record<string, string> = {
 // ── Overview tab ───────────────────────────────────────────────────────────────
 
 function OverviewTab({ result }: { result: OrchestrationResult }) {
+  const { theme } = useTheme();
+  const dark = theme === 'dark';
+
   return (
     <div className="space-y-10">
       {/* Concept */}
       <section>
-        <SectionTitle sub="AI-generated system brief and scope analysis">Concept Analysis</SectionTitle>
-        <Card glow>
+        <SectionTitle sub="AI-generated system brief and scope analysis" dark={dark}>Concept Analysis</SectionTitle>
+        <Card glow dark={dark}>
           <div className="mb-4 flex flex-wrap items-center gap-2.5">
-            <Badge label={COMPLEXITY_TEXT[result.complexity] ?? result.complexity} color={COMPLEXITY_COLOR[result.complexity]} />
-            <span className="text-xs font-semibold" style={{ color: '#94a3b8' }}>
+            <Badge label={COMPLEXITY_TEXT[result.complexity] ?? result.complexity} color={COMPLEXITY_COLOR[result.complexity]} dark={dark} />
+            <span className={`text-xs font-semibold ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
               {result.systems.length} subsystems &nbsp;&middot;&nbsp; {result.techStack.length} technologies identified
             </span>
           </div>
-          <Prose>{result.concept}</Prose>
+          <Prose dark={dark}>{result.concept}</Prose>
         </Card>
       </section>
 
-      {/* System decomposition */}
+      {/* System decomposition - Improved Design */}
       <section>
-        <SectionTitle sub="Key modules and their interdependencies">System Decomposition</SectionTitle>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {result.systems.map((sys: SystemNode) => (
-            <div
+        <SectionTitle sub="Key modules and their interdependencies" dark={dark}>System Decomposition</SectionTitle>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {result.systems.map((sys: SystemNode, idx: number) => (
+            <SystemCard
               key={sys.id}
-              className="group rounded-2xl border p-4 transition-all duration-200 hover:border-teal-400/40 hover:bg-slate-50/90"
-              style={{
-                borderColor: 'rgba(15,23,42,0.07)',
-                background: '#ffffff',
-                boxShadow: '0 1px 2px rgba(15,23,42,0.04), 0 6px 18px -6px rgba(15,23,42,0.07)',
-              }}
-            >
-              <div className="mb-2.5 flex items-start justify-between gap-2">
-                <span className="text-sm font-bold leading-tight" style={{ color: '#0f172a' }}>{sys.name}</span>
-                <span
-                  className="mt-0.5 shrink-0 rounded-md px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider"
-                  style={{ background: 'rgba(20,184,166,0.10)', color: 'rgba(20,184,166,0.80)' }}
-                >
-                  {sys.type}
-                </span>
-              </div>
-              <p className="mb-3 text-xs font-medium leading-relaxed" style={{ color: '#64748b' }}>
-                {sys.description}
-              </p>
-              {sys.connections.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {sys.connections.map((c) => (
-                    <span
-                      key={c}
-                      className="rounded-md px-1.5 py-0.5 text-[9px] font-semibold"
-                      style={{ background: 'rgba(15,23,42,0.06)', color: '#94a3b8' }}
-                    >
-                      ↔ {c}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
+              sys={sys}
+              index={idx}
+              dark={dark}
+            />
           ))}
         </div>
       </section>
@@ -1183,18 +1259,19 @@ function ResultView({ project, onReset }: { project: EngProject; onReset: () => 
   const [tab, setTab] = useState<Tab>('overview');
   const result = project.result!;
   const dom = DOMAINS.find(d => d.id === project.domain);
+  const { theme } = useTheme();
+  const dark = theme === 'dark';
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col" style={{ background: '#e8e9ed' }}>
+    <div className={`flex min-h-0 flex-1 flex-col transition-colors duration-300 ${dark ? 'bg-[#0d0d0d]' : 'bg-[#e8e9ed]'}`}>
       {/* Sticky header */}
       <div
-        className="sticky top-0 z-10 shrink-0 border-b px-6 pt-5 pb-0"
-        style={{ borderColor: 'rgba(15,23,42,0.08)', background: '#e8e9ed' }}
+        className={`sticky top-0 z-10 shrink-0 border-b px-6 pt-5 pb-0 transition-colors duration-300 ${dark ? 'border-slate-800 bg-[#0d0d0d]' : 'border-slate-200/80 bg-[#e8e9ed]'}`}
       >
         <div className="mx-auto max-w-5xl">
           <div className="flex items-start justify-between gap-4 pb-4">
             <div className="min-w-0 flex-1">
-              <h2 className="truncate text-base font-bold leading-tight" style={{ color: '#0f172a' }}>
+              <h2 className={`truncate text-base font-bold leading-tight ${dark ? 'text-slate-200' : 'text-slate-900'}`}>
                 {project.title}
               </h2>
               <div className="mt-2 flex flex-wrap items-center gap-2.5">
@@ -1209,7 +1286,7 @@ function ResultView({ project, onReset }: { project: EngProject; onReset: () => 
                   </span>
                 )}
                 {/* Stats */}
-                <span className="text-[11px] font-semibold" style={{ color: '#94a3b8' }}>
+                <span className={`text-[11px] font-semibold ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
                   {result.codeFiles.length} files &nbsp;&middot;&nbsp; {result.phases.length} phases &nbsp;&middot;&nbsp; {result.risks.length} risks &nbsp;&middot;&nbsp; {Math.round(result.durationMs / 1000)}s
                 </span>
                 {/* Agent trace */}
@@ -1217,19 +1294,21 @@ function ResultView({ project, onReset }: { project: EngProject; onReset: () => 
                   {result.agentTrace.map((a) => (
                     <div
                       key={a.agent}
-                      className="inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[9px] font-semibold shadow-sm ring-1 ring-slate-200/90"
+                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-semibold shadow-sm ring-1 ${
+                        dark ? 'bg-slate-800 ring-slate-700' : 'bg-white ring-slate-200/90'
+                      }`}
                     >
                       {a.ok ? (
-                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                        <span className={`flex h-4 w-4 items-center justify-center rounded-full ${dark ? 'bg-emerald-900/50 text-emerald-400' : 'bg-emerald-100 text-emerald-700'}`}>
                           <CheckCircle2 className="h-2.5 w-2.5" />
                         </span>
                       ) : (
-                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-red-100 text-red-600">
+                        <span className={`flex h-4 w-4 items-center justify-center rounded-full ${dark ? 'bg-red-900/50 text-red-400' : 'bg-red-100 text-red-600'}`}>
                           <XCircle className="h-2.5 w-2.5" />
                         </span>
                       )}
-                      <span className="text-slate-600">{a.agent}</span>
-                      <span className="tabular-nums text-slate-400">{(a.durationMs / 1000).toFixed(1)}s</span>
+                      <span className={dark ? 'text-slate-300' : 'text-slate-600'}>{a.agent}</span>
+                      <span className={dark ? 'tabular-nums text-slate-500' : 'tabular-nums text-slate-400'}>{(a.durationMs / 1000).toFixed(1)}s</span>
                     </div>
                   ))}
                 </div>
@@ -1237,8 +1316,11 @@ function ResultView({ project, onReset }: { project: EngProject; onReset: () => 
             </div>
             <button
               onClick={onReset}
-              className="flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-bold transition-all hover:bg-slate-100"
-              style={{ borderColor: 'rgba(15,23,42,0.11)', color: '#64748b' }}
+              className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-bold transition-all ${
+                dark
+                  ? 'border-slate-700 text-slate-400 hover:bg-slate-800'
+                  : 'border-slate-200 text-slate-600 hover:bg-slate-100'
+              }`}
             >
               <RotateCcw className="h-3 w-3" />
               New project
@@ -1253,18 +1335,24 @@ function ResultView({ project, onReset }: { project: EngProject; onReset: () => 
                 <button
                   key={id}
                   onClick={() => setTab(id)}
-                  className="relative flex shrink-0 items-center gap-1.5 px-4 py-2.5 text-xs font-bold transition-colors"
-                  style={{ color: active ? 'rgba(20,184,166,0.95)' : '#94a3b8' }}
+                  className={`relative flex shrink-0 items-center gap-1.5 px-4 py-2.5 text-xs font-bold transition-colors ${
+                    active
+                      ? dark ? 'text-teal-400' : 'text-teal-600'
+                      : dark ? 'text-slate-500' : 'text-slate-400'
+                  }`}
                 >
                   <Icon
-                    className="h-3.5 w-3.5 shrink-0"
-                    style={{ color: active ? 'rgba(20,184,166,0.82)' : '#94a3b8' }}
+                    className={`h-3.5 w-3.5 shrink-0 ${
+                      active
+                        ? dark ? 'text-teal-400' : 'text-teal-600'
+                        : dark ? 'text-slate-500' : 'text-slate-400'
+                    }`}
                   />
                   {label}
                   {active && (
                     <div
                       className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full"
-                      style={{ background: 'linear-gradient(to right, rgba(20,184,166,0.5), rgba(20,184,166,0.9))' }}
+                      style={{ background: dark ? 'linear-gradient(to right, #2dd4bf, #14b8a6)' : 'linear-gradient(to right, rgba(20,184,166,0.5), rgba(20,184,166,0.9))' }}
                     />
                   )}
                 </button>
