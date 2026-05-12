@@ -192,8 +192,7 @@ function CopyButton({ text }: { text: string }) {
   return (
     <button
       onClick={copy}
-      className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all hover:bg-white/[0.08]"
-      style={{ color: 'rgba(255,255,255,0.40)', background: 'rgba(255,255,255,0.05)' }}
+      className="flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs font-semibold text-slate-600 transition-all hover:bg-slate-200/90"
     >
       {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
       {copied ? 'Copied!' : 'Copy'}
@@ -201,11 +200,11 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
-function Badge({ label, color = 'rgba(255,255,255,0.12)' }: { label: string; color?: string }) {
+function Badge({ label, color = 'rgba(15,23,42,0.07)' }: { label: string; color?: string }) {
   return (
     <span
       className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest"
-      style={{ background: color, color: 'rgba(255,255,255,0.82)' }}
+      style={{ background: color, color: '#0f172a' }}
     >
       {label}
     </span>
@@ -217,12 +216,12 @@ function SectionTitle({ children, sub }: { children: React.ReactNode; sub?: stri
     <div className="mb-5">
       <div className="flex items-center gap-2">
         <div className="h-4 w-[3px] rounded-full" style={{ background: 'linear-gradient(to bottom, rgba(20,184,166,0.90), rgba(20,184,166,0.30))' }} />
-        <h3 className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: 'rgba(255,255,255,0.50)' }}>
+        <h3 className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
           {children}
         </h3>
       </div>
       {sub && (
-        <p className="mt-1 pl-3.5 text-xs font-medium" style={{ color: 'rgba(255,255,255,0.28)' }}>{sub}</p>
+        <p className="mt-1 pl-3.5 text-xs font-medium text-slate-500">{sub}</p>
       )}
     </div>
   );
@@ -230,7 +229,7 @@ function SectionTitle({ children, sub }: { children: React.ReactNode; sub?: stri
 
 function Prose({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-sm font-medium leading-[1.75]" style={{ color: 'rgba(255,255,255,0.72)' }}>
+    <p className="text-sm font-medium leading-[1.75] text-slate-600">
       {children}
     </p>
   );
@@ -241,9 +240,11 @@ function Card({ children, className = '', glow = false }: { children: React.Reac
     <div
       className={`rounded-2xl border p-5 ${className}`}
       style={{
-        borderColor: 'rgba(255,255,255,0.08)',
-        background: 'rgba(255,255,255,0.025)',
-        boxShadow: glow ? '0 0 0 1px rgba(20,184,166,0.12) inset' : 'none',
+        borderColor: 'rgba(15,23,42,0.07)',
+        background: '#ffffff',
+        boxShadow: glow
+          ? '0 1px 2px rgba(15,23,42,0.04), 0 8px 24px -8px rgba(15,23,42,0.08), 0 0 0 1px rgba(13,148,136,0.06) inset'
+          : '0 1px 2px rgba(15,23,42,0.04), 0 6px 20px -6px rgba(15,23,42,0.07)',
       }}
     >
       {children}
@@ -253,9 +254,9 @@ function Card({ children, className = '', glow = false }: { children: React.Reac
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center gap-3 py-2.5 border-b last:border-b-0" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+    <div className="flex items-center gap-3 py-2.5 border-b last:border-b-0" style={{ borderColor: 'rgba(15,23,42,0.06)' }}>
       <span className="min-w-[110px] text-[10px] font-bold uppercase tracking-wider" style={{ color: 'rgba(20,184,166,0.55)' }}>{label}</span>
-      <span className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.80)' }}>{value}</span>
+      <span className="text-sm font-semibold" style={{ color: '#334155' }}>{value}</span>
     </div>
   );
 }
@@ -301,7 +302,7 @@ function OverviewTab({ result }: { result: OrchestrationResult }) {
         <Card glow>
           <div className="mb-4 flex flex-wrap items-center gap-2.5">
             <Badge label={COMPLEXITY_TEXT[result.complexity] ?? result.complexity} color={COMPLEXITY_COLOR[result.complexity]} />
-            <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.30)' }}>
+            <span className="text-xs font-semibold" style={{ color: '#94a3b8' }}>
               {result.systems.length} subsystems &nbsp;&middot;&nbsp; {result.techStack.length} technologies identified
             </span>
           </div>
@@ -316,11 +317,15 @@ function OverviewTab({ result }: { result: OrchestrationResult }) {
           {result.systems.map((sys: SystemNode) => (
             <div
               key={sys.id}
-              className="group rounded-2xl border p-4 transition-all duration-200 hover:border-teal-500/[0.22] hover:bg-white/[0.03]"
-              style={{ borderColor: 'rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}
+              className="group rounded-2xl border p-4 transition-all duration-200 hover:border-teal-400/40 hover:bg-slate-50/90"
+              style={{
+                borderColor: 'rgba(15,23,42,0.07)',
+                background: '#ffffff',
+                boxShadow: '0 1px 2px rgba(15,23,42,0.04), 0 6px 18px -6px rgba(15,23,42,0.07)',
+              }}
             >
               <div className="mb-2.5 flex items-start justify-between gap-2">
-                <span className="text-sm font-bold leading-tight" style={{ color: 'rgba(255,255,255,0.92)' }}>{sys.name}</span>
+                <span className="text-sm font-bold leading-tight" style={{ color: '#0f172a' }}>{sys.name}</span>
                 <span
                   className="mt-0.5 shrink-0 rounded-md px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider"
                   style={{ background: 'rgba(20,184,166,0.10)', color: 'rgba(20,184,166,0.80)' }}
@@ -328,7 +333,7 @@ function OverviewTab({ result }: { result: OrchestrationResult }) {
                   {sys.type}
                 </span>
               </div>
-              <p className="mb-3 text-xs font-medium leading-relaxed" style={{ color: 'rgba(255,255,255,0.48)' }}>
+              <p className="mb-3 text-xs font-medium leading-relaxed" style={{ color: '#64748b' }}>
                 {sys.description}
               </p>
               {sys.connections.length > 0 && (
@@ -337,7 +342,7 @@ function OverviewTab({ result }: { result: OrchestrationResult }) {
                     <span
                       key={c}
                       className="rounded-md px-1.5 py-0.5 text-[9px] font-semibold"
-                      style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.32)' }}
+                      style={{ background: 'rgba(15,23,42,0.06)', color: '#94a3b8' }}
                     >
                       ↔ {c}
                     </span>
@@ -364,8 +369,8 @@ function OverviewTab({ result }: { result: OrchestrationResult }) {
           {result.techStack.map((t, i) => (
             <div
               key={i}
-              className="group flex items-start gap-5 rounded-2xl border px-5 py-4 transition-all duration-200 hover:border-white/[0.13] hover:bg-white/[0.025]"
-              style={{ borderColor: 'rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.018)' }}
+              className="group flex items-start gap-5 rounded-2xl border px-5 py-4 transition-all duration-200 hover:border-slate-300/90 hover:shadow-sm hover:bg-slate-50"
+              style={{ borderColor: 'rgba(15,23,42,0.07)', background: '#ffffff' }}
             >
               <span
                 className="mt-0.5 min-w-[96px] text-[10px] font-bold uppercase tracking-widest"
@@ -375,15 +380,15 @@ function OverviewTab({ result }: { result: OrchestrationResult }) {
               </span>
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-baseline gap-2.5">
-                  <span className="text-sm font-bold" style={{ color: 'rgba(255,255,255,0.92)' }}>{t.name}</span>
+                  <span className="text-sm font-bold" style={{ color: '#0f172a' }}>{t.name}</span>
                   {t.version && (
-                    <span className="text-[10px] font-semibold" style={{ color: 'rgba(255,255,255,0.28)' }}>v{t.version}</span>
+                    <span className="text-[10px] font-semibold" style={{ color: '#94a3b8' }}>v{t.version}</span>
                   )}
                 </div>
-                <p className="mt-0.5 text-xs font-medium leading-relaxed" style={{ color: 'rgba(255,255,255,0.50)' }}>{t.reason}</p>
+                <p className="mt-0.5 text-xs font-medium leading-relaxed" style={{ color: '#64748b' }}>{t.reason}</p>
                 {t.alternatives?.length > 0 && (
-                  <p className="mt-1.5 text-[10px] font-medium" style={{ color: 'rgba(255,255,255,0.26)' }}>
-                    <span style={{ color: 'rgba(255,255,255,0.20)' }}>Alternatives: </span>
+                  <p className="mt-1.5 text-[10px] font-medium" style={{ color: '#94a3b8' }}>
+                    <span style={{ color: '#cbd5e1' }}>Alternatives: </span>
                     {t.alternatives.join(' · ')}
                   </p>
                 )}
@@ -446,11 +451,11 @@ function ArchitectureTab({ result }: { result: OrchestrationResult }) {
             {result.integrationPoints.map((pt, i) => (
               <div
                 key={i}
-                className="flex items-center gap-3 rounded-2xl border px-4 py-3.5 transition-all hover:border-white/[0.13]"
-                style={{ borderColor: 'rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}
+                className="flex items-center gap-3 rounded-2xl border px-4 py-3.5 transition-all hover:border-slate-300/90 hover:shadow-sm"
+                style={{ borderColor: 'rgba(15,23,42,0.07)', background: '#ffffff' }}
               >
                 <ChevronRight className="h-3.5 w-3.5 shrink-0" style={{ color: 'rgba(20,184,166,0.55)' }} />
-                <span className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.78)' }}>{pt}</span>
+                <span className="text-sm font-semibold" style={{ color: '#334155' }}>{pt}</span>
               </div>
             ))}
           </div>
@@ -481,7 +486,7 @@ function CodeTab({ result }: { result: OrchestrationResult }) {
     <div className="space-y-6">
       {/* File picker */}
       <div>
-        <p className="mb-2.5 text-[10px] font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.25)' }}>
+        <p className="mb-2.5 text-[10px] font-bold uppercase tracking-widest" style={{ color: '#94a3b8' }}>
           Generated Files — {result.codeFiles.length} total
         </p>
         <div className="flex flex-wrap gap-2">
@@ -491,9 +496,9 @@ function CodeTab({ result }: { result: OrchestrationResult }) {
               onClick={() => setActiveFile(i)}
               className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-bold transition-all"
               style={{
-                borderColor: activeFile === i ? 'rgba(20,184,166,0.50)' : 'rgba(255,255,255,0.07)',
-                background:  activeFile === i ? 'rgba(20,184,166,0.10)' : 'rgba(255,255,255,0.02)',
-                color:       activeFile === i ? 'rgba(20,184,166,0.92)' : 'rgba(255,255,255,0.38)',
+                borderColor: activeFile === i ? 'rgba(20,184,166,0.50)' : 'rgba(15,23,42,0.07)',
+                background:  activeFile === i ? 'rgba(20,184,166,0.10)' : '#ffffff',
+                color:       activeFile === i ? 'rgba(20,184,166,0.92)' : '#64748b',
               }}
             >
               <Code2 className="h-3 w-3 shrink-0" />
@@ -504,18 +509,18 @@ function CodeTab({ result }: { result: OrchestrationResult }) {
       </div>
 
       {file && (
-        <div className="overflow-hidden rounded-2xl border" style={{ borderColor: 'rgba(255,255,255,0.09)' }}>
+        <div className="overflow-hidden rounded-2xl border" style={{ borderColor: 'rgba(15,23,42,0.09)' }}>
           {/* File header */}
           <div
             className="flex items-center justify-between border-b px-5 py-3.5"
-            style={{ borderColor: 'rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.04)' }}
+            style={{ borderColor: 'rgba(15,23,42,0.07)', background: '#f1f5f9' }}
           >
             <div>
               <div className="flex items-center gap-2">
                 <Terminal className="h-3.5 w-3.5 shrink-0" style={{ color: 'rgba(20,184,166,0.60)' }} />
-                <span className="font-mono text-sm font-bold" style={{ color: 'rgba(255,255,255,0.88)' }}>{file.path}</span>
+                <span className="font-mono text-sm font-bold text-slate-900">{file.path}</span>
               </div>
-              <p className="mt-0.5 pl-5 text-xs font-medium" style={{ color: 'rgba(255,255,255,0.35)' }}>{file.purpose}</p>
+              <p className="mt-0.5 pl-5 text-xs font-medium text-slate-500">{file.purpose}</p>
             </div>
             <div className="flex items-center gap-2.5">
               <Badge label={file.language} />
@@ -523,10 +528,10 @@ function CodeTab({ result }: { result: OrchestrationResult }) {
             </div>
           </div>
           {/* Code body */}
-          <div className="overflow-x-auto" style={{ background: 'rgba(0,0,0,0.55)' }}>
+          <div className="overflow-x-auto bg-[#0f172a]">
             <pre
               className="p-6 text-xs leading-[1.7]"
-              style={{ color: 'rgba(255,255,255,0.82)', fontFamily: "'JetBrains Mono','Fira Code','Cascadia Code',monospace" }}
+              style={{ color: '#e2e8f0', fontFamily: "'JetBrains Mono','Fira Code','Cascadia Code',monospace" }}
             >
               <code>{file.code}</code>
             </pre>
@@ -536,23 +541,23 @@ function CodeTab({ result }: { result: OrchestrationResult }) {
 
       {/* Setup instructions */}
       {result.setupInstructions && (
-        <div className="overflow-hidden rounded-2xl border" style={{ borderColor: 'rgba(255,255,255,0.09)' }}>
+        <div className="overflow-hidden rounded-2xl border" style={{ borderColor: 'rgba(15,23,42,0.09)' }}>
           <div
             className="flex items-center justify-between border-b px-5 py-3.5"
-            style={{ borderColor: 'rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.04)' }}
+            style={{ borderColor: 'rgba(15,23,42,0.07)', background: '#f1f5f9' }}
           >
             <div className="flex items-center gap-2">
               <Terminal className="h-3.5 w-3.5 shrink-0" style={{ color: 'rgba(20,184,166,0.60)' }} />
-              <span className="text-xs font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.50)' }}>
+              <span className="text-xs font-bold uppercase tracking-widest text-slate-600">
                 Setup & Installation
               </span>
             </div>
             <CopyButton text={result.setupInstructions} />
           </div>
-          <div className="overflow-x-auto" style={{ background: 'rgba(0,0,0,0.45)' }}>
+          <div className="overflow-x-auto bg-[#0f172a]">
             <pre
               className="p-6 text-xs leading-[1.7] whitespace-pre-wrap"
-              style={{ color: 'rgba(255,255,255,0.72)', fontFamily: "'JetBrains Mono','Fira Code',monospace" }}
+              style={{ color: '#cbd5e1', fontFamily: "'JetBrains Mono','Fira Code',monospace" }}
             >
               {result.setupInstructions}
             </pre>
@@ -578,7 +583,7 @@ function WorkflowTab({ result }: { result: OrchestrationResult }) {
           </div>
           <div>
             <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'rgba(20,184,166,0.55)' }}>Estimated Timeline</p>
-            <p className="mt-0.5 text-sm font-bold" style={{ color: 'rgba(255,255,255,0.85)' }}>{result.estimatedTimeline}</p>
+            <p className="mt-0.5 text-sm font-bold" style={{ color: '#1e293b' }}>{result.estimatedTimeline}</p>
           </div>
         </div>
       )}
@@ -589,8 +594,8 @@ function WorkflowTab({ result }: { result: OrchestrationResult }) {
           {result.phases.map((ph: WorkflowPhase, idx: number) => (
             <div
               key={ph.phase}
-              className="rounded-2xl border p-5 transition-all hover:border-white/[0.13]"
-              style={{ borderColor: 'rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)' }}
+              className="rounded-2xl border p-5 transition-all hover:border-slate-300/90 hover:shadow-sm"
+              style={{ borderColor: 'rgba(15,23,42,0.08)', background: '#ffffff' }}
             >
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3.5">
@@ -605,13 +610,13 @@ function WorkflowTab({ result }: { result: OrchestrationResult }) {
                     {String(idx + 1).padStart(2, '0')}
                   </span>
                   <div>
-                    <p className="text-sm font-bold" style={{ color: 'rgba(255,255,255,0.92)' }}>{ph.title}</p>
-                    <p className="text-[10px] font-semibold" style={{ color: 'rgba(255,255,255,0.28)' }}>Phase {ph.phase}</p>
+                    <p className="text-sm font-bold" style={{ color: '#0f172a' }}>{ph.title}</p>
+                    <p className="text-[10px] font-semibold" style={{ color: '#94a3b8' }}>Phase {ph.phase}</p>
                   </div>
                 </div>
                 <span
                   className="shrink-0 rounded-full px-3 py-1 text-xs font-bold"
-                  style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.45)' }}
+                  style={{ background: 'rgba(15,23,42,0.06)', color: '#64748b' }}
                 >
                   {ph.duration}
                 </span>
@@ -619,7 +624,7 @@ function WorkflowTab({ result }: { result: OrchestrationResult }) {
 
               <ul className="mb-4 space-y-2 pl-12">
                 {ph.tasks.map((task, i) => (
-                  <li key={i} className="flex items-start gap-2.5 text-sm font-medium" style={{ color: 'rgba(255,255,255,0.58)' }}>
+                  <li key={i} className="flex items-start gap-2.5 text-sm font-medium" style={{ color: '#64748b' }}>
                     <ChevronRight className="mt-0.5 h-3.5 w-3.5 shrink-0" style={{ color: 'rgba(20,184,166,0.50)' }} />
                     {task}
                   </li>
@@ -627,7 +632,7 @@ function WorkflowTab({ result }: { result: OrchestrationResult }) {
               </ul>
 
               <div className="flex items-center gap-2.5 pl-12">
-                <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.22)' }}>Milestone:</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: '#94a3b8' }}>Milestone:</span>
                 <span className="text-xs font-semibold" style={{ color: 'rgba(20,184,166,0.65)' }}>{ph.milestone}</span>
               </div>
             </div>
@@ -643,7 +648,7 @@ function WorkflowTab({ result }: { result: OrchestrationResult }) {
               <React.Fragment key={i}>
                 <span
                   className="rounded-xl border px-3.5 py-1.5 text-xs font-semibold"
-                  style={{ borderColor: 'rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.72)', background: 'rgba(255,255,255,0.03)' }}
+                  style={{ borderColor: 'rgba(15,23,42,0.11)', color: '#334155', background: '#f1f5f9' }}
                 >
                   {item}
                 </span>
@@ -681,7 +686,7 @@ function DeployTab({ result }: { result: OrchestrationResult }) {
       )}
 
       <div>
-        <p className="mb-2.5 text-[10px] font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.25)' }}>
+        <p className="mb-2.5 text-[10px] font-bold uppercase tracking-widest" style={{ color: '#94a3b8' }}>
           Config Files — {result.deploymentConfigs.length} generated
         </p>
         <div className="flex flex-wrap gap-2">
@@ -691,9 +696,9 @@ function DeployTab({ result }: { result: OrchestrationResult }) {
               onClick={() => setActiveConfig(i)}
               className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-bold transition-all"
               style={{
-                borderColor: activeConfig === i ? 'rgba(20,184,166,0.50)' : 'rgba(255,255,255,0.07)',
-                background:  activeConfig === i ? 'rgba(20,184,166,0.10)' : 'rgba(255,255,255,0.02)',
-                color:       activeConfig === i ? 'rgba(20,184,166,0.92)' : 'rgba(255,255,255,0.38)',
+                borderColor: activeConfig === i ? 'rgba(20,184,166,0.50)' : 'rgba(15,23,42,0.07)',
+                background:  activeConfig === i ? 'rgba(20,184,166,0.10)' : '#ffffff',
+                color:       activeConfig === i ? 'rgba(20,184,166,0.92)' : '#64748b',
               }}
             >
               <Cloud className="h-3 w-3 shrink-0" />
@@ -704,21 +709,21 @@ function DeployTab({ result }: { result: OrchestrationResult }) {
       </div>
 
       {cfg && (
-        <div className="overflow-hidden rounded-2xl border" style={{ borderColor: 'rgba(255,255,255,0.09)' }}>
+        <div className="overflow-hidden rounded-2xl border" style={{ borderColor: 'rgba(15,23,42,0.09)' }}>
           <div
             className="flex items-center justify-between border-b px-5 py-3.5"
-            style={{ borderColor: 'rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.04)' }}
+            style={{ borderColor: 'rgba(15,23,42,0.07)', background: '#f1f5f9' }}
           >
             <div>
-              <span className="font-mono text-sm font-bold" style={{ color: 'rgba(255,255,255,0.88)' }}>{cfg.filename}</span>
-              <p className="mt-0.5 text-xs font-medium" style={{ color: 'rgba(255,255,255,0.35)' }}>{cfg.description}</p>
+              <span className="font-mono text-sm font-bold text-slate-900">{cfg.filename}</span>
+              <p className="mt-0.5 text-xs font-medium text-slate-500">{cfg.description}</p>
             </div>
             <CopyButton text={cfg.content} />
           </div>
-          <div className="overflow-x-auto" style={{ background: 'rgba(0,0,0,0.55)' }}>
+          <div className="overflow-x-auto bg-[#0f172a]">
             <pre
               className="p-6 text-xs leading-[1.7]"
-              style={{ color: 'rgba(255,255,255,0.82)', fontFamily: "'JetBrains Mono','Fira Code',monospace" }}
+              style={{ color: '#e2e8f0', fontFamily: "'JetBrains Mono','Fira Code',monospace" }}
             >
               <code>{cfg.content}</code>
             </pre>
@@ -744,9 +749,9 @@ function DocsTab({ result }: { result: OrchestrationResult }) {
             onClick={() => setView(v)}
             className="flex items-center gap-1.5 rounded-lg border px-4 py-1.5 text-xs font-bold transition-all"
             style={{
-              borderColor: view === v ? 'rgba(20,184,166,0.50)' : 'rgba(255,255,255,0.07)',
+              borderColor: view === v ? 'rgba(20,184,166,0.50)' : 'rgba(15,23,42,0.07)',
               background:  view === v ? 'rgba(20,184,166,0.10)' : 'transparent',
-              color:       view === v ? 'rgba(20,184,166,0.92)' : 'rgba(255,255,255,0.38)',
+              color:       view === v ? 'rgba(20,184,166,0.92)' : '#64748b',
             }}
           >
             <BookOpen className="h-3 w-3" />
@@ -755,15 +760,15 @@ function DocsTab({ result }: { result: OrchestrationResult }) {
         ))}
         <CopyButton text={content} />
       </div>
-      <div className="overflow-hidden rounded-2xl border" style={{ borderColor: 'rgba(255,255,255,0.09)' }}>
-        <div className="border-b px-5 py-2.5" style={{ borderColor: 'rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.03)' }}>
-          <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.30)' }}>
+      <div className="overflow-hidden rounded-2xl border" style={{ borderColor: 'rgba(15,23,42,0.09)' }}>
+        <div className="border-b px-5 py-2.5" style={{ borderColor: 'rgba(15,23,42,0.06)', background: '#f1f5f9' }}>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600">
             {view === 'readme' ? 'README.md — Project overview and getting started' : 'API Reference — Endpoints, schemas, and examples'}
           </span>
         </div>
         <pre
-          className="overflow-x-auto p-6 text-xs leading-[1.75] whitespace-pre-wrap"
-          style={{ color: 'rgba(255,255,255,0.72)', background: 'rgba(0,0,0,0.35)', fontFamily: "'JetBrains Mono','Fira Code',monospace" }}
+          className="overflow-x-auto bg-[#0f172a] p-6 text-xs leading-[1.75] whitespace-pre-wrap"
+          style={{ color: '#cbd5e1', fontFamily: "'JetBrains Mono','Fira Code',monospace" }}
         >
           {content}
         </pre>
@@ -792,7 +797,7 @@ function ValidationTab({ result }: { result: OrchestrationResult }) {
         <Card glow>
           <div className="mb-5 flex items-end gap-3">
             <span className="text-7xl font-bold tabular-nums leading-none" style={{ color: scoreColor }}>{score}</span>
-            <span className="mb-2 text-2xl font-bold" style={{ color: 'rgba(255,255,255,0.22)' }}>/100</span>
+            <span className="mb-2 text-2xl font-bold" style={{ color: '#94a3b8' }}>/100</span>
             <span
               className="mb-2 ml-1 rounded-full px-3 py-1 text-xs font-bold"
               style={{ background: `${scoreColor}22`, color: scoreColor }}
@@ -800,13 +805,13 @@ function ValidationTab({ result }: { result: OrchestrationResult }) {
               {scoreLabel}
             </span>
           </div>
-          <div className="mb-4 h-2 w-full overflow-hidden rounded-full" style={{ background: 'rgba(255,255,255,0.07)' }}>
+          <div className="mb-4 h-2 w-full overflow-hidden rounded-full" style={{ background: 'rgba(15,23,42,0.07)' }}>
             <div
               className="h-full rounded-full transition-all duration-700"
               style={{ width: `${score}%`, background: `linear-gradient(to right, ${scoreColor}aa, ${scoreColor})` }}
             />
           </div>
-          <p className="text-xs font-semibold leading-relaxed" style={{ color: 'rgba(255,255,255,0.40)' }}>
+          <p className="text-xs font-semibold leading-relaxed" style={{ color: '#64748b' }}>
             {scoreDetail}
           </p>
         </Card>
@@ -819,8 +824,8 @@ function ValidationTab({ result }: { result: OrchestrationResult }) {
           {result.risks.map((r: Risk, i: number) => (
             <div
               key={i}
-              className="rounded-2xl border p-5 transition-all hover:border-white/[0.13]"
-              style={{ borderColor: 'rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}
+              className="rounded-2xl border p-5 transition-all hover:border-slate-300/90 hover:shadow-sm"
+              style={{ borderColor: 'rgba(15,23,42,0.07)', background: '#ffffff' }}
             >
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div className="flex items-center gap-2.5">
@@ -828,20 +833,20 @@ function ValidationTab({ result }: { result: OrchestrationResult }) {
                     className="mt-0.5 h-2 w-2 shrink-0 rounded-full"
                     style={{ background: SEVERITY_DOT[r.severity] ?? '#ffffff55' }}
                   />
-                  <span className="text-sm font-bold" style={{ color: 'rgba(255,255,255,0.88)' }}>{r.area}</span>
+                  <span className="text-sm font-bold" style={{ color: '#1e293b' }}>{r.area}</span>
                 </div>
                 <span
                   className="shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest"
-                  style={{ background: SEVERITY_COLOR[r.severity], color: 'rgba(255,255,255,0.80)' }}
+                  style={{ background: SEVERITY_COLOR[r.severity], color: '#fff' }}
                 >
                   {r.severity}
                 </span>
               </div>
-              <p className="mb-3 text-xs font-medium leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>{r.risk}</p>
-              <div className="flex items-start gap-2 rounded-xl px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                <Shield className="mt-0.5 h-3 w-3 shrink-0" style={{ color: 'rgba(255,255,255,0.25)' }} />
-                <p className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.42)' }}>
-                  <span className="font-bold" style={{ color: 'rgba(255,255,255,0.28)' }}>Mitigation: </span>
+              <p className="mb-3 text-xs font-medium leading-relaxed" style={{ color: '#64748b' }}>{r.risk}</p>
+              <div className="flex items-start gap-2 rounded-xl px-3 py-2.5" style={{ background: '#f1f5f9' }}>
+                <Shield className="mt-0.5 h-3 w-3 shrink-0" style={{ color: '#94a3b8' }} />
+                <p className="text-xs font-medium" style={{ color: '#64748b' }}>
+                  <span className="font-bold" style={{ color: '#94a3b8' }}>Mitigation: </span>
                   {r.mitigation}
                 </p>
               </div>
@@ -858,11 +863,11 @@ function ValidationTab({ result }: { result: OrchestrationResult }) {
             {result.optimizations.map((opt, i) => (
               <div
                 key={i}
-                className="flex items-start gap-3.5 rounded-2xl border px-5 py-4 transition-all hover:border-white/[0.12]"
-                style={{ borderColor: 'rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}
+                className="flex items-start gap-3.5 rounded-2xl border px-5 py-4 transition-all hover:border-slate-300"
+                style={{ borderColor: 'rgba(15,23,42,0.07)', background: '#ffffff' }}
               >
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" style={{ color: 'rgba(52,211,153,0.70)' }} />
-                <span className="text-sm font-semibold leading-relaxed" style={{ color: 'rgba(255,255,255,0.72)' }}>{opt}</span>
+                <span className="text-sm font-semibold leading-relaxed" style={{ color: '#475569' }}>{opt}</span>
               </div>
             ))}
           </div>
@@ -931,19 +936,19 @@ function LoadingView({ elapsed }: { elapsed: number }) {
         {/* Message */}
         <p
           className="mb-2 text-base font-bold transition-opacity duration-200"
-          style={{ color: 'rgba(255,255,255,0.90)', opacity: visible ? 1 : 0 }}
+          style={{ color: '#0f172a', opacity: visible ? 1 : 0 }}
         >
           {LOADING_MESSAGES[msgIdx]}
         </p>
-        <p className="mb-3 text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.28)' }}>
+        <p className="mb-3 text-xs font-semibold" style={{ color: '#94a3b8' }}>
           {AGENTS.filter((a) => a.wave <= wave).length} of {AGENTS.length} agents active &nbsp;&middot;&nbsp; {elapsed}s elapsed
         </p>
 
         {/* Progress bar */}
-        <div className="mb-10 h-0.5 w-48 overflow-hidden rounded-full" style={{ background: 'rgba(255,255,255,0.07)' }}>
+        <div className="mb-10 h-1 w-52 overflow-hidden rounded-full bg-slate-200">
           <div
             className="h-full rounded-full transition-all duration-1000"
-            style={{ width: `${progress}%`, background: 'linear-gradient(to right, rgba(20,184,166,0.6), rgba(20,184,166,1))' }}
+            style={{ width: `${progress}%`, background: 'linear-gradient(to right, #2dd4bf, #0d9488)' }}
           />
         </div>
 
@@ -957,11 +962,11 @@ function LoadingView({ elapsed }: { elapsed: number }) {
                 <div className="mb-2 flex items-center gap-2">
                   <div
                     className="h-1.5 w-1.5 rounded-full"
-                    style={{ background: done ? '#34d399' : running ? 'rgba(20,184,166,0.80)' : 'rgba(255,255,255,0.15)' }}
+                    style={{ background: done ? '#34d399' : running ? 'rgba(20,184,166,0.80)' : '#cbd5e1' }}
                   />
                   <p
                     className="text-left text-[10px] font-bold uppercase tracking-widest"
-                    style={{ color: done ? 'rgba(52,211,153,0.70)' : running ? 'rgba(20,184,166,0.65)' : 'rgba(255,255,255,0.18)' }}
+                    style={{ color: done ? 'rgba(52,211,153,0.70)' : running ? 'rgba(20,184,166,0.65)' : '#94a3b8' }}
                   >
                     {WAVE_LABELS[w].title}
                   </p>
@@ -978,10 +983,10 @@ function LoadingView({ elapsed }: { elapsed: number }) {
                         style={{
                           borderColor: agDone    ? 'rgba(52,211,153,0.22)'
                                      : agRunning ? 'rgba(20,184,166,0.32)'
-                                     :             'rgba(255,255,255,0.06)',
+                                     :             'rgba(15,23,42,0.06)',
                           background:  agDone    ? 'rgba(52,211,153,0.05)'
                                      : agRunning ? 'rgba(20,184,166,0.07)'
-                                     :             'rgba(255,255,255,0.02)',
+                                     :             '#ffffff',
                         }}
                       >
                         <div className="mt-0.5 shrink-0">
@@ -990,21 +995,21 @@ function LoadingView({ elapsed }: { elapsed: number }) {
                           ) : agRunning ? (
                             <div className="h-2.5 w-2.5 rounded-full" style={{ background: 'rgba(20,184,166,0.85)', animation: 'pulse 1s ease-in-out infinite' }} />
                           ) : (
-                            <div className="h-2.5 w-2.5 rounded-full" style={{ background: 'rgba(255,255,255,0.12)' }} />
+                            <div className="h-2.5 w-2.5 rounded-full bg-slate-300" />
                           )}
                         </div>
                         <div className="min-w-0">
                           <span
                             className="block truncate text-[11px] font-bold"
                             style={{
-                              color: agDone    ? 'rgba(255,255,255,0.75)'
-                                   : agRunning ? 'rgba(255,255,255,0.92)'
-                                   :             'rgba(255,255,255,0.28)',
+                              color: agDone    ? '#475569'
+                                   : agRunning ? '#0f172a'
+                                   :             '#94a3b8',
                             }}
                           >
                             {a.label}
                           </span>
-                          <span className="block truncate text-[9px] font-semibold" style={{ color: 'rgba(255,255,255,0.22)' }}>
+                          <span className="block truncate text-[9px] font-semibold" style={{ color: '#94a3b8' }}>
                             {a.model} · {a.desc}
                           </span>
                         </div>
@@ -1045,12 +1050,11 @@ function HomeView({ onSubmit }: { onSubmit: (idea: string, domain: string) => vo
           <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.28em]" style={{ color: 'rgba(20,184,166,0.65)' }}>
             northROSC LABS
           </p>
-          <h1 className="mb-4 text-[3rem] font-bold tracking-tight" style={{ color: 'rgba(255,255,255,0.96)' }}>
+          <h1 className="mb-4 text-[3rem] font-bold tracking-tight" style={{ color: '#0f172a' }}>
             Deepchox
           </h1>
-          <p className="mx-auto max-w-xl text-sm font-medium leading-[1.8]" style={{ color: 'rgba(255,255,255,0.38)' }}>
-            Describe any engineering challenge. Deepchox deploys <strong style={{ color: 'rgba(255,255,255,0.55)', fontWeight: 700 }}>8 specialized AI agents</strong> across
-            3 parallel waves to produce architecture, production code, deployment configs, and full documentation.
+          <p className="mx-auto max-w-xl text-sm font-medium leading-[1.8]" style={{ color: '#64748b' }}>
+            Prompt an idea like you would for a landing page or app — Deepchox runs <strong className="text-slate-800">eight specialist agents</strong> in three waves and hands you architecture, code, deploy configs, and docs you can actually ship.
           </p>
         </div>
 
@@ -1058,8 +1062,8 @@ function HomeView({ onSubmit }: { onSubmit: (idea: string, domain: string) => vo
         <div
           className="mb-5 overflow-hidden rounded-2xl border text-left transition-all duration-200"
           style={{
-            borderColor: focused ? 'rgba(20,184,166,0.50)' : 'rgba(255,255,255,0.09)',
-            background:  focused ? 'rgba(20,184,166,0.025)' : 'rgba(255,255,255,0.03)',
+            borderColor: focused ? 'rgba(20,184,166,0.50)' : 'rgba(15,23,42,0.09)',
+            background:  focused ? 'rgba(20,184,166,0.025)' : '#f1f5f9',
             boxShadow:   focused ? '0 0 0 4px rgba(20,184,166,0.07)' : 'none',
           }}
         >
@@ -1072,23 +1076,23 @@ function HomeView({ onSubmit }: { onSubmit: (idea: string, domain: string) => vo
             onBlur={() => setFocused(false)}
             onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submit(); }}
             placeholder="Describe what you're building — software system, hardware device, AI pipeline, robotics platform, aerospace application, biotech tool..."
-            className="w-full resize-none bg-transparent px-5 pt-5 pb-3 text-sm font-medium outline-none"
-            style={{ color: 'rgba(255,255,255,0.90)', caretColor: '#14B8A6', minHeight: 110 }}
+            className="w-full resize-none bg-transparent px-5 pt-5 pb-3 text-sm font-medium outline-none placeholder:text-slate-400"
+            style={{ color: '#0f172a', caretColor: '#14B8A6', minHeight: 110 }}
           />
-          <div className="flex items-center justify-between border-t px-5 py-3" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+          <div className="flex items-center justify-between border-t px-5 py-3" style={{ borderColor: 'rgba(15,23,42,0.06)' }}>
             <div className="flex items-center gap-2">
               {activeDomain && (
-                <span className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.22)' }}>
+                <span className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: '#94a3b8' }}>
                   <activeDomain.icon className="h-3 w-3" style={{ color: activeDomain.color + 'aa' }} />
                   {activeDomain.label}
                 </span>
               )}
-              <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.14)' }}>
+              <span className="text-xs font-semibold text-slate-400">
                 &middot; 8 agents · Claude + GPT-4o · ~90s
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="hidden text-[10px] font-semibold sm:block" style={{ color: 'rgba(255,255,255,0.18)' }}>
+              <span className="hidden text-[10px] font-semibold sm:block" style={{ color: '#94a3b8' }}>
                 ⌘ Enter
               </span>
               <button
@@ -1096,8 +1100,8 @@ function HomeView({ onSubmit }: { onSubmit: (idea: string, domain: string) => vo
                 disabled={!idea.trim()}
                 className="flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-bold transition-all duration-150"
                 style={{
-                  background: idea.trim() ? 'rgba(20,184,166,0.92)' : 'rgba(255,255,255,0.07)',
-                  color:      idea.trim() ? '#0a0a0a' : 'rgba(255,255,255,0.20)',
+                  background: idea.trim() ? 'rgba(20,184,166,0.92)' : 'rgba(15,23,42,0.07)',
+                  color:      idea.trim() ? '#0a0a0a' : '#cbd5e1',
                   cursor:     idea.trim() ? 'pointer' : 'not-allowed',
                 }}
               >
@@ -1110,7 +1114,7 @@ function HomeView({ onSubmit }: { onSubmit: (idea: string, domain: string) => vo
 
         {/* Domain selector */}
         <div className="mb-10">
-          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: 'rgba(255,255,255,0.22)' }}>
+          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: '#94a3b8' }}>
             Engineering Domain
           </p>
           <div className="flex flex-wrap gap-2">
@@ -1122,9 +1126,9 @@ function HomeView({ onSubmit }: { onSubmit: (idea: string, domain: string) => vo
                   onClick={() => setDomain(id)}
                   className="flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-bold transition-all duration-150"
                   style={{
-                    borderColor: active ? `${color}55` : 'rgba(255,255,255,0.08)',
+                    borderColor: active ? `${color}55` : 'rgba(15,23,42,0.08)',
                     background:  active ? `${color}14` : 'transparent',
-                    color:       active ? color : 'rgba(255,255,255,0.36)',
+                    color:       active ? color : '#64748b',
                   }}
                 >
                   <Icon className="h-3 w-3" />
@@ -1137,7 +1141,7 @@ function HomeView({ onSubmit }: { onSubmit: (idea: string, domain: string) => vo
 
         {/* Suggestions */}
         <div>
-          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: 'rgba(255,255,255,0.22)' }}>
+          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: '#94a3b8' }}>
             Try an Example
           </p>
           <div className="grid gap-2 sm:grid-cols-2">
@@ -1147,19 +1151,19 @@ function HomeView({ onSubmit }: { onSubmit: (idea: string, domain: string) => vo
                 <button
                   key={i}
                   onClick={() => { setIdea(s.label); setDomain(s.domain); textareaRef.current?.focus(); }}
-                  className="group rounded-2xl border px-4 py-4 text-left transition-all duration-150 hover:bg-white/[0.03]"
-                  style={{ borderColor: 'rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}
+                  className="group rounded-2xl border px-4 py-4 text-left transition-all duration-150 hover:bg-slate-50/90"
+                  style={{ borderColor: 'rgba(15,23,42,0.07)', background: '#ffffff' }}
                 >
                   <div className="mb-2.5 flex items-center gap-1.5">
                     {dom && <dom.icon className="h-3 w-3 shrink-0" style={{ color: `${dom.color}99` }} />}
                     <span
                       className="rounded-md px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider"
-                      style={{ background: dom ? `${dom.color}15` : 'rgba(255,255,255,0.06)', color: dom ? `${dom.color}cc` : 'rgba(255,255,255,0.35)' }}
+                      style={{ background: dom ? `${dom.color}15` : 'rgba(15,23,42,0.06)', color: dom ? `${dom.color}cc` : '#64748b' }}
                     >
                       {s.tag}
                     </span>
                   </div>
-                  <p className="text-sm font-semibold leading-snug" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                  <p className="text-sm font-semibold leading-snug" style={{ color: '#64748b' }}>
                     {s.label}
                   </p>
                 </button>
@@ -1181,16 +1185,16 @@ function ResultView({ project, onReset }: { project: EngProject; onReset: () => 
   const dom = DOMAINS.find(d => d.id === project.domain);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col" style={{ background: '#0d0d0d' }}>
+    <div className="flex min-h-0 flex-1 flex-col" style={{ background: '#e8e9ed' }}>
       {/* Sticky header */}
       <div
         className="sticky top-0 z-10 shrink-0 border-b px-6 pt-5 pb-0"
-        style={{ borderColor: 'rgba(255,255,255,0.07)', background: '#0d0d0d' }}
+        style={{ borderColor: 'rgba(15,23,42,0.08)', background: '#e8e9ed' }}
       >
         <div className="mx-auto max-w-5xl">
           <div className="flex items-start justify-between gap-4 pb-4">
             <div className="min-w-0 flex-1">
-              <h2 className="truncate text-base font-bold leading-tight" style={{ color: 'rgba(255,255,255,0.94)' }}>
+              <h2 className="truncate text-base font-bold leading-tight" style={{ color: '#0f172a' }}>
                 {project.title}
               </h2>
               <div className="mt-2 flex flex-wrap items-center gap-2.5">
@@ -1205,20 +1209,27 @@ function ResultView({ project, onReset }: { project: EngProject; onReset: () => 
                   </span>
                 )}
                 {/* Stats */}
-                <span className="text-[11px] font-semibold" style={{ color: 'rgba(255,255,255,0.28)' }}>
+                <span className="text-[11px] font-semibold" style={{ color: '#94a3b8' }}>
                   {result.codeFiles.length} files &nbsp;&middot;&nbsp; {result.phases.length} phases &nbsp;&middot;&nbsp; {result.risks.length} risks &nbsp;&middot;&nbsp; {Math.round(result.durationMs / 1000)}s
                 </span>
                 {/* Agent trace */}
-                <div className="hidden items-center gap-2 sm:flex">
+                <div className="hidden flex-wrap items-center gap-1.5 sm:flex">
                   {result.agentTrace.map((a) => (
-                    <div key={a.agent} className="flex shrink-0 items-center gap-1">
-                      {a.ok
-                        ? <CheckCircle2 className="h-2.5 w-2.5" style={{ color: 'rgba(52,211,153,0.60)' }} />
-                        : <XCircle     className="h-2.5 w-2.5" style={{ color: 'rgba(239,68,68,0.60)' }} />
-                      }
-                      <span className="text-[9px] font-semibold" style={{ color: 'rgba(255,255,255,0.22)' }}>
-                        {a.agent} {(a.durationMs / 1000).toFixed(1)}s
-                      </span>
+                    <div
+                      key={a.agent}
+                      className="inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[9px] font-semibold shadow-sm ring-1 ring-slate-200/90"
+                    >
+                      {a.ok ? (
+                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                          <CheckCircle2 className="h-2.5 w-2.5" />
+                        </span>
+                      ) : (
+                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-red-100 text-red-600">
+                          <XCircle className="h-2.5 w-2.5" />
+                        </span>
+                      )}
+                      <span className="text-slate-600">{a.agent}</span>
+                      <span className="tabular-nums text-slate-400">{(a.durationMs / 1000).toFixed(1)}s</span>
                     </div>
                   ))}
                 </div>
@@ -1226,8 +1237,8 @@ function ResultView({ project, onReset }: { project: EngProject; onReset: () => 
             </div>
             <button
               onClick={onReset}
-              className="flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-bold transition-all hover:bg-white/[0.05]"
-              style={{ borderColor: 'rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.48)' }}
+              className="flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-bold transition-all hover:bg-slate-100"
+              style={{ borderColor: 'rgba(15,23,42,0.11)', color: '#64748b' }}
             >
               <RotateCcw className="h-3 w-3" />
               New project
@@ -1243,11 +1254,11 @@ function ResultView({ project, onReset }: { project: EngProject; onReset: () => 
                   key={id}
                   onClick={() => setTab(id)}
                   className="relative flex shrink-0 items-center gap-1.5 px-4 py-2.5 text-xs font-bold transition-colors"
-                  style={{ color: active ? 'rgba(20,184,166,0.95)' : 'rgba(255,255,255,0.30)' }}
+                  style={{ color: active ? 'rgba(20,184,166,0.95)' : '#94a3b8' }}
                 >
                   <Icon
                     className="h-3.5 w-3.5 shrink-0"
-                    style={{ color: active ? 'rgba(20,184,166,0.82)' : 'rgba(255,255,255,0.22)' }}
+                    style={{ color: active ? 'rgba(20,184,166,0.82)' : '#94a3b8' }}
                   />
                   {label}
                   {active && (
@@ -1353,7 +1364,7 @@ export function EngineeringPlatform({
   };
 
   if (state === 'loading') return (
-    <div className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto" style={{ background: '#0d0d0d' }}>
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto" style={{ background: '#e8e9ed' }}>
       <LoadingView elapsed={elapsed} />
     </div>
   );
@@ -1363,7 +1374,7 @@ export function EngineeringPlatform({
   );
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto" style={{ background: '#0d0d0d' }}>
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto" style={{ background: '#e8e9ed' }}>
       <HomeView onSubmit={handleSubmit} />
     </div>
   );
