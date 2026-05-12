@@ -6,6 +6,7 @@ import { LandingPage } from '@/components/LandingPage';
 import { EngineeringPlatform } from '@/components/EngineeringPlatform';
 import { ResearchHub } from '@/components/ResearchHub';
 import { Sidebar, type AppView } from '@/components/Sidebar';
+import { ZepFloatingOrb } from '@/components/Zep/ZepFloatingOrb';
 
 // ── Loading overlay ────────────────────────────────────────────────────────────
 
@@ -93,6 +94,9 @@ export default function Home() {
           />
         )}
       </div>
+
+      {/* Zep AI Assistant */}
+      <ZepFloatingOrb />
     </div>
   );
 }
