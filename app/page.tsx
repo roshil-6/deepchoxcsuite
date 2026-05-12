@@ -62,7 +62,7 @@ function ThemedLayout({
   return (
     <div
       className={`flex h-screen w-full overflow-hidden transition-colors duration-300 ${
-        theme === 'dark' ? 'bg-[#0d0d0d]' : 'bg-[#e8e9ed]'
+        theme === 'dark' ? 'bg-[#0a0a0a]' : 'bg-[#f5f5f7]'
       }`}
     >
       <Sidebar
