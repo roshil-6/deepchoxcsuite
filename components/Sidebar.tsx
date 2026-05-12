@@ -61,7 +61,7 @@ const DOMAIN_LABEL: Record<string, string> = {
 
 function SectionLabel({ children, dark }: { children: React.ReactNode; dark: boolean }) {
   return (
-    <p className={`mb-1 px-2 text-[10px] font-medium uppercase tracking-[0.1em] ${dark ? 'text-slate-500' : 'text-slate-500'}`}>
+    <p className={`mb-1 px-2 text-[10px] font-medium uppercase tracking-[0.1em] ${dark ? 'text-neutral-500' : 'text-neutral-500'}`}>
       {children}
     </p>
   );
@@ -85,11 +85,11 @@ function NavBtn({
       className={`flex h-9 w-full items-center gap-2.5 rounded-lg px-3 text-left transition-all duration-200 ${
         active
           ? dark
-            ? 'bg-slate-800 text-slate-200'
-            : 'bg-white text-slate-900 shadow-sm'
+            ? 'bg-[#1a1a1a] text-neutral-200'
+            : 'bg-white text-neutral-900 shadow-sm'
           : dark
-            ? 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-300'
-            : 'text-slate-600 hover:bg-white/60 hover:text-slate-900'
+            ? 'text-neutral-400 hover:bg-[#1a1a1a]/50 hover:text-neutral-300'
+            : 'text-neutral-600 hover:bg-white/60 hover:text-neutral-900'
       }`}
     >
       <Icon className="h-4 w-4 shrink-0 opacity-70" />
@@ -142,8 +142,8 @@ export function Sidebar({
     <aside
       className={`relative flex h-full shrink-0 flex-col border-r transition-colors duration-300 ${
         dark
-          ? 'border-slate-800 bg-[#111114]'
-          : 'border-slate-200 bg-white'
+          ? 'border-[#1a1a1a] bg-[#0a0a0a]'
+          : 'border-neutral-200 bg-white'
       }`}
       style={{
         width: collapsed ? 56 : 260,
@@ -155,16 +155,16 @@ export function Sidebar({
       {/* ── Brand header ──────────────────────────────────────────────── */}
       <div
         className={`flex shrink-0 items-center justify-between border-b px-4 py-4 ${
-          dark ? 'border-slate-800' : 'border-slate-100'
+          dark ? 'border-[#1a1a1a]' : 'border-neutral-100'
         }`}
         style={{ minHeight: 64 }}
       >
         {!collapsed && (
           <div className="min-w-0 select-none">
-            <span className={`block text-[10px] font-medium uppercase tracking-[0.15em] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
+            <span className={`block text-[10px] font-medium uppercase tracking-[0.15em] ${dark ? 'text-neutral-500' : 'text-neutral-400'}`}>
               northROSC LABS
             </span>
-            <span className={`block text-[16px] font-semibold tracking-tight ${dark ? 'text-slate-200' : 'text-slate-900'}`}>
+            <span className={`block text-[16px] font-semibold tracking-tight ${dark ? 'text-neutral-200' : 'text-neutral-900'}`}>
               Deepchox
             </span>
           </div>
@@ -175,7 +175,7 @@ export function Sidebar({
             type="button"
             onClick={toggleTheme}
             className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
-              dark ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-500 hover:bg-slate-100'
+              dark ? 'text-neutral-400 hover:bg-[#1a1a1a]' : 'text-neutral-500 hover:bg-neutral-100'
             }`}
             title={dark ? 'Light mode' : 'Dark mode'}
           >
@@ -186,7 +186,7 @@ export function Sidebar({
             type="button"
             onClick={() => setCollapsed((c) => !c)}
             className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
-              dark ? 'text-slate-500 hover:bg-slate-800' : 'text-slate-400 hover:bg-slate-100'
+              dark ? 'text-neutral-500 hover:bg-[#1a1a1a]' : 'text-neutral-400 hover:bg-neutral-100'
             }`}
             title={collapsed ? 'Expand' : 'Collapse'}
           >
@@ -220,7 +220,7 @@ export function Sidebar({
         </div>
 
         {/* Divider */}
-        {!collapsed && <div className={`mb-6 border-t ${dark ? 'border-slate-800' : 'border-slate-100'}`} />}
+        {!collapsed && <div className={`mb-6 border-t ${dark ? 'border-[#1a1a1a]' : 'border-neutral-100'}`} />}
 
         {/* Projects */}
         <div className="min-h-0 flex-1">
@@ -228,10 +228,10 @@ export function Sidebar({
             <>
               {/* Section header */}
               <div className="mb-3 flex items-center justify-between px-2">
-                <span className={`text-[11px] font-medium uppercase tracking-[0.1em] ${dark ? 'text-slate-500' : 'text-slate-500'}`}>
+                <span className={`text-[11px] font-medium uppercase tracking-[0.1em] ${dark ? 'text-neutral-500' : 'text-neutral-500'}`}>
                   Projects
                   {projects.length > 0 && (
-                    <span className={`ml-2 rounded-md px-1.5 py-0.5 text-[10px] ${dark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
+                    <span className={`ml-2 rounded-md px-1.5 py-0.5 text-[10px] ${dark ? 'bg-[#1a1a1a] text-neutral-500' : 'bg-neutral-100 text-neutral-500'}`}>
                       {projects.length}
                     </span>
                   )}
@@ -240,7 +240,7 @@ export function Sidebar({
                   type="button"
                   onClick={handleNewProject}
                   className={`flex h-6 w-6 items-center justify-center rounded-md transition-colors ${
-                    dark ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-500 hover:bg-slate-100'
+                    dark ? 'text-neutral-400 hover:bg-[#1a1a1a]' : 'text-neutral-500 hover:bg-neutral-100'
                   }`}
                   title="New project"
                 >
@@ -260,23 +260,23 @@ export function Sidebar({
                         className={`group flex w-full flex-col rounded-lg px-3 py-2.5 text-left transition-all ${
                           active
                             ? dark
-                              ? 'bg-slate-800'
+                              ? 'bg-[#1a1a1a]'
                               : 'bg-white shadow-sm'
                             : dark
-                              ? 'hover:bg-slate-800/30'
-                              : 'hover:bg-slate-50'
+                              ? 'hover:bg-[#1a1a1a]/30'
+                              : 'hover:bg-neutral-50'
                         }`}
                       >
                         <div className="flex w-full items-center gap-2">
-                          <span className={`min-w-0 flex-1 truncate text-[13px] ${active ? (dark ? 'text-slate-200' : 'text-slate-900') : dark ? 'text-slate-400' : 'text-slate-600'}`}>
+                          <span className={`min-w-0 flex-1 truncate text-[13px] ${active ? (dark ? 'text-neutral-200' : 'text-neutral-900') : dark ? 'text-neutral-400' : 'text-neutral-600'}`}>
                             {p.title}
                           </span>
                         </div>
                         <div className="mt-1 flex items-center gap-2">
-                          <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${dark ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-500'}`}>
+                          <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${dark ? 'bg-[#1a1a1a] text-neutral-500' : 'bg-neutral-100 text-neutral-500'}`}>
                             {DOMAIN_LABEL[p.domain] ?? p.domain.slice(0, 3).toUpperCase()}
                           </span>
-                          <span className={`flex items-center gap-1 text-[11px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
+                          <span className={`flex items-center gap-1 text-[11px] ${dark ? 'text-neutral-500' : 'text-neutral-400'}`}>
                             <Clock className="h-3 w-3" />
                             {relativeTime(p.createdAt)}
                           </span>
@@ -287,16 +287,16 @@ export function Sidebar({
                 </div>
               ) : (
                 <div className="flex flex-col items-center py-8 text-center">
-                  <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${dark ? 'bg-slate-800' : 'bg-slate-50'}`}>
-                    <FolderOpen className={`h-5 w-5 ${dark ? 'text-slate-600' : 'text-slate-400'}`} />
+                  <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${dark ? 'bg-[#1a1a1a]' : 'bg-neutral-50'}`}>
+                    <FolderOpen className={`h-5 w-5 ${dark ? 'text-neutral-600' : 'text-neutral-400'}`} />
                   </div>
-                  <p className={`text-[13px] ${dark ? 'text-slate-500' : 'text-slate-500'}`}>
+                  <p className={`text-[13px] ${dark ? 'text-neutral-500' : 'text-neutral-500'}`}>
                     No projects yet
                   </p>
                   <button
                     type="button"
                     onClick={handleNewProject}
-                    className={`mt-2 text-[13px] transition-colors ${dark ? 'text-slate-400 hover:text-slate-300' : 'text-slate-600 hover:text-slate-900'}`}
+                    className={`mt-2 text-[13px] transition-colors ${dark ? 'text-neutral-400 hover:text-neutral-300' : 'text-neutral-600 hover:text-neutral-900'}`}
                   >
                     Create project →
                   </button>
@@ -310,7 +310,7 @@ export function Sidebar({
                 type="button"
                 onClick={handleNewProject}
                 className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
-                  dark ? 'text-slate-500 hover:bg-slate-800' : 'text-slate-400 hover:bg-slate-100'
+                  dark ? 'text-neutral-500 hover:bg-[#1a1a1a]' : 'text-neutral-400 hover:bg-neutral-100'
                 }`}
                 title="New project"
               >
@@ -322,14 +322,14 @@ export function Sidebar({
       </div>
 
       {/* ── Footer ────────────────────────────────────────────────────── */}
-      <div className={`border-t p-3 ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
+      <div className={`border-t p-3 ${dark ? 'border-[#1a1a1a]' : 'border-neutral-100'}`}>
         <button
           type="button"
           onClick={onLogout}
           className={`flex h-10 w-full items-center gap-2.5 rounded-lg px-3 transition-colors ${
             dark
-              ? 'text-slate-500 hover:bg-slate-800 hover:text-slate-400'
-              : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
+              ? 'text-neutral-500 hover:bg-[#1a1a1a] hover:text-neutral-400'
+              : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700'
           }`}
         >
           <LogOut className="h-4 w-4 shrink-0" />

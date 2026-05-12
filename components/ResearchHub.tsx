@@ -89,11 +89,11 @@ function ArticleCard({ item, index, dark }: { item: ResearchResult; index: numbe
       rel="noreferrer"
       className={`group block overflow-hidden rounded-xl border transition-all duration-200 hover:-translate-y-0.5 ${
         dark
-          ? 'border-slate-800 bg-slate-900/50 hover:border-slate-700'
-          : 'border-slate-200 bg-white hover:border-slate-300'
+          ? 'border-[#262626] bg-[#141414] hover:border-[#333]'
+          : 'border-neutral-200 bg-white hover:border-neutral-300'
       }`}
     >
-      <div className={`relative h-32 overflow-hidden ${dark ? 'bg-slate-800' : 'bg-slate-100'}`}>
+      <div className={`relative h-32 overflow-hidden ${dark ? 'bg-[#1a1a1a]' : 'bg-neutral-100'}`}>
         <img
           src={image}
           alt=""
@@ -102,32 +102,32 @@ function ArticleCard({ item, index, dark }: { item: ResearchResult; index: numbe
           loading="lazy"
         />
         {!loaded && (
-          <div className={`absolute inset-0 flex items-center justify-center text-xs ${dark ? 'text-slate-600' : 'text-slate-400'}`}>
+          <div className={`absolute inset-0 flex items-center justify-center text-xs ${dark ? 'text-neutral-600' : 'text-neutral-400'}`}>
             …
           </div>
         )}
-        <div className={`absolute inset-0 bg-gradient-to-t ${dark ? 'from-slate-900' : 'from-white'} via-transparent to-transparent`} />
-        <span className={`absolute left-2.5 top-2.5 rounded-md px-2 py-0.5 text-[10px] font-medium shadow-sm ${dark ? 'bg-slate-800/90 text-slate-300' : 'bg-white/90 text-slate-600'}`}>
+        <div className={`absolute inset-0 bg-gradient-to-t ${dark ? 'from-[#141414]' : 'from-white'} via-transparent to-transparent`} />
+        <span className={`absolute left-2.5 top-2.5 rounded-md px-2 py-0.5 text-[10px] font-medium shadow-sm ${dark ? 'bg-[#1a1a1a]/90 text-neutral-400' : 'bg-white/90 text-neutral-600'}`}>
           {domain}
         </span>
       </div>
       <div className="p-3">
-        <h3 className={`mb-1 line-clamp-2 text-[13px] font-medium leading-snug ${dark ? 'text-slate-200' : 'text-slate-900'}`}>
+        <h3 className={`mb-1 line-clamp-2 text-[13px] font-medium leading-snug ${dark ? 'text-neutral-200' : 'text-neutral-900'}`}>
           {item.title}
         </h3>
         {item.snippet && (
-          <p className={`mb-2 line-clamp-2 text-[12px] leading-relaxed ${dark ? 'text-slate-500' : 'text-slate-500'}`}>
+          <p className={`mb-2 line-clamp-2 text-[12px] leading-relaxed ${dark ? 'text-neutral-500' : 'text-neutral-500'}`}>
             {item.snippet}
           </p>
         )}
         <div className="flex items-center justify-between gap-2">
           {item.publishedDate ? (
-            <span className={`flex items-center gap-1 text-[11px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
+            <span className={`flex items-center gap-1 text-[11px] ${dark ? 'text-neutral-500' : 'text-neutral-400'}`}>
               <Clock className="h-3 w-3" />
               {new Date(item.publishedDate).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
             </span>
           ) : <span />}
-          <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${dark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
+          <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${dark ? 'bg-[#1a1a1a] text-neutral-500' : 'bg-neutral-100 text-neutral-500'}`}>
             {Math.round(item.score * 100)}%
           </span>
         </div>
@@ -138,11 +138,11 @@ function ArticleCard({ item, index, dark }: { item: ResearchResult; index: numbe
 
 function SkeletonCard({ dark }: { dark?: boolean }) {
   return (
-    <div className={`overflow-hidden rounded-xl border ${dark ? 'border-slate-800' : 'border-slate-200'}`}>
-      <div className={`h-32 ${dark ? 'bg-slate-800' : 'bg-slate-100'}`} />
+    <div className={`overflow-hidden rounded-xl border ${dark ? 'border-[#262626]' : 'border-neutral-200'}`}>
+      <div className={`h-32 ${dark ? 'bg-[#1a1a1a]' : 'bg-neutral-100'}`} />
       <div className="space-y-2 p-3">
-        <div className={`h-4 w-3/4 rounded ${dark ? 'bg-slate-800' : 'bg-slate-100'}`} />
-        <div className={`h-3 w-full rounded ${dark ? 'bg-slate-800' : 'bg-slate-100'}`} />
+        <div className={`h-4 w-3/4 rounded ${dark ? 'bg-[#1a1a1a]' : 'bg-neutral-100'}`} />
+        <div className={`h-3 w-full rounded ${dark ? 'bg-[#1a1a1a]' : 'bg-neutral-100'}`} />
       </div>
     </div>
   );
@@ -168,12 +168,12 @@ function FieldSection({
       {/* Section header */}
       <div className="mb-4 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${dark ? 'bg-slate-800' : 'bg-slate-100'}`}>
-            <Icon className={`h-4 w-4 ${dark ? 'text-slate-400' : 'text-slate-600'}`} />
+          <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${dark ? 'bg-[#1a1a1a]' : 'bg-neutral-100'}`}>
+            <Icon className={`h-4 w-4 ${dark ? 'text-neutral-500' : 'text-neutral-600'}`} />
           </div>
           <div>
-            <h2 className={`text-[15px] font-medium ${dark ? 'text-slate-200' : 'text-slate-900'}`}>{field.label}</h2>
-            <p className={`text-[11px] ${dark ? 'text-slate-500' : 'text-slate-500'}`}>
+            <h2 className={`text-[15px] font-medium ${dark ? 'text-neutral-200' : 'text-neutral-900'}`}>{field.label}</h2>
+            <p className={`text-[11px] ${dark ? 'text-neutral-500' : 'text-neutral-500'}`}>
               {state.results.length} articles
               {state.updatedAt && <> · Updated {timeAgo(state.updatedAt)}</>}
             </p>
@@ -184,8 +184,8 @@ function FieldSection({
           disabled={state.loading}
           className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[12px] font-medium transition-colors ${
             dark
-              ? 'border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-700'
-              : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+              ? 'border-[#333] bg-[#1a1a1a] text-neutral-400 hover:bg-[#262626]'
+              : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50'
           } disabled:opacity-50`}
         >
           <RefreshCw className={`h-3 w-3 ${state.loading ? 'animate-spin' : ''}`} />
@@ -195,9 +195,9 @@ function FieldSection({
 
       {/* Summary */}
       {state.answer && (
-        <div className={`mb-4 rounded-xl border p-4 ${dark ? 'border-slate-800 bg-slate-900/50' : 'border-slate-200 bg-white'}`}>
-          <p className={`mb-1 text-[10px] font-medium uppercase tracking-[0.1em] ${dark ? 'text-slate-500' : 'text-slate-500'}`}>Summary</p>
-          <p className={`text-[13px] leading-relaxed ${dark ? 'text-slate-300' : 'text-slate-700'}`}>{state.answer}</p>
+        <div className={`mb-4 rounded-xl border p-4 ${dark ? 'border-[#262626] bg-[#141414]' : 'border-neutral-200 bg-white'}`}>
+          <p className={`mb-1 text-[10px] font-medium uppercase tracking-[0.1em] ${dark ? 'text-neutral-500' : 'text-neutral-500'}`}>Summary</p>
+          <p className={`text-[13px] leading-relaxed ${dark ? 'text-neutral-300' : 'text-neutral-700'}`}>{state.answer}</p>
         </div>
       )}
 
@@ -314,20 +314,20 @@ export function ResearchHub() {
   const active = FIELDS.filter(f => selected.has(f.id));
 
   return (
-    <div className={`flex h-full flex-col transition-colors duration-300 ${dark ? 'bg-[#0d0d0d]' : 'bg-[#f5f5f7]'}`}>
+    <div className={`flex h-full flex-col transition-colors duration-300 ${dark ? 'bg-[#0a0a0a]' : 'bg-[#f5f5f7]'}`}>
       {/* Header */}
-      <div className={`shrink-0 border-b px-5 py-4 backdrop-blur-md transition-colors duration-300 ${dark ? 'border-slate-800 bg-[#0d0d0d]/95' : 'border-slate-200 bg-white/80'}`}>
+      <div className={`shrink-0 border-b px-5 py-4 backdrop-blur-md transition-colors duration-300 ${dark ? 'border-[#1a1a1a] bg-[#0a0a0a]/95' : 'border-neutral-200 bg-white/80'}`}>
         <div className="mx-auto max-w-6xl">
           <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h1 className={`text-lg font-medium ${dark ? 'text-slate-200' : 'text-slate-900'}`}>Research</h1>
-              <p className={`mt-0.5 max-w-lg text-[13px] ${dark ? 'text-slate-500' : 'text-slate-500'}`}>
+              <h1 className={`text-lg font-medium ${dark ? 'text-neutral-200' : 'text-neutral-900'}`}>Research</h1>
+              <p className={`mt-0.5 max-w-lg text-[13px] ${dark ? 'text-neutral-500' : 'text-neutral-500'}`}>
                 Track news across tech. Updates every 5 minutes.
               </p>
             </div>
             <button
               onClick={refreshAll}
-              className={`text-[13px] font-medium transition-colors ${dark ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`text-[13px] font-medium transition-colors ${dark ? 'text-neutral-500 hover:text-neutral-400' : 'text-neutral-500 hover:text-neutral-700'}`}
             >
               Refresh all
             </button>
@@ -343,8 +343,8 @@ export function ResearchHub() {
               placeholder="Search anything..."
               className={`flex-1 rounded-lg border px-4 py-2.5 text-[14px] outline-none transition-colors ${
                 dark
-                  ? 'border-slate-800 bg-slate-900 text-slate-200 placeholder:text-slate-600 focus:border-slate-700'
-                  : 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-slate-300'
+                  ? 'border-[#262626] bg-[#141414] text-neutral-200 placeholder:text-neutral-600 focus:border-[#333]'
+                  : 'border-neutral-200 bg-white text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-300'
               }`}
             />
             <button
@@ -352,8 +352,8 @@ export function ResearchHub() {
               disabled={!query.trim() || customLoading}
               className={`inline-flex items-center gap-1.5 rounded-lg px-4 py-2.5 text-[13px] font-medium transition-colors disabled:opacity-40 ${
                 dark
-                  ? 'bg-slate-200 text-slate-900 hover:bg-white'
-                  : 'bg-slate-900 text-white hover:bg-slate-800'
+                  ? 'bg-neutral-200 text-neutral-900 hover:bg-white'
+                  : 'bg-neutral-900 text-white hover:bg-neutral-800'
               }`}
             >
               {customLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
@@ -373,11 +373,11 @@ export function ResearchHub() {
                   className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[13px] font-medium transition-colors ${
                     isActive
                       ? dark
-                        ? 'border-slate-600 bg-slate-800 text-slate-200'
-                        : 'border-slate-300 bg-slate-100 text-slate-900'
+                        ? 'border-[#333] bg-[#1a1a1a] text-neutral-200'
+                        : 'border-neutral-300 bg-neutral-100 text-neutral-900'
                       : dark
-                        ? 'border-slate-800 bg-transparent text-slate-500 hover:border-slate-700 hover:text-slate-400'
-                        : 'border-transparent bg-slate-100/50 text-slate-600 hover:bg-slate-100'
+                        ? 'border-[#262626] bg-transparent text-neutral-500 hover:border-[#333] hover:text-neutral-400'
+                        : 'border-transparent bg-neutral-100/50 text-neutral-600 hover:bg-neutral-100'
                   }`}
                 >
                   <Icon className="h-3.5 w-3.5" />
@@ -396,16 +396,16 @@ export function ResearchHub() {
           {(customResults.length > 0 || customLoading) && (
             <div className="mb-10">
               <div className="mb-3 flex flex-wrap items-center gap-2">
-                <Search className={`h-4 w-4 ${dark ? 'text-slate-500' : 'text-slate-400'}`} />
-                <span className={`text-[15px] font-medium ${dark ? 'text-slate-200' : 'text-slate-900'}`}>Results for &ldquo;{query}&rdquo;</span>
-                <span className={`rounded-md px-2 py-0.5 text-[11px] font-medium ${dark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-600'}`}>
+                <Search className={`h-4 w-4 ${dark ? 'text-neutral-500' : 'text-neutral-400'}`} />
+                <span className={`text-[15px] font-medium ${dark ? 'text-neutral-200' : 'text-neutral-900'}`}>Results for &ldquo;{query}&rdquo;</span>
+                <span className={`rounded-md px-2 py-0.5 text-[11px] font-medium ${dark ? 'bg-[#1a1a1a] text-neutral-500' : 'bg-neutral-100 text-neutral-600'}`}>
                   {customResults.length}
                 </span>
               </div>
 
               {customSummary && (
-                <div className={`mb-4 rounded-xl border p-4 ${dark ? 'border-slate-800 bg-slate-900/50' : 'border-slate-200 bg-white'}`}>
-                  <p className={`text-[13px] leading-relaxed ${dark ? 'text-slate-300' : 'text-slate-700'}`}>{customSummary}</p>
+                <div className={`mb-4 rounded-xl border p-4 ${dark ? 'border-[#262626] bg-[#141414]' : 'border-neutral-200 bg-white'}`}>
+                  <p className={`text-[13px] leading-relaxed ${dark ? 'text-neutral-300' : 'text-neutral-700'}`}>{customSummary}</p>
                 </div>
               )}
 
@@ -421,15 +421,15 @@ export function ResearchHub() {
                 </div>
               )}
 
-              <div className={`my-8 border-t ${dark ? 'border-slate-800' : 'border-slate-200'}`} />
+              <div className={`my-8 border-t ${dark ? 'border-[#1a1a1a]' : 'border-neutral-200'}`} />
             </div>
           )}
 
           {/* Empty state */}
           {active.length === 0 && (
-            <div className={`rounded-xl border border-dashed py-16 text-center ${dark ? 'border-slate-800' : 'border-slate-300'}`}>
-              <p className={`text-[14px] font-medium ${dark ? 'text-slate-400' : 'text-slate-600'}`}>Choose a topic to get started</p>
-              <p className={`mt-1 text-[13px] ${dark ? 'text-slate-500' : 'text-slate-500'}`}>11 curated research lanes available</p>
+            <div className={`rounded-xl border border-dashed py-16 text-center ${dark ? 'border-[#262626]' : 'border-neutral-300'}`}>
+              <p className={`text-[14px] font-medium ${dark ? 'text-neutral-400' : 'text-neutral-600'}`}>Choose a topic to get started</p>
+              <p className={`mt-1 text-[13px] ${dark ? 'text-neutral-500' : 'text-neutral-500'}`}>11 curated research lanes available</p>
             </div>
           )}
 
