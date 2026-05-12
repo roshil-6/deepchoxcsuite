@@ -7,6 +7,7 @@ import { EngineeringPlatform } from '@/components/EngineeringPlatform';
 import { ResearchHub } from '@/components/ResearchHub';
 import { Sidebar, type AppView } from '@/components/Sidebar';
 import { ZepFloatingOrb } from '@/components/Zep/ZepFloatingOrb';
+import { OfficeProvider } from '@/lib/OfficeContext';
 
 // ── Loading overlay ────────────────────────────────────────────────────────────
 
@@ -70,33 +71,34 @@ export default function Home() {
   if (!started) return <LandingPage onContinueGuest={() => setStarted(true)} />;
 
   return (
-    <div
-      className="flex h-screen w-full overflow-hidden"
-      style={{ background: '#0d0d0d' }}
-    >
-      <Sidebar
-        activeView={activeView}
-        onSwitchView={setActiveView}
-        selectedProjectId={selectedProjectId}
-        onSelectProject={(id) => setSelectedProjectId(id)}
-        onNewProject={() => setSelectedProjectId(null)}
-        onLogout={() => void handleLogout()}
-      />
+    <OfficeProvider>
+      <div
+        className="flex h-screen w-full overflow-hidden"
+        style={{ background: '#0d0d0d' }}
+      >
+        <Sidebar
+          activeView={activeView}
+          onSwitchView={setActiveView}
+          selectedProjectId={selectedProjectId}
+          onSelectProject={(id) => setSelectedProjectId(id)}
+          onNewProject={() => setSelectedProjectId(null)}
+          onLogout={() => void handleLogout()}
+        />
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        {activeView === 'research' ? (
-          <ResearchHub />
-        ) : (
-          <EngineeringPlatform
-            key={selectedProjectId ?? '__new__'}
-            selectedProjectId={selectedProjectId}
-            onProjectCreated={(id) => setSelectedProjectId(id)}
-          />
-        )}
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+          {activeView === 'research' ? (
+            <ResearchHub />
+          ) : (
+            <EngineeringPlatform
+              key={selectedProjectId ?? '__new__'}
+              selectedProjectId={selectedProjectId}
+              onProjectCreated={(id) => setSelectedProjectId(id)}
+            />
+          )}
+        </div>
+
+        <ZepFloatingOrb />
       </div>
-
-      {/* Zep AI Assistant */}
-      <ZepFloatingOrb />
-    </div>
+    </OfficeProvider>
   );
 }
