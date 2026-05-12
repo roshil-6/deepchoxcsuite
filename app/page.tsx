@@ -73,8 +73,7 @@ export default function Home() {
   return (
     <OfficeProvider>
       <div
-        className="flex h-screen w-full overflow-hidden"
-        style={{ background: '#0d0d0d' }}
+        className="flex h-screen w-full overflow-hidden bg-[#e8e9ed]"
       >
         <Sidebar
           activeView={activeView}
