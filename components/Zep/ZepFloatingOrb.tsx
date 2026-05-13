@@ -28,12 +28,13 @@ export function ZepFloatingOrb() {
         '',
         '• Open research',
         '• Open engineering',
+        '• Open sites',
         '• Start a new project',
         '• What’s the status?',
         '• Show my projects',
         '• Close Zep',
         '',
-        'This build is Engineering (multi‑agent builds) plus Research—not separate CEO/Product desks.',
+        'This workspace is Engineering, Research, and Sites (prompt → exportable webpage)—not discrete CEO/Product desks.',
       ].join('\n'),
     },
   ]);
@@ -58,7 +59,7 @@ export function ZepFloatingOrb() {
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, confirmCommand]);
 
-  // Command execution — navigation matches the shipped shell (Engineering + Research).
+  // Command execution — navigation matches the shipped shell (Engineering + Research + Sites).
   const executeCommand = useCallback(async (cmd: ZepCommand): Promise<string> => {
     const roomAliases: Record<string, string> = {
       ceo: 'CEO Desk',
@@ -70,6 +71,7 @@ export function ZepFloatingOrb() {
       shark: 'Investor Desk',
       research: 'Research',
       engineering: 'Engineering',
+      sites: 'Sites',
       calendar: 'Calendar',
       reports: 'Reports',
       invention: 'Invention Lab',
@@ -89,6 +91,10 @@ export function ZepFloatingOrb() {
             dispatchZepNav({ kind: 'set_view', view: 'engineering' });
             switchRoom(room as Parameters<typeof switchRoom>[0]);
             return 'Opening Engineering.';
+          }
+          if (room === 'sites') {
+            dispatchZepNav({ kind: 'set_view', view: 'sites' });
+            return 'Opening Sites — describe the page you want.';
           }
           if (room === 'dashboard') {
             dispatchZepNav({ kind: 'set_view', view: 'engineering' });
@@ -120,6 +126,11 @@ export function ZepFloatingOrb() {
           return 'Opening Engineering.';
         }
 
+        case 'open_sites': {
+          dispatchZepNav({ kind: 'set_view', view: 'sites' });
+          return 'Sites opened — type a brief, paste styles you like, then Generate.';
+        }
+
         case 'open_dashboard': {
           dispatchZepNav({ kind: 'set_view', view: 'engineering' });
           switchRoom('dashboard' as Parameters<typeof switchRoom>[0]);
@@ -142,7 +153,13 @@ export function ZepFloatingOrb() {
           const projLabel =
             id != null ? (summaries.find((p) => p.id === id)?.title ?? 'Selected project') : 'New-build screen (sidebar / prompt)';
           const viewLabel =
-            view === 'research' ? 'Research' : view === 'engineering' ? 'Engineering' : 'Engineering (default)';
+            view === 'research'
+              ? 'Research'
+              : view === 'sites'
+                ? 'Sites'
+                : view === 'engineering'
+                  ? 'Engineering'
+                  : 'Engineering (default)';
           return ['Workspace: ' + viewLabel, 'Project focus: ' + projLabel, 'Saved builds (this browser): ' + String(summaries.length)].join('\n');
         }
 
@@ -196,13 +213,13 @@ export function ZepFloatingOrb() {
         case 'ask_help':
           return [
             'What works in this Deepchox shell:',
-            '• Open research / Open engineering',
+            '• Open research / Open engineering / Open sites',
             '• New project',
             '• Show my projects',
             '• Status',
             '• Close Zep',
             '',
-            'There are no discrete CEO/Product/Finance rooms—everything routes through Engineering + Research outputs.',
+            'Sites turns a paragraph prompt into a one-page preview + downloadable HTML.',
           ].join('\n');
 
         default:
@@ -216,6 +233,10 @@ export function ZepFloatingOrb() {
   // Parse natural language to command
   const parseCommand = (text: string): ZepCommand | null => {
     const lower = text.toLowerCase();
+
+    if (/(take me to|switch to|go to|show me|open) (?:the )?sites\b/i.test(lower)) {
+      return { action: 'switch_room', params: { room: 'sites' } };
+    }
 
     // Room switching - expanded patterns
     const roomMatches = [
@@ -264,6 +285,11 @@ export function ZepFloatingOrb() {
     // Open engineering directly
     if (/open engineering|show engineering|go to engineering|open platform/i.test(lower)) {
       return { action: 'open_engineering', params: {} };
+    }
+
+    // Open Sites (prompt → site)
+    if (/open sites|sites builder|\bsite builder\b|prompt to website|website from prompt|landing page builder/i.test(lower)) {
+      return { action: 'open_sites', params: {} };
     }
 
     // Open dashboard
@@ -383,13 +409,19 @@ export function ZepFloatingOrb() {
   };
 
   const buildContext = () => {
-    const view = readActiveShellView() ?? 'engineering';
+    const view = readActiveShellView();
     const eng = loadEngineeringSummaries();
+    const shell =
+      view === 'research'
+        ? 'Research headlines'
+        : view === 'sites'
+          ? 'Sites (prompt to exportable landing HTML)'
+          : 'Engineering orchestration builder';
     return [
-      `Active shell: ${view === 'research' ? 'Research headlines' : 'Engineering orchestration builder'}`,
+      `Active shell: ${shell}`,
       `Legacy IndexedDB venture (if any): ${activeProject?.name ?? 'none'}`,
       `Local Engineering saves: ${eng.length}`,
-      'Zep can: open engineering, open research, new project, list projects, status, legacy venture field updates.',
+      'Zep can: open engineering, open research, open sites, new project, list projects, status, legacy venture field updates.',
     ].join('\n');
   };
 

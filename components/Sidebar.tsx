@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Plus, LogOut, PanelLeftClose, PanelLeftOpen,
-  Clock, FolderOpen, Cpu, Search, Sun, Moon,
+  Clock, FolderOpen, Cpu, Search, Sun, Moon, LayoutTemplate,
 } from 'lucide-react';
 import { useTheme } from '@/lib/ThemeContext';
 
@@ -16,7 +16,7 @@ interface EngProjectMeta {
   createdAt: number;
 }
 
-export type AppView = 'engineering' | 'research';
+export type AppView = 'engineering' | 'research' | 'sites';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -213,6 +213,13 @@ export function Sidebar({
               icon={Search} label="Research"
               active={activeView === 'research'}
               onClick={() => onSwitchView('research')}
+              collapsed={collapsed}
+              dark={dark}
+            />
+            <NavBtn
+              icon={LayoutTemplate} label="Sites"
+              active={activeView === 'sites'}
+              onClick={() => onSwitchView('sites')}
               collapsed={collapsed}
               dark={dark}
             />

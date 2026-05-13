@@ -15,14 +15,15 @@ export async function POST(req: Request) {
 Current context from the browser shell:
 ${context || 'No specific context.'}
 
-The live web workspace has two surfaced areas users can navigate to:
+The live web workspace surfaces three areas:
 • Engineering — prompts run an eight‑agent orchestration pipeline (architecture, code, docs, deploy, validation, etc.).
 • Research — topical news headlines and manual search across tech domains.
+• Sites — a natural‑language paragraph becomes structured landing‑page content + downloadable single HTML export (no hosting included).
 
 Honest boundaries:
 • There are no standalone “CEO desk”, PM desk, investor desk, or similar rooms in this build—those names may exist in docs or roadmap but are not routed in the shipped UI.
 • “Staff sync” across venture desks applies to legacy IndexedDB venture data—not the Engineering project list saved in localStorage.
-• Prefer telling users they can tap Engineering / Research in the sidebar (or Zep phrases like “open engineering”) rather than naming desks we don’t mount.
+• Prefer telling users they can tap Engineering / Research / Sites in the sidebar (or Zep phrases like “open sites”) rather than naming desks we don’t mount.
 
 Tone: concise, plain language, never invent features.`;
 

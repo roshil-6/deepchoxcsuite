@@ -48,6 +48,9 @@ const EngineeringPlatform = dynamic(() => import('@/components/EngineeringPlatfo
 const ResearchHub = dynamic(() => import('@/components/ResearchHub').then(m => ({ default: m.ResearchHub })), {
   ssr: false,
 });
+const SiteBuilder = dynamic(() => import('@/components/SiteBuilder').then(m => ({ default: m.SiteBuilder })), {
+  ssr: false,
+});
 const ZepFloatingOrb = dynamic(() => import('@/components/Zep/ZepFloatingOrb').then(m => ({ default: m.ZepFloatingOrb })), {
   ssr: false,
 });
@@ -166,6 +169,8 @@ function ThemedLayout({
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden pb-[max(5.25rem,calc(4.75rem+env(safe-area-inset-bottom)))] lg:pb-0 lg:pt-0">
         {activeView === 'research' ? (
           <ResearchHub />
+        ) : activeView === 'sites' ? (
+          <SiteBuilder />
         ) : (
           <EngineeringPlatform
             key={selectedProjectId ?? '__new__'}
@@ -179,7 +184,6 @@ function ThemedLayout({
       <MobileBottomNav
         activeView={activeView}
         onSwitchView={setActiveView}
-        onNewProject={openNewProject}
         onOpenMore={() => setMobileMenuOpen(true)}
       />
 
@@ -269,6 +273,27 @@ function ThemedLayout({
                     <path d="M12 16v-4M12 8h.01" />
                   </svg>
                   Research
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveView('sites');
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                    activeView === 'sites'
+                      ? theme === 'dark'
+                        ? 'bg-zinc-800/90 text-zinc-100'
+                        : 'bg-zinc-100 text-zinc-900'
+                      : theme === 'dark'
+                        ? 'text-zinc-400 hover:bg-zinc-800'
+                        : 'text-zinc-600 hover:bg-zinc-50'
+                  }`}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <path d="M3 9h18M9 21V9" />
+                  </svg>
+                  Sites
                 </button>
                 <button
                   onClick={() => {

@@ -1,12 +1,12 @@
 /**
- * Lightweight bridge so Zep can drive the Deepchox web shell (Engineering + Research).
+ * Lightweight bridge so Zep can drive the Deepchox web shell (Engineering + Research + Sites).
  * Keeps Zep decoupled from OfficeContext rooms that aren't mounted in page.tsx.
  */
 
 export const DEEPCHOX_ZEP_NAV_EVENT = 'deepchox-zep-nav';
 
 export type ZepNavDetail =
-  | { kind: 'set_view'; view: 'engineering' | 'research' }
+  | { kind: 'set_view'; view: 'engineering' | 'research' | 'sites' }
   | { kind: 'new_project' };
 
 /** Session mirrors for Zep status/listing (filled from app/page ThemedLayout). */
@@ -18,10 +18,10 @@ export function dispatchZepNav(detail: ZepNavDetail) {
   window.dispatchEvent(new CustomEvent(DEEPCHOX_ZEP_NAV_EVENT, { detail }));
 }
 
-export function readActiveShellView(): 'engineering' | 'research' | null {
+export function readActiveShellView(): 'engineering' | 'research' | 'sites' | null {
   try {
     const v = sessionStorage.getItem(SS_ACTIVE_APP_VIEW);
-    if (v === 'engineering' || v === 'research') return v;
+    if (v === 'engineering' || v === 'research' || v === 'sites') return v;
   } catch { /* ignore */ }
   return null;
 }
