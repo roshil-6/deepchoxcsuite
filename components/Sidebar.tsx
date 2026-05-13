@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   Plus, LogOut, PanelLeftClose, PanelLeftOpen,
   Clock, FolderOpen, Cpu, Search, Sun, Moon, LayoutTemplate,
+  Wand2,
 } from 'lucide-react';
 import { useTheme } from '@/lib/ThemeContext';
 
@@ -16,7 +17,7 @@ interface EngProjectMeta {
   createdAt: number;
 }
 
-export type AppView = 'engineering' | 'research' | 'sites';
+export type AppView = 'engineering' | 'research' | 'sites' | 'builder';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -220,6 +221,13 @@ export function Sidebar({
               icon={LayoutTemplate} label="Sites"
               active={activeView === 'sites'}
               onClick={() => onSwitchView('sites')}
+              collapsed={collapsed}
+              dark={dark}
+            />
+            <NavBtn
+              icon={Wand2} label="Builder"
+              active={activeView === 'builder'}
+              onClick={() => onSwitchView('builder')}
               collapsed={collapsed}
               dark={dark}
             />
