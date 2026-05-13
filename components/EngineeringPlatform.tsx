@@ -193,7 +193,7 @@ function CopyButton({ text }: { text: string }) {
   return (
     <button
       onClick={copy}
-      className="flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs font-semibold text-slate-600 transition-all hover:bg-slate-200/90"
+      className="flex items-center gap-1.5 rounded-lg bg-neutral-100 px-2.5 py-1.5 text-xs font-semibold text-neutral-600 transition-all hover:bg-neutral-200"
     >
       {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
       {copied ? 'Copied!' : 'Copy'}
@@ -201,11 +201,11 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
-function Badge({ label, color = 'rgba(15,23,42,0.07)', dark }: { label: string; color?: string; dark?: boolean }) {
+function Badge({ label, color = 'rgba(82,82,82,0.25)', dark }: { label: string; color?: string; dark?: boolean }) {
   return (
     <span
       className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest"
-      style={{ background: color, color: dark ? '#e2e8f0' : '#0f172a' }}
+      style={{ background: color, color: dark ? '#d4d4d4' : '#171717' }}
     >
       {label}
     </span>
@@ -216,13 +216,13 @@ function SectionTitle({ children, sub, dark }: { children: React.ReactNode; sub?
   return (
     <div className="mb-5">
       <div className="flex items-center gap-2">
-        <div className="h-4 w-[3px] rounded-full" style={{ background: dark ? 'linear-gradient(to bottom, #2dd4bf, #0f766e)' : 'linear-gradient(to bottom, rgba(20,184,166,0.90), rgba(20,184,166,0.30))' }} />
-        <h3 className={`text-[11px] font-bold uppercase tracking-[0.14em] ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
+        <div className="h-4 w-[3px] rounded-full" style={{ background: dark ? '#525252' : '#a3a3a3' }} />
+        <h3 className={`text-[11px] font-bold uppercase tracking-[0.14em] ${dark ? 'text-neutral-400' : 'text-neutral-500'}`}>
           {children}
         </h3>
       </div>
       {sub && (
-        <p className={`mt-1 pl-3.5 text-xs font-medium ${dark ? 'text-slate-500' : 'text-slate-500'}`}>{sub}</p>
+        <p className={`mt-1 pl-3.5 text-xs font-medium ${dark ? 'text-neutral-500' : 'text-neutral-500'}`}>{sub}</p>
       )}
     </div>
   );
@@ -230,7 +230,7 @@ function SectionTitle({ children, sub, dark }: { children: React.ReactNode; sub?
 
 function Prose({ children, dark }: { children: React.ReactNode; dark?: boolean }) {
   return (
-    <p className={`text-sm font-medium leading-[1.75] ${dark ? 'text-slate-300' : 'text-slate-600'}`}>
+    <p className={`text-sm font-medium leading-[1.75] ${dark ? 'text-neutral-300' : 'text-neutral-600'}`}>
       {children}
     </p>
   );
@@ -241,15 +241,15 @@ function Card({ children, className = '', glow = false, dark }: { children: Reac
     <div
       className={`rounded-2xl border p-5 ${className}`}
       style={{
-        borderColor: dark ? 'rgba(51,65,85,0.5)' : 'rgba(15,23,42,0.07)',
-        background: dark ? '#0f172a' : '#ffffff',
+        borderColor: dark ? 'rgba(64,64,64,0.4)' : 'rgba(0,0,0,0.08)',
+        background: dark ? '#141414' : '#ffffff',
         boxShadow: glow
           ? dark
-            ? '0 1px 2px rgba(0,0,0,0.2), 0 8px 24px -8px rgba(0,0,0,0.4), 0 0 0 1px rgba(45,212,191,0.1) inset'
-            : '0 1px 2px rgba(15,23,42,0.04), 0 8px 24px -8px rgba(15,23,42,0.08), 0 0 0 1px rgba(13,148,136,0.06) inset'
+            ? '0 1px 2px rgba(0,0,0,0.2), 0 8px 24px -8px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset'
+            : '0 1px 2px rgba(0,0,0,0.04), 0 8px 24px -8px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.03) inset'
           : dark
             ? '0 1px 2px rgba(0,0,0,0.2), 0 6px 20px -6px rgba(0,0,0,0.3)'
-            : '0 1px 2px rgba(15,23,42,0.04), 0 6px 20px -6px rgba(15,23,42,0.07)',
+            : '0 1px 2px rgba(0,0,0,0.04), 0 6px 20px -6px rgba(0,0,0,0.07)',
       }}
     >
       {children}
@@ -354,10 +354,10 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 // ── Complexity / severity ──────────────────────────────────────────────────────
 
 const COMPLEXITY_COLOR: Record<string, string> = {
-  low:     'rgba(52,211,153,0.22)',
-  medium:  'rgba(251,191,36,0.22)',
-  high:    'rgba(249,115,22,0.22)',
-  extreme: 'rgba(239,68,68,0.22)',
+  low:     'rgba(82,82,82,0.25)',
+  medium:  'rgba(82,82,82,0.35)',
+  high:    'rgba(82,82,82,0.45)',
+  extreme: 'rgba(82,82,82,0.55)',
 };
 
 const COMPLEXITY_TEXT: Record<string, string> = {
@@ -368,17 +368,17 @@ const COMPLEXITY_TEXT: Record<string, string> = {
 };
 
 const SEVERITY_COLOR: Record<string, string> = {
-  low:      'rgba(52,211,153,0.20)',
-  medium:   'rgba(251,191,36,0.20)',
-  high:     'rgba(249,115,22,0.20)',
-  critical: 'rgba(239,68,68,0.20)',
+  low:      'rgba(82,82,82,0.20)',
+  medium:   'rgba(82,82,82,0.35)',
+  high:     'rgba(82,82,82,0.50)',
+  critical: 'rgba(82,82,82,0.65)',
 };
 
 const SEVERITY_DOT: Record<string, string> = {
-  low:      '#34d399',
-  medium:   '#fbbf24',
-  high:     '#fb923c',
-  critical: '#f87171',
+  low:      '#737373',
+  medium:   '#525252',
+  high:     '#404040',
+  critical: '#262626',
 };
 
 // ── Overview tab ───────────────────────────────────────────────────────────────
@@ -845,7 +845,7 @@ function DocsTab({ result }: { result: OrchestrationResult }) {
 
 function ValidationTab({ result }: { result: OrchestrationResult }) {
   const score = result.confidenceScore ?? 0;
-  const scoreColor  = score >= 80 ? '#34d399' : score >= 60 ? '#fbbf24' : '#f87171';
+  const scoreColor  = score >= 80 ? '#a3a3a3' : score >= 60 ? '#737373' : '#525252';
   const scoreLabel  = score >= 80 ? 'High Confidence' : score >= 60 ? 'Moderate Confidence' : 'Low Confidence';
   const scoreDetail = score >= 80
     ? 'The plan is well-defined and ready to build. Begin with the recommended first step.'
@@ -1250,15 +1250,15 @@ function ResultView({ project, onReset }: { project: EngProject; onReset: () => 
   const dark = theme === 'dark';
 
   return (
-    <div className={`flex min-h-0 flex-1 flex-col transition-colors duration-300 ${dark ? 'bg-[#0d0d0d]' : 'bg-[#e8e9ed]'}`}>
+    <div className={`flex min-h-0 flex-1 flex-col transition-colors duration-300 ${dark ? 'bg-[#0a0a0a]' : 'bg-[#f5f5f7]'}`}>
       {/* Sticky header */}
       <div
-        className={`sticky top-0 z-10 shrink-0 border-b px-6 pt-5 pb-0 transition-colors duration-300 ${dark ? 'border-slate-800 bg-[#0d0d0d]' : 'border-slate-200/80 bg-[#e8e9ed]'}`}
+        className={`sticky top-0 z-10 shrink-0 border-b px-6 pt-5 pb-0 transition-colors duration-300 ${dark ? 'border-[#1a1a1a] bg-[#0a0a0a]' : 'border-neutral-200 bg-[#f5f5f7]'}`}
       >
         <div className="mx-auto max-w-5xl">
           <div className="flex items-start justify-between gap-4 pb-4">
             <div className="min-w-0 flex-1">
-              <h2 className={`truncate text-base font-bold leading-tight ${dark ? 'text-slate-200' : 'text-slate-900'}`}>
+              <h2 className={`truncate text-base font-bold leading-tight ${dark ? 'text-neutral-200' : 'text-neutral-900'}`}>
                 {project.title}
               </h2>
               <div className="mt-2 flex flex-wrap items-center gap-2.5">
@@ -1270,7 +1270,7 @@ function ResultView({ project, onReset }: { project: EngProject; onReset: () => 
                   </span>
                 )}
                 {/* Stats */}
-                <span className={`text-[11px] font-semibold ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
+                <span className={`text-[11px] font-semibold ${dark ? 'text-neutral-500' : 'text-neutral-400'}`}>
                   {result.codeFiles.length} files &nbsp;&middot;&nbsp; {result.phases.length} phases &nbsp;&middot;&nbsp; {result.risks.length} risks &nbsp;&middot;&nbsp; {Math.round(result.durationMs / 1000)}s
                 </span>
                 {/* Agent trace */}
@@ -1279,20 +1279,20 @@ function ResultView({ project, onReset }: { project: EngProject; onReset: () => 
                     <div
                       key={a.agent}
                       className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-semibold shadow-sm ring-1 ${
-                        dark ? 'bg-slate-800 ring-slate-700' : 'bg-white ring-slate-200/90'
+                        dark ? 'bg-[#1a1a1a] ring-[#262626]' : 'bg-white ring-neutral-200'
                       }`}
                     >
                       {a.ok ? (
-                        <span className={`flex h-4 w-4 items-center justify-center rounded-full ${dark ? 'bg-emerald-900/50 text-emerald-400' : 'bg-emerald-100 text-emerald-700'}`}>
+                        <span className={`flex h-4 w-4 items-center justify-center rounded-full ${dark ? 'bg-[#262626] text-neutral-400' : 'bg-neutral-100 text-neutral-600'}`}>
                           <CheckCircle2 className="h-2.5 w-2.5" />
                         </span>
                       ) : (
-                        <span className={`flex h-4 w-4 items-center justify-center rounded-full ${dark ? 'bg-red-900/50 text-red-400' : 'bg-red-100 text-red-600'}`}>
+                        <span className={`flex h-4 w-4 items-center justify-center rounded-full ${dark ? 'bg-[#262626] text-neutral-500' : 'bg-neutral-100 text-neutral-500'}`}>
                           <XCircle className="h-2.5 w-2.5" />
                         </span>
                       )}
-                      <span className={dark ? 'text-slate-300' : 'text-slate-600'}>{a.agent}</span>
-                      <span className={dark ? 'tabular-nums text-slate-500' : 'tabular-nums text-slate-400'}>{(a.durationMs / 1000).toFixed(1)}s</span>
+                      <span className={dark ? 'text-neutral-300' : 'text-neutral-600'}>{a.agent}</span>
+                      <span className={dark ? 'tabular-nums text-neutral-500' : 'tabular-nums text-neutral-400'}>{(a.durationMs / 1000).toFixed(1)}s</span>
                     </div>
                   ))}
                 </div>
@@ -1302,8 +1302,8 @@ function ResultView({ project, onReset }: { project: EngProject; onReset: () => 
               onClick={onReset}
               className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-bold transition-all ${
                 dark
-                  ? 'border-slate-700 text-slate-400 hover:bg-slate-800'
-                  : 'border-slate-200 text-slate-600 hover:bg-slate-100'
+                  ? 'border-[#262626] text-neutral-400 hover:bg-[#1a1a1a]'
+                  : 'border-neutral-200 text-neutral-600 hover:bg-neutral-100'
               }`}
             >
               <RotateCcw className="h-3 w-3" />
@@ -1321,22 +1321,22 @@ function ResultView({ project, onReset }: { project: EngProject; onReset: () => 
                   onClick={() => setTab(id)}
                   className={`relative flex shrink-0 items-center gap-1.5 px-4 py-2.5 text-xs font-bold transition-colors ${
                     active
-                      ? dark ? 'text-teal-400' : 'text-teal-600'
-                      : dark ? 'text-slate-500' : 'text-slate-400'
+                      ? dark ? 'text-neutral-200' : 'text-neutral-900'
+                      : dark ? 'text-neutral-500' : 'text-neutral-400'
                   }`}
                 >
                   <Icon
                     className={`h-3.5 w-3.5 shrink-0 ${
                       active
-                        ? dark ? 'text-teal-400' : 'text-teal-600'
-                        : dark ? 'text-slate-500' : 'text-slate-400'
+                        ? dark ? 'text-neutral-300' : 'text-neutral-700'
+                        : dark ? 'text-neutral-500' : 'text-neutral-400'
                     }`}
                   />
                   {label}
                   {active && (
                     <div
                       className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full"
-                      style={{ background: dark ? 'linear-gradient(to right, #2dd4bf, #14b8a6)' : 'linear-gradient(to right, rgba(20,184,166,0.5), rgba(20,184,166,0.9))' }}
+                      style={{ background: dark ? '#525252' : '#a3a3a3' }}
                     />
                   )}
                 </button>
@@ -1436,9 +1436,7 @@ export function EngineeringPlatform({
   };
 
   if (state === 'loading') return (
-    <div className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto" style={{ background: '#e8e9ed' }}>
-      <LoadingView elapsed={elapsed} />
-    </div>
+    <LoadingView elapsed={elapsed} />
   );
 
   if (state === 'result' && currentProject?.result) return (
@@ -1446,8 +1444,6 @@ export function EngineeringPlatform({
   );
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto" style={{ background: '#e8e9ed' }}>
-      <HomeView onSubmit={handleSubmit} />
-    </div>
+    <HomeView onSubmit={handleSubmit} />
   );
 }
