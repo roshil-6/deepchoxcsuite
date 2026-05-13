@@ -1,4 +1,4 @@
-// Research API - Tavily integration
+// Research API - Tavily web search integration
 import { NextResponse } from 'next/server';
 
 export const maxDuration = 30;
