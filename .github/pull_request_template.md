@@ -10,6 +10,10 @@
 - [ ] Docs / copy / SEO only
 - [ ] Refactor / chore
 
+## Deploy (copy or link)
+
+Full ordered list: [.github/PR_DEPLOY_LIST.md](.github/PR_DEPLOY_LIST.md)
+
 ## Checklist
 
 - [ ] Branch is up to date with `main` (`git fetch origin && git merge origin/main` or rebase)
