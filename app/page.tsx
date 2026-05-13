@@ -71,10 +71,11 @@ function ThemedLayout({
   handleLogout: () => void;
 }) {
   const { theme } = useTheme();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div
-      className={`flex h-screen w-full overflow-hidden transition-colors duration-300 ${
+      className={`flex h-dvh w-full overflow-hidden transition-colors duration-300 ${
         theme === 'dark' ? 'bg-[#0a0a0a]' : 'bg-[#f5f5f7]'
       }`}
     >
@@ -87,7 +88,7 @@ function ThemedLayout({
         onLogout={() => void handleLogout()}
       />
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden pb-20 lg:pb-0">
         {activeView === 'research' ? (
           <ResearchHub />
         ) : (
@@ -100,6 +101,114 @@ function ThemedLayout({
       </div>
 
       <ZepFloatingOrb />
+      <MobileBottomNav onOpenMore={() => setMobileMenuOpen(true)} />
+
+      {/* Mobile Menu Drawer */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <div
+            className={`absolute bottom-0 left-0 right-0 rounded-t-2xl p-4 transition-colors duration-300 ${
+              theme === 'dark' ? 'bg-[#0f0f0f] border-t border-zinc-800' : 'bg-white border-t border-zinc-200'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <span className={`text-sm font-medium ${theme === 'dark' ? 'text-zinc-200' : 'text-zinc-800'}`}>
+                Menu
+              </span>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className={`p-2 rounded-lg transition-colors ${
+                  theme === 'dark' ? 'hover:bg-zinc-800 text-zinc-400' : 'hover:bg-zinc-100 text-zinc-600'
+                }`}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <nav className="space-y-1">
+              <button
+                onClick={() => {
+                  setActiveView('engineering');
+                  setMobileMenuOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                  activeView === 'engineering'
+                    ? theme === 'dark'
+                      ? 'bg-teal-500/10 text-teal-400'
+                      : 'bg-teal-50 text-teal-600'
+                    : theme === 'dark'
+                      ? 'text-zinc-400 hover:bg-zinc-800'
+                      : 'text-zinc-600 hover:bg-zinc-100'
+                }`}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                </svg>
+                Engineering
+              </button>
+              <button
+                onClick={() => {
+                  setActiveView('research');
+                  setMobileMenuOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                  activeView === 'research'
+                    ? theme === 'dark'
+                      ? 'bg-teal-500/10 text-teal-400'
+                      : 'bg-teal-50 text-teal-600'
+                    : theme === 'dark'
+                      ? 'text-zinc-400 hover:bg-zinc-800'
+                      : 'text-zinc-600 hover:bg-zinc-100'
+                }`}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 16v-4M12 8h.01" />
+                </svg>
+                Research
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedProjectId(null);
+                  setMobileMenuOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                  theme === 'dark'
+                    ? 'text-zinc-400 hover:bg-zinc-800'
+                    : 'text-zinc-600 hover:bg-zinc-100'
+                }`}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                New Project
+              </button>
+              <div className={`my-2 h-px ${theme === 'dark' ? 'bg-zinc-800' : 'bg-zinc-200'}`} />
+              <button
+                onClick={() => {
+                  void handleLogout();
+                  setMobileMenuOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                  theme === 'dark'
+                    ? 'text-red-400 hover:bg-red-500/10'
+                    : 'text-red-600 hover:bg-red-50'
+                }`}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+                </svg>
+                Logout
+              </button>
+            </nav>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
