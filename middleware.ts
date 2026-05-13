@@ -27,6 +27,7 @@ const isPublicRoute = createRouteMatcher([
   '/apple-icon(.*)',
   '/api/health(.*)',
   '/api/clerk-health(.*)',
+  '/api/research(.*)',
   /**
    * Deepchox gateway (Jarvis converse, convo sync, etc.) — must work for signed-out guests in the workspace.
    * Per-IP rate limits still apply via `AI_ROUTE_LIMITS` (`/api/dexo`).

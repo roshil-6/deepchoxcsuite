@@ -7,27 +7,27 @@ export const SITE_BRAND = 'Deepchox';
 export const SITE_ORG = 'northROSC LABS';
 
 /** Primary title */
-export const SITE_TITLE_DEFAULT = 'Deepchox — your complete AI co-founder';
+export const SITE_TITLE_DEFAULT = 'Deepchox â€” your complete AI co-founder';
 
 /** Meta description */
 export const SITE_META_DESCRIPTION =
-    'Deepchox is your complete co-founder: research, a full working team for your venture, and real help to build — not just instructions, but actions. From northROSC LABS.';
+    'Deepchox is your complete co-founder: research, a full working team for your venture, and real help to build â€” not just instructions, but actions. From northROSC LABS.';
 
 /** Open Graph / social */
 export const SITE_OG_DESCRIPTION =
-    'Research, build your venture, and get a complete working team — actions, not just instructions. Your AI co-founder.';
+    'Research, build your venture, and get a complete working team â€” actions, not just instructions. Your AI co-founder.';
 
 /** Nav / footer / hero subheads */
-export const SITE_TAGLINE_SHORT = 'Your complete co-founder — research, actions, a team for your venture';
+export const SITE_TAGLINE_SHORT = 'Your complete co-founder â€” research, actions, a team for your venture';
 
 export const SITE_HERO_H1 = 'Your complete co-founder for building your venture';
 
 export const SITE_HERO_LEAD =
-    'Research that helps you move forward. A full working team behind one venture — not only instructions, but actions you can use.';
+    'Research that helps you move forward. A full working team behind one venture â€” not only instructions, but actions you can use.';
 
 /** Short italic-style line on the landing page */
 export const SITE_PULL_QUOTE =
-    'Not just instructions — actions. Research, a complete working team, and help to build your venture.';
+    'Not just instructions â€” actions. Research, a complete working team, and help to build your venture.';
 
 export const SITE_KEYWORDS = [
     'AI co-founder',

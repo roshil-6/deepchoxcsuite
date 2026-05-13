@@ -1,14 +1,26 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
+import dynamic from 'next/dynamic';
+import type { AppView } from '@/components/Sidebar';
 import { useAuth, useClerk } from '@clerk/nextjs';
 import { LandingPage } from '@/components/LandingPage';
-import { EngineeringPlatform } from '@/components/EngineeringPlatform';
-import { ResearchHub } from '@/components/ResearchHub';
-import { Sidebar, type AppView } from '@/components/Sidebar';
-import { ZepFloatingOrb } from '@/components/Zep/ZepFloatingOrb';
 import { OfficeProvider } from '@/lib/OfficeContext';
 import { ThemeProvider, useTheme } from '@/lib/ThemeContext';
+
+// Lazy-load heavy components with ssr:false to prevent SSR issues
+const Sidebar = dynamic(() => import('@/components/Sidebar').then(m => ({ default: m.Sidebar })), {
+  ssr: false,
+});
+const EngineeringPlatform = dynamic(() => import('@/components/EngineeringPlatform').then(m => ({ default: m.EngineeringPlatform })), {
+  ssr: false,
+});
+const ResearchHub = dynamic(() => import('@/components/ResearchHub').then(m => ({ default: m.ResearchHub })), {
+  ssr: false,
+});
+const ZepFloatingOrb = dynamic(() => import('@/components/Zep/ZepFloatingOrb').then(m => ({ default: m.ZepFloatingOrb })), {
+  ssr: false,
+});
 
 // ── Loading overlay ────────────────────────────────────────────────────────────
 
