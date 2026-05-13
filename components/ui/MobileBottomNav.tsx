@@ -1,72 +1,107 @@
 'use client';
 
 import React from 'react';
-import { Sparkles, LayoutGrid, Layers, MessageSquare, Menu } from 'lucide-react';
-import { useOffice } from '@/lib/OfficeContext';
+import { Cpu, Search, FolderPlus, Menu } from 'lucide-react';
+import { useTheme } from '@/lib/ThemeContext';
+import type { AppView } from '@/components/Sidebar';
 
 type Props = {
+    activeView: AppView;
+    onSwitchView: (v: AppView) => void;
+    onNewProject: () => void;
     onOpenMore: () => void;
 };
 
-const BOTTOM_NAV = [
-    { room: 'dexo'              as const, icon: Sparkles,       label: 'Deepchox'      },
-    { room: 'dashboard'         as const, icon: LayoutGrid,     label: 'Overview'  },
-    { room: 'desks_hub'         as const, icon: Layers,         label: 'Desks'     },
-    { room: 'personal_assistant' as const, icon: MessageSquare, label: 'Assistant' },
+const ITEMS = [
+    { view: 'engineering' as const, icon: Cpu, label: 'Engineering' },
+    { view: 'research' as const, icon: Search, label: 'Research' },
+    { kind: 'new' as const, icon: FolderPlus, label: 'New project' },
 ] as const;
 
-export function MobileBottomNav({ onOpenMore }: Props) {
-    const { activeRoom, switchRoom, setActiveProject } = useOffice();
-
-    const go = (room: typeof BOTTOM_NAV[number]['room']) => {
-        if (room === 'dashboard') setActiveProject(null);
-        switchRoom(room);
-    };
+export function MobileBottomNav({ activeView, onSwitchView, onNewProject, onOpenMore }: Props) {
+    const { theme } = useTheme();
+    const dark = theme === 'dark';
 
     return (
         <nav
             aria-label="Mobile navigation"
-            className="fixed inset-x-0 bottom-0 z-50 flex items-start justify-around border-t border-[var(--border)] px-0.5 lg:hidden"
+            className={[
+                'fixed inset-x-0 bottom-0 z-40 flex items-start justify-around border-t lg:hidden',
+                dark ? 'border-[#262626]' : 'border-neutral-200',
+            ].join(' ')}
             style={{
-                background: 'rgba(12,12,15,0.97)',
+                background: dark ? 'rgba(10,10,10,0.97)' : 'rgba(246,246,248,0.97)',
                 backdropFilter: 'blur(14px)',
                 WebkitBackdropFilter: 'blur(14px)',
                 paddingBottom: 'env(safe-area-inset-bottom, 0px)',
             }}
         >
-            {BOTTOM_NAV.map(({ room, icon: Icon, label }) => {
-                const active = activeRoom === room;
+            {ITEMS.map((item) => {
+                if ('view' in item) {
+                    const active = activeView === item.view;
+                    return (
+                        <button
+                            key={item.view}
+                            type="button"
+                            onClick={() => onSwitchView(item.view)}
+                            aria-label={item.label}
+                            aria-current={active ? 'page' : undefined}
+                            className={`flex flex-1 flex-col items-center gap-1 pt-2.5 pb-1.5 transition-colors ${
+                                active
+                                    ? dark
+                                        ? 'text-neutral-100'
+                                        : 'text-neutral-900'
+                                    : dark
+                                      ? 'text-neutral-500 hover:text-neutral-300'
+                                      : 'text-neutral-500 hover:text-neutral-800'
+                            }`}
+                        >
+                            <div className="relative">
+                                {active && (
+                                    <span
+                                        className={`absolute -top-1 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full ${
+                                            dark ? 'bg-neutral-500' : 'bg-neutral-400'
+                                        }`}
+                                    />
+                                )}
+                                <item.icon className="h-[1.2rem] w-[1.2rem]" strokeWidth={active ? 2.1 : 1.7} />
+                            </div>
+                            <span
+                                className={`font-sans text-[9px] leading-none ${
+                                    active ? 'font-semibold' : 'font-medium'
+                                }`}
+                            >
+                                {item.label}
+                            </span>
+                        </button>
+                    );
+                }
+
                 return (
                     <button
-                        key={room}
+                        key="new"
                         type="button"
-                        onClick={() => go(room)}
-                        aria-label={label}
-                        aria-current={active ? 'page' : undefined}
+                        onClick={onNewProject}
+                        aria-label={item.label}
                         className={`flex flex-1 flex-col items-center gap-1 pt-2.5 pb-1.5 transition-colors ${
-                            active ? 'text-[#9d88ff]' : 'text-[var(--muted)] hover:text-[var(--text-secondary)]'
+                            dark
+                                ? 'text-neutral-500 hover:text-neutral-300'
+                                : 'text-neutral-500 hover:text-neutral-800'
                         }`}
                     >
-                        <div className="relative">
-                            {/* Active pill indicator above icon */}
-                            {active && (
-                                <span className="absolute -top-1 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-[#9d88ff]" />
-                            )}
-                            <Icon className="h-[1.2rem] w-[1.2rem]" strokeWidth={active ? 2.1 : 1.7} />
-                        </div>
-                        <span className={`font-sans text-[9px] leading-none ${active ? 'font-semibold text-[#9d88ff]' : 'font-medium'}`}>
-                            {label}
-                        </span>
+                        <item.icon className="h-[1.2rem] w-[1.2rem]" strokeWidth={1.7} />
+                        <span className="font-sans text-[9px] font-medium leading-none">{item.label}</span>
                     </button>
                 );
             })}
 
-            {/* More — opens the full nav drawer */}
             <button
                 type="button"
                 onClick={onOpenMore}
                 aria-label="More navigation options"
-                className="flex flex-1 flex-col items-center gap-1 pt-2.5 pb-1.5 text-[var(--muted)] transition-colors hover:text-[var(--text-secondary)]"
+                className={`flex flex-1 flex-col items-center gap-1 pt-2.5 pb-1.5 transition-colors ${
+                    dark ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-500 hover:text-neutral-800'
+                }`}
             >
                 <Menu className="h-[1.2rem] w-[1.2rem]" strokeWidth={1.7} />
                 <span className="font-sans text-[9px] font-medium leading-none">More</span>

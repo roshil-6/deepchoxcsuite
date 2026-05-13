@@ -977,7 +977,7 @@ function LoadingView({ elapsed }: { elapsed: number }) {
   const progress = Math.min((elapsed / 90) * 100, 96);
 
   return (
-    <div className="relative flex min-h-full flex-col items-center justify-center overflow-hidden py-16 text-center antialiased subpixel-antialiased">
+    <div className="relative flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto overflow-x-hidden py-16 text-center antialiased subpixel-antialiased">
       <ParticleCanvas />
 
       <div className="relative z-10 flex w-full max-w-xl flex-col items-center px-4">
@@ -1108,7 +1108,7 @@ function HomeView({ onSubmit }: { onSubmit: (idea: string, domain: string) => vo
   const activeDomain = DOMAINS.find(d => d.id === domain);
 
   return (
-    <div className={`flex min-h-full flex-col items-center px-4 py-12 antialiased subpixel-antialiased transition-colors duration-300 overflow-y-auto ${dark ? 'bg-[#0a0a0a]' : 'bg-[#fafafa]'}`}>
+    <div className={`flex min-h-0 flex-1 flex-col items-center px-4 py-12 antialiased subpixel-antialiased transition-colors duration-300 overflow-y-auto overscroll-y-contain ${dark ? 'bg-[#0a0a0a]' : 'bg-[#fafafa]'}`}>
       <div className="w-full max-w-3xl py-8">
 
         {/* Brand */}

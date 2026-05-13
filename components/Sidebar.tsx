@@ -140,7 +140,7 @@ export function Sidebar({
 
   return (
     <aside
-      className={`relative flex h-full shrink-0 flex-col border-r transition-colors duration-300 ${
+      className={`relative hidden h-full shrink-0 flex-col border-r transition-colors duration-300 lg:flex ${
         dark
           ? 'border-[#1a1a1a] bg-[#0a0a0a]'
           : 'border-neutral-200 bg-white'

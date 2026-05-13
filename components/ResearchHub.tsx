@@ -391,9 +391,9 @@ export function ResearchHub() {
   const active = FIELDS.filter(f => selected.has(f.id));
 
   return (
-    <div className={`flex min-h-full flex-col transition-colors duration-300 ease-out ${dark ? 'bg-[#0a0a0a]' : 'bg-[#f5f5f7]'}`}>
+    <div className={`flex min-h-0 flex-1 flex-col overflow-hidden transition-colors duration-300 ease-out ${dark ? 'bg-[#0a0a0a]' : 'bg-[#f5f5f7]'}`}>
       {/* Header */}
-      <div className={`border-b px-5 py-4 backdrop-blur-md transition-all duration-300 ease-out ${dark ? 'border-[#1a1a1a] bg-[#0a0a0a]/95' : 'border-neutral-200 bg-white/80'}`}>
+      <div className={`shrink-0 border-b px-5 py-4 backdrop-blur-md transition-all duration-300 ease-out ${dark ? 'border-[#1a1a1a] bg-[#0a0a0a]/95' : 'border-neutral-200 bg-white/80'}`}>
         <div className="mx-auto max-w-6xl">
           <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -467,7 +467,7 @@ export function ResearchHub() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 px-5 py-5">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-5 py-5">
         <div className="mx-auto max-w-6xl">
           {/* Custom search results */}
           {(customResults.length > 0 || customLoading) && (

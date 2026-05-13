@@ -346,7 +346,7 @@ Available actions: switch rooms (ceo, pm, accountant, scout, cmo, dexo, shark, r
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className={`fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full transition-all duration-300 hover:scale-110 ${
+          className={`fixed z-[45] flex h-14 w-14 items-center justify-center rounded-full transition-all duration-300 hover:scale-110 max-lg:right-4 max-lg:bottom-[calc(4.75rem+env(safe-area-inset-bottom))] lg:bottom-6 lg:right-6 ${
             dark
               ? 'bg-gradient-to-br from-neutral-700 to-neutral-900 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] hover:shadow-[0_12px_40px_-10px_rgba(255,255,255,0.08)]'
               : 'bg-gradient-to-br from-white to-neutral-200 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.25)] hover:shadow-[0_12px_40px_-10px_rgba(0,0,0,0.35)]'
@@ -371,7 +371,7 @@ Available actions: switch rooms (ceo, pm, accountant, scout, cmo, dexo, shark, r
 
       {/* Chat Panel - Perplexity-like Clean Interface */}
       {isOpen && (
-        <div className={`fixed bottom-6 right-6 z-50 flex h-[500px] w-[380px] flex-col overflow-hidden rounded-2xl border subpixel-antialiased shadow-[0_24px_60px_-20px_rgba(0,0,0,0.35)] ${
+        <div className={`fixed z-[45] flex flex-col overflow-hidden rounded-2xl border subpixel-antialiased shadow-[0_24px_60px_-20px_rgba(0,0,0,0.35)] max-lg:inset-x-3 max-lg:bottom-[calc(4.75rem+env(safe-area-inset-bottom))] max-lg:h-[min(72dvh,520px)] max-lg:w-auto lg:bottom-6 lg:right-6 lg:h-[500px] lg:w-[380px] ${
           dark
             ? 'border-[#262626] bg-[#141414]'
             : 'border-neutral-200/80 bg-white shadow-[0_24px_60px_-20px_rgba(0,0,0,0.2)]'
