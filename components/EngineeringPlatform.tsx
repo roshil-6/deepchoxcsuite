@@ -345,7 +345,7 @@ function SystemCard({ sys, index, dark }: { sys: SystemNode; index: number; dark
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center gap-3 py-2.5 border-b last:border-b-0" style={{ borderColor: 'rgba(15,23,42,0.06)' }}>
-      <span className="min-w-[110px] text-[10px] font-bold uppercase tracking-wider" style={{ color: 'rgba(20,184,166,0.55)' }}>{label}</span>
+      <span className="min-w-[80px] sm:min-w-[110px] text-[10px] font-bold uppercase tracking-wider" style={{ color: 'rgba(20,184,166,0.55)' }}>{label}</span>
       <span className="text-sm font-semibold" style={{ color: '#334155' }}>{value}</span>
     </div>
   );
@@ -594,7 +594,7 @@ function CodeTab({ result }: { result: OrchestrationResult }) {
           {/* Code body */}
           <div className="overflow-x-auto bg-[#0f172a]">
             <pre
-              className="p-6 text-xs leading-[1.7]"
+              className="p-4 sm:p-6 text-xs leading-[1.7]"
               style={{ color: '#e2e8f0', fontFamily: "'JetBrains Mono','Fira Code','Cascadia Code',monospace" }}
             >
               <code>{file.code}</code>
@@ -620,7 +620,7 @@ function CodeTab({ result }: { result: OrchestrationResult }) {
           </div>
           <div className="overflow-x-auto bg-[#0f172a]">
             <pre
-              className="p-6 text-xs leading-[1.7] whitespace-pre-wrap"
+              className="p-4 sm:p-6 text-xs leading-[1.7] whitespace-pre-wrap"
               style={{ color: '#cbd5e1', fontFamily: "'JetBrains Mono','Fira Code',monospace" }}
             >
               {result.setupInstructions}
@@ -786,7 +786,7 @@ function DeployTab({ result }: { result: OrchestrationResult }) {
           </div>
           <div className="overflow-x-auto bg-[#0f172a]">
             <pre
-              className="p-6 text-xs leading-[1.7]"
+              className="p-4 sm:p-6 text-xs leading-[1.7]"
               style={{ color: '#e2e8f0', fontFamily: "'JetBrains Mono','Fira Code',monospace" }}
             >
               <code>{cfg.content}</code>
@@ -831,7 +831,7 @@ function DocsTab({ result }: { result: OrchestrationResult }) {
           </span>
         </div>
         <pre
-          className="overflow-x-auto bg-[#0f172a] p-6 text-xs leading-[1.75] whitespace-pre-wrap"
+          className="overflow-x-auto bg-[#0f172a] p-4 sm:p-6 text-xs leading-[1.75] whitespace-pre-wrap"
           style={{ color: '#cbd5e1', fontFamily: "'JetBrains Mono','Fira Code',monospace" }}
         >
           {content}
@@ -1116,7 +1116,7 @@ function HomeView({ onSubmit }: { onSubmit: (idea: string, domain: string) => vo
           <p className={`mb-1.5 text-[10px] font-medium uppercase tracking-[0.2em] ${dark ? 'text-neutral-500' : 'text-neutral-400'}`}>
             northROSC LABS
           </p>
-          <h1 className={`mb-4 text-[3rem] font-bold tracking-tight ${dark ? 'text-neutral-100' : 'text-neutral-900'}`}>
+          <h1 className={`mb-4 text-2xl sm:text-3xl lg:text-[3rem] font-bold tracking-tight ${dark ? 'text-neutral-100' : 'text-neutral-900'}`}>
             Deepchox
           </h1>
           <p className={`mx-auto max-w-xl text-sm font-medium leading-[1.8] ${dark ? 'text-neutral-400' : 'text-neutral-600'}`}>

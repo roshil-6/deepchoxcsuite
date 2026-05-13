@@ -7,6 +7,7 @@ import { useAuth, useClerk } from '@clerk/nextjs';
 import { LandingPage } from '@/components/LandingPage';
 import { OfficeProvider } from '@/lib/OfficeContext';
 import { ThemeProvider, useTheme } from '@/lib/ThemeContext';
+import { MobileBottomNav } from '@/components/ui/MobileBottomNav';
 
 // Lazy-load heavy components with ssr:false to prevent SSR issues
 const Sidebar = dynamic(() => import('@/components/Sidebar').then(m => ({ default: m.Sidebar })), {
