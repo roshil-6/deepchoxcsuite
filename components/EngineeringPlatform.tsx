@@ -217,12 +217,12 @@ function SectionTitle({ children, sub, dark }: { children: React.ReactNode; sub?
     <div className="mb-5">
       <div className="flex items-center gap-2">
         <div className="h-4 w-[3px] rounded-full" style={{ background: dark ? '#525252' : '#a3a3a3' }} />
-        <h3 className={`text-[11px] font-bold uppercase tracking-[0.14em] ${dark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+        <h3 className={`text-[11px] font-bold uppercase tracking-[0.14em] subpixel-antialiased ${dark ? 'text-neutral-400' : 'text-neutral-500'}`}>
           {children}
         </h3>
       </div>
       {sub && (
-        <p className={`mt-1 pl-3.5 text-xs font-medium ${dark ? 'text-neutral-500' : 'text-neutral-500'}`}>{sub}</p>
+        <p className={`mt-1 pl-3.5 text-xs font-medium subpixel-antialiased ${dark ? 'text-neutral-500' : 'text-neutral-500'}`}>{sub}</p>
       )}
     </div>
   );
@@ -230,7 +230,7 @@ function SectionTitle({ children, sub, dark }: { children: React.ReactNode; sub?
 
 function Prose({ children, dark }: { children: React.ReactNode; dark?: boolean }) {
   return (
-    <p className={`text-sm font-medium leading-[1.75] ${dark ? 'text-neutral-300' : 'text-neutral-600'}`}>
+    <p className={`text-sm font-medium leading-[1.75] subpixel-antialiased ${dark ? 'text-neutral-300' : 'text-neutral-600'}`}>
       {children}
     </p>
   );
@@ -239,7 +239,7 @@ function Prose({ children, dark }: { children: React.ReactNode; dark?: boolean }
 function Card({ children, className = '', glow = false, dark }: { children: React.ReactNode; className?: string; glow?: boolean; dark?: boolean }) {
   return (
     <div
-      className={`rounded-2xl border p-5 ${className}`}
+      className={`rounded-2xl border p-5 subpixel-antialiased transition-shadow duration-300 ${className}`}
       style={{
         borderColor: dark ? 'rgba(64,64,64,0.4)' : 'rgba(0,0,0,0.08)',
         background: dark ? '#141414' : '#ffffff',
@@ -263,10 +263,10 @@ function SystemCard({ sys, index, dark }: { sys: SystemNode; index: number; dark
 
   return (
     <div
-      className={`group relative overflow-hidden rounded-xl border p-5 transition-all duration-300 hover:scale-[1.01] ${
+      className={`group relative overflow-hidden rounded-2xl border p-5 subpixel-antialiased transition-all duration-300 hover:scale-[1.01] hover:shadow-lg ${
         dark
-          ? 'border-[#262626] hover:border-[#333]'
-          : 'border-neutral-200 hover:border-neutral-300'
+          ? 'border-[#262626] hover:border-[#404040] hover:shadow-black/20'
+          : 'border-neutral-200 hover:border-neutral-300 hover:shadow-neutral-200/50'
       }`}
       style={{
         background: dark
@@ -977,7 +977,7 @@ function LoadingView({ elapsed }: { elapsed: number }) {
   const progress = Math.min((elapsed / 90) * 100, 96);
 
   return (
-    <div className="relative flex min-h-full flex-col items-center justify-center overflow-hidden py-16 text-center">
+    <div className="relative flex min-h-full flex-col items-center justify-center overflow-hidden py-16 text-center antialiased subpixel-antialiased">
       <ParticleCanvas />
 
       <div className="relative z-10 flex w-full max-w-xl flex-col items-center px-4">
@@ -1108,27 +1108,27 @@ function HomeView({ onSubmit }: { onSubmit: (idea: string, domain: string) => vo
   const activeDomain = DOMAINS.find(d => d.id === domain);
 
   return (
-    <div className={`flex min-h-full flex-col items-center justify-center px-4 py-12 transition-colors duration-300 ${dark ? 'bg-[#0a0a0a]' : 'bg-[#f5f5f7]'}`}>
-      <div className="w-full max-w-3xl">
+    <div className={`flex min-h-full flex-col items-center px-4 py-12 antialiased subpixel-antialiased transition-colors duration-300 overflow-y-auto ${dark ? 'bg-[#0a0a0a]' : 'bg-[#fafafa]'}`}>
+      <div className="w-full max-w-3xl py-8">
 
         {/* Brand */}
         <div className="mb-10 text-center">
-          <p className={`mb-1.5 text-[10px] font-medium uppercase tracking-[0.2em] ${dark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+          <p className={`mb-1.5 text-[10px] font-medium uppercase tracking-[0.2em] subpixel-antialiased ${dark ? 'text-neutral-500' : 'text-neutral-400'}`}>
             northROSC LABS
           </p>
-          <h1 className={`mb-4 text-2xl sm:text-3xl lg:text-[3rem] font-bold tracking-tight ${dark ? 'text-neutral-100' : 'text-neutral-900'}`}>
+          <h1 className={`mb-4 text-2xl sm:text-3xl lg:text-[3rem] font-bold tracking-tight subpixel-antialiased ${dark ? 'text-neutral-100' : 'text-neutral-900'}`}>
             Deepchox
           </h1>
-          <p className={`mx-auto max-w-xl text-sm font-medium leading-[1.8] ${dark ? 'text-neutral-400' : 'text-neutral-600'}`}>
+          <p className={`mx-auto max-w-xl text-sm font-medium leading-[1.8] subpixel-antialiased ${dark ? 'text-neutral-400' : 'text-neutral-600'}`}>
             Prompt an idea like you would for a landing page or app — Deepchox runs <strong className={dark ? 'text-neutral-300' : 'text-neutral-800'}>eight specialist agents</strong> in three waves and hands you architecture, code, deploy configs, and docs you can actually ship.
           </p>
         </div>
 
         {/* Input */}
         <div
-          className={`mb-5 overflow-hidden rounded-xl border text-left transition-all duration-200 ${
+          className={`mb-5 overflow-hidden rounded-2xl border text-left transition-all duration-300 shadow-sm hover:shadow-md ${
             focused
-              ? dark ? 'border-neutral-600 bg-[#141414]' : 'border-neutral-300 bg-white'
+              ? dark ? 'border-neutral-600 bg-[#141414] shadow-lg' : 'border-neutral-300 bg-white shadow-lg'
               : dark ? 'border-[#262626] bg-[#141414]' : 'border-neutral-200 bg-white'
           }`}
         >
@@ -1141,7 +1141,7 @@ function HomeView({ onSubmit }: { onSubmit: (idea: string, domain: string) => vo
             onBlur={() => setFocused(false)}
             onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submit(); }}
             placeholder="Describe what you're building — software system, hardware device, AI pipeline, robotics platform, aerospace application, biotech tool..."
-            className={`w-full resize-none bg-transparent px-5 pt-5 pb-3 text-sm font-medium outline-none ${dark ? 'text-neutral-200 placeholder:text-neutral-600' : 'text-neutral-900 placeholder:text-neutral-400'}`}
+            className={`w-full resize-none bg-transparent px-5 pt-5 pb-3 text-sm font-medium outline-none subpixel-antialiased transition-colors duration-200 ${dark ? 'text-neutral-200 placeholder:text-neutral-600' : 'text-neutral-900 placeholder:text-neutral-400'}`}
             style={{ minHeight: 110 }}
           />
           <div className={`flex items-center justify-between border-t px-5 py-3 ${dark ? 'border-[#262626]' : 'border-neutral-100'}`}>
@@ -1178,7 +1178,7 @@ function HomeView({ onSubmit }: { onSubmit: (idea: string, domain: string) => vo
 
         {/* Domain selector - Neutral colors */}
         <div className="mb-10">
-          <p className={`mb-3 text-[10px] font-medium uppercase tracking-[0.1em] ${dark ? 'text-neutral-500' : 'text-neutral-500'}`}>
+          <p className={`mb-3 text-[10px] font-medium uppercase tracking-[0.1em] subpixel-antialiased ${dark ? 'text-neutral-500' : 'text-neutral-500'}`}>
             Engineering Domain
           </p>
           <div className="flex flex-wrap gap-2">
@@ -1188,14 +1188,14 @@ function HomeView({ onSubmit }: { onSubmit: (idea: string, domain: string) => vo
                 <button
                   key={id}
                   onClick={() => setDomain(id)}
-                  className={`flex items-center gap-1.5 rounded-lg border px-3.5 py-1.5 text-xs font-medium transition-all duration-150 ${
+                  className={`flex items-center gap-1.5 rounded-xl border px-3.5 py-1.5 text-xs font-medium transition-all duration-200 hover:shadow-sm ${
                     active
                       ? dark
-                        ? 'border-neutral-600 bg-[#1a1a1a] text-neutral-200'
-                        : 'border-neutral-300 bg-neutral-100 text-neutral-900'
+                        ? 'border-neutral-600 bg-[#1a1a1a] text-neutral-200 shadow-sm'
+                        : 'border-neutral-300 bg-neutral-100 text-neutral-900 shadow-sm'
                       : dark
-                        ? 'border-[#262626] bg-transparent text-neutral-500 hover:border-neutral-600 hover:text-neutral-400'
-                        : 'border-neutral-200 bg-transparent text-neutral-600 hover:border-neutral-300 hover:text-neutral-900'
+                        ? 'border-[#262626] bg-transparent text-neutral-500 hover:border-neutral-600 hover:text-neutral-400 hover:shadow-black/10'
+                        : 'border-neutral-200 bg-transparent text-neutral-600 hover:border-neutral-300 hover:text-neutral-900 hover:shadow-neutral-200/50'
                   }`}
                 >
                   <Icon className="h-3 w-3 opacity-70" />
@@ -1208,7 +1208,7 @@ function HomeView({ onSubmit }: { onSubmit: (idea: string, domain: string) => vo
 
         {/* Suggestions - Neutral colors */}
         <div>
-          <p className={`mb-3 text-[10px] font-medium uppercase tracking-[0.1em] ${dark ? 'text-neutral-500' : 'text-neutral-500'}`}>
+          <p className={`mb-3 text-[10px] font-medium uppercase tracking-[0.1em] subpixel-antialiased ${dark ? 'text-neutral-500' : 'text-neutral-500'}`}>
             Try an Example
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -1216,18 +1216,18 @@ function HomeView({ onSubmit }: { onSubmit: (idea: string, domain: string) => vo
               <button
                 key={i}
                 onClick={() => { setIdea(s.label); setDomain(s.domain); textareaRef.current?.focus(); }}
-                className={`group rounded-xl border px-4 py-4 text-left transition-all duration-150 ${
+                className={`group rounded-2xl border px-4 py-4 text-left transition-all duration-300 hover:shadow-md hover:scale-[1.01] ${
                   dark
-                    ? 'border-[#262626] bg-[#141414] hover:border-[#333] hover:bg-[#1a1a1a]'
-                    : 'border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-50'
+                    ? 'border-[#262626] bg-[#141414] hover:border-[#404040] hover:bg-[#1a1a1a] hover:shadow-black/20'
+                    : 'border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-50 hover:shadow-neutral-200/50'
                 }`}
               >
                 <div className="mb-2">
-                  <span className={`rounded px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider ${dark ? 'bg-[#1a1a1a] text-neutral-500' : 'bg-neutral-100 text-neutral-500'}`}>
+                  <span className={`rounded-lg px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider subpixel-antialiased ${dark ? 'bg-[#1a1a1a] text-neutral-500' : 'bg-neutral-100 text-neutral-500'}`}>
                     {s.tag}
                   </span>
                 </div>
-                <p className={`text-sm font-medium leading-snug ${dark ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                <p className={`text-sm font-medium leading-snug subpixel-antialiased ${dark ? 'text-neutral-400' : 'text-neutral-600'}`}>
                   {s.label}
                 </p>
               </button>
@@ -1250,27 +1250,27 @@ function ResultView({ project, onReset }: { project: EngProject; onReset: () => 
   const dark = theme === 'dark';
 
   return (
-    <div className={`flex min-h-0 flex-1 flex-col transition-colors duration-300 ${dark ? 'bg-[#0a0a0a]' : 'bg-[#f5f5f7]'}`}>
-      {/* Sticky header */}
+    <div className={`flex min-h-0 flex-1 flex-col antialiased subpixel-antialiased overflow-y-auto transition-colors duration-300 ${dark ? 'bg-[#0a0a0a]' : 'bg-[#fafafa]'}`}>
+      {/* Header - no longer sticky for natural scrolling */}
       <div
-        className={`sticky top-0 z-10 shrink-0 border-b px-6 pt-5 pb-0 transition-colors duration-300 ${dark ? 'border-[#1a1a1a] bg-[#0a0a0a]' : 'border-neutral-200 bg-[#f5f5f7]'}`}
+        className={`shrink-0 border-b px-6 pt-5 pb-0 transition-colors duration-300 ${dark ? 'border-[#1a1a1a] bg-[#0a0a0a]' : 'border-neutral-200 bg-[#fafafa]'}`}
       >
         <div className="mx-auto max-w-5xl">
           <div className="flex items-start justify-between gap-4 pb-4">
             <div className="min-w-0 flex-1">
-              <h2 className={`truncate text-base font-bold leading-tight ${dark ? 'text-neutral-200' : 'text-neutral-900'}`}>
+              <h2 className={`truncate text-base font-bold leading-tight subpixel-antialiased ${dark ? 'text-neutral-200' : 'text-neutral-900'}`}>
                 {project.title}
               </h2>
               <div className="mt-2 flex flex-wrap items-center gap-2.5">
                 {/* Domain pill */}
                 {dom && (
-                  <span className={`flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider ${dark ? 'bg-[#1a1a1a] text-neutral-400' : 'bg-neutral-100 text-neutral-600'}`}>
+                  <span className={`flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider subpixel-antialiased ${dark ? 'bg-[#1a1a1a] text-neutral-400' : 'bg-neutral-100 text-neutral-600'}`}>
                     <dom.icon className="h-2.5 w-2.5" />
                     {dom.label}
                   </span>
                 )}
                 {/* Stats */}
-                <span className={`text-[11px] font-semibold ${dark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                <span className={`text-[11px] font-semibold subpixel-antialiased ${dark ? 'text-neutral-500' : 'text-neutral-400'}`}>
                   {result.codeFiles.length} files &nbsp;&middot;&nbsp; {result.phases.length} phases &nbsp;&middot;&nbsp; {result.risks.length} risks &nbsp;&middot;&nbsp; {Math.round(result.durationMs / 1000)}s
                 </span>
                 {/* Agent trace */}
@@ -1278,7 +1278,7 @@ function ResultView({ project, onReset }: { project: EngProject; onReset: () => 
                   {result.agentTrace.map((a) => (
                     <div
                       key={a.agent}
-                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-semibold shadow-sm ring-1 ${
+                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-semibold shadow-sm ring-1 subpixel-antialiased ${
                         dark ? 'bg-[#1a1a1a] ring-[#262626]' : 'bg-white ring-neutral-200'
                       }`}
                     >
@@ -1300,10 +1300,10 @@ function ResultView({ project, onReset }: { project: EngProject; onReset: () => 
             </div>
             <button
               onClick={onReset}
-              className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-bold transition-all ${
+              className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-bold transition-all duration-200 hover:shadow-sm ${
                 dark
-                  ? 'border-[#262626] text-neutral-400 hover:bg-[#1a1a1a]'
-                  : 'border-neutral-200 text-neutral-600 hover:bg-neutral-100'
+                  ? 'border-[#262626] text-neutral-400 hover:bg-[#1a1a1a] hover:shadow-black/20'
+                  : 'border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:shadow-neutral-200/50'
               }`}
             >
               <RotateCcw className="h-3 w-3" />
@@ -1319,14 +1319,14 @@ function ResultView({ project, onReset }: { project: EngProject; onReset: () => 
                 <button
                   key={id}
                   onClick={() => setTab(id)}
-                  className={`relative flex shrink-0 items-center gap-1.5 px-4 py-2.5 text-xs font-bold transition-colors ${
+                  className={`relative flex shrink-0 items-center gap-1.5 rounded-t-lg px-4 py-2.5 text-xs font-bold transition-colors duration-200 ${
                     active
                       ? dark ? 'text-neutral-200' : 'text-neutral-900'
-                      : dark ? 'text-neutral-500' : 'text-neutral-400'
+                      : dark ? 'text-neutral-500 hover:text-neutral-400' : 'text-neutral-400 hover:text-neutral-600'
                   }`}
                 >
                   <Icon
-                    className={`h-3.5 w-3.5 shrink-0 ${
+                    className={`h-3.5 w-3.5 shrink-0 transition-colors duration-200 ${
                       active
                         ? dark ? 'text-neutral-300' : 'text-neutral-700'
                         : dark ? 'text-neutral-500' : 'text-neutral-400'
@@ -1347,7 +1347,7 @@ function ResultView({ project, onReset }: { project: EngProject; onReset: () => 
       </div>
 
       {/* Tab content */}
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="flex-1">
         <div className="mx-auto max-w-5xl px-6 py-8">
           {tab === 'overview'     && <OverviewTab     result={result} />}
           {tab === 'architecture' && <ArchitectureTab result={result} />}

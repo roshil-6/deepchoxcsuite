@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { DexoParticleCanvas } from '@/components/Dexo/DexoParticleSphere';
 import { useZepConversationalVoice } from '@/lib/useZepVoice';
 import { useOffice } from '@/lib/OfficeContext';
 import { useTheme } from '@/lib/ThemeContext';
@@ -343,51 +342,63 @@ Available actions: switch rooms (ceo, pm, accountant, scout, cmo, dexo, shark, r
 
   return (
     <>
-      {/* Floating Orb Button */}
+      {/* Floating Orb Button - Clean CSS Design */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className={`fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full border transition hover:scale-105 ${
+          className={`fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full transition-all duration-300 hover:scale-110 ${
             dark
-              ? 'border-[#262626] bg-[#1a1a1a] shadow-[0_8px_30px_-8px_rgba(0,0,0,0.4)] hover:shadow-[0_12px_36px_-10px_rgba(255,255,255,0.1)]'
-              : 'border-neutral-200 bg-white shadow-[0_8px_30px_-8px_rgba(0,0,0,0.18)] hover:shadow-[0_12px_36px_-10px_rgba(0,0,0,0.2)]'
+              ? 'bg-gradient-to-br from-neutral-700 to-neutral-900 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] hover:shadow-[0_12px_40px_-10px_rgba(255,255,255,0.08)]'
+              : 'bg-gradient-to-br from-white to-neutral-200 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.25)] hover:shadow-[0_12px_40px_-10px_rgba(0,0,0,0.35)]'
           }`}
           aria-label="Open Zep"
         >
-          <DexoParticleCanvas mode="floating" size={48} active={false} />
+          {/* Inner orb with pulse animation */}
+          <div className="relative flex h-10 w-10 items-center justify-center">
+            <div className={`absolute inset-0 rounded-full animate-pulse ${
+              dark ? 'bg-neutral-600/30' : 'bg-neutral-300/40'
+            }`} />
+            <div className={`relative flex h-8 w-8 items-center justify-center rounded-full ${
+              dark
+                ? 'bg-gradient-to-br from-neutral-500 to-neutral-700'
+                : 'bg-gradient-to-br from-neutral-300 to-neutral-400'
+            }`}>
+              <Command className={`h-4 w-4 ${dark ? 'text-neutral-200' : 'text-neutral-600'}`} />
+            </div>
+          </div>
         </button>
       )}
 
-      {/* Chat Panel */}
+      {/* Chat Panel - Perplexity-like Clean Interface */}
       {isOpen && (
-        <div className={`fixed bottom-6 right-6 z-50 flex h-[500px] w-[380px] flex-col overflow-hidden rounded-2xl border shadow-[0_20px_50px_-20px_rgba(0,0,0,0.3)] ${
+        <div className={`fixed bottom-6 right-6 z-50 flex h-[500px] w-[380px] flex-col overflow-hidden rounded-2xl border subpixel-antialiased shadow-[0_24px_60px_-20px_rgba(0,0,0,0.35)] ${
           dark
             ? 'border-[#262626] bg-[#141414]'
-            : 'border-neutral-200 bg-white shadow-[0_20px_50px_-20px_rgba(0,0,0,0.2)]'
+            : 'border-neutral-200/80 bg-white shadow-[0_24px_60px_-20px_rgba(0,0,0,0.2)]'
         }`}>
           {/* Header */}
-          <div className={`flex items-center justify-between border-b px-4 py-3 ${dark ? 'border-[#262626] bg-[#1a1a1a]' : 'border-neutral-100 bg-neutral-50'}`}>
-            <div className="flex items-center gap-2">
-              <div className={`flex h-8 w-8 items-center justify-center rounded-full shadow-sm ring-1 ${dark ? 'bg-[#262626] ring-[#333]' : 'bg-white ring-neutral-200'}`}>
-                <Command className="h-4 w-4 text-neutral-500" />
+          <div className={`flex items-center justify-between border-b px-4 py-3.5 ${dark ? 'border-[#262626] bg-[#1a1a1a]' : 'border-neutral-100 bg-neutral-50/80'}`}>
+            <div className="flex items-center gap-2.5">
+              <div className={`flex h-8 w-8 items-center justify-center rounded-full shadow-sm ring-1 ${dark ? 'bg-gradient-to-br from-neutral-600 to-neutral-800 ring-[#333]' : 'bg-gradient-to-br from-neutral-200 to-neutral-300 ring-neutral-200'}`}>
+                <Command className={`h-4 w-4 ${dark ? 'text-neutral-300' : 'text-neutral-600'}`} />
               </div>
-              <span className={`font-semibold ${dark ? 'text-neutral-200' : 'text-neutral-800'}`}>Zep</span>
+              <span className={`font-semibold tracking-tight ${dark ? 'text-neutral-200' : 'text-neutral-800'}`}>Zep</span>
             </div>
-            <button onClick={() => setIsOpen(false)} className={dark ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-400 hover:text-neutral-700'}>
+            <button onClick={() => setIsOpen(false)} className={`rounded-md p-1 transition-colors ${dark ? 'text-neutral-500 hover:bg-[#262626] hover:text-neutral-300' : 'text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700'}`}>
               <X className="h-4 w-4" />
             </button>
           </div>
 
           {/* Messages */}
-          <div className={`flex-1 space-y-3 overflow-y-auto p-4 ${dark ? 'bg-[#0a0a0a]' : 'bg-[#f5f5f7]'}`}>
+          <div className={`flex-1 space-y-4 overflow-y-auto p-4 ${dark ? 'bg-[#0a0a0a]' : 'bg-[#fafafa]'}`}>
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[14px] leading-relaxed ${
+                <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-[14px] leading-relaxed subpixel-antialiased ${
                   m.role === 'user'
-                    ? 'bg-neutral-600 text-white shadow-sm'
+                    ? 'bg-neutral-700 text-white shadow-sm'
                     : dark
                       ? 'border border-[#262626] bg-[#1a1a1a] text-neutral-200 shadow-sm'
-                      : 'border border-neutral-200 bg-white text-neutral-700 shadow-sm'
+                      : 'border border-neutral-200/80 bg-white text-neutral-700 shadow-sm'
                 }`}>
                   {m.text.split('\n').map((line, j) => (
                     <div key={j}>{line || <br />}</div>
@@ -398,19 +409,19 @@ Available actions: switch rooms (ceo, pm, accountant, scout, cmo, dexo, shark, r
 
             {/* Confirmation buttons */}
             {confirmCommand && (
-              <div className="flex gap-2">
-                <button onClick={confirm} className="rounded-lg bg-neutral-700 px-3 py-1.5 text-[13px] font-semibold text-white shadow-sm hover:bg-neutral-600">
+              <div className="flex gap-2 pt-1">
+                <button onClick={confirm} className="rounded-xl bg-neutral-700 px-4 py-2 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-neutral-600">
                   Confirm
                 </button>
-                <button onClick={cancel} className={`rounded-lg border px-3 py-1.5 text-[13px] font-medium ${dark ? 'border-[#333] bg-[#1a1a1a] text-neutral-300 hover:bg-[#262626]' : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50'}`}>
+                <button onClick={cancel} className={`rounded-xl border px-4 py-2 text-[13px] font-medium transition-colors ${dark ? 'border-[#333] bg-[#1a1a1a] text-neutral-300 hover:bg-[#262626]' : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50'}`}>
                   Cancel
                 </button>
               </div>
             )}
 
             {processing && (
-              <div className="flex justify-start">
-                <div className={`flex items-center gap-2 rounded-2xl border px-3 py-2 shadow-sm ${dark ? 'border-[#262626] bg-[#1a1a1a] text-neutral-400' : 'border-neutral-200 bg-white text-neutral-500'}`}>
+              <div className="flex justify-start pt-1">
+                <div className={`flex items-center gap-2 rounded-2xl border px-4 py-2.5 shadow-sm ${dark ? 'border-[#262626] bg-[#1a1a1a] text-neutral-400' : 'border-neutral-200 bg-white text-neutral-500'}`}>
                   <Sparkles className="h-4 w-4 animate-pulse text-neutral-400" />
                   <span className="text-[13px]">Thinking...</span>
                 </div>
@@ -420,16 +431,16 @@ Available actions: switch rooms (ceo, pm, accountant, scout, cmo, dexo, shark, r
           </div>
 
           {/* Input */}
-          <div className={`border-t p-3 ${dark ? 'border-[#262626] bg-[#1a1a1a]' : 'border-neutral-200 bg-white'}`}>
-            <div className="flex items-end gap-2">
+          <div className={`border-t p-3.5 ${dark ? 'border-[#262626] bg-[#1a1a1a]' : 'border-neutral-200 bg-white'}`}>
+            <div className="flex items-end gap-2.5">
               <button
                 onClick={isListening ? stopListening : startListening}
-                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition-all ${
                   isListening
                     ? 'border-neutral-300 bg-neutral-100 text-neutral-600'
                     : dark
-                      ? 'border-[#333] bg-[#262626] text-neutral-400'
-                      : 'border-neutral-200 bg-neutral-50 text-neutral-500'
+                      ? 'border-[#333] bg-[#262626] text-neutral-400 hover:bg-[#333]'
+                      : 'border-neutral-200 bg-neutral-50 text-neutral-500 hover:bg-neutral-100'
                 }`}
               >
                 <Mic className={`h-4 w-4 ${isListening ? 'animate-pulse' : ''}`} />
@@ -446,17 +457,17 @@ Available actions: switch rooms (ceo, pm, accountant, scout, cmo, dexo, shark, r
                 placeholder={isListening ? 'Listening...' : 'Type a command...'}
                 rows={1}
                 disabled={processing}
-                className={`max-h-24 flex-1 resize-none rounded-lg border border-transparent px-2 py-1.5 text-[14px] outline-none focus:border-neutral-400 ${
+                className={`max-h-24 flex-1 resize-none rounded-xl border border-transparent px-3 py-2 text-[14px] subpixel-antialiased outline-none transition-all focus:border-neutral-400 ${
                   dark
                     ? 'bg-[#262626] text-neutral-200 placeholder:text-neutral-500 focus:bg-[#1a1a1a]'
-                    : 'bg-neutral-50 text-neutral-800 placeholder:text-neutral-400 focus:bg-white'
+                    : 'bg-neutral-50 text-neutral-800 placeholder:text-neutral-400 focus:bg-white focus:border-neutral-300'
                 }`}
               />
               <button
                 onClick={() => void handleCommand(input)}
                 disabled={processing || !input.trim()}
-                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg shadow-sm hover:opacity-90 disabled:opacity-30 ${
-                  dark ? 'bg-neutral-600 text-white' : 'bg-neutral-800 text-white'
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-sm transition-all hover:opacity-90 disabled:opacity-30 ${
+                  dark ? 'bg-neutral-600 text-white hover:bg-neutral-500' : 'bg-neutral-800 text-white hover:bg-neutral-700'
                 }`}
               >
                 <Send className="h-4 w-4" />

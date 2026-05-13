@@ -66,38 +66,85 @@ function timeAgo(ts: number): string {
   return `${Math.floor(m / 60)}h ago`;
 }
 
-// Map domains to relevant images
-const DOMAIN_IMAGES: Record<string, string> = {
-  'techcrunch.com': 'photo-1519389950473-47ba0277781c',
-  'theverge.com': 'photo-1516321318423-f06f85e504b3',
-  'wired.com': 'photo-1518770660439-4636190af475',
-  'arstechnica.com': 'photo-1550751827-4bd374c3f58b',
-  'mit.edu': 'photo-1635070041078-e363dbe005cb',
-  'nature.com': 'photo-1532187863486-abf9dbad1b69',
-  'github.com': 'photo-1618401471353-b98afee0b2eb',
-  'arxiv.org': 'photo-1635070041078-e363dbe005cb',
+// Field-specific topic images for better variety
+const FIELD_IMAGES: Record<string, string[]> = {
+  'ai-ml': [
+    'photo-1677442136019-21780ecad995', // AI neural network visualization
+    'photo-1620712943543-bcc4688e7485', // Machine learning data
+    'photo-1485827404703-89b55fcc595e', // Robot/AI concept
+  ],
+  'robotics': [
+    'photo-1485827404703-89b55fcc595e', // Robot arm
+    'photo-1535378437327-664c860c713d', // Humanoid robot
+    'photo-1581092160562-40aa08e78837', // Industrial robot
+  ],
+  'space': [
+    'photo-1446776811953-b23d57bd21aa', // Space station
+    'photo-1451187580459-43490279c0fa', // Earth from space
+    'photo-1516849841032-87cbac4d88f7', // Rocket launch
+  ],
+  'quantum': [
+    'photo-1635070041078-e363dbe005cb', // Quantum computing
+    'photo-1532094349884-543bc11b234d', // Science particles
+    'photo-1507413245164-6160d8298b31', // Lab/science
+  ],
+  'biotech': [
+    'photo-1576086213369-97a306d36557', // DNA helix
+    'photo-1532187863486-abf9dbad1b69', // Lab research
+    'photo-1582719471384-894fbb16e074', // Medical research
+  ],
+  'climate': [
+    'photo-1464822759023-fed622ff2c3b', // Mountains/nature
+    'photo-1473341304170-971dccb5ac1e', // Solar panels
+    'photo-1532601224476-15c79f2f7a51', // Wind turbines
+  ],
+  'web3': [
+    'photo-1639762681485-074b7f938ba0', // Blockchain/crypto
+    'photo-1621761191319-c6fb62004040', // Bitcoin/crypto
+    'photo-1642104704074-907c0698b98d', // NFT/digital
+  ],
+  'security': [
+    'photo-1550751827-4bd374c3f58b', // Cybersecurity
+    'photo-1563013544-824ae1b704d3', // Lock/security
+    'photo-1526374965328-7f61d4dc18c5', // Code/matrix
+  ],
+  'chips': [
+    'photo-1518770660439-4636190af475', // Circuit board
+    'photo-1555664424-778a6902201b', // CPU/chip
+    'photo-1591799264318-7e6ef8ddb7ea', // Semiconductor
+  ],
+  'ev': [
+    'photo-1593941707882-a5bba14938c7', // Electric car
+    'photo-1566008885218-90abf9200ddb', // EV charging
+    'photo-1617788138017-80ad40651399', // Tesla/car
+  ],
+  'iot': [
+    'photo-1518770660439-4636190af475', // Connected devices
+    'photo-1558618666-fcd25c85cd64', // Smart home
+    'photo-1563986768609-322da13575f3', // Network/connected
+  ],
 };
 
+// Fallback generic tech images
 const DEFAULT_IMAGES = [
   'photo-1519389950473-47ba0277781c', 'photo-1498050108023-c5249f4df085',
   'photo-1516321318423-f06f85e504b3', 'photo-1505740420928-5e560c06d30e',
-  'photo-1550751827-4bd374c3f58b', 'photo-1518770660439-4636190af475',
-  'photo-1558618666-fcd25c85cd64', 'photo-1635070041078-e363dbe005cb',
 ];
 
-function getImage(url: string, idx: number): string {
-  const domain = getDomain(url);
-  for (const [d, img] of Object.entries(DOMAIN_IMAGES)) {
-    if (domain.includes(d)) return `https://images.unsplash.com/${img}?w=400&h=250&fit=crop&q=60`;
+function getImage(fieldId: string | undefined, idx: number): string {
+  if (fieldId && FIELD_IMAGES[fieldId]) {
+    const images = FIELD_IMAGES[fieldId];
+    const img = images[idx % images.length];
+    return `https://images.unsplash.com/${img}?w=400&h=250&fit=crop&q=60`;
   }
   return `https://images.unsplash.com/${DEFAULT_IMAGES[idx % DEFAULT_IMAGES.length]}?w=400&h=250&fit=crop&q=60`;
 }
 
 // ── Article card ───────────────────────────────────────────────────────────────
 
-function ArticleCard({ item, index, dark }: { item: ResearchResult; index: number; dark: boolean }) {
+function ArticleCard({ item, index, dark, fieldId }: { item: ResearchResult; index: number; dark: boolean; fieldId?: string }) {
   const [loaded, setLoaded] = useState(false);
-  const image = getImage(item.url, index);
+  const image = getImage(fieldId, index);
   const domain = getDomain(item.url);
 
   return (
@@ -105,10 +152,10 @@ function ArticleCard({ item, index, dark }: { item: ResearchResult; index: numbe
       href={item.url}
       target="_blank"
       rel="noreferrer"
-      className={`group block overflow-hidden rounded-xl border transition-all duration-200 hover:-translate-y-0.5 ${
+      className={`group block overflow-hidden rounded-2xl border subpixel-antialiased transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg ${
         dark
-          ? 'border-[#262626] bg-[#141414] hover:border-[#333]'
-          : 'border-neutral-200 bg-white hover:border-neutral-300'
+          ? 'border-[#262626] bg-[#141414] hover:border-[#404040] hover:shadow-black/20'
+          : 'border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-neutral-200'
       }`}
     >
       <div className={`relative h-32 overflow-hidden ${dark ? 'bg-[#1a1a1a]' : 'bg-neutral-100'}`}>
@@ -156,7 +203,7 @@ function ArticleCard({ item, index, dark }: { item: ResearchResult; index: numbe
 
 function SkeletonCard({ dark }: { dark?: boolean }) {
   return (
-    <div className={`overflow-hidden rounded-xl border ${dark ? 'border-[#262626]' : 'border-neutral-200'}`}>
+    <div className={`overflow-hidden rounded-2xl border transition-all duration-300 ${dark ? 'border-[#262626]' : 'border-neutral-200'}`}>
       <div className={`h-32 ${dark ? 'bg-[#1a1a1a]' : 'bg-neutral-100'}`} />
       <div className="space-y-2 p-3">
         <div className={`h-4 w-3/4 rounded ${dark ? 'bg-[#1a1a1a]' : 'bg-neutral-100'}`} />
@@ -243,7 +290,7 @@ function FieldSection({
       {/* Results */}
       {state.results.length > 0 && (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {state.results.map((item, i) => <ArticleCard key={i} item={item} index={i} dark={dark} />)}
+          {state.results.map((item, i) => <ArticleCard key={i} item={item} index={i} dark={dark} fieldId={field.id} />)}
         </div>
       )}
     </section>
@@ -344,9 +391,9 @@ export function ResearchHub() {
   const active = FIELDS.filter(f => selected.has(f.id));
 
   return (
-    <div className={`flex h-full flex-col transition-colors duration-300 ${dark ? 'bg-[#0a0a0a]' : 'bg-[#f5f5f7]'}`}>
+    <div className={`flex min-h-full flex-col transition-colors duration-300 ease-out ${dark ? 'bg-[#0a0a0a]' : 'bg-[#f5f5f7]'}`}>
       {/* Header */}
-      <div className={`shrink-0 border-b px-5 py-4 backdrop-blur-md transition-colors duration-300 ${dark ? 'border-[#1a1a1a] bg-[#0a0a0a]/95' : 'border-neutral-200 bg-white/80'}`}>
+      <div className={`border-b px-5 py-4 backdrop-blur-md transition-all duration-300 ease-out ${dark ? 'border-[#1a1a1a] bg-[#0a0a0a]/95' : 'border-neutral-200 bg-white/80'}`}>
         <div className="mx-auto max-w-6xl">
           <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -420,7 +467,7 @@ export function ResearchHub() {
       </div>
 
       {/* Content */}
-      <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
+      <div className="flex-1 px-5 py-5">
         <div className="mx-auto max-w-6xl">
           {/* Custom search results */}
           {(customResults.length > 0 || customLoading) && (
@@ -447,7 +494,7 @@ export function ResearchHub() {
 
               {customResults.length > 0 && (
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {customResults.map((item, i) => <ArticleCard key={i} item={item} index={i} dark={dark} />)}
+                  {customResults.map((item, i) => <ArticleCard key={i} item={item} index={i} dark={dark} fieldId={undefined} />)}
                 </div>
               )}
 
