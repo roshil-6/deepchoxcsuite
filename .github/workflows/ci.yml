@@ -1,0 +1,39 @@
+# Validates PRs without secrets (Prisma generate, TypeScript via npm run lint, Next build).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Prisma Client
+        run: npx prisma generate
+
+      # Next.js 16 dropped `next lint`; `npm run lint` is TypeScript only.
+      - run: npm run lint
+
+      - name: Production build (no DATABASE_URL — optional on Vercel Preview)
+        run: npm run build
+        env:
+          CI: true
