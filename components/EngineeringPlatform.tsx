@@ -257,60 +257,48 @@ function Card({ children, className = '', glow = false, dark }: { children: Reac
   );
 }
 
-// New SystemCard component with improved design
+// New SystemCard component with neutral grey design
 function SystemCard({ sys, index, dark }: { sys: SystemNode; index: number; dark?: boolean }) {
-  const typeColors: Record<string, string> = {
-    firmware: '#f59e0b',
-    hardware: '#3b82f6',
-    ai: '#8b5cf6',
-    service: '#10b981',
-    frontend: '#ec4899',
-    database: '#f97316',
-    default: '#14b8a6',
-  };
-
-  const color = typeColors[sys.type.toLowerCase()] || typeColors.default;
+  const neutralColor = dark ? '#525252' : '#737373'; // neutral grey
 
   return (
     <div
-      className={`group relative overflow-hidden rounded-2xl border p-5 transition-all duration-300 hover:scale-[1.02] ${
+      className={`group relative overflow-hidden rounded-xl border p-5 transition-all duration-300 hover:scale-[1.01] ${
         dark
-          ? 'hover:border-slate-600 hover:shadow-[0_8px_30px_-8px_rgba(0,0,0,0.5)]'
-          : 'hover:border-slate-300 hover:shadow-[0_8px_30px_-8px_rgba(15,23,42,0.12)]'
+          ? 'border-[#262626] hover:border-[#333]'
+          : 'border-neutral-200 hover:border-neutral-300'
       }`}
       style={{
-        borderColor: dark ? 'rgba(51,65,85,0.5)' : 'rgba(15,23,42,0.08)',
         background: dark
-          ? 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)'
-          : 'linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)',
+          ? '#141414'
+          : '#ffffff',
         boxShadow: dark
-          ? '0 2px 4px rgba(0,0,0,0.2), 0 6px 12px -4px rgba(0,0,0,0.3)'
-          : '0 2px 4px rgba(15,23,42,0.04), 0 6px 12px -4px rgba(15,23,42,0.08)',
+          ? '0 1px 3px rgba(0,0,0,0.3)'
+          : '0 1px 3px rgba(0,0,0,0.05)',
       }}
     >
-      {/* Top accent line */}
+      {/* Top accent line - neutral grey */}
       <div
-        className="absolute left-0 right-0 top-0 h-1"
-        style={{ background: `linear-gradient(to right, ${color}, ${color}66)` }}
+        className="absolute left-0 right-0 top-0 h-0.5"
+        style={{ background: `linear-gradient(to right, ${neutralColor}, ${neutralColor}66)` }}
       />
 
       {/* Icon / Number */}
       <div className="mb-4 flex items-center justify-between">
         <div
-          className="flex h-10 w-10 items-center justify-center rounded-xl text-sm font-bold"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-sm font-medium"
           style={{
-            background: dark ? `${color}22` : `${color}15`,
-            color: color,
-            boxShadow: `0 2px 8px -2px ${color}40`,
+            background: dark ? '#1a1a1a' : '#f5f5f5',
+            color: dark ? '#a3a3a3' : '#525252',
           }}
         >
           {index + 1}
         </div>
         <span
-          className="rounded-lg px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
+          className="rounded-md px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider"
           style={{
-            background: dark ? `${color}22` : `${color}15`,
-            color: color,
+            background: dark ? '#1a1a1a' : '#f5f5f5',
+            color: dark ? '#a3a3a3' : '#525252',
           }}
         >
           {sys.type}
@@ -318,33 +306,33 @@ function SystemCard({ sys, index, dark }: { sys: SystemNode; index: number; dark
       </div>
 
       {/* Title */}
-      <h4 className={`mb-2 text-[15px] font-bold leading-tight ${dark ? 'text-slate-200' : 'text-slate-900'}`}>
+      <h4 className={`mb-2 text-[15px] font-semibold leading-tight ${dark ? 'text-neutral-200' : 'text-neutral-900'}`}>
         {sys.name}
       </h4>
 
       {/* Description */}
-      <p className={`mb-4 text-[13px] leading-relaxed ${dark ? 'text-slate-400' : 'text-slate-600'}`}>
+      <p className={`mb-4 text-[13px] leading-relaxed ${dark ? 'text-neutral-500' : 'text-neutral-600'}`}>
         {sys.description}
       </p>
 
       {/* Connections */}
       {sys.connections.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 pt-3 border-t" style={{ borderColor: dark ? 'rgba(51,65,85,0.3)' : 'rgba(15,23,42,0.06)' }}>
-          <span className={`text-[10px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>Connects to:</span>
+        <div className={`flex flex-wrap gap-1.5 pt-3 border-t ${dark ? 'border-[#262626]' : 'border-neutral-100'}`}>
+          <span className={`text-[10px] ${dark ? 'text-neutral-600' : 'text-neutral-500'}`}>Connects to:</span>
           {sys.connections.slice(0, 3).map((c) => (
             <span
               key={c}
               className="rounded-md px-2 py-0.5 text-[10px] font-medium"
               style={{
-                background: dark ? 'rgba(51,65,85,0.4)' : 'rgba(15,23,42,0.06)',
-                color: dark ? '#94a3b8' : '#64748b',
+                background: dark ? '#1a1a1a' : '#f5f5f5',
+                color: dark ? '#a3a3a3' : '#525252',
               }}
             >
               {c}
             </span>
           ))}
           {sys.connections.length > 3 && (
-            <span className={`text-[10px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
+            <span className={`text-[10px] ${dark ? 'text-neutral-600' : 'text-neutral-500'}`}>
               +{sys.connections.length - 3} more
             </span>
           )}

@@ -221,9 +221,15 @@ function FieldSection({
 
       {/* Error */}
       {state.error && !state.loading && (
-        <div className={`mb-4 rounded-xl border p-3 text-[13px] ${dark ? 'border-red-900/30 bg-red-950/20 text-red-400' : 'border-red-200 bg-red-50 text-red-600'}`}>
-          <p className="font-medium">Error: {state.errorMessage || 'Unknown error'}</p>
-          <p className="text-xs mt-1 opacity-70">Check console for details. Try refreshing.</p>
+        <div className={`mb-4 rounded-xl border p-4 ${dark ? 'border-[#333] bg-[#1a1a1a]' : 'border-neutral-200 bg-neutral-50'}`}>
+          <p className={`text-[13px] font-medium mb-1 ${dark ? 'text-neutral-400' : 'text-neutral-600'}`}>
+            Research temporarily unavailable
+          </p>
+          <p className={`text-[12px] ${dark ? 'text-neutral-600' : 'text-neutral-500'}`}>
+            {state.errorMessage?.includes('404') 
+              ? 'API route not found. Please try again later.' 
+              : 'Could not fetch research data. Try refreshing.'}
+          </p>
         </div>
       )}
 
