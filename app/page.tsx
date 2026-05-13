@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useAuth, useClerk } from '@clerk/nextjs';
 import { LandingPage } from '@/components/LandingPage';
 import { EngineeringPlatform } from '@/components/EngineeringPlatform';
@@ -93,7 +93,7 @@ function ThemedLayout({
 
 // ── Main page ──────────────────────────────────────────────────────────────────
 
-export default function Home() {
+function HomeContent() {
   const { isLoaded, isSignedIn } = useAuth();
   const { signOut } = useClerk();
 
@@ -132,5 +132,13 @@ export default function Home() {
         />
       </OfficeProvider>
     </ThemeProvider>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<LoadingOverlay />}>
+      <HomeContent />
+    </Suspense>
   );
 }
