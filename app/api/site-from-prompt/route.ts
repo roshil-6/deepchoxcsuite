@@ -4,6 +4,15 @@ import { parseSitePayload, type SitePayload } from '@/lib/siteFromPrompt';
 
 export const maxDuration = 90;
 
+/** Avoid DevTools/extension GET probes showing misleading 404s on a POST-only API. */
+export async function GET() {
+  return NextResponse.json({
+    endpoint: '/api/site-from-prompt',
+    method: 'POST',
+    body: { prompt: 'string (≥8 chars)', preset: 'optional: startup | minimal | saas | agency' },
+  });
+}
+
 function extractJsonObject(raw: string): unknown {
   const t = raw.trim();
   try {

@@ -28,6 +28,9 @@ const isPublicRoute = createRouteMatcher([
   '/api/health(.*)',
   '/api/clerk-health(.*)',
   '/api/research(.*)',
+  /** Prompt → site payload (landing Sites workspace — guests must be allowed; rate limited below). */
+  '/api/site-from-prompt(.*)',
+  '/api/build-ui(.*)',
   /**
    * Deepchox gateway (Jarvis converse, convo sync, etc.) — must work for signed-out guests in the workspace.
    * Per-IP rate limits still apply via `AI_ROUTE_LIMITS` (`/api/dexo`).
@@ -47,6 +50,8 @@ const AI_ROUTE_LIMITS: Array<{ prefix: string; limit: number; windowMs: number }
   { prefix: '/api/agent-sync', limit: 10, windowMs: 60_000 },
   { prefix: '/api/dual-agent', limit: 10, windowMs: 60_000 },
   { prefix: '/api/dexo', limit: 40, windowMs: 60_000 },
+  { prefix: '/api/site-from-prompt', limit: 15, windowMs: 60_000 },
+  { prefix: '/api/build-ui', limit: 15, windowMs: 60_000 },
   { prefix: '/api/personal-assistant', limit: 20, windowMs: 60_000 },
   { prefix: '/api/focus-briefing', limit: 15, windowMs: 60_000 },
   { prefix: '/api/relay-meeting-room', limit: 15, windowMs: 60_000 },
@@ -110,13 +115,29 @@ function addSecurityHeaders(res: NextResponse): NextResponse {
   return res;
 }
 
+/**
+ * Path-prefix allowlist bypasses Clerk.auth.protect — matches how Next resolves `/api/...`
+ * handlers (belt-and-suspenders with createRouteMatcher, which can miss edge pathname shapes).
+ */
+function isPublicApiPath(pathname: string): boolean {
+  return (
+    pathname.startsWith('/api/health') ||
+    pathname.startsWith('/api/clerk-health') ||
+    pathname.startsWith('/api/research') ||
+    pathname.startsWith('/api/dexo') ||
+    pathname.startsWith('/api/site-from-prompt') ||
+    pathname.startsWith('/api/build-ui')
+  );
+}
+
 export default clerkMiddleware(async (auth, req) => {
   // Rate limit first (cheapest check).
   const rateLimited = checkRateLimit(req);
   if (rateLimited) return rateLimited;
 
   // Protect all non-public routes.
-  if (!isPublicRoute(req)) {
+  const pathname = req.nextUrl.pathname;
+  if (!(isPublicApiPath(pathname) || isPublicRoute(req))) {
     await auth.protect();
   }
 
