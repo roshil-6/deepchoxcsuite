@@ -8,6 +8,12 @@ import { LandingPage } from '@/components/LandingPage';
 import { OfficeProvider } from '@/lib/OfficeContext';
 import { ThemeProvider, useTheme } from '@/lib/ThemeContext';
 import { MobileBottomNav } from '@/components/ui/MobileBottomNav';
+import {
+  DEEPCHOX_ZEP_NAV_EVENT,
+  SS_ACTIVE_APP_VIEW,
+  SS_SELECTED_ENG_PROJECT,
+  type ZepNavDetail,
+} from '@/lib/zepAppBridge';
 
 interface MobileEngProject {
   id: string;
@@ -109,6 +115,33 @@ function ThemedLayout({
       clearInterval(t);
     };
   }, []);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(SS_ACTIVE_APP_VIEW, activeView);
+    } catch { /* ignore */ }
+  }, [activeView]);
+
+  useEffect(() => {
+    try {
+      if (selectedProjectId) sessionStorage.setItem(SS_SELECTED_ENG_PROJECT, selectedProjectId);
+      else sessionStorage.removeItem(SS_SELECTED_ENG_PROJECT);
+    } catch { /* ignore */ }
+  }, [selectedProjectId]);
+
+  useEffect(() => {
+    const onNav = (e: Event) => {
+      const d = (e as CustomEvent<ZepNavDetail>).detail;
+      if (!d) return;
+      if (d.kind === 'set_view') setActiveView(d.view);
+      if (d.kind === 'new_project') {
+        setSelectedProjectId(null);
+        setActiveView('engineering');
+      }
+    };
+    window.addEventListener(DEEPCHOX_ZEP_NAV_EVENT, onNav);
+    return () => window.removeEventListener(DEEPCHOX_ZEP_NAV_EVENT, onNav);
+  }, [setActiveView, setSelectedProjectId]);
 
   const openNewProject = () => {
     setSelectedProjectId(null);

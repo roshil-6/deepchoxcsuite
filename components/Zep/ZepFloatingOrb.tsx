@@ -5,6 +5,12 @@ import { useZepConversationalVoice } from '@/lib/useZepVoice';
 import { useOffice } from '@/lib/OfficeContext';
 import { useTheme } from '@/lib/ThemeContext';
 import { Mic, X, Send, Command, Sparkles } from 'lucide-react';
+import {
+  dispatchZepNav,
+  loadEngineeringSummaries,
+  readActiveShellView,
+  readSelectedEngProjectId,
+} from '@/lib/zepAppBridge';
 
 interface ZepCommand {
   action: string;
@@ -15,12 +21,26 @@ export function ZepFloatingOrb() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<{ role: 'user' | 'zep'; text: string; command?: ZepCommand }[]>([
-    { role: 'zep', text: 'At your service. I control the Deepchox suite — just say what you need.\n\n"Take me to CEO desk"\n"Start a new venture"\n"Run staff sync"\n"What\'s the status?"\n"Show my ventures"\n"Open research"\n"Close Zep"' }
+    {
+      role: 'zep',
+      text: [
+        'I’m Zep—shortcuts for this Deepchox workspace:',
+        '',
+        '• Open research',
+        '• Open engineering',
+        '• Start a new project',
+        '• What’s the status?',
+        '• Show my projects',
+        '• Close Zep',
+        '',
+        'This build is Engineering (multi‑agent builds) plus Research—not separate CEO/Product desks.',
+      ].join('\n'),
+    },
   ]);
   const [processing, setProcessing] = useState(false);
   const [confirmCommand, setConfirmCommand] = useState<ZepCommand | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const { activeProject, activeRoom, allProjects, switchRoom, createNewProject, runAgentStaffSync, updateProjectField, setActiveProject, patchActiveProject } = useOffice();
+  const { activeProject, switchRoom, createNewProject, updateProjectField } = useOffice();
   const { theme } = useTheme();
   const dark = theme === 'dark';
 
@@ -38,122 +58,160 @@ export function ZepFloatingOrb() {
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, confirmCommand]);
 
-  // Command execution mapping
+  // Command execution — navigation matches the shipped shell (Engineering + Research).
   const executeCommand = useCallback(async (cmd: ZepCommand): Promise<string> => {
+    const roomAliases: Record<string, string> = {
+      ceo: 'CEO Desk',
+      pm: 'Product Desk',
+      accountant: 'Finance Desk',
+      scout: 'Intelligence Desk',
+      cmo: 'Growth Desk',
+      dexo: 'Executive Suite',
+      shark: 'Investor Desk',
+      research: 'Research',
+      engineering: 'Engineering',
+      calendar: 'Calendar',
+      reports: 'Reports',
+      invention: 'Invention Lab',
+      dashboard: 'Dashboard',
+    };
+
     try {
       switch (cmd.action) {
         case 'switch_room': {
-          const room = cmd.params.room as string;
-          const validRooms = ['ceo', 'pm', 'accountant', 'scout', 'cmo', 'dexo', 'shark', 'research', 'dashboard', 'engineering', 'calendar', 'reports', 'invention'];
-          if (!validRooms.includes(room)) return `I don't know the room "${room}". Try: ceo, pm, accountant, scout, cmo, dexo, shark, research, engineering, calendar, reports, or dashboard.`;
-          switchRoom(room as any);
-          const roomNames: Record<string, string> = {
-            ceo: 'CEO Desk', pm: 'Product Desk', accountant: 'Finance Desk',
-            scout: 'Intelligence Desk', cmo: 'Growth Desk', dexo: 'Executive Suite',
-            shark: 'Investor Desk', research: 'Research Hub', engineering: 'Engineering Platform',
-            calendar: 'Calendar', reports: 'Reports', invention: 'Invention Lab'
-          };
-          return `Opening ${roomNames[room] || room.toUpperCase()}.`;
+          const room = String(cmd.params.room || '').toLowerCase();
+          if (room === 'research') {
+            dispatchZepNav({ kind: 'set_view', view: 'research' });
+            switchRoom(room as Parameters<typeof switchRoom>[0]);
+            return 'Opening Research.';
+          }
+          if (room === 'engineering') {
+            dispatchZepNav({ kind: 'set_view', view: 'engineering' });
+            switchRoom(room as Parameters<typeof switchRoom>[0]);
+            return 'Opening Engineering.';
+          }
+          if (room === 'dashboard') {
+            dispatchZepNav({ kind: 'set_view', view: 'engineering' });
+            switchRoom('dashboard' as Parameters<typeof switchRoom>[0]);
+            return 'There isn’t a separate dashboard page here—you’re now in Engineering.';
+          }
+
+          dispatchZepNav({ kind: 'set_view', view: 'engineering' });
+          switchRoom(room as Parameters<typeof switchRoom>[0]);
+          const nice = roomAliases[room] || room;
+          return `There’s no “${nice}” screen in this Deepchox build—you have Engineering and Research. I’ve switched you to Engineering.`;
         }
 
         case 'create_venture': {
+          dispatchZepNav({ kind: 'new_project' });
           createNewProject?.();
-          return 'New venture initialized. I\'ve opened the Executive Suite for you.';
+          return 'New Engineering session: use the prompt on this page—the eight specialist agents run after you submit.';
         }
 
         case 'open_research': {
-          switchRoom('research' as any);
-          return 'Opening Research Hub.';
+          dispatchZepNav({ kind: 'set_view', view: 'research' });
+          switchRoom('research' as Parameters<typeof switchRoom>[0]);
+          return 'Opening Research.';
         }
 
         case 'open_engineering': {
-          switchRoom('engineering' as any);
-          return 'Opening Engineering Platform.';
+          dispatchZepNav({ kind: 'set_view', view: 'engineering' });
+          switchRoom('engineering' as Parameters<typeof switchRoom>[0]);
+          return 'Opening Engineering.';
         }
 
         case 'open_dashboard': {
-          switchRoom('dashboard' as any);
-          return 'Opening Dashboard.';
+          dispatchZepNav({ kind: 'set_view', view: 'engineering' });
+          switchRoom('dashboard' as Parameters<typeof switchRoom>[0]);
+          return 'Opening Engineering—the closest thing to a central hub in this workspace.';
         }
 
         case 'list_ventures': {
-          const count = allProjects?.length || 0;
-          if (count === 0) return 'No ventures yet. Say "create venture" to start one.';
-          const list = allProjects?.slice(0, 5).map(p => `• ${p.name || 'Untitled'}`).join('\n');
-          return `You have ${count} venture${count !== 1 ? 's' : ''}:\n${list}${count > 5 ? '\n...and more' : ''}`;
+          const list = loadEngineeringSummaries();
+          if (!list.length) {
+            return 'No saved Engineering projects in this browser yet. Say “new project”, submit a prompt, then it appears in Projects.';
+          }
+          const lines = list.slice(0, 8).map((p) => `• ${p.title}`).join('\n');
+          return `${list.length} Engineering project${list.length === 1 ? '' : 's'} saved locally:\n${lines}${list.length > 8 ? `\n…plus ${list.length - 8} more` : ''}`;
         }
 
         case 'status': {
-          const roomNames: Record<string, string> = {
-            ceo: 'CEO Desk', pm: 'Product Desk', accountant: 'Finance Desk',
-            scout: 'Intelligence Desk', cmo: 'Growth Desk', dexo: 'Executive Suite',
-            shark: 'Investor Desk', research: 'Research Hub', engineering: 'Engineering Platform',
-            calendar: 'Calendar', reports: 'Reports', invention: 'Invention Lab', dashboard: 'Dashboard'
-          };
-          const currentRoom = roomNames[activeRoom as string] || activeRoom;
-          const currentVenture = activeProject?.name || 'None selected';
-          return `Current location: ${currentRoom}\nActive venture: ${currentVenture}\nTotal ventures: ${allProjects?.length || 0}`;
+          const view = readActiveShellView();
+          const id = readSelectedEngProjectId();
+          const summaries = loadEngineeringSummaries();
+          const projLabel =
+            id != null ? (summaries.find((p) => p.id === id)?.title ?? 'Selected project') : 'New-build screen (sidebar / prompt)';
+          const viewLabel =
+            view === 'research' ? 'Research' : view === 'engineering' ? 'Engineering' : 'Engineering (default)';
+          return ['Workspace: ' + viewLabel, 'Project focus: ' + projLabel, 'Saved builds (this browser): ' + String(summaries.length)].join('\n');
         }
 
         case 'close_zep': {
           setIsOpen(false);
-          return 'Closing interface.';
+          return 'Closing.';
         }
 
         case 'run_staff_sync': {
-          if (!activeProject) return 'No venture selected. Select or create one first.';
-          const result = await runAgentStaffSync?.();
-          if (result?.ok) return 'Staff sync complete. All agents have updated the venture.';
-          return 'Staff sync failed. Make sure you have a venture selected.';
+          return 'Staff sync belongs to legacy venture workspaces. Here, rerun Research headlines or kick off another Engineering build.';
         }
 
         case 'update_strategy': {
-          if (!activeProject) return 'No venture selected.';
+          if (!activeProject) {
+            return 'No IndexedDB venture is active for that command—strategy edits live inside Engineering specs after a run.';
+          }
           const content = cmd.params.content as string;
           await updateProjectField?.('strategy', content);
-          return 'Strategy document updated.';
+          return 'Strategy updated (legacy venture).';
         }
 
         case 'update_product_plan': {
-          if (!activeProject) return 'No venture selected.';
+          if (!activeProject) return 'No legacy venture loaded. Use tabs under an Engineering build for product-shaped output.';
           const content = cmd.params.content as string;
           await updateProjectField?.('productPlan', content);
           return 'Product plan updated.';
         }
 
         case 'update_budget': {
-          if (!activeProject) return 'No venture selected.';
+          if (!activeProject) return 'No legacy venture loaded.';
           const content = cmd.params.content as string;
           await updateProjectField?.('budget', content);
           return 'Budget updated.';
         }
 
         case 'update_market_insights': {
-          if (!activeProject) return 'No venture selected.';
+          if (!activeProject) return 'No legacy venture loaded—try Research.';
           const content = cmd.params.content as string;
           await updateProjectField?.('marketInsights', content);
           return 'Market intelligence updated.';
         }
 
         case 'add_note': {
-          if (!activeProject) return 'No venture selected.';
+          if (!activeProject) return 'No legacy venture loaded for notes.';
           const note = cmd.params.note as string;
-          const current = (activeProject as any).userNotes || '';
+          const current = (activeProject as { userNotes?: string }).userNotes || '';
           await updateProjectField?.('userNotes', current + '\n\n' + note);
-          return 'Note added to the venture.';
+          return 'Note appended.';
         }
 
-        case 'ask_help': {
-          return 'I control the Deepchox suite. Here\'s what I can do:\n\n🚀 NAVIGATION\n• "Take me to CEO/PM/Finance/Growth/etc."\n• "Open research" / "Open engineering"\n• "Go to dashboard"\n\n📋 VENTURES\n• "Create a new venture"\n• "List my ventures"\n• "What\'s the status?"\n\n🤖 AGENTS\n• "Run staff sync" — AI agents analyze the venture\n\n📝 UPDATES\n• "Update strategy to..."\n• "Update product plan to..."\n• "Add note: ..."\n\n🔧 UTILITIES\n• "Close Zep"\n\nJust speak naturally — I\'ll handle the rest.';
-        }
+        case 'ask_help':
+          return [
+            'What works in this Deepchox shell:',
+            '• Open research / Open engineering',
+            '• New project',
+            '• Show my projects',
+            '• Status',
+            '• Close Zep',
+            '',
+            'There are no discrete CEO/Product/Finance rooms—everything routes through Engineering + Research outputs.',
+          ].join('\n');
 
         default:
-          return `I understood you want to "${cmd.action}" but I haven't learned that command yet. Say "help" to see what I can do.`;
+          return `Unhandled action “${cmd.action}”. Say “help”.`;
       }
     } catch (err) {
       return `Command failed: ${err instanceof Error ? err.message : 'Unknown error'}`;
     }
-  }, [activeProject, activeRoom, allProjects, switchRoom, createNewProject, runAgentStaffSync, updateProjectField]);
+  }, [activeProject, switchRoom, createNewProject, updateProjectField]);
 
   // Parse natural language to command
   const parseCommand = (text: string): ZepCommand | null => {
@@ -213,13 +271,16 @@ export function ZepFloatingOrb() {
       return { action: 'open_dashboard', params: {} };
     }
 
-    // Create venture
-    if (/create (?:a )?(?:new )?venture|new venture|add venture|start (?:a )?venture/i.test(lower)) {
+    // Create venture / new Engineering session
+    if (
+      /create (?:a )?(?:new )?venture|new venture|add venture|start (?:a )?venture/i.test(lower)
+      || /start (?:a )?new project|open (?:a )?new project|^(?:new project|fresh build)$/i.test(lower.trim())
+    ) {
       return { action: 'create_venture', params: {} };
     }
 
     // List ventures
-    if (/list (?:my )?ventures|show (?:my )?ventures|what ventures|my projects/i.test(lower)) {
+    if (/list (?:my )?ventures|show (?:my )?ventures|what ventures|(?:show|list) (?:my )?projects|^my projects$/i.test(lower.trim())) {
       return { action: 'list_ventures', params: {} };
     }
 
@@ -322,8 +383,14 @@ export function ZepFloatingOrb() {
   };
 
   const buildContext = () => {
-    return `Current venture: ${activeProject?.name || 'None selected'}
-Available actions: switch rooms (ceo, pm, accountant, scout, cmo, dexo, shark, research, dashboard, engineering), create venture, run staff sync, update strategy/product/budget/market, add notes.`;
+    const view = readActiveShellView() ?? 'engineering';
+    const eng = loadEngineeringSummaries();
+    return [
+      `Active shell: ${view === 'research' ? 'Research headlines' : 'Engineering orchestration builder'}`,
+      `Legacy IndexedDB venture (if any): ${activeProject?.name ?? 'none'}`,
+      `Local Engineering saves: ${eng.length}`,
+      'Zep can: open engineering, open research, new project, list projects, status, legacy venture field updates.',
+    ].join('\n');
   };
 
   const confirm = async () => {

@@ -5,7 +5,7 @@ import {
   ArrowRight, Copy, Check, ChevronRight, Zap, Globe, Cpu,
   Rocket, FlaskConical, Wifi, Factory, Layers, Bot,
   Code2, GitBranch, Cloud, FileText, ShieldCheck, RotateCcw,
-  Play, AlertTriangle, CheckCircle2, XCircle, Clock, Sparkles,
+  Play, AlertTriangle, CheckCircle2, Clock, Sparkles,
   Terminal, Network, BarChart3, BookOpen, Shield,
 } from 'lucide-react';
 import type { OrchestrationResult, SystemNode, CodeFile, WorkflowPhase, DeploymentConfig, Risk } from '@/app/api/orchestrate/route';
@@ -1249,58 +1249,51 @@ function ResultView({ project, onReset }: { project: EngProject; onReset: () => 
   const { theme } = useTheme();
   const dark = theme === 'dark';
 
+  const orderedTrace = [...result.agentTrace].sort(
+    (a, b) => AGENTS.findIndex((x) => x.id === a.agent) - AGENTS.findIndex((x) => x.id === b.agent),
+  );
+  const okAgents = orderedTrace.filter((a) => a.ok).length;
+  const stoppedAgents = orderedTrace.length - okAgents;
+
   return (
     <div className={`flex min-h-0 flex-1 flex-col antialiased subpixel-antialiased overflow-y-auto transition-colors duration-300 ${dark ? 'bg-[#0a0a0a]' : 'bg-[#fafafa]'}`}>
-      {/* Header - no longer sticky for natural scrolling */}
       <div
-        className={`shrink-0 border-b px-6 pt-5 pb-0 transition-colors duration-300 ${dark ? 'border-[#1a1a1a] bg-[#0a0a0a]' : 'border-neutral-200 bg-[#fafafa]'}`}
+        className={`shrink-0 border-b px-4 pt-4 pb-0 transition-colors duration-300 sm:px-6 sm:pt-5 ${dark ? 'border-[#1a1a1a] bg-[#0a0a0a]' : 'border-neutral-200 bg-[#fafafa]'}`}
       >
         <div className="mx-auto max-w-5xl">
-          <div className="flex items-start justify-between gap-4 pb-4">
+          <div className="flex flex-col gap-3 pb-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
             <div className="min-w-0 flex-1">
-              <h2 className={`truncate text-base font-bold leading-tight subpixel-antialiased ${dark ? 'text-neutral-200' : 'text-neutral-900'}`}>
+              <p className={`mb-1 text-[10px] font-medium uppercase tracking-[0.14em] ${dark ? 'text-neutral-500' : 'text-neutral-500'}`}>
+                Build result
+              </p>
+              <h2 className={`line-clamp-2 text-[17px] font-bold leading-snug sm:text-xl subpixel-antialiased ${dark ? 'text-neutral-100' : 'text-neutral-900'}`}>
                 {project.title}
               </h2>
-              <div className="mt-2 flex flex-wrap items-center gap-2.5">
-                {/* Domain pill */}
+              <p className={`mt-1.5 max-w-2xl text-[13px] leading-relaxed subpixel-antialiased ${dark ? 'text-neutral-500' : 'text-neutral-600'}`}>
+                Your co‑founder bench finished an eight‑agent orchestration pass. Deliverables live in the tabs below. Any step marked “stopped” hit a network or model error that wave—inspect Code / Docs / Validation for what still came through.
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-2 sm:gap-2.5">
                 {dom && (
-                  <span className={`flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider subpixel-antialiased ${dark ? 'bg-[#1a1a1a] text-neutral-400' : 'bg-neutral-100 text-neutral-600'}`}>
+                  <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider subpixel-antialiased ${dark ? 'bg-[#1a1a1a] text-neutral-400' : 'bg-neutral-100 text-neutral-600'}`}>
                     <dom.icon className="h-2.5 w-2.5" />
                     {dom.label}
                   </span>
                 )}
-                {/* Stats */}
-                <span className={`text-[11px] font-semibold subpixel-antialiased ${dark ? 'text-neutral-500' : 'text-neutral-400'}`}>
-                  {result.codeFiles.length} files &nbsp;&middot;&nbsp; {result.phases.length} phases &nbsp;&middot;&nbsp; {result.risks.length} risks &nbsp;&middot;&nbsp; {Math.round(result.durationMs / 1000)}s
+                <span className={`text-[11px] font-medium subpixel-antialiased ${dark ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                  {result.codeFiles.length} artifacts
+                  <span className="mx-1.5 text-neutral-500 opacity-50">·</span>
+                  {result.phases.length} phases
+                  <span className="mx-1.5 text-neutral-500 opacity-50">·</span>
+                  {result.risks.length} risks
+                  <span className="mx-1.5 text-neutral-500 opacity-50">·</span>
+                  {Math.round(result.durationMs / 1000)}s wall time
                 </span>
-                {/* Agent trace */}
-                <div className="hidden flex-wrap items-center gap-1.5 sm:flex">
-                  {result.agentTrace.map((a) => (
-                    <div
-                      key={a.agent}
-                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-semibold shadow-sm ring-1 subpixel-antialiased ${
-                        dark ? 'bg-[#1a1a1a] ring-[#262626]' : 'bg-white ring-neutral-200'
-                      }`}
-                    >
-                      {a.ok ? (
-                        <span className={`flex h-4 w-4 items-center justify-center rounded-full ${dark ? 'bg-[#262626] text-neutral-400' : 'bg-neutral-100 text-neutral-600'}`}>
-                          <CheckCircle2 className="h-2.5 w-2.5" />
-                        </span>
-                      ) : (
-                        <span className={`flex h-4 w-4 items-center justify-center rounded-full ${dark ? 'bg-[#262626] text-neutral-500' : 'bg-neutral-100 text-neutral-500'}`}>
-                          <XCircle className="h-2.5 w-2.5" />
-                        </span>
-                      )}
-                      <span className={dark ? 'text-neutral-300' : 'text-neutral-600'}>{a.agent}</span>
-                      <span className={dark ? 'tabular-nums text-neutral-500' : 'tabular-nums text-neutral-400'}>{(a.durationMs / 1000).toFixed(1)}s</span>
-                    </div>
-                  ))}
-                </div>
               </div>
             </div>
             <button
+              type="button"
               onClick={onReset}
-              className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-bold transition-all duration-200 hover:shadow-sm ${
+              className={`flex shrink-0 items-center gap-1.5 self-start rounded-full border px-3.5 py-1.5 text-xs font-bold transition-all duration-200 hover:shadow-sm ${
                 dark
                   ? 'border-[#262626] text-neutral-400 hover:bg-[#1a1a1a] hover:shadow-black/20'
                   : 'border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:shadow-neutral-200/50'
@@ -1309,6 +1302,47 @@ function ResultView({ project, onReset }: { project: EngProject; onReset: () => 
               <RotateCcw className="h-3 w-3" />
               New project
             </button>
+          </div>
+
+          <div className={`border-t pt-3 sm:pb-4 sm:pt-4 ${dark ? 'border-[#262626]' : 'border-neutral-200'}`}>
+            <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
+              <span className={`text-[10px] font-semibold uppercase tracking-wider ${dark ? 'text-neutral-500' : 'text-neutral-500'}`}>
+                Agent waves
+              </span>
+              <span className={`text-[11px] font-medium tabular-nums ${dark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                {okAgents}/{orderedTrace.length} completed
+                {stoppedAgents > 0 ? ` · ${stoppedAgents} stopped (errors)` : ''}
+              </span>
+            </div>
+            <div className="-mx-1 flex gap-2 overflow-x-auto pb-2 [scrollbar-width:thin]">
+              {orderedTrace.map((a) => (
+                <div
+                  key={a.agent}
+                  title={
+                    a.ok
+                      ? `${a.agent}: completed (${a.model})`
+                      : `${a.agent}: step failed — model timeout, parse error, or API issue. Retry with a shorter prompt or later.`
+                  }
+                  className={`flex shrink-0 items-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-[10px] font-semibold shadow-sm subpixel-antialiased ${
+                    a.ok
+                      ? dark
+                        ? 'border-[#262626] bg-[#141414] text-neutral-200'
+                        : 'border-neutral-200 bg-white text-neutral-800'
+                      : dark
+                        ? 'border-amber-800/55 bg-[#241a05] text-amber-100'
+                        : 'border-amber-200 bg-amber-50 text-amber-950'
+                  }`}
+                >
+                  {a.ok ? (
+                    <CheckCircle2 className={`h-3.5 w-3.5 shrink-0 ${dark ? 'text-emerald-500/85' : 'text-emerald-600'}`} />
+                  ) : (
+                    <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                  )}
+                  <span>{a.agent}</span>
+                  <span className={`tabular-nums opacity-75 ${dark ? 'text-neutral-500' : 'text-neutral-500'}`}>{(a.durationMs / 1000).toFixed(1)}s</span>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Tab strip */}
