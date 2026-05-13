@@ -63,17 +63,17 @@ export function ZepFloatingOrb() {
         }
 
         case 'open_research': {
-          switchRoom('research');
+          switchRoom('research' as any);
           return 'Opening Research Hub.';
         }
 
         case 'open_engineering': {
-          switchRoom('engineering');
+          switchRoom('engineering' as any);
           return 'Opening Engineering Platform.';
         }
 
         case 'open_dashboard': {
-          switchRoom('dashboard');
+          switchRoom('dashboard' as any);
           return 'Opening Dashboard.';
         }
 
