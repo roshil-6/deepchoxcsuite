@@ -46,16 +46,45 @@ export function PreviewPane({
   onSelectSection,
 }: PreviewPaneProps) {
   return (
-    <div className="flex-1 flex flex-col min-w-0 overflow-hidden" style={{ background: isDark ? '#0a0a0a' : '#f5f5f7' }}>
+    <div
+      className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
+      style={{
+        background: isDark
+          ? 'radial-gradient(120% 80% at 10% -10%, rgba(45,212,191,0.06) 0%, transparent 55%), linear-gradient(#050505,#050505)'
+          : 'linear-gradient(180deg,#f4f5f8 0%, #eceef3 40%, #ebecef 100%)',
+      }}
+    >
       <div
-        className="relative z-20 h-14 border-b flex items-center justify-between px-4 flex-shrink-0"
-        style={{ background: isDark ? '#0c0c0e' : '#ffffff', borderColor: isDark ? '#27272a' : '#e4e4e7' }}
+        className="relative z-20 flex h-14 shrink-0 items-center justify-between border-b px-4 lg:px-5"
+        style={{
+          background: isDark ? 'rgba(11,11,13,0.92)' : 'rgba(255,255,255,0.86)',
+          borderColor: isDark ? '#27272a' : '#e4e4e7',
+          backdropFilter: 'blur(12px)',
+        }}
       >
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 p-0.5 rounded-lg" style={{ background: isDark ? '#27272a' : '#f4f4f5' }}>
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-2">
+          <div className="flex items-center gap-2">
+            <span className="text-[13px] font-semibold tracking-tight" style={{ color: isDark ? '#fafafa' : '#18181b' }}>
+              App preview
+            </span>
+            {currentSchema ? (
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em]"
+                style={{
+                  borderColor: isDark ? 'rgba(52,211,153,0.35)' : 'rgba(13,148,136,0.35)',
+                  color: isDark ? '#6ee7b7' : '#0f766e',
+                  background: isDark ? 'rgba(52,211,153,0.08)' : 'rgba(236,253,245,0.85)',
+                }}
+              >
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_10px_#34d399]" />
+                Live
+              </span>
+            ) : null}
+          </div>
+          <div className="flex items-center gap-1 rounded-lg p-0.5" style={{ background: isDark ? '#27272a' : '#f4f4f5' }}>
             <button
               onClick={() => setActiveTab('preview')}
-              className="px-3 py-1.5 text-xs font-medium rounded-md transition-all"
+              className="rounded-md px-3 py-1.5 text-xs font-medium transition-all"
               style={{
                 background: activeTab === 'preview' ? (isDark ? '#3f3f46' : '#ffffff') : 'transparent',
                 color: activeTab === 'preview' ? (isDark ? '#ffffff' : '#18181b') : (isDark ? '#a1a1aa' : '#71717a'),
@@ -66,7 +95,7 @@ export function PreviewPane({
             </button>
             <button
               onClick={() => setActiveTab('code')}
-              className="px-3 py-1.5 text-xs font-medium rounded-md transition-all"
+              className="rounded-md px-3 py-1.5 text-xs font-medium transition-all"
               style={{
                 background: activeTab === 'code' ? (isDark ? '#3f3f46' : '#ffffff') : 'transparent',
                 color: activeTab === 'code' ? (isDark ? '#ffffff' : '#18181b') : (isDark ? '#a1a1aa' : '#71717a'),
@@ -79,7 +108,7 @@ export function PreviewPane({
         </div>
 
         {currentSchema && (
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             <button
               onClick={onCopySchema}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
@@ -134,7 +163,7 @@ export function PreviewPane({
         )}
       </div>
 
-      <div className="flex-1 overflow-auto">
+      <div className="min-h-0 flex-1 overflow-auto">
         {activeTab === 'preview' ? (
           currentSchema ? (
             <DynamicUIRenderer

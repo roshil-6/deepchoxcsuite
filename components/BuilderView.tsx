@@ -15,7 +15,7 @@ import {
   updateSchema,
 } from '@/lib/builderStorage';
 import { useTheme } from '@/lib/ThemeContext';
-import { ChevronRight, History, Wand2 } from 'lucide-react';
+import { History, Layers, Wand2 } from 'lucide-react';
 import { PromptInput } from './builder/PromptInput';
 import { HistorySidebar } from './builder/HistorySidebar';
 import { PreviewPane } from './builder/PreviewPane';
@@ -38,6 +38,7 @@ export function BuilderView() {
   const [iterationPrompt, setIterationPrompt] = useState('');
   const [showIteration, setShowIteration] = useState(false);
   const [selectedSectionIndex, setSelectedSectionIndex] = useState(0);
+  const [showSectionStudio, setShowSectionStudio] = useState(false);
 
   // Load history on mount
   useEffect(() => {
@@ -189,121 +190,178 @@ export function BuilderView() {
     }
   }, [currentSchema]);
 
+  const openHistory = () => {
+    setShowSectionStudio(false);
+    setShowHistory(true);
+  };
+
+  const toggleSectionStudio = () => {
+    if (!currentSchema) return;
+    setShowHistory(false);
+    setShowSectionStudio((v) => !v);
+  };
+
+  const border = isDark ? '#27272a' : '#e4e4e7';
+  const headerBg = isDark ? 'rgba(12,12,14,0.95)' : 'rgba(255,255,255,0.94)';
+
   return (
-    <div className="flex h-full w-full overflow-hidden">
-      {/* Left Panel - Controls */}
-      <div
-        className={`w-80 flex-shrink-0 border-r flex flex-col ${showHistory ? 'hidden lg:flex' : ''}`}
-        style={{
-          background: isDark ? '#0c0c0e' : '#ffffff',
-          borderColor: isDark ? '#27272a' : '#e4e4e7',
-        }}
+    <div
+      className="relative flex min-h-0 h-full w-full flex-col overflow-hidden"
+      style={{ background: isDark ? '#030303' : '#eef0f4' }}
+    >
+      <header
+        className="flex h-14 shrink-0 items-center justify-between gap-3 border-b px-4 sm:px-5"
+        style={{ borderColor: border, background: headerBg, backdropFilter: 'blur(14px)' }}
       >
-        {/* Header */}
-        <div className="p-4 border-b" style={{ borderColor: isDark ? '#27272a' : '#e4e4e7' }}>
-          <div className="flex items-center gap-2 mb-1">
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center"
-              style={{ background: isDark ? '#7456ff20' : '#7456ff10' }}
-            >
-              <Wand2 size={18} style={{ color: '#7456ff' }} />
-            </div>
-            <h2 className="font-semibold" style={{ color: isDark ? '#ffffff' : '#18181b' }}>
-              UI Builder
-            </h2>
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <div
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+            style={{ background: isDark ? '#7456ff28' : '#7456ff16' }}
+          >
+            <Wand2 size={18} strokeWidth={2} style={{ color: '#b6a5ff' }} />
           </div>
-          <p className="text-xs" style={{ color: isDark ? '#a1a1aa' : '#71717a' }}>
-            Describe your interface in words
-          </p>
+          <div className="min-w-0">
+            <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
+              <span className="truncate text-sm font-semibold tracking-tight" style={{ color: isDark ? '#fafafa' : '#18181b' }}>
+                App builder
+              </span>
+              {currentSchema ? (
+                <span className="inline-flex items-center gap-1.5 truncate text-[12px]" style={{ color: isDark ? '#a1a1aa' : '#52525b' }}>
+                  <span className="h-1 w-1 shrink-0 rounded-full bg-emerald-400" aria-hidden />
+                  <span className="truncate">{currentSchema.name}</span>
+                </span>
+              ) : null}
+            </div>
+            <p className="truncate text-[11px]" style={{ color: isDark ? '#71717a' : '#71717a' }}>
+              Prompt on the left - full-width preview on the right.
+            </p>
+          </div>
         </div>
 
-        <PromptInput
-          isDark={isDark}
-          prompt={prompt}
-          setPrompt={setPrompt}
-          iterationPrompt={iterationPrompt}
-          setIterationPrompt={setIterationPrompt}
-          showIteration={showIteration}
-          setShowIteration={setShowIteration}
-          currentSchema={currentSchema}
-          suggestions={suggestions}
-          isGenerating={isGenerating}
-          onSubmit={handleSubmit}
-          onIterate={handleIterate}
-          onApplySuggestion={applySuggestion}
-        />
-
-        {/* Error */}
-        {error && (
-          <div
-            className="p-3 m-4 rounded-lg text-xs"
+        <div className="flex shrink-0 items-center gap-2">
+          {currentSchema ? (
+            <button
+              type="button"
+              onClick={() => toggleSectionStudio()}
+              className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors"
+              style={{
+                border: showSectionStudio ? undefined : `1px solid ${isDark ? '#3f3f46' : '#e4e4e7'}`,
+                background: showSectionStudio ? (isDark ? 'rgba(52,211,153,0.12)' : 'rgba(236,253,245,1)') : (isDark ? '#18181b' : '#ffffff'),
+                color: showSectionStudio ? (isDark ? '#6ee7b7' : '#0f766e') : (isDark ? '#d4d4d8' : '#3f3f46'),
+              }}
+            >
+              <Layers size={15} strokeWidth={2} />
+              Sections
+            </button>
+          ) : null}
+          <button
+            type="button"
+            onClick={() => openHistory()}
+            className="flex items-center gap-2 rounded-lg border px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors"
             style={{
-              background: '#ef444420',
-              color: '#ef4444',
-              border: '1px solid #ef444440',
+              borderColor: isDark ? '#3f3f46' : '#e4e4e7',
+              background: isDark ? '#141416' : '#ffffff',
+              color: isDark ? '#d4d4d8' : '#52525b',
             }}
           >
-            {error}
-          </div>
-        )}
-
-        {/* History Toggle */}
-        <div
-          className="p-4 border-t flex items-center justify-between cursor-pointer"
-          style={{
-            borderColor: isDark ? '#27272a' : '#e4e4e7',
-            background: isDark ? '#18181b' : '#fafafa',
-          }}
-          onClick={() => setShowHistory(true)}
-        >
-          <div className="flex items-center gap-2">
-            <History size={18} style={{ color: isDark ? '#a1a1aa' : '#71717a' }} />
-            <span className="text-sm" style={{ color: isDark ? '#d4d4d8' : '#52525b' }}>
-              History ({history.length})
-            </span>
-          </div>
-          <ChevronRight size={18} style={{ color: isDark ? '#a1a1aa' : '#71717a' }} />
+            <History size={15} strokeWidth={2} />
+            History ({history.length})
+          </button>
         </div>
+      </header>
+
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
+        <aside
+          className="flex min-h-0 w-full shrink-0 flex-col border-zinc-200 lg:h-full lg:max-w-[min(520px,44vw)] lg:w-[min(520px,44vw)] lg:border-r lg:border-b-0 border-b"
+          style={{
+            background: isDark ? '#09090b' : '#fafafa',
+            borderColor: border,
+          }}
+        >
+          {error ? (
+            <div
+              className="mx-5 mt-4 shrink-0 rounded-lg border px-3 py-2.5 text-[12px]"
+              style={{
+                background: '#ef444420',
+                borderColor: '#ef444450',
+                color: '#f87171',
+              }}
+              role="alert"
+            >
+              {error}
+            </div>
+          ) : null}
+          <PromptInput
+            isDark={isDark}
+            prompt={prompt}
+            setPrompt={setPrompt}
+            iterationPrompt={iterationPrompt}
+            setIterationPrompt={setIterationPrompt}
+            showIteration={showIteration}
+            setShowIteration={setShowIteration}
+            currentSchema={currentSchema}
+            suggestions={suggestions}
+            isGenerating={isGenerating}
+            onSubmit={handleSubmit}
+            onIterate={handleIterate}
+            onApplySuggestion={applySuggestion}
+          />
+        </aside>
+
+        <PreviewPane
+          isDark={isDark}
+          currentSchema={currentSchema}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          copied={copied}
+          onCopySchema={copySchema}
+          showExportMenu={showExportMenu}
+          setShowExportMenu={setShowExportMenu}
+          onExport={handleExport}
+          onApplySuggestion={applySuggestion}
+          selectedSectionIndex={selectedSectionIndex}
+          onSelectSection={setSelectedSectionIndex}
+        />
+
+        <HistorySidebar
+          isDark={isDark}
+          showHistory={showHistory}
+          setShowHistory={setShowHistory}
+          history={history}
+          currentSchema={currentSchema}
+          onLoad={loadFromHistory}
+          onDuplicate={handleDuplicate}
+          onDelete={handleDelete}
+        />
+
+        {currentSchema != null && showSectionStudio ? (
+          <>
+            <button
+              type="button"
+              aria-label="Close section studio"
+              className="fixed inset-0 z-[52] bg-black/45 backdrop-blur-[2px]"
+              onClick={() => setShowSectionStudio(false)}
+            />
+            <div className="fixed bottom-0 right-0 top-14 z-[54] flex h-[calc(100dvh-3.5rem)] max-h-[calc(100dvh-3.5rem)] w-[min(100vw,460px)] max-w-full flex-col"
+              style={{ background: isDark ? '#060607' : '#ffffff', boxShadow: '-12px 0 48px rgba(0,0,0,0.35)' }}
+            >
+              <SectionStudio
+                isDark={isDark}
+                schema={currentSchema}
+                onSchemaChange={handleSchemaChange}
+                selectedIndex={selectedSectionIndex}
+                onSelectIndex={setSelectedSectionIndex}
+                onClose={() => setShowSectionStudio(false)}
+                className="border-0 shadow-none"
+              />
+            </div>
+          </>
+        ) : null}
       </div>
 
-      <HistorySidebar
-        isDark={isDark}
-        showHistory={showHistory}
-        setShowHistory={setShowHistory}
-        history={history}
-        currentSchema={currentSchema}
-        onLoad={loadFromHistory}
-        onDuplicate={handleDuplicate}
-        onDelete={handleDelete}
-      />
-
-      <PreviewPane
-        isDark={isDark}
-        currentSchema={currentSchema}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        copied={copied}
-        onCopySchema={copySchema}
-        showExportMenu={showExportMenu}
-        setShowExportMenu={setShowExportMenu}
-        onExport={handleExport}
-        onApplySuggestion={applySuggestion}
-        selectedSectionIndex={selectedSectionIndex}
-        onSelectSection={setSelectedSectionIndex}
-      />
-
-      <SectionStudio
-        isDark={isDark}
-        schema={currentSchema}
-        onSchemaChange={handleSchemaChange}
-        selectedIndex={selectedSectionIndex}
-        onSelectIndex={setSelectedSectionIndex}
-      />
-
-      {/* Click outside to close export menu */}
-      {showExportMenu && (
-        <div className="fixed inset-0 z-10" onClick={() => setShowExportMenu(false)} />
-      )}
+      {showExportMenu ? (
+        <div className="fixed inset-0 z-[36]" aria-hidden onClick={() => setShowExportMenu(false)} />
+      ) : null}
     </div>
   );
 }

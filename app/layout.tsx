@@ -11,6 +11,7 @@ import {
   SITE_OG_DESCRIPTION,
   SITE_ORG,
   SITE_TITLE_DEFAULT,
+  SITE_OG_IMAGE_PATH,
   siteJsonLd,
   siteMetadataBase,
 } from '@/lib/siteSeo';
@@ -41,6 +42,7 @@ const syne = Syne({
 });
 
 const metadataBaseUrl = siteMetadataBase();
+const googleSiteVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim();
 
 export const metadata: Metadata = {
   ...(metadataBaseUrl ? { metadataBase: metadataBaseUrl } : {}),
@@ -50,10 +52,31 @@ export const metadata: Metadata = {
   },
   description: SITE_META_DESCRIPTION,
   keywords: [...SITE_KEYWORDS],
-  authors: [{ name: SITE_ORG }],
+  authors: [{ name: SITE_ORG, url: metadataBaseUrl?.toString() }],
   creator: SITE_ORG,
   publisher: SITE_ORG,
-  robots: { index: true, follow: true },
+  category: 'technology',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  formatDetection: {
+    telephone: false,
+    email: false,
+    address: false,
+  },
+  ...(googleSiteVerification ? { verification: { google: googleSiteVerification } } : {}),
+  appleWebApp: {
+    capable: true,
+    title: SITE_BRAND,
+    statusBarStyle: 'black-translucent',
+  },
   openGraph: {
     type: 'website',
     siteName: SITE_BRAND,
@@ -61,11 +84,20 @@ export const metadata: Metadata = {
     description: SITE_OG_DESCRIPTION,
     ...(metadataBaseUrl ? { url: metadataBaseUrl.toString() } : {}),
     locale: 'en_US',
+    images: [
+      {
+        url: SITE_OG_IMAGE_PATH,
+        width: 1200,
+        height: 630,
+        alt: `${SITE_BRAND} — ${SITE_TITLE_DEFAULT}`,
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: SITE_TITLE_DEFAULT,
     description: SITE_OG_DESCRIPTION,
+    images: [SITE_OG_IMAGE_PATH],
   },
   icons: {
     icon: [

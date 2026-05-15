@@ -27,11 +27,21 @@ export function HistorySidebar({
 }: HistorySidebarProps) {
   if (!showHistory) return null;
 
+  const panelBg = isDark ? '#08080a' : '#ffffff';
+  const borderCol = isDark ? '#27272a' : '#e4e4e7';
+
   return (
-    <div
-      className="absolute lg:relative inset-0 lg:inset-auto z-20 w-full lg:w-72 flex-shrink-0 border-r flex flex-col"
-      style={{ background: isDark ? '#0c0c0e' : '#ffffff', borderColor: isDark ? '#27272a' : '#e4e4e7' }}
-    >
+    <>
+      <button
+        type="button"
+        aria-label="Close history"
+        className="fixed inset-0 z-[48] bg-black/50 backdrop-blur-[3px]"
+        onClick={() => setShowHistory(false)}
+      />
+      <div
+        className="fixed inset-y-0 left-0 z-[50] flex h-full w-[min(100%,420px)] flex-col shadow-2xl shadow-black/40"
+        style={{ background: panelBg, borderRight: `1px solid ${borderCol}` }}
+      >
       <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: isDark ? '#27272a' : '#e4e4e7' }}>
         <div className="flex items-center gap-2">
           <History size={18} style={{ color: '#7456ff' }} />
@@ -101,6 +111,7 @@ export function HistorySidebar({
           ))
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 }

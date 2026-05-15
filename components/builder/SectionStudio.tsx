@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import type { UIComponent, UISchema } from '@/lib/uiSchema';
-import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, Copy, Plus, Trash2, X } from 'lucide-react';
 
 interface SectionStudioProps {
   isDark: boolean;
@@ -10,6 +10,8 @@ interface SectionStudioProps {
   onSchemaChange: (next: UISchema) => void;
   selectedIndex: number;
   onSelectIndex: (index: number) => void;
+  onClose?: () => void;
+  className?: string;
 }
 
 const QUICK_ADD: Array<{ label: string; section: UIComponent }> = [
@@ -67,6 +69,8 @@ export function SectionStudio({
   onSchemaChange,
   selectedIndex,
   onSelectIndex,
+  onClose,
+  className = '',
 }: SectionStudioProps) {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [draft, setDraft] = useState('');
@@ -165,13 +169,27 @@ export function SectionStudio({
 
   return (
     <div
-      className="w-[360px] border-l hidden xl:flex xl:flex-col"
-      style={{ background: isDark ? '#0c0c0e' : '#ffffff', borderColor: isDark ? '#27272a' : '#e4e4e7' }}
+      className={`flex min-h-0 flex-1 flex-col border-l shadow-[0_0_0_1px_rgba(63,63,70,0.35)] lg:shadow-xl ${className}`}
+      style={{ background: isDark ? '#0a0a0c' : '#ffffff', borderColor: isDark ? '#27272a' : '#e4e4e7' }}
     >
-      <div className="p-3 border-b" style={{ borderColor: isDark ? '#27272a' : '#e4e4e7' }}>
-        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: isDark ? '#a1a1aa' : '#71717a' }}>
-          Section Studio
+      <div
+        className="flex shrink-0 items-center justify-between gap-2 border-b px-4 py-3"
+        style={{ borderColor: isDark ? '#27272a' : '#e4e4e7' }}
+      >
+        <p className="text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: isDark ? '#a1a1aa' : '#71717a' }}>
+          Section studio
         </p>
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close section studio"
+            className="rounded-lg p-1.5 transition-colors"
+            style={{ background: isDark ? '#1f1f24' : '#f4f4f5', color: isDark ? '#a1a1aa' : '#52525b' }}
+          >
+            <X size={16} strokeWidth={2} />
+          </button>
+        )}
       </div>
 
       <div className="p-3 border-b space-y-2" style={{ borderColor: isDark ? '#27272a' : '#e4e4e7' }}>

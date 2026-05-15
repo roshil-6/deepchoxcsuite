@@ -132,45 +132,62 @@ export function SiteBuilder() {
     : 'border-neutral-200 bg-white text-neutral-900 placeholder:text-neutral-400';
 
   return (
-    <div className={`flex min-h-0 flex-1 flex-col overflow-hidden ${dark ? 'bg-[#0a0a0a]' : 'bg-[#f5f5f7]'}`}>
-      <header className={`shrink-0 border-b px-4 py-4 sm:px-6 ${dark ? 'border-[#1a1a1a]' : 'border-neutral-200'}`}>
-        <div className="mx-auto flex max-w-6xl flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <div className="mb-1 flex items-center gap-2">
-              <Globe2 className={`h-5 w-5 ${muted}`} />
-              <span className={`text-[10px] font-semibold uppercase tracking-[0.14em] ${muted}`}>Workspace</span>
+    <div className={`flex min-h-0 flex-1 flex-col overflow-hidden ${dark ? 'bg-[#030303]' : 'bg-[#eef0f4]'}`}>
+      <header
+        className={`flex h-14 shrink-0 items-center justify-between gap-3 border-b px-4 sm:px-6 ${
+          dark ? 'border-[#27272a] bg-[rgba(10,10,12,0.95)]' : 'border-neutral-200 bg-[rgba(255,255,255,0.92)]'
+        }`}
+        style={{ backdropFilter: 'blur(12px)' }}
+      >
+        <div className="flex min-w-0 items-center gap-3">
+          <div
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${dark ? 'bg-emerald-500/10' : 'bg-emerald-600/10'}`}
+          >
+            <Globe2 className={`h-5 w-5 ${dark ? 'text-emerald-400' : 'text-emerald-700'}`} strokeWidth={2} />
+          </div>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className={`truncate text-sm font-semibold tracking-tight sm:text-[15px] ${dark ? 'text-white' : 'text-neutral-900'}`}>
+                Sites workspace
+              </h1>
+              <span
+                className={`hidden rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] sm:inline-flex ${dark ? 'border-emerald-500/35 text-emerald-300' : 'border-emerald-600/35 text-teal-800'}`}
+              >
+                Live preview
+              </span>
             </div>
-            <h1 className="text-xl font-bold tracking-tight sm:text-2xl">Sites</h1>
-            <p className={`mt-1 max-w-xl text-[13px] leading-relaxed ${muted}`}>
-              Describe the page you want — Deepchox returns structured copy + layout, previews it, and exports a single HTML file.
+            <p className={`truncate text-[11px] ${muted}`}>
+              Prompt on the left - preview uses the rest of your screen.
             </p>
           </div>
         </div>
       </header>
 
-      <div className="mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col gap-4 overflow-y-auto p-4 pb-28 sm:flex-row sm:gap-5 sm:p-6 lg:pb-8">
-        {/* Controls */}
-        <div className="flex w-full shrink-0 flex-col gap-4 sm:max-w-md lg:w-[340px]">
-          <section className={`rounded-2xl border p-4 ${shell}`}>
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
+        <div
+          className={`flex w-full shrink-0 flex-col gap-5 overflow-y-auto border-zinc-200 p-5 lg:max-w-[min(520px,44vw)] lg:w-[min(520px,44vw)] lg:border-r lg:pb-10 ${dark ? '' : ''}`}
+          style={{ borderColor: dark ? '#27272a' : '#e5e7eb' }}
+        >
+          <section className={`rounded-2xl border p-5 ${shell}`}>
             <label htmlFor="site-prompt" className={`mb-2 block text-[11px] font-semibold uppercase tracking-wider ${muted}`}>
               Prompt
             </label>
             <textarea
               id="site-prompt"
-              rows={10}
+              rows={8}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Who is this for, what’s the offer, tone, CTAs..."
+              placeholder="Who is this for, what is the offer, tone, CTAs..."
               className={`w-full resize-y rounded-xl border px-3 py-3 text-[13px] outline-none ring-0 transition-shadow focus:border-neutral-400 ${field}`}
             />
 
-            <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
                 <span className={`mb-1.5 block text-[10px] font-semibold uppercase tracking-wider ${muted}`}>Style</span>
                 <select
                   value={preset}
                   onChange={(e) => setPreset(e.target.value)}
-                  className={`w-full rounded-lg border px-2 py-2 text-[13px] ${field}`}
+                  className={`w-full rounded-lg border px-2 py-2.5 text-[13px] ${field}`}
                 >
                   {PRESETS.map((p) => (
                     <option key={p.id} value={p.id}>
@@ -184,8 +201,8 @@ export function SiteBuilder() {
                   type="button"
                   disabled={loading || prompt.trim().length < 8}
                   onClick={() => void generate()}
-                  className={`flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-[13px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
-                    dark ? 'bg-neutral-200 text-neutral-900 hover:bg-white' : 'bg-neutral-900 text-white hover:bg-neutral-800'
+                  className={`flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl py-2.5 text-[13px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+                    dark ? 'bg-neutral-100 text-neutral-900 hover:bg-white' : 'bg-neutral-900 text-white hover:bg-neutral-800'
                   }`}
                 >
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
@@ -195,13 +212,13 @@ export function SiteBuilder() {
             </div>
 
             {error && (
-              <p className="mt-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-[13px] text-red-400">
+              <p className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-[13px] text-red-400">
                 {error}
               </p>
             )}
           </section>
 
-          <section className={`rounded-2xl border p-4 ${shell}`}>
+          <section className={`rounded-2xl border p-5 ${shell}`}>
             <div className="mb-2 flex items-center justify-between gap-2">
               <span className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider ${muted}`}>
                 <History className="h-3.5 w-3.5" />
@@ -218,9 +235,9 @@ export function SiteBuilder() {
               )}
             </div>
             {history.length === 0 ? (
-              <p className={`text-[13px] ${muted}`}>Generations appear here — stored locally in this browser.</p>
+              <p className={`text-[13px] ${muted}`}>Generations appear here - stored locally in this browser.</p>
             ) : (
-              <ul className="max-h-[220px] space-y-1 overflow-y-auto [scrollbar-width:thin]">
+              <ul className="max-h-[min(40vh,320px)] space-y-1 overflow-y-auto [scrollbar-width:thin]">
                 {history.map((h) => (
                   <li key={h.id}>
                     <button
@@ -240,37 +257,50 @@ export function SiteBuilder() {
           </section>
         </div>
 
-        {/* Preview */}
-        <div className={`flex min-h-[480px] min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border ${shell}`}>
-          <div className={`flex shrink-0 flex-wrap items-center justify-between gap-2 border-b px-4 py-2.5 ${dark ? 'border-[#262626]' : 'border-neutral-200'}`}>
-            <span className={`text-[11px] font-semibold uppercase tracking-wider ${muted}`}>Live preview</span>
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => void copyHtml()}
-                className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[12px] font-medium ${
-                  dark ? 'border-[#333] hover:bg-[#141414]' : 'border-neutral-200 hover:bg-neutral-50'
-                }`}
-              >
-                <Copy className="h-3.5 w-3.5" /> {copied ? 'Copied' : 'Copy HTML'}
-              </button>
-              <button
-                type="button"
-                onClick={downloadHtml}
-                className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[12px] font-medium ${
-                  dark ? 'border-[#333] hover:bg-[#141414]' : 'border-neutral-200 hover:bg-neutral-50'
-                }`}
-              >
-                <Download className="h-3.5 w-3.5" /> Download .html
-              </button>
+        <div
+          className={`flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden p-5 pt-4 lg:p-6 lg:pl-6 ${dark ? '' : ''}`}
+        >
+          <div className={`flex min-h-[min(60dvh,720px)] min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border ${shell}`}>
+            <div className={`flex shrink-0 flex-wrap items-center justify-between gap-2 border-b px-4 py-3 ${dark ? 'border-[#262626]' : 'border-neutral-200'}`}>
+              <div className="flex items-center gap-2">
+                <span className={`text-[11px] font-semibold uppercase tracking-[0.12em] ${muted}`}>App preview</span>
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] ${
+                    dark ? 'border-emerald-500/30 text-emerald-300' : 'border-teal-600/35 text-teal-800'
+                  }`}
+                >
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+                  Live
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => void copyHtml()}
+                  className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[12px] font-medium ${
+                    dark ? 'border-[#333] hover:bg-[#141414]' : 'border-neutral-200 hover:bg-neutral-50'
+                  }`}
+                >
+                  <Copy className="h-3.5 w-3.5" /> {copied ? 'Copied' : 'Copy HTML'}
+                </button>
+                <button
+                  type="button"
+                  onClick={downloadHtml}
+                  className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[12px] font-medium ${
+                    dark ? 'border-[#333] hover:bg-[#141414]' : 'border-neutral-200 hover:bg-neutral-50'
+                  }`}
+                >
+                  <Download className="h-3.5 w-3.5" /> Download .html
+                </button>
+              </div>
             </div>
+            <iframe
+              title="Generated site preview"
+              className="min-h-0 w-full flex-1 bg-neutral-900/5"
+              sandbox=""
+              srcDoc={html}
+            />
           </div>
-          <iframe
-            title="Generated site preview"
-            className="min-h-0 w-full flex-1 bg-neutral-900/5"
-            sandbox=""
-            srcDoc={html}
-          />
         </div>
       </div>
     </div>
