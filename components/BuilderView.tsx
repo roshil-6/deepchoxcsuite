@@ -210,30 +210,53 @@ export function BuilderView() {
       style={{ background: isDark ? '#030303' : '#eef0f4' }}
     >
       <header
-        className="flex h-14 shrink-0 items-center justify-between gap-3 border-b px-4 sm:px-5"
+        className="flex h-[52px] shrink-0 items-center justify-between gap-3 border-b px-4 sm:px-5"
         style={{ borderColor: border, background: headerBg, backdropFilter: 'blur(14px)' }}
       >
-        <div className="flex min-w-0 flex-1 items-center gap-3">
+        <div className="flex min-w-0 flex-1 items-center gap-4">
           <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-            style={{ background: isDark ? '#7456ff28' : '#7456ff16' }}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl"
+            style={{
+              boxShadow: isDark ? 'inset 0 1px 0 rgba(255,255,255,0.06)' : undefined,
+              background: isDark ? 'rgba(116,86,255,0.18)' : 'rgba(116,86,255,0.1)',
+              border: `1px solid ${isDark ? 'rgba(167,139,250,0.25)' : 'rgba(167,139,250,0.35)'}`,
+            }}
           >
-            <Wand2 size={18} strokeWidth={2} style={{ color: '#b6a5ff' }} />
+            <Wand2 size={18} strokeWidth={2} style={{ color: isDark ? '#ddd6fe' : '#6d54c7' }} />
           </div>
-          <div className="min-w-0">
-            <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="truncate text-sm font-semibold tracking-tight" style={{ color: isDark ? '#fafafa' : '#18181b' }}>
                 App builder
               </span>
+              <nav
+                className="hidden items-center rounded-xl p-[3px] sm:flex"
+                style={{ background: isDark ? '#18181b' : '#eef2ff' }}
+                aria-label="Workspace modes"
+              >
+                <span
+                  className="rounded-[10px] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em]"
+                  style={{
+                    background: isDark ? '#27272a' : '#ffffff',
+                    color: isDark ? '#fafafa' : '#3730a3',
+                    boxShadow: !isDark ? '0 1px 3px rgba(79,70,229,0.12)' : 'none',
+                  }}
+                >
+                  Agent
+                </span>
+                <span className="px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em]" style={{ color: isDark ? '#71717a' : '#818cf8' }}>
+                  Preview
+                </span>
+              </nav>
               {currentSchema ? (
-                <span className="inline-flex items-center gap-1.5 truncate text-[12px]" style={{ color: isDark ? '#a1a1aa' : '#52525b' }}>
-                  <span className="h-1 w-1 shrink-0 rounded-full bg-emerald-400" aria-hidden />
+                <span className="inline-flex max-w-[200px] items-center gap-1.5 truncate rounded-full border px-3 py-0.5 text-[11px] font-medium sm:max-w-xs" style={{ borderColor: isDark ? '#3f3f46' : '#e4e4e7', color: isDark ? '#a1a1aa' : '#52525b' }}>
+                  <span className="h-1 w-1 shrink-0 animate-pulse rounded-full bg-emerald-400" aria-hidden />
                   <span className="truncate">{currentSchema.name}</span>
                 </span>
               ) : null}
             </div>
-            <p className="truncate text-[11px]" style={{ color: isDark ? '#71717a' : '#71717a' }}>
-              Prompt on the left - full-width preview on the right.
+            <p className="mt-0.5 truncate text-[11px]" style={{ color: isDark ? '#71717a' : '#71717a' }}>
+              Chat on the left, live canvas on the right
             </p>
           </div>
         </div>
@@ -243,38 +266,39 @@ export function BuilderView() {
             <button
               type="button"
               onClick={() => toggleSectionStudio()}
-              className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors"
+              className="flex h-10 items-center gap-2 rounded-xl border px-3.5 text-[11px] font-bold uppercase tracking-[0.1em]"
               style={{
-                border: showSectionStudio ? undefined : `1px solid ${isDark ? '#3f3f46' : '#e4e4e7'}`,
-                background: showSectionStudio ? (isDark ? 'rgba(52,211,153,0.12)' : 'rgba(236,253,245,1)') : (isDark ? '#18181b' : '#ffffff'),
-                color: showSectionStudio ? (isDark ? '#6ee7b7' : '#0f766e') : (isDark ? '#d4d4d8' : '#3f3f46'),
+                borderColor: showSectionStudio ? 'rgba(45,212,191,0.45)' : isDark ? '#3f3f46' : '#e4e4e7',
+                background: showSectionStudio ? (isDark ? 'rgba(6,78,72,0.35)' : 'rgba(236,253,245,1)') : isDark ? '#141416' : '#ffffff',
+                color: showSectionStudio ? (isDark ? '#5eead4' : '#0f766e') : isDark ? '#d4d4d8' : '#52525b',
               }}
             >
-              <Layers size={15} strokeWidth={2} />
-              Sections
+              <Layers size={16} strokeWidth={2} />
+              <span className="hidden sm:inline">Structure</span>
             </button>
           ) : null}
           <button
             type="button"
             onClick={() => openHistory()}
-            className="flex items-center gap-2 rounded-lg border px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors"
+            className="flex h-10 items-center gap-2 rounded-xl border px-3.5 text-[11px] font-bold uppercase tracking-[0.1em]"
             style={{
               borderColor: isDark ? '#3f3f46' : '#e4e4e7',
               background: isDark ? '#141416' : '#ffffff',
-              color: isDark ? '#d4d4d8' : '#52525b',
+              color: isDark ? '#e4e4e7' : '#3f3f46',
+              boxShadow: !isDark ? '0 1px 2px rgba(15,23,42,0.04)' : 'none',
             }}
           >
-            <History size={15} strokeWidth={2} />
-            History ({history.length})
+            <History size={16} strokeWidth={2} />
+            <span>{history.length}</span>
           </button>
         </div>
       </header>
 
       <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
         <aside
-          className="flex min-h-0 w-full shrink-0 flex-col border-zinc-200 lg:h-full lg:max-w-[min(520px,44vw)] lg:w-[min(520px,44vw)] lg:border-r lg:border-b-0 border-b"
+          className="flex min-h-0 w-full shrink-0 flex-col border-zinc-200 lg:h-full lg:max-w-[min(536px,44vw)] lg:w-[min(536px,44vw)] lg:border-r lg:border-b-0 border-b"
           style={{
-            background: isDark ? '#09090b' : '#fafafa',
+            background: isDark ? 'linear-gradient(180deg,#09090c 0%,#070708 55%)' : 'linear-gradient(180deg,#fafafa,#f4f4f5)',
             borderColor: border,
           }}
         >
@@ -342,7 +366,7 @@ export function BuilderView() {
               className="fixed inset-0 z-[52] bg-black/45 backdrop-blur-[2px]"
               onClick={() => setShowSectionStudio(false)}
             />
-            <div className="fixed bottom-0 right-0 top-14 z-[54] flex h-[calc(100dvh-3.5rem)] max-h-[calc(100dvh-3.5rem)] w-[min(100vw,460px)] max-w-full flex-col"
+            <div className="fixed bottom-0 right-0 top-[52px] z-[54] flex h-[calc(100dvh-3.25rem)] max-h-[calc(100dvh-3.25rem)] w-[min(100vw,460px)] max-w-full flex-col"
               style={{ background: isDark ? '#060607' : '#ffffff', boxShadow: '-12px 0 48px rgba(0,0,0,0.35)' }}
             >
               <SectionStudio

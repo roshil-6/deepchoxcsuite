@@ -2,7 +2,8 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Globe2, Sparkles, Copy, Download, Trash2, History, ChevronRight, Loader2,
+  Globe2, Copy, Download, ChevronRight, Loader2,
+  ArrowUp,
 } from 'lucide-react';
 import { useTheme } from '@/lib/ThemeContext';
 import { buildStandaloneHtml, defaultSitePayload, type SitePayload } from '@/lib/siteFromPrompt';
@@ -125,160 +126,253 @@ export function SiteBuilder() {
     setHistory([]);
   };
 
-  const shell = dark ? 'border-[#262626] bg-[#0a0a0a] text-neutral-200' : 'border-neutral-200 bg-[#fafafa] text-neutral-900';
-  const muted = dark ? 'text-neutral-500' : 'text-neutral-500';
-  const field = dark
-    ? 'border-[#262626] bg-[#141414] text-neutral-100 placeholder:text-neutral-600'
-    : 'border-neutral-200 bg-white text-neutral-900 placeholder:text-neutral-400';
+  const muted = dark ? 'text-zinc-500' : 'text-zinc-500';
 
   return (
-    <div className={`flex min-h-0 flex-1 flex-col overflow-hidden ${dark ? 'bg-[#030303]' : 'bg-[#eef0f4]'}`}>
+    <div className={`flex min-h-0 flex-1 flex-col overflow-hidden ${dark ? 'bg-[#070708]' : 'bg-[#eef0f4]'}`}>
       <header
-        className={`flex h-14 shrink-0 items-center justify-between gap-3 border-b px-4 sm:px-6 ${
-          dark ? 'border-[#27272a] bg-[rgba(10,10,12,0.95)]' : 'border-neutral-200 bg-[rgba(255,255,255,0.92)]'
+        className={`flex h-[52px] shrink-0 items-center gap-4 border-b px-4 sm:px-6 ${
+          dark ? 'border-[#27272a] bg-[rgba(10,10,12,0.96)]' : 'border-neutral-200 bg-[rgba(255,255,255,0.95)]'
         }`}
         style={{ backdropFilter: 'blur(12px)' }}
       >
-        <div className="flex min-w-0 items-center gap-3">
-          <div
-            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${dark ? 'bg-emerald-500/10' : 'bg-emerald-600/10'}`}
-          >
-            <Globe2 className={`h-5 w-5 ${dark ? 'text-emerald-400' : 'text-emerald-700'}`} strokeWidth={2} />
-          </div>
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className={`truncate text-sm font-semibold tracking-tight sm:text-[15px] ${dark ? 'text-white' : 'text-neutral-900'}`}>
-                Sites workspace
-              </h1>
+        <div
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border ${
+            dark ? 'border-emerald-500/30 bg-emerald-500/10' : 'border-emerald-600/35 bg-emerald-50'
+          }`}
+        >
+          <Globe2 className={`h-5 w-5 ${dark ? 'text-emerald-400' : 'text-emerald-700'}`} strokeWidth={2} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className={`truncate text-sm font-semibold tracking-tight sm:text-[15px] ${dark ? 'text-white' : 'text-neutral-900'}`}>
+              Sites workspace
+            </h1>
+            <nav
+              className={`hidden rounded-xl p-[3px] sm:flex ${dark ? 'bg-zinc-900' : 'bg-indigo-50'}`}
+              aria-label="Modes"
+            >
               <span
-                className={`hidden rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] sm:inline-flex ${dark ? 'border-emerald-500/35 text-emerald-300' : 'border-emerald-600/35 text-teal-800'}`}
+                className="rounded-[10px] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em]"
+                style={{
+                  background: dark ? '#27272a' : '#fff',
+                  color: dark ? '#fafafa' : '#3730a3',
+                  boxShadow: !dark ? '0 1px 3px rgba(79,70,229,0.1)' : 'none',
+                }}
               >
-                Live preview
+                Agent
               </span>
-            </div>
-            <p className={`truncate text-[11px] ${muted}`}>
-              Prompt on the left - preview uses the rest of your screen.
-            </p>
+              <span className={`px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] ${dark ? 'text-zinc-500' : 'text-indigo-400'}`}>
+                Preview
+              </span>
+            </nav>
           </div>
+          <p className={`truncate text-[11px] ${muted}`}>Describe once - structured HTML renders in the live frame.</p>
         </div>
       </header>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
+        {/* Left rail */}
         <div
-          className={`flex w-full shrink-0 flex-col gap-5 overflow-y-auto border-zinc-200 p-5 lg:max-w-[min(520px,44vw)] lg:w-[min(520px,44vw)] lg:border-r lg:pb-10 ${dark ? '' : ''}`}
-          style={{ borderColor: dark ? '#27272a' : '#e5e7eb' }}
+          className="flex min-h-0 w-full shrink-0 flex-col border-zinc-300/20 lg:max-w-[min(536px,44vw)] lg:w-[min(536px,44vw)] lg:border-r"
+          style={{
+            borderColor: dark ? '#27272a' : '#e5e7eb',
+            background: dark ? 'linear-gradient(180deg,#09090c,#070708)' : 'linear-gradient(180deg,#fafafa,#f4f4f5)',
+          }}
         >
-          <section className={`rounded-2xl border p-5 ${shell}`}>
-            <label htmlFor="site-prompt" className={`mb-2 block text-[11px] font-semibold uppercase tracking-wider ${muted}`}>
-              Prompt
-            </label>
-            <textarea
-              id="site-prompt"
-              rows={8}
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Who is this for, what is the offer, tone, CTAs..."
-              className={`w-full resize-y rounded-xl border px-3 py-3 text-[13px] outline-none ring-0 transition-shadow focus:border-neutral-400 ${field}`}
-            />
-
-            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-8 sm:px-7 sm:py-10">
+            <div className="mx-auto max-w-[440px] space-y-10">
               <div>
-                <span className={`mb-1.5 block text-[10px] font-semibold uppercase tracking-wider ${muted}`}>Style</span>
-                <select
-                  value={preset}
-                  onChange={(e) => setPreset(e.target.value)}
-                  className={`w-full rounded-lg border px-2 py-2.5 text-[13px] ${field}`}
-                >
+                <p className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: muted }}>
+                  <span className="h-1 w-1 rounded-full bg-emerald-400" aria-hidden />
+                  Agent
+                </p>
+                <p className="text-[15px] font-medium leading-relaxed" style={{ color: dark ? '#e4e4e7' : '#334155' }}>
+                  Pick a style, then describe the page. One HTML file ships from here.
+                </p>
+                <p className="mt-3 text-[13px]" style={{ color: muted }}>
+                  Current: <span className="font-medium" style={{ color: dark ? '#fafafa' : '#0f172a' }}>{payload.title || 'Default shell'}</span>
+                </p>
+              </div>
+
+              <div>
+                <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: muted }}>
+                  Visual tone
+                </p>
+                <div className="flex flex-wrap gap-2.5">
                   {PRESETS.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex items-end">
-                <button
-                  type="button"
-                  disabled={loading || prompt.trim().length < 8}
-                  onClick={() => void generate()}
-                  className={`flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl py-2.5 text-[13px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
-                    dark ? 'bg-neutral-100 text-neutral-900 hover:bg-white' : 'bg-neutral-900 text-white hover:bg-neutral-800'
-                  }`}
-                >
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                  {loading ? 'Building…' : 'Generate'}
-                </button>
-              </div>
-            </div>
-
-            {error && (
-              <p className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-[13px] text-red-400">
-                {error}
-              </p>
-            )}
-          </section>
-
-          <section className={`rounded-2xl border p-5 ${shell}`}>
-            <div className="mb-2 flex items-center justify-between gap-2">
-              <span className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider ${muted}`}>
-                <History className="h-3.5 w-3.5" />
-                Recent
-              </span>
-              {history.length > 0 && (
-                <button
-                  type="button"
-                  onClick={clearHistory}
-                  className={`flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium ${dark ? 'hover:bg-white/10' : 'hover:bg-neutral-100'}`}
-                >
-                  <Trash2 className="h-3 w-3" /> Clear
-                </button>
-              )}
-            </div>
-            {history.length === 0 ? (
-              <p className={`text-[13px] ${muted}`}>Generations appear here - stored locally in this browser.</p>
-            ) : (
-              <ul className="max-h-[min(40vh,320px)] space-y-1 overflow-y-auto [scrollbar-width:thin]">
-                {history.map((h) => (
-                  <li key={h.id}>
                     <button
+                      key={p.id}
                       type="button"
-                      onClick={() => setPayload(h.payload)}
-                      className={`flex w-full items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-[13px] transition-colors ${
-                        dark ? 'border-[#262626] hover:bg-[#141414]' : 'border-neutral-200 hover:bg-neutral-50'
+                      onClick={() => setPreset(p.id)}
+                      className={`rounded-full px-4 py-2.5 text-[13px] font-medium transition-colors ${
+                        preset === p.id
+                          ? dark
+                            ? 'bg-emerald-500/20 text-emerald-200 ring-1 ring-emerald-500/35'
+                            : 'bg-teal-100 text-teal-900 ring-1 ring-teal-300'
+                          : dark
+                            ? 'bg-zinc-900/40 text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-200'
+                            : 'bg-white text-zinc-600 shadow-sm ring-1 ring-zinc-200/80 hover:bg-zinc-50'
                       }`}
                     >
-                      <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-50" />
-                      <span className="min-w-0 flex-1 truncate font-medium">{h.title}</span>
+                      {p.label}
                     </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div className="mb-4 flex items-center justify-between gap-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: muted }}>
+                    Recent
+                  </p>
+                  {history.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={clearHistory}
+                      className={`text-[11px] font-semibold ${dark ? 'text-red-400 hover:underline' : 'text-red-600 hover:underline'}`}
+                    >
+                      Clear all
+                    </button>
+                  )}
+                </div>
+                {history.length === 0 ? (
+                  <p className="text-[13px] leading-relaxed" style={{ color: muted }}>
+                    Saved runs show up here - local to this browser only.
+                  </p>
+                ) : (
+                  <ul className="space-y-1">
+                    {history.map((h) => (
+                      <li key={h.id}>
+                        <button
+                          type="button"
+                          onClick={() => setPayload(h.payload)}
+                          className={`group flex w-full items-center gap-3 rounded-xl py-2.5 pl-1 pr-2 text-left text-[14px] transition-colors ${
+                            dark ? 'text-zinc-200 hover:bg-white/[0.04]' : 'text-zinc-800 hover:bg-zinc-100/80'
+                          }`}
+                        >
+                          <ChevronRight className="h-4 w-4 shrink-0 opacity-30 group-hover:opacity-60" />
+                          <span className="min-w-0 flex-1 truncate font-medium">{h.title}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom composer */}
+          <div
+            className="shrink-0 border-t px-5 pb-6 pt-5 sm:px-7"
+            style={{
+              borderColor: dark ? '#27272a' : '#e5e7eb',
+              background: dark ? 'rgba(6,6,8,0.92)' : 'rgba(248,250,252,0.98)',
+            }}
+          >
+            <div
+              className={`mx-auto max-w-[440px] overflow-hidden rounded-[22px] border ${dark ? 'shadow-[0_24px_80px_rgba(0,0,0,0.55)]' : 'shadow-[0_20px_50px_rgba(15,23,42,0.07)]'}`}
+              style={{
+                borderColor: dark ? 'rgba(63,63,70,0.55)' : 'rgba(226,232,240,1)',
+                background: dark ? '#101014' : '#ffffff',
+              }}
+            >
+              <div
+                className="flex items-center justify-between gap-3 px-4 py-3"
+                style={{ borderBottom: `1px solid ${dark ? 'rgba(39,39,42,0.9)' : 'rgba(241,245,249,1)'}` }}
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="relative flex h-2 w-2">
+                    {loading ? (
+                      <>
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/45" />
+                        <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+                      </>
+                    ) : (
+                      <span className="inline-flex h-2 w-2 rounded-full bg-zinc-500" />
+                    )}
+                  </span>
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: loading ? '#34d399' : muted }}>
+                    {loading ? 'Building' : 'Ready'}
+                  </span>
+                </div>
+              </div>
+              <div className="p-4 sm:p-5">
+                <label htmlFor="site-prompt" className="sr-only">
+                  Site prompt
+                </label>
+                <textarea
+                  id="site-prompt"
+                  rows={5}
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder="Message the agent - audience, offer, tone, sections..."
+                  className="mb-4 w-full resize-none rounded-xl border-0 bg-transparent px-0.5 py-1 text-[15px] leading-relaxed outline-none placeholder:text-zinc-500"
+                  style={{ color: dark ? '#fafafa' : '#0f172a' }}
+                />
+                {error ? (
+                  <p className="mb-4 rounded-xl border border-red-500/35 bg-red-500/10 px-3 py-2 text-[12px] text-red-400">{error}</p>
+                ) : null}
+                <div className="flex items-end justify-end gap-3">
+                  <button
+                    type="button"
+                    disabled={loading || prompt.trim().length < 8}
+                    onClick={() => void generate()}
+                    className="inline-flex h-12 min-w-[11rem] items-center justify-center gap-2 rounded-2xl px-5 text-[14px] font-semibold transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+                    style={{
+                      background: dark ? '#f8fafc' : '#0f172a',
+                      color: dark ? '#020617' : '#f8fafc',
+                      boxShadow: dark ? '0 12px 36px rgba(0,0,0,0.4)' : '0 12px 32px rgba(15,23,42,0.15)',
+                    }}
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Wait
+                      </>
+                    ) : (
+                      <>
+                        Generate
+                        <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${dark ? 'bg-black/10' : 'bg-white/15'}`}>
+                          <ArrowUp className="h-4 w-4" strokeWidth={2.5} />
+                        </span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div
-          className={`flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden p-5 pt-4 lg:p-6 lg:pl-6 ${dark ? '' : ''}`}
-        >
-          <div className={`flex min-h-[min(60dvh,720px)] min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border ${shell}`}>
-            <div className={`flex shrink-0 flex-wrap items-center justify-between gap-2 border-b px-4 py-3 ${dark ? 'border-[#262626]' : 'border-neutral-200'}`}>
-              <div className="flex items-center gap-2">
-                <span className={`text-[11px] font-semibold uppercase tracking-[0.12em] ${muted}`}>App preview</span>
-                <span
-                  className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] ${
-                    dark ? 'border-emerald-500/30 text-emerald-300' : 'border-teal-600/35 text-teal-800'
-                  }`}
-                >
-                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
-                  Live
-                </span>
+        {/* Preview shell */}
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col p-3 sm:p-4 lg:p-5" style={{ background: dark ? 'linear-gradient(165deg,#080808,#050505)' : 'linear-gradient(165deg,#f1f5f9,#e8edf3)' }}>
+          <div
+            className={`flex min-h-0 flex-1 flex-col overflow-hidden rounded-[20px] border ${
+              dark ? 'border-zinc-700/60 bg-[rgba(12,12,14,0.96)] shadow-[0_28px_80px_rgba(0,0,0,0.55)]' : 'border-zinc-200 bg-white/95 shadow-[0_22px_50px_rgba(15,23,42,0.08)]'
+            }`}
+          >
+            <div className={`flex shrink-0 flex-wrap items-center justify-between gap-3 border-b px-4 py-3 sm:px-5 ${dark ? 'border-zinc-700/55' : 'border-zinc-200'}`}>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={`text-[13px] font-semibold ${dark ? 'text-white' : 'text-zinc-900'}`}>App preview</span>
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${
+                      dark ? 'border-emerald-500/40 text-emerald-300' : 'border-teal-600/35 text-teal-800'
+                    }`}
+                  >
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+                    Live
+                  </span>
+                </div>
+                <p className={`mt-0.5 text-[11px] ${muted}`}>{payload.title || 'Structured landing output'}</p>
               </div>
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
                   onClick={() => void copyHtml()}
-                  className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[12px] font-medium ${
-                    dark ? 'border-[#333] hover:bg-[#141414]' : 'border-neutral-200 hover:bg-neutral-50'
+                  className={`flex h-10 items-center gap-2 rounded-xl border px-3.5 text-[12px] font-semibold ${
+                    dark ? 'border-zinc-600/50 bg-zinc-900/40 text-zinc-200 hover:bg-zinc-800/50' : 'border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50'
                   }`}
                 >
                   <Copy className="h-3.5 w-3.5" /> {copied ? 'Copied' : 'Copy HTML'}
@@ -286,8 +380,8 @@ export function SiteBuilder() {
                 <button
                   type="button"
                   onClick={downloadHtml}
-                  className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[12px] font-medium ${
-                    dark ? 'border-[#333] hover:bg-[#141414]' : 'border-neutral-200 hover:bg-neutral-50'
+                  className={`flex h-10 items-center gap-2 rounded-xl px-5 text-[12px] font-bold ${
+                    dark ? 'bg-zinc-100 text-zinc-950 hover:bg-white' : 'bg-zinc-900 text-white hover:bg-zinc-800'
                   }`}
                 >
                   <Download className="h-3.5 w-3.5" /> Download .html
@@ -296,10 +390,15 @@ export function SiteBuilder() {
             </div>
             <iframe
               title="Generated site preview"
-              className="min-h-0 w-full flex-1 bg-neutral-900/5"
+              className="min-h-0 w-full flex-1 bg-neutral-950/20"
               sandbox=""
               srcDoc={html}
             />
+            <div className={`border-t px-4 py-2.5 ${dark ? 'border-zinc-800 bg-emerald-950/25' : 'border-zinc-200 bg-teal-50/80'}`}>
+              <p className={`text-center text-[11px] font-bold uppercase tracking-[0.12em] ${dark ? 'text-emerald-400' : 'text-teal-800'}`}>
+                {loading ? 'Synthesizing copy and layout tokens' : 'Preview mirrors your prompt and style chips'}
+              </p>
+            </div>
           </div>
         </div>
       </div>
