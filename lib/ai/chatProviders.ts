@@ -446,29 +446,3 @@ export async function chatWithDualAgents(
   return { gpt, claude, fastest, at: new Date().toISOString() };
 }
 
-export function simulationResponse(messages: ChatMessage[], model: string | undefined): OllamaShapedResponse {
-  const last = messages[messages.length - 1];
-  const lastUserMessage = last?.content || '';
-  let mockResponse =
-    'I am currently disconnected from my neural engine. Set GROQ_API_KEY and/or HF_API_TOKEN (Hugging Face) on the server, or run Ollama locally.';
-
-  const lower = lastUserMessage.toLowerCase();
-  if (lower.includes('hello') || lower.includes('hi')) {
-    mockResponse = 'Greetings. Deepchox Core is online (Simulation Mode). How can I assist?';
-  } else if (lower.includes('investor') || lower.includes('pitch')) {
-    mockResponse =
-      'I can assist with that. I recommend focusing on your unit economics and clear value proposition. Shall I draft an outline?';
-  } else if (model === 'llama3' && messages.some((m) => m.role === 'system' && m.content.includes('Shark'))) {
-    mockResponse = JSON.stringify({
-      response: 'That answer is vague. I need concrete numbers. What is your CAC vs LTV? (Simulation Mode)',
-      rating: 'fail',
-    });
-  }
-
-  return {
-    model: 'simulation-fallback',
-    created_at: new Date().toISOString(),
-    message: { role: 'assistant', content: mockResponse },
-    done: true,
-  };
-}

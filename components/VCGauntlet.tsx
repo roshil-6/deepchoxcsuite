@@ -58,8 +58,7 @@ export function VCGauntlet() {
         setIsLoading(true);
 
         try {
-            // Mocking the "Shark" response logic for this demo
-            // In production, this hits the LLM with the 'shark' persona
+            // VC Shark persona interrogation via LLM
             const response = await fetch('/api/dexo', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

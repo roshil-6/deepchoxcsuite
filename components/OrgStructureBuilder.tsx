@@ -66,24 +66,36 @@ export function OrgStructureBuilder() {
         saveNodes(nodes.map(n => n.id === updated.id ? updated : n));
     };
 
-    // AI Generation (Mocked for UI logic, connect to LLM later if needed)
+    // AI Generation - TODO: Connect to LLM API for dynamic org structure generation
     const handleAiGenerate = async () => {
         if (!aiPrompt.trim()) return;
         setIsGenerating(true);
 
-        // Simulating Agent Delay
-        setTimeout(() => {
-            const mockStructure: OrgNode[] = [
-                { id: '1', role: 'CEO', name: 'Founder', department: 'Executive', reportsTo: '' },
-                { id: '2', role: 'CTO', name: 'TBD', department: 'Technology', reportsTo: '1' },
-                { id: '3', role: 'CMO', name: 'TBD', department: 'Marketing', reportsTo: '1' },
-                { id: '4', role: 'Lead Developer', name: 'TBD', department: 'Technology', reportsTo: '2' },
-                { id: '5', role: 'Product Manager', name: 'TBD', department: 'Product', reportsTo: '2' },
-            ];
-            saveNodes(mockStructure);
+        try {
+            const res = await fetch('/api/dexo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'org-structure',
+                    payload: { prompt: aiPrompt },
+                }),
+            });
+            const data = await res.json();
+            if (data.structure && Array.isArray(data.structure)) {
+                saveNodes(data.structure);
+            } else {
+                // Fallback: create a basic starter structure
+                const starterStructure: OrgNode[] = [
+                    { id: Date.now().toString(), role: 'CEO', name: 'Founder', department: 'Executive', reportsTo: '' },
+                ];
+                saveNodes(starterStructure);
+            }
+        } catch {
+            // On error, just close the modal
+        } finally {
             setIsGenerating(false);
             setShowAiModal(false);
-        }, 2000);
+        }
     };
 
     // Render Tree Recursively

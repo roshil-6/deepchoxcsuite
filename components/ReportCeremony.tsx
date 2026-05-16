@@ -68,7 +68,7 @@ export function ReportCeremony({ onClose }: { onClose: () => void }) {
         doc.setFontSize(18);
         doc.text("2. Financial Feasibility (CFO)", 20, 30);
 
-        // Mock Budget Table
+        // Budget Table (placeholder data - replace with actual project financials)
         autoTable(doc, {
             startY: 40,
             head: [['Category', 'Allocation', 'Status']],
