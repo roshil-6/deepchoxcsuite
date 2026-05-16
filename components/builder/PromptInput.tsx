@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { ArrowUp, RefreshCw } from 'lucide-react';
 import type { UISchema } from '@/lib/uiSchema';
 
 interface PromptInputProps {
@@ -170,23 +169,13 @@ export function PromptInput(props: PromptInputProps) {
               <button
                 type="submit"
                 disabled={!prompt.trim() || isGenerating}
-                className="inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-[13px] font-semibold disabled:opacity-35"
+                className="rounded-lg px-5 py-2.5 text-[13px] font-semibold disabled:opacity-35"
                 style={{
                   background: isDark ? '#f8fafc' : '#0f172a',
                   color: isDark ? '#09090b' : '#fafafa',
                 }}
               >
-                {isGenerating ? (
-                  <>
-                    <RefreshCw size={15} className="animate-spin" strokeWidth={2} />
-                    Please wait
-                  </>
-                ) : (
-                  <>
-                    {currentSchema ? 'Send' : 'Generate'}
-                    <ArrowUp size={15} strokeWidth={2.5} />
-                  </>
-                )}
+                {isGenerating ? 'Please wait...' : currentSchema ? 'Send' : 'Generate'}
               </button>
             </div>
           </form>

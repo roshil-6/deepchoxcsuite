@@ -1,13 +1,6 @@
 'use client';
 
 import React from 'react';
-import {
-  Code,
-  ExternalLink,
-  FileJson,
-  Globe,
-  Package,
-} from 'lucide-react';
 import type { UISchema } from '@/lib/uiSchema';
 import { DynamicUIRenderer } from './DynamicUIRenderer';
 
@@ -40,16 +33,13 @@ export function PreviewPane({
   onSelectSection,
 }: PreviewPaneProps) {
   const stroke = isDark ? 'rgba(82,82,91,0.45)' : 'rgba(203,213,225,0.85)';
-  const shell = isDark ? '#09090b' : '#fafafa';
-
   const muted = isDark ? '#71717a' : '#64748b';
-
   const linkBtn = `text-[13px] font-medium underline-offset-4 hover:underline ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`;
-
   const canvasInset = isDark ? '#050508' : '#f4f4f5';
+  const tabTrack = isDark ? 'rgba(24,24,27,0.85)' : 'rgba(241,245,249,1)';
 
   return (
-    <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden" style={{ background: shell }}>
+    <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-transparent lg:rounded-r-2xl">
       <div
         className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b px-4 py-3 sm:px-5"
         style={{ borderColor: stroke }}
@@ -61,27 +51,36 @@ export function PreviewPane({
           <span className="text-[13px]" style={{ color: muted }}>
             {currentSchema ? 'Showing layout' : 'Idle'}
           </span>
-          <div className="flex items-center gap-1" role="tablist">
+          <div
+            className="inline-flex items-center rounded-lg p-1"
+            style={{ background: tabTrack }}
+            role="tablist"
+            aria-label="Preview mode"
+          >
             <button
               role="tab"
+              aria-selected={activeTab === 'preview'}
               type="button"
               onClick={() => setActiveTab('preview')}
               className="rounded-md px-3 py-1.5 text-[12px] font-medium"
               style={{
-                background: activeTab === 'preview' ? (isDark ? '#27272a' : '#e4e4e7') : 'transparent',
+                background: activeTab === 'preview' ? (isDark ? '#3f3f46' : '#ffffff') : 'transparent',
                 color: activeTab === 'preview' ? (isDark ? '#fafafa' : '#0f172a') : muted,
+                boxShadow: activeTab === 'preview' && !isDark ? '0 1px 2px rgba(15,23,42,0.06)' : 'none',
               }}
             >
               Canvas
             </button>
             <button
               role="tab"
+              aria-selected={activeTab === 'code'}
               type="button"
               onClick={() => setActiveTab('code')}
               className="rounded-md px-3 py-1.5 text-[12px] font-medium"
               style={{
-                background: activeTab === 'code' ? (isDark ? '#27272a' : '#e4e4e7') : 'transparent',
+                background: activeTab === 'code' ? (isDark ? '#3f3f46' : '#ffffff') : 'transparent',
                 color: activeTab === 'code' ? (isDark ? '#fafafa' : '#0f172a') : muted,
+                boxShadow: activeTab === 'code' && !isDark ? '0 1px 2px rgba(15,23,42,0.06)' : 'none',
               }}
             >
               Schema
@@ -107,25 +106,20 @@ export function PreviewPane({
                   className="absolute right-0 top-full z-40 mt-2 w-56 rounded-lg border py-1 shadow-lg"
                   style={{ background: isDark ? '#18181b' : '#ffffff', borderColor: stroke }}
                 >
-                  <button onClick={() => onExport('json')} className="flex w-full items-center gap-2 px-4 py-2 text-left text-xs hover:bg-zinc-500/10" style={{ color: isDark ? '#e4e4e7' : '#404040' }} type="button">
-                    <FileJson size={14} />
+                  <button onClick={() => onExport('json')} className="w-full px-4 py-2 text-left text-xs hover:bg-zinc-500/10" style={{ color: isDark ? '#e4e4e7' : '#404040' }} type="button">
                     JSON schema
                   </button>
-                  <button onClick={() => onExport('html')} className="flex w-full items-center gap-2 px-4 py-2 text-left text-xs hover:bg-zinc-500/10" style={{ color: isDark ? '#e4e4e7' : '#404040' }} type="button">
-                    <ExternalLink size={14} />
+                  <button onClick={() => onExport('html')} className="w-full px-4 py-2 text-left text-xs hover:bg-zinc-500/10" style={{ color: isDark ? '#e4e4e7' : '#404040' }} type="button">
                     HTML bundle
                   </button>
-                  <button onClick={() => onExport('react')} className="flex w-full items-center gap-2 px-4 py-2 text-left text-xs hover:bg-zinc-500/10" style={{ color: isDark ? '#e4e4e7' : '#404040' }} type="button">
-                    <Code size={14} />
+                  <button onClick={() => onExport('react')} className="w-full px-4 py-2 text-left text-xs hover:bg-zinc-500/10" style={{ color: isDark ? '#e4e4e7' : '#404040' }} type="button">
                     React starter
                   </button>
                   <div className="my-1 h-px" style={{ background: stroke }} />
-                  <button onClick={() => onExport('static-tailwind')} className="flex w-full items-center gap-2 px-4 py-2 text-left text-xs hover:bg-zinc-500/10" style={{ color: isDark ? '#e4e4e7' : '#404040' }} type="button">
-                    <Globe size={14} />
+                  <button onClick={() => onExport('static-tailwind')} className="w-full px-4 py-2 text-left text-xs hover:bg-zinc-500/10" style={{ color: isDark ? '#e4e4e7' : '#404040' }} type="button">
                     Static + Tailwind CDN
                   </button>
-                  <button onClick={() => onExport('kit')} className="flex w-full items-center gap-2 px-4 py-2 text-left text-xs hover:bg-zinc-500/10" style={{ color: isDark ? '#e4e4e7' : '#404040' }} type="button">
-                    <Package size={14} />
+                  <button onClick={() => onExport('kit')} className="w-full px-4 py-2 text-left text-xs hover:bg-zinc-500/10" style={{ color: isDark ? '#e4e4e7' : '#404040' }} type="button">
                     Deploy kit
                   </button>
                 </div>
@@ -175,7 +169,7 @@ export function PreviewPane({
       </div>
 
       {currentSchema ? (
-        <div className="shrink-0 border-t px-5 py-2.5" style={{ borderColor: stroke, background: shell }}>
+        <div className="shrink-0 border-t px-5 py-2.5" style={{ borderColor: stroke, background: 'transparent' }}>
           <p className="text-center text-[12px]" style={{ color: muted }}>
             {`${currentSchema.name} · ${currentSchema.sections.length} sections`}
           </p>

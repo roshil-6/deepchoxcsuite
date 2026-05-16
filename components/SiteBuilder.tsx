@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Loader2 } from 'lucide-react';
 import { useTheme } from '@/lib/ThemeContext';
 import { buildStandaloneHtml, defaultSitePayload, type SitePayload } from '@/lib/siteFromPrompt';
 
@@ -137,11 +136,29 @@ export function SiteBuilder() {
               Sites workspace
             </h1>
             <nav
-              className="hidden gap-3 text-[12px] sm:flex sm:items-center"
+              className="hidden items-center rounded-lg p-1 sm:inline-flex"
+              style={{ background: dark ? 'rgba(24,24,27,0.9)' : 'rgba(241,245,249,1)' }}
               aria-label="Modes"
             >
-              <span style={{ color: dark ? '#a1a1aa' : '#64748b' }}>Agent</span>
-              <span style={{ color: dark ? '#52525b' : '#94a3b8' }}>Preview</span>
+              <span
+                className="rounded-md px-3 py-1.5 text-[12px] font-medium"
+                style={{
+                  background: dark ? '#3f3f46' : '#ffffff',
+                  color: dark ? '#fafafa' : '#18181b',
+                  boxShadow: !dark ? '0 1px 2px rgba(15,23,42,0.06)' : 'none',
+                }}
+              >
+                Agent
+              </span>
+              <span
+                className="rounded-md px-3 py-1.5 text-[12px] font-medium"
+                style={{
+                  background: 'transparent',
+                  color: dark ? '#a1a1aa' : '#64748b',
+                }}
+              >
+                Preview
+              </span>
             </nav>
           </div>
           <p className={`truncate text-[11px] ${muted}`}>
@@ -150,13 +167,24 @@ export function SiteBuilder() {
         </div>
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden p-3 sm:p-4 lg:p-5">
+        <div
+          className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border lg:flex-row"
+          style={{
+            borderColor: dark ? 'rgba(63,63,70,0.45)' : 'rgba(226,232,240,0.95)',
+            background: dark ? 'rgba(9,9,11,0.72)' : 'rgba(255,255,255,0.92)',
+            boxShadow: dark
+              ? '0 28px 90px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04) inset'
+              : '0 24px 70px rgba(15,23,42,0.1), 0 0 0 1px rgba(255,255,255,0.8) inset',
+            backdropFilter: 'blur(12px)',
+          }}
+        >
         {/* Left rail */}
         <div
-          className="flex min-h-0 w-full shrink-0 flex-col border-zinc-300/20 lg:max-w-[min(536px,44vw)] lg:w-[min(536px,44vw)] lg:border-r"
+          className="flex min-h-0 w-full shrink-0 flex-col border-zinc-300/20 lg:h-full lg:w-[min(380px,34vw)] lg:max-w-[420px] lg:shrink-0 lg:border-b-0 border-b"
           style={{
-            borderColor: dark ? '#27272a' : '#e5e7eb',
-            background: dark ? 'linear-gradient(180deg,#09090c,#070708)' : 'linear-gradient(180deg,#fafafa,#f4f4f5)',
+            borderColor: dark ? '#27272a40' : '#e5e7eb80',
+            background: dark ? 'rgba(6,6,8,0.35)' : 'rgba(250,250,250,0.65)',
           }}
         >
           <div className="min-h-0 flex-1 overflow-y-auto px-5 py-8 sm:px-7 sm:py-10">
@@ -214,8 +242,8 @@ export function SiteBuilder() {
           <div
             className="shrink-0 border-t px-5 pb-6 pt-5 sm:px-7"
             style={{
-              borderColor: dark ? '#27272a' : '#e5e7eb',
-              background: dark ? 'rgba(6,6,8,0.92)' : 'rgba(248,250,252,0.98)',
+              borderColor: dark ? 'rgba(39,39,42,0.55)' : 'rgba(229,231,235,0.7)',
+              background: dark ? 'rgba(4,4,6,0.25)' : 'rgba(248,250,252,0.6)',
             }}
           >
             <div className="mx-auto max-w-[440px] space-y-5">
@@ -289,14 +317,7 @@ export function SiteBuilder() {
                       color: dark ? '#020617' : '#f8fafc',
                     }}
                   >
-                    {loading ? (
-                      <span className="inline-flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden />
-                        Please wait
-                      </span>
-                    ) : (
-                      'Generate'
-                    )}
+                    {loading ? 'Please wait...' : 'Generate'}
                   </button>
                 </div>
               </div>
@@ -304,13 +325,17 @@ export function SiteBuilder() {
           </div>
         </div>
 
-        {/* Preview: single pane, hairline divider from rail */}
         <div
-          className={`flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden ${dark ? 'bg-[#070708]' : 'bg-[#f1f5f9]'}`}
-        >
-          <div className={`flex min-h-0 flex-1 flex-col border-l ${dark ? 'border-white/[0.06]' : 'border-zinc-200/90'}`}>
+          className="hidden w-px shrink-0 lg:block"
+          style={{ background: dark ? 'rgba(63,63,70,0.45)' : 'rgba(226,232,240,0.95)' }}
+          aria-hidden
+        />
+
+        {/* Preview: flex-1 for maximum canvas */}
+        <div className={`flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-transparent lg:rounded-r-2xl`}>
+          <div className={`flex min-h-0 flex-1 flex-col`}>
             <div className={`flex shrink-0 flex-wrap items-center justify-between gap-4 border-b px-4 py-3 sm:px-5 ${dark ? 'border-white/[0.08]' : 'border-zinc-200/90'}`}
-              style={{ background: dark ? '#0a0a0c' : '#ffffff' }}
+              style={{ background: 'transparent' }}
             >
               <div className="min-w-0">
                 <span className={`text-[13px] font-medium ${dark ? 'text-zinc-100' : 'text-zinc-900'}`}>App preview</span>
@@ -347,12 +372,13 @@ export function SiteBuilder() {
               sandbox=""
               srcDoc={html}
             />
-            <div className={`border-t px-4 py-2.5 ${dark ? 'border-white/[0.08] bg-[#0a0a0c]' : 'border-zinc-200/90 bg-[#fafafa]'}`}>
+            <div className={`border-t px-4 py-2.5 ${dark ? 'border-white/[0.08]' : 'border-zinc-200/90'}`} style={{ background: 'transparent' }}>
               <p className="text-center text-[12px] font-normal leading-snug" style={{ color: dark ? '#71717a' : '#64748b' }}>
                 {loading ? 'Rendering the latest draft in this frame.' : 'This iframe reflects your last generated HTML.'}
               </p>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>

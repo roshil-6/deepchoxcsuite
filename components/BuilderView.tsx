@@ -15,7 +15,6 @@ import {
   updateSchema,
 } from '@/lib/builderStorage';
 import { useTheme } from '@/lib/ThemeContext';
-import { History, Layers, Wand2 } from 'lucide-react';
 import { PromptInput } from './builder/PromptInput';
 import { HistorySidebar } from './builder/HistorySidebar';
 import { PreviewPane } from './builder/PreviewPane';
@@ -214,43 +213,41 @@ export function BuilderView() {
         style={{ borderColor: border, background: headerBg, backdropFilter: 'blur(14px)' }}
       >
         <div className="flex min-w-0 flex-1 items-center gap-4">
-          <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl"
-            style={{
-              boxShadow: isDark ? 'inset 0 1px 0 rgba(255,255,255,0.06)' : undefined,
-              background: isDark ? 'rgba(116,86,255,0.18)' : 'rgba(116,86,255,0.1)',
-              border: `1px solid ${isDark ? 'rgba(167,139,250,0.25)' : 'rgba(167,139,250,0.35)'}`,
-            }}
-          >
-            <Wand2 size={18} strokeWidth={2} style={{ color: isDark ? '#ddd6fe' : '#6d54c7' }} />
-          </div>
           <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-3">
               <span className="truncate text-sm font-semibold tracking-tight" style={{ color: isDark ? '#fafafa' : '#18181b' }}>
                 App builder
               </span>
               <nav
-                className="hidden items-center rounded-xl p-[3px] sm:flex"
-                style={{ background: isDark ? '#18181b' : '#eef2ff' }}
+                className="hidden items-center rounded-lg p-1 sm:inline-flex"
+                style={{ background: isDark ? 'rgba(24,24,27,0.9)' : 'rgba(241,245,249,1)' }}
                 aria-label="Workspace modes"
               >
                 <span
-                  className="rounded-[10px] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em]"
+                  className="rounded-md px-3 py-1.5 text-[12px] font-medium"
                   style={{
-                    background: isDark ? '#27272a' : '#ffffff',
-                    color: isDark ? '#fafafa' : '#3730a3',
-                    boxShadow: !isDark ? '0 1px 3px rgba(79,70,229,0.12)' : 'none',
+                    background: isDark ? '#3f3f46' : '#ffffff',
+                    color: isDark ? '#fafafa' : '#18181b',
+                    boxShadow: !isDark ? '0 1px 2px rgba(15,23,42,0.06)' : 'none',
                   }}
                 >
                   Agent
                 </span>
-                <span className="px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em]" style={{ color: isDark ? '#71717a' : '#818cf8' }}>
+                <span
+                  className="rounded-md px-3 py-1.5 text-[12px] font-medium"
+                  style={{
+                    background: 'transparent',
+                    color: isDark ? '#a1a1aa' : '#64748b',
+                  }}
+                >
                   Preview
                 </span>
               </nav>
               {currentSchema ? (
-                <span className="inline-flex max-w-[200px] items-center gap-1.5 truncate rounded-full border px-3 py-0.5 text-[11px] font-medium sm:max-w-xs" style={{ borderColor: isDark ? '#3f3f46' : '#e4e4e7', color: isDark ? '#a1a1aa' : '#52525b' }}>
-                  <span className="h-1 w-1 shrink-0 animate-pulse rounded-full bg-emerald-400" aria-hidden />
+                <span
+                  className="inline-flex max-w-[220px] truncate rounded-md border px-2.5 py-1 text-[11px] font-medium sm:max-w-sm"
+                  style={{ borderColor: isDark ? 'rgba(63,63,70,0.55)' : '#e4e4e7', color: isDark ? '#a1a1aa' : '#52525b' }}
+                >
                   <span className="truncate">{currentSchema.name}</span>
                 </span>
               ) : null}
@@ -266,21 +263,20 @@ export function BuilderView() {
             <button
               type="button"
               onClick={() => toggleSectionStudio()}
-              className="flex h-10 items-center gap-2 rounded-xl border px-3.5 text-[11px] font-bold uppercase tracking-[0.1em]"
+              className="h-10 rounded-lg border px-3.5 text-[12px] font-medium sm:min-w-[5.5rem]"
               style={{
                 borderColor: showSectionStudio ? 'rgba(45,212,191,0.45)' : isDark ? '#3f3f46' : '#e4e4e7',
                 background: showSectionStudio ? (isDark ? 'rgba(6,78,72,0.35)' : 'rgba(236,253,245,1)') : isDark ? '#141416' : '#ffffff',
                 color: showSectionStudio ? (isDark ? '#5eead4' : '#0f766e') : isDark ? '#d4d4d8' : '#52525b',
               }}
             >
-              <Layers size={16} strokeWidth={2} />
-              <span className="hidden sm:inline">Structure</span>
+              Structure
             </button>
           ) : null}
           <button
             type="button"
             onClick={() => openHistory()}
-            className="flex h-10 items-center gap-2 rounded-xl border px-3.5 text-[11px] font-bold uppercase tracking-[0.1em]"
+            className="h-10 rounded-lg border px-3.5 text-[12px] font-medium"
             style={{
               borderColor: isDark ? '#3f3f46' : '#e4e4e7',
               background: isDark ? '#141416' : '#ffffff',
@@ -288,63 +284,82 @@ export function BuilderView() {
               boxShadow: !isDark ? '0 1px 2px rgba(15,23,42,0.04)' : 'none',
             }}
           >
-            <History size={16} strokeWidth={2} />
-            <span>{history.length}</span>
+            History
+            {' '}
+            <span style={{ opacity: 0.8 }}>{history.length}</span>
           </button>
         </div>
       </header>
 
-      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
-        <aside
-          className="flex min-h-0 w-full shrink-0 flex-col border-zinc-200 lg:h-full lg:max-w-[min(536px,44vw)] lg:w-[min(536px,44vw)] lg:border-r lg:border-b-0 border-b"
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden p-3 sm:p-4 lg:p-5">
+        <div
+          className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border lg:flex-row"
           style={{
-            background: isDark ? 'linear-gradient(180deg,#09090c 0%,#070708 55%)' : 'linear-gradient(180deg,#fafafa,#f4f4f5)',
-            borderColor: border,
+            borderColor: isDark ? 'rgba(63,63,70,0.45)' : 'rgba(226,232,240,0.95)',
+            background: isDark ? 'rgba(9,9,11,0.72)' : 'rgba(255,255,255,0.92)',
+            boxShadow: isDark
+              ? '0 28px 90px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04) inset'
+              : '0 24px 70px rgba(15,23,42,0.1), 0 0 0 1px rgba(255,255,255,0.8) inset',
+            backdropFilter: 'blur(12px)',
           }}
         >
-          {error ? (
-            <div
-              className="mx-5 mt-4 shrink-0 rounded-lg border px-3 py-2.5 text-[12px]"
-              style={{
-                background: '#ef444420',
-                borderColor: '#ef444450',
-                color: '#f87171',
-              }}
-              role="alert"
-            >
-              {error}
-            </div>
-          ) : null}
-          <PromptInput
-            isDark={isDark}
-            prompt={prompt}
-            setPrompt={setPrompt}
-            iterationPrompt={iterationPrompt}
-            setIterationPrompt={setIterationPrompt}
-            showIteration={showIteration}
-            setShowIteration={setShowIteration}
-            currentSchema={currentSchema}
-            suggestions={suggestions}
-            isGenerating={isGenerating}
-            onSubmit={handleSubmit}
-            onIterate={handleIterate}
-            onApplySuggestion={applySuggestion}
-          />
-        </aside>
+          <aside
+            className="flex min-h-0 w-full shrink-0 flex-col border-zinc-200 lg:h-full lg:w-[min(380px,34vw)] lg:max-w-[420px] lg:shrink-0 lg:border-b-0 border-b"
+            style={{
+              background: isDark ? 'rgba(6,6,8,0.35)' : 'rgba(250,250,250,0.65)',
+              borderColor: border,
+            }}
+          >
+            {error ? (
+              <div
+                className="mx-5 mt-4 shrink-0 rounded-lg border px-3 py-2.5 text-[12px]"
+                style={{
+                  background: '#ef444420',
+                  borderColor: '#ef444450',
+                  color: '#f87171',
+                }}
+                role="alert"
+              >
+                {error}
+              </div>
+            ) : null}
+            <PromptInput
+              isDark={isDark}
+              prompt={prompt}
+              setPrompt={setPrompt}
+              iterationPrompt={iterationPrompt}
+              setIterationPrompt={setIterationPrompt}
+              showIteration={showIteration}
+              setShowIteration={setShowIteration}
+              currentSchema={currentSchema}
+              suggestions={suggestions}
+              isGenerating={isGenerating}
+              onSubmit={handleSubmit}
+              onIterate={handleIterate}
+              onApplySuggestion={applySuggestion}
+            />
+          </aside>
 
-        <PreviewPane
-          isDark={isDark}
-          currentSchema={currentSchema}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          copied={copied}
-          onCopySchema={copySchema}
-          showExportMenu={showExportMenu}
-          setShowExportMenu={setShowExportMenu}
-          onExport={handleExport}
-          selectedSectionIndex={selectedSectionIndex}
-          onSelectSection={setSelectedSectionIndex}
-        />
+          <div
+            className="hidden w-px shrink-0 lg:block"
+            style={{ background: isDark ? 'rgba(63,63,70,0.45)' : 'rgba(226,232,240,0.95)' }}
+            aria-hidden
+          />
+
+          <PreviewPane
+            isDark={isDark}
+            currentSchema={currentSchema}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            copied={copied}
+            onCopySchema={copySchema}
+            showExportMenu={showExportMenu}
+            setShowExportMenu={setShowExportMenu}
+            onExport={handleExport}
+            selectedSectionIndex={selectedSectionIndex}
+            onSelectSection={setSelectedSectionIndex}
+          />
+        </div>
 
         <HistorySidebar
           isDark={isDark}
