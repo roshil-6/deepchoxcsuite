@@ -41,8 +41,8 @@ export function PromptInput(props: PromptInputProps) {
     Boolean(currentSchema) && Array.isArray(suggestions) && suggestions.length > 0;
 
   const textMuted = isDark ? '#a1a1aa' : '#64748b';
-  const surface = isDark ? '#101014' : '#ffffff';
   const hairline = isDark ? 'rgba(63,63,70,0.35)' : 'rgba(226,232,240,0.9)';
+  const inputBg = isDark ? 'rgba(9,9,11,0.55)' : '#ffffff';
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -55,8 +55,7 @@ export function PromptInput(props: PromptInputProps) {
                 updates after you generate.
               </p>
               <p className="mt-6 text-[13px] leading-relaxed" style={{ color: textMuted }}>
-                No templates or presets here until you&apos;ve produced a first layout — then you&apos;ll see follow-up
-                ideas you can paste into your next message.
+                No templates or presets until you&apos;ve produced a first layout - then follow-up ideas can show up here.
               </p>
             </>
           ) : (
@@ -90,7 +89,7 @@ export function PromptInput(props: PromptInputProps) {
                 </div>
               ) : (
                 <p className="mt-8 text-[13px]" style={{ color: textMuted }}>
-                  Describe the change you want in the composer — same as the first versions of your layout.
+                  Describe the change you want in the composer, same flow as your first generation.
                 </p>
               )}
             </>
@@ -98,18 +97,9 @@ export function PromptInput(props: PromptInputProps) {
         </div>
       </div>
 
-      <div className="shrink-0 border-t px-6 pb-8 pt-6 sm:px-8" style={{ borderColor: hairline }}>
-        <div
-          className="mx-auto max-w-[400px] overflow-hidden rounded-xl"
-          style={{
-            border: `1px solid ${hairline}`,
-            background: surface,
-          }}
-        >
-          <div
-            className="flex items-center justify-between gap-3 px-4 py-3"
-            style={{ borderBottom: currentSchema ? `1px solid ${hairline}` : undefined }}
-          >
+      <div className="shrink-0 border-t px-6 pb-8 pt-5 sm:px-8" style={{ borderColor: hairline }}>
+        <div className="mx-auto max-w-[400px] space-y-4">
+          <div className="flex items-center justify-between gap-3">
             <span className="text-[13px]" style={{ color: isGenerating ? '#34d399' : textMuted }}>
               {isGenerating ? 'Agent is running' : 'Message agent'}
             </span>
@@ -126,7 +116,7 @@ export function PromptInput(props: PromptInputProps) {
           </div>
 
           {currentSchema != null && showIteration ? (
-            <form onSubmit={onIterate} className="space-y-3 border-b px-4 py-4" style={{ borderColor: hairline }}>
+            <form onSubmit={onIterate} className="space-y-3">
               <textarea
                 value={iterationPrompt}
                 onChange={(e) => setIterationPrompt(e.target.value)}
@@ -135,7 +125,7 @@ export function PromptInput(props: PromptInputProps) {
                 className="w-full resize-none rounded-lg px-3 py-2.5 text-[13px] leading-relaxed outline-none ring-0"
                 style={{
                   border: `1px solid ${hairline}`,
-                  background: isDark ? '#0c0c0e' : '#f8fafc',
+                  background: inputBg,
                   color: isDark ? '#fafafa' : '#0f172a',
                 }}
               />
@@ -163,20 +153,24 @@ export function PromptInput(props: PromptInputProps) {
             </form>
           ) : null}
 
-          <form onSubmit={onSubmit} className="p-4">
+          <form onSubmit={onSubmit} className="space-y-3">
             <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="Describe the page..."
               rows={4}
-              className="mb-4 w-full resize-none border-0 bg-transparent px-0 py-1 text-[15px] leading-relaxed outline-none placeholder:text-zinc-500"
-              style={{ color: isDark ? '#fafafa' : '#0f172a' }}
+              className="w-full resize-none rounded-lg px-3 py-3 text-[15px] leading-relaxed outline-none ring-0 placeholder:text-zinc-500"
+              style={{
+                border: `1px solid ${hairline}`,
+                background: inputBg,
+                color: isDark ? '#fafafa' : '#0f172a',
+              }}
             />
             <div className="flex justify-end">
               <button
                 type="submit"
                 disabled={!prompt.trim() || isGenerating}
-                className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-[13px] font-semibold disabled:opacity-35"
+                className="inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-[13px] font-semibold disabled:opacity-35"
                 style={{
                   background: isDark ? '#f8fafc' : '#0f172a',
                   color: isDark ? '#09090b' : '#fafafa',

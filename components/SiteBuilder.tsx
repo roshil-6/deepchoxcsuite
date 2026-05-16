@@ -210,7 +210,7 @@ export function SiteBuilder() {
             </div>
           </div>
 
-          {/* Bottom composer */}
+          {/* Bottom composer: one surface — no nested card */}
           <div
             className="shrink-0 border-t px-5 pb-6 pt-5 sm:px-7"
             style={{
@@ -218,50 +218,45 @@ export function SiteBuilder() {
               background: dark ? 'rgba(6,6,8,0.92)' : 'rgba(248,250,252,0.98)',
             }}
           >
-            <div
-              className="mx-auto max-w-[440px] overflow-hidden rounded-xl border shadow-sm"
-              style={{
-                borderColor: dark ? 'rgba(63,63,70,0.38)' : 'rgba(226,232,240,0.95)',
-                background: dark ? '#101014' : '#ffffff',
-                boxShadow: dark ? '0 14px 40px rgba(0,0,0,0.35)' : '0 10px 28px rgba(15,23,42,0.06)',
-              }}
-            >
-              <div
-                className="flex items-center gap-3 px-4 py-3"
-                style={{ borderBottom: `1px solid ${dark ? 'rgba(39,39,42,0.75)' : 'rgba(241,245,249,1)'}` }}
-              >
+            <div className="mx-auto max-w-[440px] space-y-5">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-[13px]" style={{ color: loading ? '#34d399' : muted }}>
                   {loading ? 'Building' : 'Ready'}
                 </span>
               </div>
-              <div className="space-y-4 border-b px-4 py-4" style={{ borderColor: dark ? 'rgba(39,39,42,0.75)' : 'rgba(241,245,249,1)' }}>
-                <div>
-                  <p className="mb-2.5 text-[12px]" style={{ color: muted }}>
-                    Tone
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {PRESETS.map((p) => (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => setPreset(p.id)}
-                        className={`rounded-lg px-3.5 py-2 text-[13px] font-medium transition-colors ${
-                          preset === p.id
-                            ? dark
-                              ? 'bg-zinc-100 text-zinc-950'
-                              : 'bg-zinc-900 text-white'
-                            : dark
-                              ? 'border border-white/10 bg-transparent text-zinc-300 hover:bg-white/[0.05]'
-                              : 'border border-zinc-200/90 bg-transparent text-zinc-600 hover:bg-zinc-50'
-                        }`}
-                      >
-                        {p.label}
-                      </button>
-                    ))}
-                  </div>
+              <div>
+                <p className="mb-2 text-[12px]" style={{ color: muted }}>
+                  Tone
+                </p>
+                <div
+                  className="inline-flex flex-wrap gap-1 rounded-lg p-1"
+                  style={{
+                    background: dark ? 'rgba(24,24,27,0.55)' : 'rgba(241,245,249,1)',
+                  }}
+                  role="group"
+                  aria-label="Tone"
+                >
+                  {PRESETS.map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setPreset(p.id)}
+                      className={`rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors ${
+                        preset === p.id
+                          ? dark
+                            ? 'bg-zinc-100 text-zinc-950 shadow-sm'
+                            : 'bg-white text-zinc-900 shadow-sm'
+                          : dark
+                            ? 'text-zinc-400 hover:bg-white/[0.06] hover:text-zinc-200'
+                            : 'text-zinc-600 hover:bg-white/90'
+                      }`}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
                 </div>
               </div>
-              <div className="p-4 sm:p-5">
+              <div>
                 <label htmlFor="site-prompt" className="sr-only">
                   Site prompt
                 </label>
@@ -271,18 +266,24 @@ export function SiteBuilder() {
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder="Describe the site (audience, offer, sections, and what the visitor should do next)."
-                  className="mb-4 w-full resize-none rounded-xl border-0 bg-transparent px-0.5 py-1 text-[15px] leading-relaxed outline-none placeholder:text-zinc-500"
-                  style={{ color: dark ? '#fafafa' : '#0f172a' }}
+                  className="w-full resize-none rounded-lg px-3 py-3 text-[15px] leading-relaxed outline-none ring-0 placeholder:text-zinc-500"
+                  style={{
+                    color: dark ? '#fafafa' : '#0f172a',
+                    border: `1px solid ${dark ? 'rgba(63,63,70,0.45)' : 'rgba(226,232,240,1)'}`,
+                    background: dark ? 'rgba(9,9,11,0.6)' : '#ffffff',
+                  }}
                 />
                 {error ? (
-                  <p className="mb-4 rounded-xl border border-red-500/35 bg-red-500/10 px-3 py-2 text-[12px] text-red-400">{error}</p>
+                  <p className="mt-3 rounded-lg border border-red-500/35 bg-red-500/10 px-3 py-2 text-[12px] text-red-400">
+                    {error}
+                  </p>
                 ) : null}
-                <div className="flex items-end justify-end gap-3">
+                <div className="mt-3 flex justify-end">
                   <button
                     type="button"
                     disabled={loading || prompt.trim().length < 8}
                     onClick={() => void generate()}
-                    className="rounded-xl px-5 py-3 text-[14px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-35"
+                    className="rounded-lg px-5 py-2.5 text-[14px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-35"
                     style={{
                       background: dark ? '#f8fafc' : '#0f172a',
                       color: dark ? '#020617' : '#f8fafc',
@@ -303,14 +304,14 @@ export function SiteBuilder() {
           </div>
         </div>
 
-        {/* Preview shell */}
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col p-3 sm:p-4 lg:p-5" style={{ background: dark ? 'linear-gradient(165deg,#080808,#050505)' : 'linear-gradient(165deg,#f1f5f9,#e8edf3)' }}>
-          <div
-            className={`flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border ${
-              dark ? 'border-white/10 bg-[rgba(11,11,13,0.98)] shadow-[0_18px_50px_rgba(0,0,0,0.45)]' : 'border-zinc-200/90 bg-white/95 shadow-[0_14px_36px_rgba(15,23,42,0.06)]'
-            }`}
-          >
-            <div className={`flex shrink-0 flex-wrap items-center justify-between gap-4 border-b px-4 py-3 sm:px-5 ${dark ? 'border-white/[0.08]' : 'border-zinc-200/90'}`}>
+        {/* Preview: single pane, hairline divider from rail */}
+        <div
+          className={`flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden ${dark ? 'bg-[#070708]' : 'bg-[#f1f5f9]'}`}
+        >
+          <div className={`flex min-h-0 flex-1 flex-col border-l ${dark ? 'border-white/[0.06]' : 'border-zinc-200/90'}`}>
+            <div className={`flex shrink-0 flex-wrap items-center justify-between gap-4 border-b px-4 py-3 sm:px-5 ${dark ? 'border-white/[0.08]' : 'border-zinc-200/90'}`}
+              style={{ background: dark ? '#0a0a0c' : '#ffffff' }}
+            >
               <div className="min-w-0">
                 <span className={`text-[13px] font-medium ${dark ? 'text-zinc-100' : 'text-zinc-900'}`}>App preview</span>
                 <div className="mt-1 flex flex-wrap items-baseline gap-2">
@@ -341,11 +342,12 @@ export function SiteBuilder() {
             </div>
             <iframe
               title="Generated site preview"
-              className="min-h-0 w-full flex-1 bg-neutral-950/20"
+              className="min-h-0 w-full flex-1 bg-neutral-950/15"
+              style={{ background: dark ? '#050506' : '#fafafa' }}
               sandbox=""
               srcDoc={html}
             />
-            <div className={`border-t px-4 py-2.5 ${dark ? 'border-white/[0.08] bg-[#0c0c0e]' : 'border-zinc-200/90 bg-zinc-50/60'}`}>
+            <div className={`border-t px-4 py-2.5 ${dark ? 'border-white/[0.08] bg-[#0a0a0c]' : 'border-zinc-200/90 bg-[#fafafa]'}`}>
               <p className="text-center text-[12px] font-normal leading-snug" style={{ color: dark ? '#71717a' : '#64748b' }}>
                 {loading ? 'Rendering the latest draft in this frame.' : 'This iframe reflects your last generated HTML.'}
               </p>
