@@ -4,7 +4,7 @@ import React from 'react';
 import { ChevronLeft, ChevronRight, Loader2, Sparkles, X } from 'lucide-react';
 import type { UISchema } from '@/lib/uiSchema';
 import { DynamicUIRenderer } from './DynamicUIRenderer';
-import { MatrixBackdrop } from './MatrixBackdrop';
+import { AppPreviewBackdrop } from './AppPreviewBackdrop';
 
 interface PreviewPaneProps {
   isDark: boolean;
@@ -45,7 +45,7 @@ export function PreviewPane({
   const canvasInset = isDark ? '#050508' : '#f4f4f5';
   const tabTrack = isDark ? 'rgba(24,24,27,0.85)' : 'rgba(241,245,249,1)';
 
-  const panelBg = isDark ? 'rgba(9,9,11,0.98)' : 'rgba(255,255,255,0.96)';
+  const panelBg = isDark ? '#09090b' : '#fafafa';
   const panelShadow = isDark
     ? '0 24px 70px rgba(0,0,0,0.62), inset 0 1px 0 rgba(255,255,255,0.035)'
     : '0 20px 50px rgba(15,23,42,0.1), inset 0 1px 0 rgba(255,255,255,0.85)';
@@ -57,7 +57,6 @@ export function PreviewPane({
         borderColor: stroke,
         background: panelBg,
         boxShadow: panelShadow,
-        backdropFilter: 'blur(16px)',
       }}
     >
       <div className="flex shrink-0 flex-col" style={{ borderColor: stroke }}>
@@ -196,25 +195,20 @@ export function PreviewPane({
             </div>
           ) : (
             <div className="relative flex h-full min-h-[280px] flex-col items-center justify-start px-6 py-10 sm:px-10 sm:py-14">
-              {isDark ? <MatrixBackdrop /> : null}
+              <AppPreviewBackdrop isDark={isDark} />
               <div
-                className="relative z-[2] mx-auto w-full max-w-md rounded-[1.85rem] border px-7 pb-10 pt-9 text-center shadow-2xl backdrop-blur-md sm:max-w-lg sm:px-11 sm:pb-12 sm:pt-11"
+                className="relative z-[2] mx-auto w-full max-w-md rounded-xl border px-7 pb-10 pt-9 text-center sm:max-w-lg sm:px-10 sm:pb-11 sm:pt-10"
                 style={{
-                  borderColor: isDark ? 'rgba(63,63,70,0.5)' : 'rgba(226,232,240,1)',
-                  background: isDark ? 'rgba(13,17,23,0.82)' : 'rgba(255,255,255,0.93)',
-                  boxShadow: isDark
-                    ? '0 48px 100px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07)'
-                    : '0 40px 80px rgba(15,23,42,0.12)',
+                  borderColor: isDark ? 'rgba(63,63,70,0.55)' : 'rgba(226,232,240,1)',
+                  background: isDark ? '#18181b' : '#ffffff',
+                  boxShadow: isDark ? '0 20px 48px rgba(0,0,0,0.4)' : '0 16px 40px rgba(15,23,42,0.07)',
                 }}
               >
                 <div
-                  className="mx-auto mb-5 flex h-[52px] w-[52px] items-center justify-center rounded-2xl border shadow-lg"
+                  className="mx-auto mb-5 flex h-[52px] w-[52px] items-center justify-center rounded-2xl border"
                   style={{
-                    borderColor: isDark ? 'rgba(45,212,191,0.32)' : 'rgba(20,184,166,0.28)',
-                    background: isDark
-                      ? 'linear-gradient(150deg,rgba(6,78,72,0.55),rgba(17,24,39,0.65))'
-                      : 'linear-gradient(150deg,#ecfdf5,#cffafe)',
-                    boxShadow: isDark ? '0 18px 44px rgba(6,78,72,0.28)' : '0 14px 36px rgba(20,184,166,0.2)',
+                    borderColor: isDark ? 'rgba(63,63,70,0.5)' : 'rgba(226,232,240,1)',
+                    background: isDark ? '#18181b' : '#f8fafc',
                   }}
                 >
                   <Sparkles className="h-7 w-7" style={{ color: isDark ? '#6ee7b7' : '#0d9488' }} strokeWidth={1.5} />

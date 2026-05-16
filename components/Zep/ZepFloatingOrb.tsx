@@ -452,7 +452,6 @@ export function ZepFloatingOrb() {
           }`}
           aria-label="Open Zep"
         >
-          {/* Inner orb with pulse animation */}
           <div className="relative flex h-10 w-10 items-center justify-center">
             <div className={`absolute inset-0 rounded-full animate-pulse ${
               dark ? 'bg-neutral-600/30' : 'bg-neutral-300/40'

@@ -275,14 +275,13 @@ export function AgentChatPanel({
         className="shrink-0 px-3 pb-[max(1rem,calc(env(safe-area-inset-bottom,0px)+0.5rem))] pt-2.5 sm:px-4 sm:pb-5 sm:pt-3"
         style={{
           borderTop: isDark ? '1px solid rgba(63,63,70,0.28)' : '1px solid rgba(226,232,240,0.85)',
-          background: isDark ? 'rgba(4,6,10,0.82)' : 'rgba(249,251,253,1)',
-          backdropFilter: 'blur(12px)',
+          background: columnBg,
         }}
       >
         {slotAboveComposer ? <div className="mb-4">{slotAboveComposer}</div> : null}
 
         {currentSchema != null && showIteration ? (
-          <form onSubmit={onIterate} className="mb-4 rounded-3xl border p-4" style={{ borderColor: tealBorder }}>
+          <form onSubmit={onIterate} className="mb-4 rounded-lg border p-4" style={{ borderColor: tealBorder }}>
             <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: muted }} htmlFor="iter-reply">
               Targeted tweak
             </label>
@@ -292,7 +291,7 @@ export function AgentChatPanel({
               onChange={(e) => setIterationPrompt(e.target.value)}
               placeholder="Fine-grained edits for this layout..."
               rows={2}
-              className="mb-3 w-full resize-none rounded-2xl border px-4 py-3 text-[13px] leading-relaxed outline-none"
+              className="mb-3 w-full resize-none rounded-lg border px-3 py-3 text-[13px] leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-teal-500/35"
               style={{
                 borderColor: isDark ? 'rgba(82,82,91,0.55)' : 'rgba(203,213,225,1)',
                 background: isDark ? '#101014' : '#ffffff',
@@ -311,7 +310,7 @@ export function AgentChatPanel({
               <button
                 type="submit"
                 disabled={!iterationPrompt.trim() || isGenerating}
-                className="rounded-full px-5 py-2 text-[13px] font-semibold disabled:opacity-35"
+                className="rounded-lg px-5 py-2 text-[13px] font-semibold disabled:opacity-35"
                 style={{
                   border: `1px solid ${tealBorder}`,
                   background: 'linear-gradient(130deg,#0f766f,#059669)',
@@ -341,42 +340,37 @@ export function AgentChatPanel({
         ) : null}
 
         <form onSubmit={onSubmit} className="space-y-3">
-          <div
-            className="rounded-[1.2rem] border px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:rounded-[1.35rem] sm:px-[1.125rem] sm:py-[0.875rem]"
+          <div className="flex flex-wrap items-center gap-2 text-[13px] font-medium tracking-[-0.01em]" aria-live="polite">
+            <span className="tabular-nums" style={{ color: isGenerating ? '#22c55e' : muted }}>
+              ●
+            </span>
+            <span style={{ color: isGenerating ? '#86efac' : muted }}>{isGenerating ? runningCopy : idleCopy}</span>
+          </div>
+          <textarea
+            id="studio-agent-msg"
+            name="agentMessage"
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            placeholder="Message Agent"
+            rows={4}
+            disabled={false}
+            className="w-full resize-none rounded-lg border px-3 py-3 text-[14px] leading-relaxed outline-none placeholder:text-[#52525bcc] focus-visible:ring-2 focus-visible:ring-teal-500/35"
             style={{
               borderColor: isDark ? 'rgba(63,63,70,0.55)' : 'rgba(226,232,240,1)',
-              background: isDark ? '#0e0f14' : '#ffffff',
-              boxShadow: isDark ? 'inset 0 1px 0 rgba(255,255,255,0.04)' : 'none',
+              background: isDark ? '#101014' : '#ffffff',
+              color: isDark ? '#fafafa' : '#0f172a',
             }}
-          >
-            <div className="mb-3 flex flex-wrap items-center gap-2 text-[13px] font-medium tracking-[-0.01em]" aria-live="polite">
-              <span className="tabular-nums" style={{ color: isGenerating ? '#22c55e' : muted }}>
-                ●
-              </span>
-              <span style={{ color: isGenerating ? '#86efac' : muted }}>{isGenerating ? runningCopy : idleCopy}</span>
-            </div>
-            <textarea
-              id="studio-agent-msg"
-              name="agentMessage"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Message Agent"
-              rows={3}
-              disabled={false}
-              className="w-full resize-none border-0 bg-transparent text-[14px] leading-relaxed outline-none placeholder:text-[#52525bcc]"
-              style={{ color: isDark ? '#fafafa' : '#0f172a' }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey && (e.ctrlKey || e.metaKey)) {
-                  e.preventDefault();
-                  e.currentTarget.form?.requestSubmit();
-                }
-              }}
-            />
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                e.currentTarget.form?.requestSubmit();
+              }
+            }}
+          />
 
-            <div
-              className="mt-3 flex flex-col gap-3 border-t pt-3 text-[13px] sm:mt-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-6 sm:border-t sm:pt-4"
-              style={{ borderColor: isDark ? 'rgba(63,63,70,0.35)' : 'rgba(226,232,240,0.95)' }}
-            >
+          <div
+            className="flex flex-col gap-3 pt-1 text-[13px] sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-6 sm:pt-2"
+          >
               <div className="flex flex-wrap items-center gap-5 sm:flex-nowrap sm:gap-6">
                 <button
                   type="button"
@@ -437,7 +431,7 @@ export function AgentChatPanel({
                   <button
                     type="button"
                     onClick={() => onAbort()}
-                    className="relative flex h-12 w-12 items-center justify-center rounded-full border"
+                    className="relative flex h-11 w-11 items-center justify-center rounded-lg border"
                     title="Stop"
                     aria-label="Stop generation"
                     style={{
@@ -450,7 +444,7 @@ export function AgentChatPanel({
                   </button>
                 ) : isGenerating ? (
                   <div
-                    className="flex h-12 w-12 items-center justify-center rounded-full border"
+                    className="flex h-11 w-11 items-center justify-center rounded-lg border"
                     style={{
                       borderColor: isDark ? 'rgba(63,63,70,0.55)' : 'rgba(203,213,225,1)',
                       background: isDark ? '#111114' : '#f8fafc',
@@ -463,7 +457,7 @@ export function AgentChatPanel({
                   <button
                     type="submit"
                     disabled={!prompt.trim()}
-                    className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full border shadow-lg disabled:opacity-35"
+                    className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border shadow-lg disabled:opacity-35"
                     title={submitLabel}
                     aria-label={submitLabel}
                     style={{
@@ -478,7 +472,6 @@ export function AgentChatPanel({
                 )}
               </div>
             </div>
-          </div>
           <p className="sr-only">{`Ctrl/Cmd+Enter submits; primary action is labeled ${submitLabel}.`}</p>
         </form>
       </div>

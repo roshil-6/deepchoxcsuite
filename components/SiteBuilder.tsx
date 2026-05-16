@@ -7,7 +7,7 @@ import { useTheme } from '@/lib/ThemeContext';
 import { useUpgradeModal } from '@/components/tokens';
 import { buildStandaloneHtml, defaultSitePayload, type SitePayload } from '@/lib/siteFromPrompt';
 import { AgentChatPanel, type ThreadMessage } from '@/components/builder/AgentChatPanel';
-import { MatrixBackdrop } from '@/components/builder/MatrixBackdrop';
+import { AppPreviewBackdrop } from '@/components/builder/AppPreviewBackdrop';
 
 const HISTORY_KEY = 'deepchox-sites-history';
 const MAX_HISTORY = 12;
@@ -475,11 +475,10 @@ export function SiteBuilder() {
             className="flex min-h-[min(200px,32dvh)] min-w-0 flex-1 flex-col overflow-hidden rounded-[1.05rem] border sm:min-h-[min(228px,34dvh)] sm:rounded-[1.25rem] md:min-h-0 md:flex-1"
             style={{
               borderColor: canvasStroke,
-              background: dark ? 'rgba(9,9,11,0.98)' : 'rgba(255,255,255,0.96)',
+              background: dark ? '#09090b' : '#fafafa',
               boxShadow: dark
                 ? '0 24px 70px rgba(0,0,0,0.62), inset 0 1px 0 rgba(255,255,255,0.035)'
                 : '0 20px 50px rgba(15,23,42,0.1), inset 0 1px 0 rgba(255,255,255,0.85)',
-              backdropFilter: 'blur(16px)',
             }}
           >
             <div className="flex min-h-0 flex-1 flex-col">
@@ -534,7 +533,7 @@ export function SiteBuilder() {
               </div>
 
               <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[#050508]">
-                {dark ? <MatrixBackdrop /> : null}
+                <AppPreviewBackdrop isDark={dark} />
                 <iframe
                   title="Generated site preview"
                   className="relative z-[1] min-h-0 w-full flex-1 border-0 bg-neutral-950/[0.06]"
