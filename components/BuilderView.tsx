@@ -15,10 +15,17 @@ import {
   updateSchema,
 } from '@/lib/builderStorage';
 import { useTheme } from '@/lib/ThemeContext';
-import { PromptInput } from './builder/PromptInput';
+import { AgentChatPanel, type ThreadMessage } from './builder/AgentChatPanel';
+import { FloatingAgentDock } from './builder/FloatingAgentDock';
 import { HistorySidebar } from './builder/HistorySidebar';
 import { PreviewPane } from './builder/PreviewPane';
 import { SectionStudio } from './builder/SectionStudio';
+
+function uid() {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+const THREAD_INTRO_BODY = `Describe the site or screen you want once: audience, sections, tone, and CTAs. The canvas on the right updates when you hit Send.\nThere are no template chips here until a first generation – then suggestions can appear in this thread.`;
 
 export function BuilderView() {
   const { theme: appTheme } = useTheme();
@@ -30,7 +37,6 @@ export function BuilderView() {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [history, setHistory] = useState<BuilderHistoryItem[]>([]);
   const [showHistory, setShowHistory] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [activeTab, setActiveTab] = useState<'preview' | 'code'>('preview');
@@ -39,7 +45,13 @@ export function BuilderView() {
   const [selectedSectionIndex, setSelectedSectionIndex] = useState(0);
   const [showSectionStudio, setShowSectionStudio] = useState(false);
 
-  // Load history on mount
+  const [threadOpen, setThreadOpen] = useState(true);
+  const [threadExpanded, setThreadExpanded] = useState(true);
+
+  const [messages, setMessages] = useState<ThreadMessage[]>(() => [
+    { id: 'intro', role: 'assistant', body: THREAD_INTRO_BODY },
+  ]);
+
   useEffect(() => {
     setHistory(loadHistory());
   }, []);
@@ -47,7 +59,9 @@ export function BuilderView() {
   const generateUI = useCallback(async (userPrompt: string, previousSchema?: UISchema) => {
     const normalizedPrevious = previousSchema ? sanitizeSchemaForUi(previousSchema) : undefined;
     setIsGenerating(true);
-    setError(null);
+
+    const userLine: ThreadMessage = { id: uid(), role: 'user', body: userPrompt };
+    setMessages((prev) => [...prev, userLine]);
 
     try {
       const res = await fetch('/api/build-ui', {
@@ -63,7 +77,8 @@ export function BuilderView() {
       const data = await res.json() as BuildUIResponse;
 
       if (!res.ok) {
-        throw new Error(data.schema ? 'Failed to generate' : (data as unknown as { error: string }).error || 'Failed to generate UI');
+        const msg = (data as unknown as { error?: string }).error || 'Failed to generate UI';
+        throw new Error(msg);
       }
 
       const safe = sanitizeSchemaForUi(data.schema);
@@ -74,12 +89,25 @@ export function BuilderView() {
       setIterationPrompt('');
       setShowIteration(false);
 
-      // Save to history
+      const assistantLine: ThreadMessage = {
+        id: uid(),
+        role: 'assistant',
+        body: normalizedPrevious
+          ? `Applied your tweaks. Updated "${safe.name}" (${safe.sections.length} sections).`
+          : `Canvas ready: "${safe.name}" (${safe.sections.length} sections).`,
+      };
+      setMessages((prev) => [...prev, assistantLine]);
+
       const historyItem = createHistoryItem(safe.name, userPrompt, safe);
       saveToHistory(historyItem);
       setHistory(loadHistory());
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong');
+      const assistantLine: ThreadMessage = {
+        id: uid(),
+        role: 'assistant',
+        body: err instanceof Error ? err.message : 'Something went wrong',
+      };
+      setMessages((prev) => [...prev, assistantLine]);
     } finally {
       setIsGenerating(false);
     }
@@ -88,7 +116,7 @@ export function BuilderView() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!prompt.trim()) return;
-    generateUI(prompt);
+    generateUI(prompt, currentSchema ?? undefined);
   };
 
   const handleIterate = (e: React.FormEvent) => {
@@ -101,9 +129,12 @@ export function BuilderView() {
     setCurrentSchema(sanitizeSchemaForUi(item.schema));
     setSelectedSectionIndex(0);
     setPrompt('');
-    setError(null);
     setShowHistory(false);
     setShowIteration(false);
+    setMessages((prev) => [
+      ...prev,
+      { id: uid(), role: 'assistant', body: `Loaded "${item.schema.name}" from history.` },
+    ]);
   };
 
   const handleDelete = (id: string) => {
@@ -218,31 +249,6 @@ export function BuilderView() {
               <span className="truncate text-sm font-semibold tracking-tight" style={{ color: isDark ? '#fafafa' : '#18181b' }}>
                 App builder
               </span>
-              <nav
-                className="hidden items-center rounded-lg p-1 sm:inline-flex"
-                style={{ background: isDark ? 'rgba(24,24,27,0.9)' : 'rgba(241,245,249,1)' }}
-                aria-label="Workspace modes"
-              >
-                <span
-                  className="rounded-md px-3 py-1.5 text-[12px] font-medium"
-                  style={{
-                    background: isDark ? '#3f3f46' : '#ffffff',
-                    color: isDark ? '#fafafa' : '#18181b',
-                    boxShadow: !isDark ? '0 1px 2px rgba(15,23,42,0.06)' : 'none',
-                  }}
-                >
-                  Agent
-                </span>
-                <span
-                  className="rounded-md px-3 py-1.5 text-[12px] font-medium"
-                  style={{
-                    background: 'transparent',
-                    color: isDark ? '#a1a1aa' : '#64748b',
-                  }}
-                >
-                  Preview
-                </span>
-              </nav>
               {currentSchema ? (
                 <span
                   className="inline-flex max-w-[220px] truncate rounded-md border px-2.5 py-1 text-[11px] font-medium sm:max-w-sm"
@@ -251,9 +257,21 @@ export function BuilderView() {
                   <span className="truncate">{currentSchema.name}</span>
                 </span>
               ) : null}
+              <button
+                type="button"
+                className="hidden rounded-lg px-3 py-1.5 text-[12px] font-medium md:inline-flex"
+                style={{
+                  border: `1px solid ${isDark ? '#3f3f46' : '#e4e4e7'}`,
+                  background: isDark ? '#18181b' : '#fafafa',
+                  color: isDark ? '#fafafa' : '#18181b',
+                }}
+                onClick={() => setThreadOpen((v) => !v)}
+              >
+                {threadOpen ? 'Hide thread' : 'Show thread'}
+              </button>
             </div>
             <p className="mt-0.5 truncate text-[11px]" style={{ color: isDark ? '#71717a' : '#71717a' }}>
-              Chat on the left, live canvas on the right
+              Full-width canvas · chat with the agent in the floating thread
             </p>
           </div>
         </div>
@@ -284,59 +302,56 @@ export function BuilderView() {
               boxShadow: !isDark ? '0 1px 2px rgba(15,23,42,0.04)' : 'none',
             }}
           >
-            History
-            {' '}
+            History{' '}
             <span style={{ opacity: 0.8 }}>{history.length}</span>
           </button>
         </div>
       </header>
 
-      <div className="relative flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-4 sm:p-5 lg:flex-row lg:gap-5">
-        <aside className="flex min-h-0 flex-1 flex-col gap-4 lg:h-full lg:w-[min(380px,34vw)] lg:max-w-[420px] lg:flex-none">
-          {error ? (
-            <div
-              className="shrink-0 rounded-xl border px-3 py-2.5 text-[12px]"
-              style={{
-                background: '#ef444420',
-                borderColor: '#ef444450',
-                color: '#f87171',
-                boxShadow: isDark ? '0 12px 32px rgba(0,0,0,0.35)' : '0 12px 28px rgba(15,23,42,0.08)',
-              }}
-              role="alert"
-            >
-              {error}
-            </div>
-          ) : null}
-          <PromptInput
+      <div className="relative min-h-0 flex-1 overflow-hidden p-4 sm:p-5">
+        <PreviewPane
             isDark={isDark}
+            currentSchema={currentSchema}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            copied={copied}
+            onCopySchema={copySchema}
+            showExportMenu={showExportMenu}
+            setShowExportMenu={setShowExportMenu}
+            onExport={handleExport}
+            selectedSectionIndex={selectedSectionIndex}
+            onSelectSection={setSelectedSectionIndex}
+          />
+
+        <FloatingAgentDock
+          isDark={isDark}
+          open={threadOpen}
+          expanded={threadExpanded}
+          busy={isGenerating}
+          onOpen={() => setThreadOpen(true)}
+          onClose={() => setThreadOpen(false)}
+          onToggleExpand={() => setThreadExpanded((e) => !e)}
+          title="Agent thread"
+          subtitle={threadExpanded ? 'Expanded view · Close to widen the canvas' : 'Compact view · Expand for more transcript'}
+        >
+          <AgentChatPanel
+            isDark={isDark}
+            messages={messages}
+            currentSchema={currentSchema}
+            suggestions={suggestions}
+            suggestionHint={suggestions.length > 0 ? 'Ideas below come from your last reply.' : null}
             prompt={prompt}
             setPrompt={setPrompt}
             iterationPrompt={iterationPrompt}
             setIterationPrompt={setIterationPrompt}
             showIteration={showIteration}
             setShowIteration={setShowIteration}
-            currentSchema={currentSchema}
-            suggestions={suggestions}
             isGenerating={isGenerating}
             onSubmit={handleSubmit}
             onIterate={handleIterate}
             onApplySuggestion={applySuggestion}
           />
-        </aside>
-
-        <PreviewPane
-          isDark={isDark}
-          currentSchema={currentSchema}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          copied={copied}
-          onCopySchema={copySchema}
-          showExportMenu={showExportMenu}
-          setShowExportMenu={setShowExportMenu}
-          onExport={handleExport}
-          selectedSectionIndex={selectedSectionIndex}
-          onSelectSection={setSelectedSectionIndex}
-        />
+        </FloatingAgentDock>
 
         <HistorySidebar
           isDark={isDark}
