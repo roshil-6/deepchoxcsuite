@@ -17,7 +17,7 @@ interface Particle {
 
 interface ZepParticlesProps {
   isDark: boolean;
-  state: 'idle' | 'listening' | 'thinking' | 'speaking';
+  state: 'idle' | 'listening' | 'thinking' | 'speaking' | 'processing';
   isHovered: boolean;
   size?: number;
 }
@@ -47,6 +47,7 @@ export function ZepParticles({ isDark, state, isHovered, size = 56 }: ZepParticl
       listening: isDark ? ['#fbbf24', '#f59e0b', '#d97706'] : ['#f59e0b', '#fbbf24', '#fcd34d'],
       thinking: isDark ? ['#a78bfa', '#8b5cf6', '#7c3aed'] : ['#8b5cf6', '#a78bfa', '#c4b5fd'],
       speaking: isDark ? ['#6ee7b7', '#34d399', '#10b981'] : ['#10b981', '#34d399', '#6ee7b7'],
+      processing: isDark ? ['#60a5fa', '#3b82f6', '#2563eb'] : ['#3b82f6', '#60a5fa', '#93c5fd'],
     };
 
     const stateColor = stateColors[stateRef.current] || colors;
