@@ -291,75 +291,52 @@ export function BuilderView() {
         </div>
       </header>
 
-      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden p-3 sm:p-4 lg:p-5">
-        <div
-          className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border lg:flex-row"
-          style={{
-            borderColor: isDark ? 'rgba(63,63,70,0.45)' : 'rgba(226,232,240,0.95)',
-            background: isDark ? 'rgba(9,9,11,0.72)' : 'rgba(255,255,255,0.92)',
-            boxShadow: isDark
-              ? '0 28px 90px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04) inset'
-              : '0 24px 70px rgba(15,23,42,0.1), 0 0 0 1px rgba(255,255,255,0.8) inset',
-            backdropFilter: 'blur(12px)',
-          }}
-        >
-          <aside
-            className="flex min-h-0 w-full shrink-0 flex-col border-zinc-200 lg:h-full lg:w-[min(380px,34vw)] lg:max-w-[420px] lg:shrink-0 lg:border-b-0 border-b"
-            style={{
-              background: isDark ? 'rgba(6,6,8,0.35)' : 'rgba(250,250,250,0.65)',
-              borderColor: border,
-            }}
-          >
-            {error ? (
-              <div
-                className="mx-5 mt-4 shrink-0 rounded-lg border px-3 py-2.5 text-[12px]"
-                style={{
-                  background: '#ef444420',
-                  borderColor: '#ef444450',
-                  color: '#f87171',
-                }}
-                role="alert"
-              >
-                {error}
-              </div>
-            ) : null}
-            <PromptInput
-              isDark={isDark}
-              prompt={prompt}
-              setPrompt={setPrompt}
-              iterationPrompt={iterationPrompt}
-              setIterationPrompt={setIterationPrompt}
-              showIteration={showIteration}
-              setShowIteration={setShowIteration}
-              currentSchema={currentSchema}
-              suggestions={suggestions}
-              isGenerating={isGenerating}
-              onSubmit={handleSubmit}
-              onIterate={handleIterate}
-              onApplySuggestion={applySuggestion}
-            />
-          </aside>
-
-          <div
-            className="hidden w-px shrink-0 lg:block"
-            style={{ background: isDark ? 'rgba(63,63,70,0.45)' : 'rgba(226,232,240,0.95)' }}
-            aria-hidden
-          />
-
-          <PreviewPane
+      <div className="relative flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-4 sm:p-5 lg:flex-row lg:gap-5">
+        <aside className="flex min-h-0 flex-1 flex-col gap-4 lg:h-full lg:w-[min(380px,34vw)] lg:max-w-[420px] lg:flex-none">
+          {error ? (
+            <div
+              className="shrink-0 rounded-xl border px-3 py-2.5 text-[12px]"
+              style={{
+                background: '#ef444420',
+                borderColor: '#ef444450',
+                color: '#f87171',
+                boxShadow: isDark ? '0 12px 32px rgba(0,0,0,0.35)' : '0 12px 28px rgba(15,23,42,0.08)',
+              }}
+              role="alert"
+            >
+              {error}
+            </div>
+          ) : null}
+          <PromptInput
             isDark={isDark}
+            prompt={prompt}
+            setPrompt={setPrompt}
+            iterationPrompt={iterationPrompt}
+            setIterationPrompt={setIterationPrompt}
+            showIteration={showIteration}
+            setShowIteration={setShowIteration}
             currentSchema={currentSchema}
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            copied={copied}
-            onCopySchema={copySchema}
-            showExportMenu={showExportMenu}
-            setShowExportMenu={setShowExportMenu}
-            onExport={handleExport}
-            selectedSectionIndex={selectedSectionIndex}
-            onSelectSection={setSelectedSectionIndex}
+            suggestions={suggestions}
+            isGenerating={isGenerating}
+            onSubmit={handleSubmit}
+            onIterate={handleIterate}
+            onApplySuggestion={applySuggestion}
           />
-        </div>
+        </aside>
+
+        <PreviewPane
+          isDark={isDark}
+          currentSchema={currentSchema}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          copied={copied}
+          onCopySchema={copySchema}
+          showExportMenu={showExportMenu}
+          setShowExportMenu={setShowExportMenu}
+          onExport={handleExport}
+          selectedSectionIndex={selectedSectionIndex}
+          onSelectSection={setSelectedSectionIndex}
+        />
 
         <HistorySidebar
           isDark={isDark}

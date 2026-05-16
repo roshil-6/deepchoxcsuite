@@ -167,27 +167,20 @@ export function SiteBuilder() {
         </div>
       </header>
 
-      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden p-3 sm:p-4 lg:p-5">
-        <div
-          className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border lg:flex-row"
-          style={{
-            borderColor: dark ? 'rgba(63,63,70,0.45)' : 'rgba(226,232,240,0.95)',
-            background: dark ? 'rgba(9,9,11,0.72)' : 'rgba(255,255,255,0.92)',
-            boxShadow: dark
-              ? '0 28px 90px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04) inset'
-              : '0 24px 70px rgba(15,23,42,0.1), 0 0 0 1px rgba(255,255,255,0.8) inset',
-            backdropFilter: 'blur(12px)',
-          }}
-        >
-        {/* Left rail */}
-        <div
-          className="flex min-h-0 w-full shrink-0 flex-col border-zinc-300/20 lg:h-full lg:w-[min(380px,34vw)] lg:max-w-[420px] lg:shrink-0 lg:border-b-0 border-b"
-          style={{
-            borderColor: dark ? '#27272a40' : '#e5e7eb80',
-            background: dark ? 'rgba(6,6,8,0.35)' : 'rgba(250,250,250,0.65)',
-          }}
-        >
-          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-8 sm:px-7 sm:py-10">
+      <div className="relative flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-4 sm:p-5 lg:flex-row lg:gap-5">
+        <div className="flex min-h-0 flex-1 flex-col gap-4 lg:h-full lg:w-[min(380px,34vw)] lg:max-w-[420px] lg:flex-none">
+          <div
+            className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border lg:min-h-[200px]"
+            style={{
+              borderColor: dark ? 'rgba(63,63,70,0.55)' : 'rgba(226,232,240,1)',
+              background: dark ? 'rgba(11,11,13,0.94)' : 'rgba(255,255,255,0.96)',
+              boxShadow: dark
+                ? '0 22px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.045) inset'
+                : '0 20px 50px rgba(15,23,42,0.1), 0 0 0 1px rgba(255,255,255,0.85) inset',
+              backdropFilter: 'blur(14px)',
+            }}
+          >
+            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-8 sm:px-7 sm:py-10">
             <div className="mx-auto max-w-[440px] space-y-10">
               <div>
                 <p className="mb-3 text-[12px] font-medium" style={{ color: muted }}>
@@ -237,19 +230,29 @@ export function SiteBuilder() {
               ) : null}
             </div>
           </div>
+          </div>
 
-          {/* Bottom composer: one surface — no nested card */}
-          <div
-            className="shrink-0 border-t px-5 pb-6 pt-5 sm:px-7"
-            style={{
-              borderColor: dark ? 'rgba(39,39,42,0.55)' : 'rgba(229,231,235,0.7)',
-              background: dark ? 'rgba(4,4,6,0.25)' : 'rgba(248,250,252,0.6)',
-            }}
-          >
+          {/* Lifted message dock + floating input well */}
+          <div className="relative z-30 -mt-2 shrink-0 sm:-mt-3">
+            <div
+              className="rounded-[1.35rem] border px-5 pb-6 pt-5 sm:px-7"
+              style={{
+                borderColor: dark ? 'rgba(63,63,70,0.55)' : 'rgba(226,232,240,1)',
+                background: dark ? 'rgba(17,17,20,0.98)' : 'rgba(255,255,255,0.99)',
+                boxShadow: dark
+                  ? '0 18px 40px rgba(0,0,0,0.55), 0 42px 88px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.07) inset'
+                  : '0 14px 36px rgba(15,23,42,0.1), 0 28px 72px rgba(15,23,42,0.12), 0 0 0 1px rgba(255,255,255,1) inset',
+                backdropFilter: 'blur(18px) saturate(1.2)',
+              }}
+            >
             <div className="mx-auto max-w-[440px] space-y-5">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-[13px]" style={{ color: loading ? '#34d399' : muted }}>
-                  {loading ? 'Building' : 'Ready'}
+              <div className="flex flex-wrap items-center gap-3 border-b pb-4" style={{ borderColor: dark ? 'rgba(63,63,70,0.35)' : 'rgba(226,232,240,0.85)' }}>
+                <span className={`text-[13px] font-medium ${dark ? 'text-zinc-100' : 'text-zinc-900'}`}>Message</span>
+                <span
+                  className={`ml-auto text-[12px] ${loading ? '' : muted}`}
+                  style={loading ? { color: '#34d399' } : undefined}
+                >
+                  {loading ? 'Working' : 'Ready'}
                 </span>
               </div>
               <div>
@@ -288,19 +291,31 @@ export function SiteBuilder() {
                 <label htmlFor="site-prompt" className="sr-only">
                   Site prompt
                 </label>
-                <textarea
-                  id="site-prompt"
-                  rows={5}
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="Describe the site (audience, offer, sections, and what the visitor should do next)."
-                  className="w-full resize-none rounded-lg px-3 py-3 text-[15px] leading-relaxed outline-none ring-0 placeholder:text-zinc-500"
+                <div
+                  className="rounded-2xl p-px"
                   style={{
-                    color: dark ? '#fafafa' : '#0f172a',
-                    border: `1px solid ${dark ? 'rgba(63,63,70,0.45)' : 'rgba(226,232,240,1)'}`,
-                    background: dark ? 'rgba(9,9,11,0.6)' : '#ffffff',
+                    background: dark ? 'linear-gradient(180deg, rgba(63,63,70,0.6), rgba(24,24,27,0.4))' : 'linear-gradient(180deg, #e2e8f0, #f1f5f9)',
+                    boxShadow: dark ? 'inset 0 1px 0 rgba(255,255,255,0.05)' : 'inset 0 1px 1px rgba(255,255,255,0.9)',
                   }}
-                />
+                >
+                  <div
+                    className="rounded-[0.9rem] px-4 py-3.5"
+                    style={{
+                      background: dark ? 'rgba(3,3,4,0.65)' : '#f1f5f9',
+                      boxShadow: dark ? '0 4px 24px rgba(0,0,0,0.35)' : '0 4px 20px rgba(15,23,42,0.06)',
+                    }}
+                  >
+                    <textarea
+                      id="site-prompt"
+                      rows={5}
+                      value={prompt}
+                      onChange={(e) => setPrompt(e.target.value)}
+                      placeholder="Describe the site (audience, offer, sections, and what the visitor should do next)."
+                      className="min-h-[7.5rem] w-full resize-none border-0 bg-transparent text-[15px] leading-relaxed outline-none ring-0 placeholder:text-zinc-500"
+                      style={{ color: dark ? '#fafafa' : '#0f172a' }}
+                    />
+                  </div>
+                </div>
                 {error ? (
                   <p className="mt-3 rounded-lg border border-red-500/35 bg-red-500/10 px-3 py-2 text-[12px] text-red-400">
                     {error}
@@ -322,20 +337,24 @@ export function SiteBuilder() {
                 </div>
               </div>
             </div>
+            </div>
           </div>
         </div>
 
         <div
-          className="hidden w-px shrink-0 lg:block"
-          style={{ background: dark ? 'rgba(63,63,70,0.45)' : 'rgba(226,232,240,0.95)' }}
-          aria-hidden
-        />
-
-        {/* Preview: flex-1 for maximum canvas */}
-        <div className={`flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-transparent lg:rounded-r-2xl`}>
+          className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border"
+          style={{
+            borderColor: dark ? 'rgba(82,82,91,0.5)' : 'rgba(203,213,225,0.9)',
+            background: dark ? 'rgba(11,11,13,0.94)' : 'rgba(255,255,255,0.96)',
+            boxShadow: dark
+              ? '0 22px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.045) inset'
+              : '0 20px 50px rgba(15,23,42,0.1), 0 0 0 1px rgba(255,255,255,0.85) inset',
+            backdropFilter: 'blur(14px)',
+          }}
+        >
           <div className={`flex min-h-0 flex-1 flex-col`}>
             <div className={`flex shrink-0 flex-wrap items-center justify-between gap-4 border-b px-4 py-3 sm:px-5 ${dark ? 'border-white/[0.08]' : 'border-zinc-200/90'}`}
-              style={{ background: 'transparent' }}
+              style={{ background: dark ? 'rgba(5,5,6,0.25)' : 'rgba(249,250,251,0.65)' }}
             >
               <div className="min-w-0">
                 <span className={`text-[13px] font-medium ${dark ? 'text-zinc-100' : 'text-zinc-900'}`}>App preview</span>
@@ -372,13 +391,12 @@ export function SiteBuilder() {
               sandbox=""
               srcDoc={html}
             />
-            <div className={`border-t px-4 py-2.5 ${dark ? 'border-white/[0.08]' : 'border-zinc-200/90'}`} style={{ background: 'transparent' }}>
+            <div className={`border-t px-4 py-2.5 ${dark ? 'border-white/[0.08]' : 'border-zinc-200/90'}`} style={{ background: dark ? 'rgba(5,5,6,0.35)' : 'rgba(249,250,251,0.8)' }}>
               <p className="text-center text-[12px] font-normal leading-snug" style={{ color: dark ? '#71717a' : '#64748b' }}>
                 {loading ? 'Rendering the latest draft in this frame.' : 'This iframe reflects your last generated HTML.'}
               </p>
             </div>
           </div>
-        </div>
         </div>
       </div>
     </div>

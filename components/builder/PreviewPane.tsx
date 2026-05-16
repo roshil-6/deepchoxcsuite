@@ -18,7 +18,7 @@ interface PreviewPaneProps {
   onSelectSection: (index: number) => void;
 }
 
-/** Single-surface preview: hairline separators, no nested frame-in-frame chrome. */
+/** Preview in its own floating panel (elevated chrome + canvas inset). */
 export function PreviewPane({
   isDark,
   currentSchema,
@@ -32,14 +32,27 @@ export function PreviewPane({
   selectedSectionIndex,
   onSelectSection,
 }: PreviewPaneProps) {
-  const stroke = isDark ? 'rgba(82,82,91,0.45)' : 'rgba(203,213,225,0.85)';
+  const stroke = isDark ? 'rgba(82,82,91,0.5)' : 'rgba(203,213,225,0.9)';
   const muted = isDark ? '#71717a' : '#64748b';
   const linkBtn = `text-[13px] font-medium underline-offset-4 hover:underline ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`;
   const canvasInset = isDark ? '#050508' : '#f4f4f5';
   const tabTrack = isDark ? 'rgba(24,24,27,0.85)' : 'rgba(241,245,249,1)';
 
+  const panelBg = isDark ? 'rgba(11,11,13,0.94)' : 'rgba(255,255,255,0.96)';
+  const panelShadow = isDark
+    ? '0 22px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.045) inset'
+    : '0 20px 50px rgba(15,23,42,0.1), 0 0 0 1px rgba(255,255,255,0.85) inset';
+
   return (
-    <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-transparent lg:rounded-r-2xl">
+    <div
+      className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border"
+      style={{
+        borderColor: stroke,
+        background: panelBg,
+        boxShadow: panelShadow,
+        backdropFilter: 'blur(14px)',
+      }}
+    >
       <div
         className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b px-4 py-3 sm:px-5"
         style={{ borderColor: stroke }}
@@ -169,7 +182,7 @@ export function PreviewPane({
       </div>
 
       {currentSchema ? (
-        <div className="shrink-0 border-t px-5 py-2.5" style={{ borderColor: stroke, background: 'transparent' }}>
+        <div className="shrink-0 border-t px-5 py-2.5" style={{ borderColor: stroke, background: isDark ? 'rgba(5,5,6,0.35)' : 'rgba(249,250,251,0.8)' }}>
           <p className="text-center text-[12px]" style={{ color: muted }}>
             {`${currentSchema.name} · ${currentSchema.sections.length} sections`}
           </p>
