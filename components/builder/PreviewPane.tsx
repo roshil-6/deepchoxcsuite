@@ -1,9 +1,10 @@
 'use client';
 
 import React from 'react';
-import { Loader2, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Loader2, Sparkles, X } from 'lucide-react';
 import type { UISchema } from '@/lib/uiSchema';
 import { DynamicUIRenderer } from './DynamicUIRenderer';
+import { MatrixBackdrop } from './MatrixBackdrop';
 
 interface PreviewPaneProps {
   isDark: boolean;
@@ -44,72 +45,95 @@ export function PreviewPane({
   const canvasInset = isDark ? '#050508' : '#f4f4f5';
   const tabTrack = isDark ? 'rgba(24,24,27,0.85)' : 'rgba(241,245,249,1)';
 
-  const panelBg = isDark ? 'rgba(11,11,13,0.94)' : 'rgba(255,255,255,0.96)';
+  const panelBg = isDark ? 'rgba(9,9,11,0.98)' : 'rgba(255,255,255,0.96)';
   const panelShadow = isDark
-    ? '0 22px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.045) inset'
-    : '0 20px 50px rgba(15,23,42,0.1), 0 0 0 1px rgba(255,255,255,0.85) inset';
+    ? '0 24px 70px rgba(0,0,0,0.62), inset 0 1px 0 rgba(255,255,255,0.035)'
+    : '0 20px 50px rgba(15,23,42,0.1), inset 0 1px 0 rgba(255,255,255,0.85)';
 
   return (
     <div
-      className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border"
+      className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-[1.25rem] border"
       style={{
         borderColor: stroke,
         background: panelBg,
         boxShadow: panelShadow,
-        backdropFilter: 'blur(14px)',
+        backdropFilter: 'blur(16px)',
       }}
     >
-      <div
-        className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b px-4 py-3 sm:px-5"
-        style={{ borderColor: stroke }}
-      >
-        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
-          <span className="text-[14px] font-medium tracking-tight" style={{ color: isDark ? '#fafafa' : '#0f172a' }}>
+      <div className="flex shrink-0 flex-col" style={{ borderColor: stroke }}>
+        <div
+          className="flex flex-wrap items-center justify-between gap-3 px-4 py-3.5 sm:px-6"
+          style={{ borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : stroke}` }}
+        >
+          <span className="text-[15px] font-semibold tracking-tight" style={{ color: isDark ? '#f4f4f5' : '#0f172a' }}>
             App Preview
           </span>
-          <span className="text-[13px]" style={{ color: muted }}>
-            {currentSchema ? 'Showing layout' : 'Idle'}
-          </span>
-          <div
-            className="inline-flex items-center rounded-lg p-1"
-            style={{ background: tabTrack }}
-            role="tablist"
-            aria-label="Preview mode"
-          >
+          {onDismiss ? (
             <button
-              role="tab"
-              aria-selected={activeTab === 'preview'}
               type="button"
-              onClick={() => setActiveTab('preview')}
-              className="rounded-md px-3 py-1.5 text-[12px] font-medium"
+              onClick={onDismiss}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-opacity hover:opacity-90"
               style={{
-                background: activeTab === 'preview' ? (isDark ? '#3f3f46' : '#ffffff') : 'transparent',
-                color: activeTab === 'preview' ? (isDark ? '#fafafa' : '#0f172a') : muted,
-                boxShadow: activeTab === 'preview' && !isDark ? '0 1px 2px rgba(15,23,42,0.06)' : 'none',
+                borderColor: isDark ? 'rgba(82,82,91,0.45)' : stroke,
+                background: isDark ? 'rgba(18,18,21,0.9)' : '#ffffff',
+                color: isDark ? '#fafafa' : '#0f172a',
               }}
+              aria-label="Hide preview panel"
             >
-              Canvas
+              <X className="h-4 w-4" strokeWidth={2} />
             </button>
-            <button
-              role="tab"
-              aria-selected={activeTab === 'code'}
-              type="button"
-              onClick={() => setActiveTab('code')}
-              className="rounded-md px-3 py-1.5 text-[12px] font-medium"
-              style={{
-                background: activeTab === 'code' ? (isDark ? '#3f3f46' : '#ffffff') : 'transparent',
-                color: activeTab === 'code' ? (isDark ? '#fafafa' : '#0f172a') : muted,
-                boxShadow: activeTab === 'code' && !isDark ? '0 1px 2px rgba(15,23,42,0.06)' : 'none',
-              }}
-            >
-              Schema
-            </button>
-          </div>
+          ) : (
+            <span className="h-9 w-9 shrink-0" aria-hidden />
+          )}
         </div>
 
-        <div className="flex shrink-0 flex-wrap items-center gap-3 sm:gap-4">
+        <div
+          className="flex flex-col gap-3 px-4 py-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-4 sm:gap-y-2 sm:px-6"
+          style={{ background: isDark ? 'rgba(6,7,10,0.45)' : 'rgba(249,250,251,0.92)' }}
+        >
+          <div className="flex min-w-0 w-full flex-col gap-3 sm:flex-1 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+            <span className="text-[13px]" style={{ color: muted }}>
+              {currentSchema ? 'Showing layout' : 'Idle'}
+            </span>
+            <div
+              className="inline-flex items-center rounded-lg p-[3px]"
+              style={{ background: tabTrack }}
+              role="tablist"
+              aria-label="Preview mode"
+            >
+              <button
+                role="tab"
+                aria-selected={activeTab === 'preview'}
+                type="button"
+                onClick={() => setActiveTab('preview')}
+                className="rounded-md px-3 py-1.5 text-[12px] font-medium"
+                style={{
+                  background: activeTab === 'preview' ? (isDark ? '#3f3f46' : '#ffffff') : 'transparent',
+                  color: activeTab === 'preview' ? (isDark ? '#fafafa' : '#0f172a') : muted,
+                  boxShadow: activeTab === 'preview' && !isDark ? '0 1px 2px rgba(15,23,42,0.06)' : 'none',
+                }}
+              >
+                Canvas
+              </button>
+              <button
+                role="tab"
+                aria-selected={activeTab === 'code'}
+                type="button"
+                onClick={() => setActiveTab('code')}
+                className="rounded-md px-3 py-1.5 text-[12px] font-medium"
+                style={{
+                  background: activeTab === 'code' ? (isDark ? '#3f3f46' : '#ffffff') : 'transparent',
+                  color: activeTab === 'code' ? (isDark ? '#fafafa' : '#0f172a') : muted,
+                  boxShadow: activeTab === 'code' && !isDark ? '0 1px 2px rgba(15,23,42,0.06)' : 'none',
+                }}
+              >
+                Schema
+              </button>
+            </div>
+          </div>
+
           {currentSchema ? (
-            <div className="flex shrink-0 flex-wrap items-center gap-4">
+            <div className="flex w-full shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 sm:w-auto sm:justify-end">
               <button type="button" className={linkBtn} onClick={onCopySchema}>
                 {copied ? 'Copied' : 'Copy JSON'}
               </button>
@@ -146,22 +170,9 @@ export function PreviewPane({
                 )}
               </div>
             </div>
-          ) : null}
-          {onDismiss ? (
-            <button
-              type="button"
-              onClick={onDismiss}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-opacity hover:opacity-90"
-              style={{
-                borderColor: stroke,
-                background: isDark ? 'rgba(24,24,27,0.75)' : '#ffffff',
-                color: isDark ? '#fafafa' : '#0f172a',
-              }}
-              aria-label="Hide preview panel"
-            >
-              <X className="h-4 w-4" strokeWidth={1.75} />
-            </button>
-          ) : null}
+          ) : (
+            <span className="min-w-[1px]" aria-hidden />
+          )}
         </div>
       </div>
 
@@ -184,23 +195,119 @@ export function PreviewPane({
               />
             </div>
           ) : (
-            <div className="relative flex h-full min-h-[280px] flex-col px-8 py-12 sm:px-10">
-              <div className="mx-auto w-full max-w-lg rounded-[2rem] border p-10 text-center shadow-xl" style={{
-                borderColor: isDark ? 'rgba(63,63,70,0.45)' : 'rgba(226,232,240,1)',
-                background: isDark ? 'rgba(17,24,39,0.72)' : 'rgba(255,255,255,0.92)',
-                boxShadow: isDark ? '0 46px 80px rgba(0,0,0,0.45)' : '0 40px 80px rgba(15,23,42,0.12)',
-              }}
+            <div className="relative flex h-full min-h-[280px] flex-col items-center justify-start px-6 py-10 sm:px-10 sm:py-14">
+              {isDark ? <MatrixBackdrop /> : null}
+              <div
+                className="relative z-[2] mx-auto w-full max-w-md rounded-[1.85rem] border px-7 pb-10 pt-9 text-center shadow-2xl backdrop-blur-md sm:max-w-lg sm:px-11 sm:pb-12 sm:pt-11"
+                style={{
+                  borderColor: isDark ? 'rgba(63,63,70,0.5)' : 'rgba(226,232,240,1)',
+                  background: isDark ? 'rgba(13,17,23,0.82)' : 'rgba(255,255,255,0.93)',
+                  boxShadow: isDark
+                    ? '0 48px 100px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07)'
+                    : '0 40px 80px rgba(15,23,42,0.12)',
+                }}
               >
-                <p className="text-[22px] font-semibold tracking-tight" style={{ color: isDark ? '#fafafa' : '#0f172a' }}>
+                <div
+                  className="mx-auto mb-5 flex h-[52px] w-[52px] items-center justify-center rounded-2xl border shadow-lg"
+                  style={{
+                    borderColor: isDark ? 'rgba(45,212,191,0.32)' : 'rgba(20,184,166,0.28)',
+                    background: isDark
+                      ? 'linear-gradient(150deg,rgba(6,78,72,0.55),rgba(17,24,39,0.65))'
+                      : 'linear-gradient(150deg,#ecfdf5,#cffafe)',
+                    boxShadow: isDark ? '0 18px 44px rgba(6,78,72,0.28)' : '0 14px 36px rgba(20,184,166,0.2)',
+                  }}
+                >
+                  <Sparkles className="h-7 w-7" style={{ color: isDark ? '#6ee7b7' : '#0d9488' }} strokeWidth={1.5} />
+                </div>
+                <h2
+                  className="text-[21px] font-semibold leading-tight tracking-[-0.02em] sm:text-[23px]"
+                  style={{ color: isDark ? '#fafafa' : '#0f172a' }}
+                >
                   Deploy your application
-                </p>
-                <p className="mt-4 text-[14px] leading-relaxed" style={{ color: isDark ? '#a1a1aa' : '#64748b' }}>
+                </h2>
+                <p
+                  className="mx-auto mt-3 max-w-[22rem] text-[14px] leading-relaxed"
+                  style={{ color: isDark ? '#a1a1aa' : '#64748b' }}
+                >
                   Make your app publicly available once the agent finishes the first pass. Describe the experience in the
-                  agent column and this canvas will fill in automatically.
+                  agent column and this canvas fills in automatically.
                 </p>
+
+                <div className="relative mx-auto mt-9 max-w-[320px]">
+                  <button
+                    type="button"
+                    aria-label="Previous slide"
+                    className="absolute -left-1 top-1/2 z-[1] flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border md:-left-3"
+                    style={{
+                      borderColor: isDark ? 'rgba(63,63,70,0.55)' : '#e2e8f0',
+                      background: isDark ? '#101014' : '#ffffff',
+                      color: isDark ? '#d4d4d8' : '#475569',
+                    }}
+                  >
+                    <ChevronLeft className="h-5 w-5" strokeWidth={2} />
+                  </button>
+                  <div
+                    className="aspect-[16/10] overflow-hidden rounded-2xl border shadow-inner"
+                    style={{
+                      borderColor: isDark ? 'rgba(63,63,70,0.45)' : '#e2e8f0',
+                      background: isDark
+                        ? 'linear-gradient(168deg,#0a1018 0%,#111827 45%,#0f172a 100%)'
+                        : 'linear-gradient(168deg,#f8fafc,#e2e8f0)',
+                      boxShadow: isDark ? 'inset 0 0 0 1px rgba(255,255,255,0.04)' : 'inset 0 1px 2px rgba(15,23,42,0.06)',
+                    }}
+                  >
+                    <div
+                      className="flex h-full min-h-[120px] w-full items-center justify-center p-5"
+                      style={{
+                        backgroundImage: isDark
+                          ? 'radial-gradient(circle at 50% 20%,rgba(45,212,191,0.08),transparent 55%),radial-gradient(circle at 80% 80%,rgba(59,130,246,0.06),transparent 50%)'
+                          : 'radial-gradient(circle at 50% 30%,rgba(45,212,191,0.12),transparent 50%)',
+                      }}
+                    >
+                      <div
+                        className="h-[72%] w-[88%] rounded-xl border"
+                        style={{
+                          borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.08)',
+                          background: isDark ? 'rgba(6,9,14,0.65)' : 'rgba(255,255,255,0.75)',
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    aria-label="Next slide"
+                    className="absolute -right-1 top-1/2 z-[1] flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border md:-right-3"
+                    style={{
+                      borderColor: isDark ? 'rgba(63,63,70,0.55)' : '#e2e8f0',
+                      background: isDark ? '#101014' : '#ffffff',
+                      color: isDark ? '#d4d4d8' : '#475569',
+                    }}
+                  >
+                    <ChevronRight className="h-5 w-5" strokeWidth={2} />
+                  </button>
+                </div>
+                <div className="mt-6 flex items-center justify-center gap-2">
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <span
+                      key={i}
+                      className="h-2 rounded-full transition-all"
+                      style={{
+                        width: i === 0 ? 28 : 8,
+                        background:
+                          i === 0
+                            ? isDark
+                              ? '#34d399'
+                              : '#14b8a6'
+                            : isDark
+                              ? 'rgba(255,255,255,0.12)'
+                              : 'rgba(15,23,42,0.14)',
+                      }}
+                    />
+                  ))}
+                </div>
               </div>
               {ambientGenerating ? (
-                <div className="pointer-events-none absolute inset-x-0 bottom-10 flex justify-center px-6">
+                <div className="pointer-events-none absolute inset-x-0 bottom-10 z-[3] flex justify-center px-6">
                   <div
                     className="inline-flex items-center gap-3 rounded-full border px-7 py-3 text-[14px] font-semibold shadow-2xl"
                     style={{

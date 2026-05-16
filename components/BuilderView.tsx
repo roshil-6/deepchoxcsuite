@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Bell, Bot, Gift, Home, Plus, X } from 'lucide-react';
+import { Bell, Bot, Gift, Home, Plus, Settings, X } from 'lucide-react';
 import { UserButton } from '@clerk/nextjs';
 import type { UISchema, BuildUIResponse, BuilderHistoryItem } from '@/lib/uiSchema';
 import { sanitizeSchemaForUi } from '@/lib/builderSafety';
@@ -296,7 +296,7 @@ export function BuilderView() {
     setShowSectionStudio((v) => !v);
   };
 
-  const border = isDark ? '#27272a' : '#e4e4e7';
+  const border = isDark ? 'rgba(39,39,42,0.85)' : '#e4e4e7';
   const headerBg = isDark ? 'rgba(8,8,10,0.97)' : 'rgba(255,255,255,0.94)';
   const slug = tabSlugFromSchema(currentSchema);
   const tabPulse = isGenerating ? 'animate-pulse' : '';
@@ -304,30 +304,31 @@ export function BuilderView() {
   return (
     <div
       className="relative flex min-h-0 h-full w-full flex-col overflow-hidden"
-      style={{ background: isDark ? '#030303' : '#eef0f4' }}
+      style={{ background: isDark ? '#050506' : '#eef0f4' }}
     >
       <header
-        className="grid shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 border-b px-3 py-2.5 sm:gap-4 sm:px-5 sm:py-3"
+        className="flex shrink-0 flex-col gap-2 border-b px-3 py-2 sm:gap-3 sm:px-4 min-h-[56px] md:min-h-[60px] md:flex-row md:items-center md:gap-4 md:px-5 md:py-3"
         style={{ borderColor: border, background: headerBg, backdropFilter: 'blur(14px)' }}
       >
-        <div className="flex min-w-0 flex-wrap items-center gap-2">
-          <div
-            className="inline-flex items-center gap-2 rounded-2xl border px-3 py-2 sm:px-4"
-            style={{
-              borderColor: isDark ? 'rgba(63,63,70,0.55)' : '#e4e4e7',
-              background: isDark ? '#141416' : '#ffffff',
-              boxShadow: isDark ? '0 22px 50px rgba(0,0,0,0.35)' : '0 14px 32px rgba(15,23,42,0.08)',
-              color: isDark ? '#fafafa' : '#18181b',
-            }}
-          >
-            <Bot className="h-5 w-5 shrink-0 text-teal-300" aria-hidden strokeWidth={1.6} />
-            <span className="hidden text-[13px] font-semibold tracking-tight sm:inline">App builder</span>
-          </div>
+        <div className="flex w-full min-w-0 items-center justify-between gap-2 md:contents">
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 md:min-w-0 md:flex-nowrap">
+            <div
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-2xl border px-2.5 py-1.5 sm:gap-2 sm:px-3 sm:py-2 md:px-4"
+              style={{
+                borderColor: isDark ? 'rgba(63,63,70,0.55)' : '#e4e4e7',
+                background: isDark ? '#141416' : '#ffffff',
+                boxShadow: isDark ? '0 22px 50px rgba(0,0,0,0.35)' : '0 14px 32px rgba(15,23,42,0.08)',
+                color: isDark ? '#fafafa' : '#18181b',
+              }}
+            >
+              <Bot className="h-[18px] w-[18px] shrink-0 text-teal-300 sm:h-5 sm:w-5" aria-hidden strokeWidth={1.6} />
+              <span className="hidden md:inline md:text-[13px] md:font-semibold md:tracking-tight">App builder</span>
+            </div>
           {currentSchema ? (
             <button
               type="button"
               onClick={() => toggleSectionStudio()}
-              className="h-10 rounded-xl border px-3 text-[12px] font-semibold uppercase tracking-[0.12em]"
+              className="h-9 shrink-0 rounded-lg border px-2.5 text-[11px] font-medium tracking-normal sm:h-10 sm:rounded-xl sm:px-3 sm:text-[12px]"
               style={{
                 borderColor: showSectionStudio ? 'rgba(45,212,191,0.45)' : isDark ? '#3f3f46' : '#e4e4e7',
                 background: showSectionStudio ? (isDark ? 'rgba(6,78,72,0.35)' : 'rgba(236,253,245,1)') : isDark ? '#101012' : '#fafafa',
@@ -340,7 +341,7 @@ export function BuilderView() {
           <button
             type="button"
             onClick={() => openHistory()}
-            className="h-10 rounded-xl border px-3 text-[12px] font-semibold uppercase tracking-[0.12em]"
+            className="h-9 shrink-0 rounded-lg border px-2.5 text-[11px] font-medium tracking-normal sm:h-10 sm:rounded-xl sm:px-3 sm:text-[12px]"
             style={{
               borderColor: isDark ? '#3f3f46' : '#e4e4e7',
               background: isDark ? '#101012' : '#fafafa',
@@ -351,69 +352,11 @@ export function BuilderView() {
           </button>
         </div>
 
-        <div
-          className="flex shrink-0 items-center gap-1 rounded-[1.15rem] border p-1"
-          style={{
-            borderColor: isDark ? 'rgba(82,82,91,0.45)' : 'rgba(226,232,240,1)',
-            background: isDark ? '#0c0c0f' : '#f8fafc',
-            boxShadow: isDark ? 'inset 0 1px 0 rgba(255,255,255,0.04)' : 'none',
-          }}
-        >
-          <button
-            type="button"
-            title="Show preview pane"
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-transparent hover:border-white/10"
-            style={{ color: isDark ? '#a1a1aa' : '#64748b' }}
-            onClick={() => setPreviewOpen(true)}
-          >
-            <Home className="h-[18px] w-[18px]" strokeWidth={1.65} />
-          </button>
-          <div
-            className="flex items-center gap-2 rounded-xl border px-3 py-1.5 sm:px-4"
-            style={{
-              borderColor: isDark ? 'rgba(45,212,191,0.35)' : 'rgba(20,184,166,0.35)',
-              background: isDark ? 'rgba(6,78,72,0.22)' : 'rgba(236,253,245,0.9)',
-            }}
-          >
-            <span
-              className={`h-[7px] w-[7px] rounded-full bg-emerald-400 ${tabPulse}`}
-              style={{ boxShadow: isGenerating ? '0 0 0 6px rgba(74,222,128,0.12)' : 'none' }}
-              aria-hidden
-            />
-            <span
-              className="max-w-[88px] truncate text-[12px] font-semibold uppercase tracking-[0.12em] sm:max-w-[160px]"
-              style={{ color: isDark ? '#ccfbf1' : '#134e4a' }}
-              title={slug}
-            >
-              {slug}
-            </span>
-            <button
-              type="button"
-              aria-label="Reset session tab"
-              className="rounded-lg p-1 transition-colors hover:bg-black/15"
-              style={{ color: isDark ? '#d4d4d8' : '#334155' }}
-              onClick={resetStudioSession}
-            >
-              <X className="h-4 w-4" strokeWidth={1.75} />
-            </button>
-          </div>
-          <button
-            type="button"
-            aria-label="New session"
-            title="New session"
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-transparent hover:border-white/10"
-            style={{ color: isDark ? '#fafafa' : '#18181b' }}
-            onClick={resetStudioSession}
-          >
-            <Plus className="h-[18px] w-[18px]" strokeWidth={2} />
-          </button>
-        </div>
-
-        <div className="flex min-w-0 items-center justify-end gap-2 sm:gap-3">
+          <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-3 md:order-3 md:gap-3">
           <button
             type="button"
             onClick={() => openUpgrade()}
-            className="rounded-xl px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] sm:inline-flex sm:px-4 sm:py-2.5 sm:text-[12px]"
+            className="shrink-0 rounded-lg px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] sm:rounded-xl sm:px-3 sm:py-2 sm:text-[11px] md:inline-flex md:px-4 md:py-2.5 md:text-[12px] md:tracking-[0.16em]"
             style={{
               background: 'linear-gradient(130deg,#fbbf24,#f97316)',
               color: '#1c1410',
@@ -447,28 +390,101 @@ export function BuilderView() {
           >
             <Bell className="h-[18px] w-[18px]" aria-hidden strokeWidth={1.5} />
           </button>
-          <div className="flex shrink-0 items-center pl-1">
+          <button
+            type="button"
+            title="Studio menu"
+            className="hidden h-10 w-10 items-center justify-center rounded-xl border sm:flex"
+            style={{
+              borderColor: isDark ? 'rgba(63,63,70,0.45)' : 'rgba(226,232,240,1)',
+              background: isDark ? '#121214' : '#ffffff',
+              color: isDark ? '#d4d4d8' : '#475569',
+            }}
+          >
+            <Settings className="h-[18px] w-[18px]" aria-hidden strokeWidth={1.5} />
+          </button>
+          <div className="flex shrink-0 items-center pl-0.5 md:pl-1">
             <UserButton
               appearance={{
                 elements: {
-                  avatarBox: 'h-9 w-9 border border-white/15 shadow-xl',
+                  avatarBox: 'h-8 w-8 border border-white/15 shadow-xl sm:h-9 sm:w-9',
                   userButtonPopoverCard: isDark ? 'border border-white/12' : undefined,
                 },
               }}
             />
           </div>
+          </div>
+        </div>
+
+        <div className="flex w-full shrink-0 justify-center px-1 overflow-x-auto md:order-2 md:w-auto md:px-0 md:justify-self-center [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div
+            className="flex w-[min(100%,520px)] max-w-[100vw] shrink-0 items-center gap-1 rounded-[1rem] border p-1 sm:rounded-[1.15rem] md:w-auto md:max-w-none"
+          style={{
+            borderColor: isDark ? 'rgba(82,82,91,0.45)' : 'rgba(226,232,240,1)',
+            background: isDark ? '#0c0c0f' : '#f8fafc',
+            boxShadow: isDark ? 'inset 0 1px 0 rgba(255,255,255,0.04)' : 'none',
+          }}
+        >
+          <button
+            type="button"
+            title="Show preview pane"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-transparent hover:border-white/10 sm:h-10 sm:w-10 sm:rounded-xl"
+            style={{ color: isDark ? '#a1a1aa' : '#64748b' }}
+            onClick={() => setPreviewOpen(true)}
+          >
+            <Home className="h-4 w-4 sm:h-[18px] sm:w-[18px]" strokeWidth={1.65} />
+          </button>
+          <div
+            className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border px-2.5 py-1 sm:gap-2 sm:rounded-xl sm:px-3 sm:py-1.5 md:flex-initial md:px-4"
+            style={{
+              borderColor: isDark ? 'rgba(45,212,191,0.35)' : 'rgba(20,184,166,0.35)',
+              background: isDark ? 'rgba(6,78,72,0.22)' : 'rgba(236,253,245,0.9)',
+            }}
+          >
+            <span
+              className={`h-[6px] w-[6px] shrink-0 rounded-full bg-emerald-400 sm:h-[7px] sm:w-[7px] ${tabPulse}`}
+              style={{ boxShadow: isGenerating ? '0 0 0 6px rgba(74,222,128,0.12)' : 'none' }}
+              aria-hidden
+            />
+            <span
+              className="min-w-0 flex-1 truncate text-center text-[12px] font-medium normal-case tracking-tight sm:text-left sm:text-[13px] md:max-w-[220px]"
+              style={{ color: isDark ? '#ecfdf9' : '#134e4a' }}
+              title={slug}
+            >
+              {slug}
+            </span>
+            <button
+              type="button"
+              aria-label="Reset session tab"
+              className="shrink-0 rounded-lg p-1 transition-colors hover:bg-black/15"
+              style={{ color: isDark ? '#d4d4d8' : '#334155' }}
+              onClick={resetStudioSession}
+            >
+              <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={1.75} />
+            </button>
+          </div>
+          <button
+            type="button"
+            aria-label="New session"
+            title="New session"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-transparent hover:border-white/10 sm:h-10 sm:w-10 sm:rounded-xl"
+            style={{ color: isDark ? '#fafafa' : '#18181b' }}
+            onClick={resetStudioSession}
+          >
+            <Plus className="h-4 w-4 sm:h-[18px] sm:w-[18px]" strokeWidth={2} />
+          </button>
+        </div>
         </div>
       </header>
 
-      <div className="relative flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-4 sm:p-5 md:flex-row md:gap-5">
+      <div className="relative flex min-h-0 flex-1 flex-col gap-3 overflow-hidden px-3 pb-2 pt-1 sm:p-5 md:flex-row md:gap-5 md:overflow-hidden md:p-5">
         <aside
-          className={`relative flex min-h-[min(520px,54dvh)] w-full shrink-0 flex-col overflow-hidden rounded-[1.75rem] border md:min-h-0 ${
-            previewOpen ? 'md:max-w-[min(460px,44vw)]' : 'md:flex-1'
+          className={`relative flex min-h-[min(220px,38dvh)] w-full flex-1 flex-col overflow-hidden rounded-[1.05rem] border sm:min-h-[min(240px,40dvh)] sm:rounded-[1.25rem] md:min-h-0 ${
+            previewOpen ? 'md:w-[420px] md:max-w-[420px] md:flex-none' : 'md:max-w-none md:flex-1'
           }`}
           style={{
             borderColor: border,
-            background: isDark ? '#040405' : '#ffffff',
-            boxShadow: isDark ? '0 40px 80px rgba(0,0,0,0.35)' : '0 38px 80px rgba(15,23,42,0.12)',
+            background: isDark ? '#080809' : '#ffffff',
+            boxShadow: isDark ? 'inset 0 1px 0 rgba(255,255,255,0.04), 0 40px 80px rgba(0,0,0,0.4)' : '0 38px 80px rgba(15,23,42,0.12)',
           }}
         >
           <AgentChatPanel
@@ -512,7 +528,7 @@ export function BuilderView() {
           />
         ) : (
           <div
-            className="flex min-h-[200px] flex-1 flex-col items-center justify-center gap-6 rounded-[1.75rem] border px-8 py-14 text-center md:items-center"
+            className="flex min-h-[200px] flex-1 flex-col items-center justify-center gap-6 rounded-[1.25rem] border px-8 py-14 text-center md:items-center"
             style={{
               borderColor: border,
               background: isDark ? 'rgba(13,13,14,0.94)' : 'rgba(255,255,255,0.94)',

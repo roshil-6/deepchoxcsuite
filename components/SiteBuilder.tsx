@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Bell, Bot, Gift, Home, LayoutTemplate, Loader2, Plus, X } from 'lucide-react';
+import { Bell, Bot, Gift, Home, LayoutTemplate, Loader2, Plus, Settings, X } from 'lucide-react';
 import { UserButton } from '@clerk/nextjs';
 import { useTheme } from '@/lib/ThemeContext';
 import { useUpgradeModal } from '@/components/tokens';
 import { buildStandaloneHtml, defaultSitePayload, type SitePayload } from '@/lib/siteFromPrompt';
 import { AgentChatPanel, type ThreadMessage } from '@/components/builder/AgentChatPanel';
+import { MatrixBackdrop } from '@/components/builder/MatrixBackdrop';
 
 const HISTORY_KEY = 'deepchox-sites-history';
 const MAX_HISTORY = 12;
@@ -277,7 +278,7 @@ export function SiteBuilder() {
     </div>
   );
 
-  const border = dark ? '#27272a' : '#e4e4e7';
+  const border = dark ? 'rgba(39,39,42,0.85)' : '#e4e4e7';
   const headerGlass = dark ? 'rgba(8,8,10,0.97)' : 'rgba(255,255,255,0.94)';
   const slug = siteSlug(payload);
   const busyPulse = loading ? 'animate-pulse' : '';
@@ -285,93 +286,37 @@ export function SiteBuilder() {
 
   return (
     <div
-      className={`flex min-h-0 flex-1 flex-col overflow-hidden ${dark ? 'bg-[#030303]' : 'bg-[#eef0f4]'}`}
+      className={`flex min-h-0 flex-1 flex-col overflow-hidden ${dark ? 'bg-[#050506]' : 'bg-[#eef0f4]'}`}
     >
       <header
-        className="grid shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 border-b px-3 py-2.5 sm:gap-4 sm:px-5 sm:py-3"
+        className="flex shrink-0 flex-col gap-2 border-b px-3 py-2 sm:gap-3 sm:px-4 md:min-h-[60px] md:flex-row md:items-center md:gap-4 md:px-5 md:py-3"
         style={{
           borderColor: border,
           background: headerGlass,
           backdropFilter: 'blur(14px)',
         }}
       >
-        <div className="flex min-w-0 flex-wrap items-center gap-2">
-          <div
-            className="inline-flex items-center gap-2 rounded-2xl border px-3 py-2 sm:px-4"
-            style={{
-              borderColor: dark ? 'rgba(63,63,70,0.55)' : '#e4e4e7',
-              background: dark ? '#141416' : '#ffffff',
-              boxShadow: dark ? '0 22px 50px rgba(0,0,0,0.35)' : '0 14px 32px rgba(15,23,42,0.08)',
-              color: dark ? '#fafafa' : '#18181b',
-            }}
-          >
-            <LayoutTemplate className="h-5 w-5 shrink-0 text-teal-300" aria-hidden strokeWidth={1.65} />
-            <span className="hidden text-[13px] font-semibold tracking-tight sm:inline">Sites workspace</span>
-          </div>
-        </div>
-
-        <div
-          className="flex shrink-0 items-center gap-1 rounded-[1.15rem] border p-1"
-          style={{
-            borderColor: dark ? 'rgba(82,82,91,0.45)' : 'rgba(226,232,240,1)',
-            background: dark ? '#0c0c0f' : '#f8fafc',
-            boxShadow: dark ? 'inset 0 1px 0 rgba(255,255,255,0.04)' : 'none',
-          }}
-        >
-          <button
-            type="button"
-            title="Show preview pane"
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-transparent hover:border-white/10"
-            style={{ color: dark ? '#a1a1aa' : '#64748b' }}
-            onClick={() => setPreviewOpen(true)}
-          >
-            <Home className="h-[18px] w-[18px]" strokeWidth={1.65} />
-          </button>
-          <div
-            className="flex items-center gap-2 rounded-xl border px-3 py-1.5 sm:px-4"
-            style={{
-              borderColor: dark ? 'rgba(45,212,191,0.35)' : 'rgba(20,184,166,0.35)',
-              background: dark ? 'rgba(6,78,72,0.22)' : 'rgba(236,253,245,0.9)',
-            }}
-          >
-            <span
-              className={`h-[7px] w-[7px] rounded-full bg-emerald-400 ${busyPulse}`}
-              style={{ boxShadow: loading ? '0 0 0 6px rgba(74,222,128,0.12)' : 'none' }}
-              aria-hidden
-            />
-            <span
-              className="max-w-[140px] truncate text-[11px] font-semibold uppercase tracking-[0.12em] sm:max-w-[180px]"
-              style={{ color: dark ? '#ccfbf1' : '#134e4a' }}
-              title={slug}
+        <div className="flex w-full min-w-0 items-center justify-between gap-2 md:contents">
+          <div className="flex min-w-0 flex-1 items-center gap-2 md:min-w-0 md:flex-nowrap">
+            <div
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-2xl border px-2.5 py-1.5 sm:gap-2 sm:px-3 sm:py-2 md:px-4"
+              style={{
+                borderColor: dark ? 'rgba(63,63,70,0.55)' : '#e4e4e7',
+                background: dark ? '#141416' : '#ffffff',
+                boxShadow: dark ? '0 22px 50px rgba(0,0,0,0.35)' : '0 14px 32px rgba(15,23,42,0.08)',
+                color: dark ? '#fafafa' : '#18181b',
+              }}
             >
-              {slug}
-            </span>
-            <button
-              type="button"
-              aria-label="Reset site session tab"
-              className="rounded-lg p-1 text-zinc-200 transition-colors hover:bg-black/15"
-              onClick={resetSitesStudio}
-            >
-              <X className="h-4 w-4" strokeWidth={1.75} />
-            </button>
+              <LayoutTemplate className="h-[18px] w-[18px] shrink-0 text-teal-300 sm:h-5 sm:w-5" aria-hidden strokeWidth={1.65} />
+              <span className="hidden md:inline md:text-[13px] md:font-semibold md:tracking-tight">Sites workspace</span>
+            </div>
           </div>
-          <button
-            type="button"
-            aria-label="New site session"
-            title="New site session"
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-transparent hover:border-white/10"
-            style={{ color: dark ? '#fafafa' : '#18181b' }}
-            onClick={resetSitesStudio}
-          >
-            <Plus className="h-[18px] w-[18px]" strokeWidth={2} />
-          </button>
-        </div>
 
-        <div className="flex min-w-0 items-center justify-end gap-2 sm:gap-3">
+          <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-3 md:order-3 md:justify-end md:gap-3">
           <button
             type="button"
             onClick={() => openUpgrade()}
-            className="rounded-xl px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] sm:px-4 sm:text-[12px]"
+            className="shrink-0 rounded-lg px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] sm:rounded-xl sm:px-3 sm:py-2 sm:text-[11px] md:px-4 md:py-2.5 md:text-[12px] md:tracking-[0.16em]"
             style={{
               background: 'linear-gradient(130deg,#fbbf24,#f97316)',
               color: '#1c1410',
@@ -395,7 +340,7 @@ export function SiteBuilder() {
           </button>
           <button
             type="button"
-            title="Alerts"
+            title="Notifications"
             className="hidden h-10 w-10 items-center justify-center rounded-xl border md:flex"
             style={{
               borderColor: dark ? 'rgba(63,63,70,0.45)' : 'rgba(226,232,240,1)',
@@ -405,27 +350,99 @@ export function SiteBuilder() {
           >
             <Bell className="h-[18px] w-[18px]" aria-hidden strokeWidth={1.5} />
           </button>
-          <div className="pl-1">
+          <button
+            type="button"
+            title="Studio menu"
+            className="hidden h-10 w-10 items-center justify-center rounded-xl border sm:flex"
+            style={{
+              borderColor: dark ? 'rgba(63,63,70,0.45)' : 'rgba(226,232,240,1)',
+              background: dark ? '#121214' : '#ffffff',
+              color: dark ? '#d4d4d8' : '#475569',
+            }}
+          >
+            <Settings className="h-[18px] w-[18px]" aria-hidden strokeWidth={1.5} />
+          </button>
+          <div className="shrink-0 pl-0.5 md:pl-1">
             <UserButton
               appearance={{
                 elements: {
-                  avatarBox: 'h-9 w-9 border border-white/15 shadow-xl',
+                  avatarBox: 'h-8 w-8 border border-white/15 shadow-xl sm:h-9 sm:w-9',
                 },
               }}
             />
           </div>
+          </div>
+        </div>
+
+          <div className="flex w-full shrink-0 justify-center px-1 overflow-x-auto md:order-2 md:w-auto md:px-0 md:justify-self-center [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div
+            className="flex w-[min(100%,520px)] max-w-[100vw] shrink-0 items-center gap-1 rounded-[1rem] border p-1 sm:rounded-[1.15rem] md:w-auto md:max-w-none"
+            style={{
+            borderColor: dark ? 'rgba(82,82,91,0.45)' : 'rgba(226,232,240,1)',
+            background: dark ? '#0c0c0f' : '#f8fafc',
+            boxShadow: dark ? 'inset 0 1px 0 rgba(255,255,255,0.04)' : 'none',
+          }}
+        >
+          <button
+            type="button"
+            title="Show preview pane"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-transparent hover:border-white/10 sm:h-10 sm:w-10 sm:rounded-xl"
+            style={{ color: dark ? '#a1a1aa' : '#64748b' }}
+            onClick={() => setPreviewOpen(true)}
+          >
+            <Home className="h-4 w-4 sm:h-[18px] sm:w-[18px]" strokeWidth={1.65} />
+          </button>
+          <div
+            className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border px-2.5 py-1 sm:gap-2 sm:rounded-xl sm:px-3 sm:py-1.5 md:flex-initial md:px-4"
+            style={{
+              borderColor: dark ? 'rgba(45,212,191,0.35)' : 'rgba(20,184,166,0.35)',
+              background: dark ? 'rgba(6,78,72,0.22)' : 'rgba(236,253,245,0.9)',
+            }}
+          >
+            <span
+              className={`h-[6px] w-[6px] shrink-0 rounded-full bg-emerald-400 sm:h-[7px] sm:w-[7px] ${busyPulse}`}
+              style={{ boxShadow: loading ? '0 0 0 6px rgba(74,222,128,0.12)' : 'none' }}
+              aria-hidden
+            />
+            <span
+              className="min-w-0 flex-1 truncate text-center text-[12px] font-medium normal-case tracking-tight sm:text-left sm:text-[13px]"
+              style={{ color: dark ? '#ecfdf9' : '#134e4a' }}
+              title={slug}
+            >
+              {slug}
+            </span>
+            <button
+              type="button"
+              aria-label="Reset site session tab"
+              className="shrink-0 rounded-lg p-1 transition-colors hover:bg-black/15"
+              onClick={resetSitesStudio}
+            >
+              <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={1.75} />
+            </button>
+          </div>
+          <button
+            type="button"
+            aria-label="New site session"
+            title="New site session"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-transparent hover:border-white/10 sm:h-10 sm:w-10 sm:rounded-xl"
+            style={{ color: dark ? '#fafafa' : '#18181b' }}
+            onClick={resetSitesStudio}
+          >
+            <Plus className="h-4 w-4 sm:h-[18px] sm:w-[18px]" strokeWidth={2} />
+          </button>
+        </div>
         </div>
       </header>
 
-      <div className="relative flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-4 sm:p-5 md:flex-row md:gap-5">
+      <div className="relative flex min-h-0 flex-1 flex-col gap-3 overflow-hidden px-3 pb-2 pt-1 sm:p-5 md:flex-row md:gap-5 md:overflow-hidden md:p-5">
         <aside
-          className={`relative flex min-h-[min(520px,54dvh)] w-full shrink-0 flex-col overflow-hidden rounded-[1.75rem] border md:min-h-0 ${
-            previewOpen ? 'md:max-w-[min(460px,44vw)]' : 'md:flex-1'
+          className={`relative flex min-h-[min(220px,38dvh)] w-full flex-1 flex-col overflow-hidden rounded-[1.05rem] border sm:min-h-[min(240px,40dvh)] sm:rounded-[1.25rem] md:min-h-0 ${
+            previewOpen ? 'md:w-[420px] md:max-w-[420px] md:flex-none' : 'md:max-w-none md:flex-1'
           }`}
           style={{
             borderColor: border,
-            background: dark ? '#040405' : '#ffffff',
-            boxShadow: dark ? '0 40px 80px rgba(0,0,0,0.35)' : '0 38px 80px rgba(15,23,42,0.12)',
+            background: dark ? '#080809' : '#ffffff',
+            boxShadow: dark ? 'inset 0 1px 0 rgba(255,255,255,0.04), 0 40px 80px rgba(0,0,0,0.4)' : '0 38px 80px rgba(15,23,42,0.12)',
           }}
         >
           <AgentChatPanel
@@ -455,76 +472,77 @@ export function SiteBuilder() {
 
         {previewOpen ? (
           <div
-            className="flex min-h-[min(360px,50dvh)] min-w-0 flex-1 flex-col overflow-hidden rounded-[1.75rem] border md:min-h-0"
+            className="flex min-h-[min(200px,32dvh)] min-w-0 flex-1 flex-col overflow-hidden rounded-[1.05rem] border sm:min-h-[min(228px,34dvh)] sm:rounded-[1.25rem] md:min-h-0 md:flex-1"
             style={{
               borderColor: canvasStroke,
-              background: dark ? 'rgba(11,11,13,0.94)' : 'rgba(255,255,255,0.96)',
+              background: dark ? 'rgba(9,9,11,0.98)' : 'rgba(255,255,255,0.96)',
               boxShadow: dark
-                ? '0 22px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.045) inset'
-                : '0 20px 50px rgba(15,23,42,0.1), 0 0 0 1px rgba(255,255,255,0.85) inset',
-              backdropFilter: 'blur(14px)',
+                ? '0 24px 70px rgba(0,0,0,0.62), inset 0 1px 0 rgba(255,255,255,0.035)'
+                : '0 20px 50px rgba(15,23,42,0.1), inset 0 1px 0 rgba(255,255,255,0.85)',
+              backdropFilter: 'blur(16px)',
             }}
           >
             <div className="flex min-h-0 flex-1 flex-col">
-              <div
-                className={`flex shrink-0 flex-wrap items-center gap-4 border-b px-4 py-3 sm:px-5 ${dark ? 'border-white/[0.08]' : 'border-zinc-200/90'}`}
-                style={{ background: dark ? 'rgba(5,5,6,0.25)' : 'rgba(249,250,251,0.65)' }}
-              >
-                <div className="min-w-0 flex-1">
-                  <span className={`text-[14px] font-medium ${dark ? 'text-zinc-50' : 'text-zinc-900'}`}>App Preview</span>
-                  <div className="mt-1 flex flex-wrap items-baseline gap-2 text-[13px]" style={{ color: dark ? '#71717a' : '#64748b' }}>
-                    <span>{loading ? 'Updating' : 'Idle'}</span>
-                    <span>·</span>
-                    <span className="truncate">{payload.title || 'Structured landing output'}</span>
+              <div className={`shrink-0 border-b ${dark ? 'border-white/[0.06]' : ''}`}>
+                <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
+                  <span className={`text-[14px] font-semibold tracking-tight sm:text-[15px] ${dark ? 'text-zinc-50' : 'text-zinc-900'}`}>
+                    App Preview
+                  </span>
+                  <button
+                    type="button"
+                    aria-label="Hide preview pane"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-opacity hover:opacity-90"
+                    style={{
+                      borderColor: dark ? 'rgba(82,82,91,0.45)' : canvasStroke,
+                      background: dark ? 'rgba(18,18,21,0.9)' : '#ffffff',
+                    }}
+                    onClick={() => setPreviewOpen(false)}
+                  >
+                    <X className="h-4 w-4" strokeWidth={2} />
+                  </button>
+                </div>
+                <div
+                  className="flex flex-col gap-3 px-4 py-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-4 sm:gap-y-2 sm:px-6"
+                  style={{ background: dark ? 'rgba(6,7,10,0.45)' : 'rgba(249,250,251,0.92)' }}
+                >
+                  <span className="min-w-0 text-[13px] leading-snug sm:flex-1 sm:truncate" style={{ color: dark ? '#71717a' : '#64748b' }}>
+                    <span className="block sm:inline">{loading ? 'Updating' : 'Idle'}</span>
+                    <span className="hidden px-2 sm:inline" aria-hidden>
+                      ·
+                    </span>
+                    <span className="mt-1 block truncate font-medium text-[13px] sm:mt-0 sm:inline sm:font-normal" style={{ color: dark ? '#a1a1aa' : '#475569' }}>
+                      {payload.title || 'Structured landing output'}
+                    </span>
+                  </span>
+                  <div className="flex flex-wrap items-center gap-x-5 gap-y-2 sm:shrink-0 sm:gap-4">
+                    <button
+                      type="button"
+                      onClick={() => void copyHtml()}
+                      className={`text-[13px] font-medium underline-offset-4 hover:underline ${dark ? 'text-zinc-300' : 'text-zinc-700'}`}
+                    >
+                      {copied ? 'Copied' : 'Copy HTML'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={downloadHtml}
+                      className={`text-[13px] font-medium underline-offset-4 hover:underline ${dark ? 'text-zinc-300' : 'text-zinc-700'}`}
+                    >
+                      Download .html
+                    </button>
                   </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-4">
-                  <button
-                    type="button"
-                    onClick={() => void copyHtml()}
-                    className={`text-[13px] font-medium underline-offset-4 hover:underline ${dark ? 'text-zinc-300' : 'text-zinc-700'}`}
-                  >
-                    {copied ? 'Copied' : 'Copy HTML'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={downloadHtml}
-                    className={`text-[13px] font-medium underline-offset-4 hover:underline ${dark ? 'text-zinc-300' : 'text-zinc-700'}`}
-                  >
-                    Download .html
-                  </button>
-                </div>
-                <button
-                  type="button"
-                  aria-label="Hide preview pane"
-                  className="flex h-9 w-9 items-center justify-center rounded-full border"
-                  style={{
-                    borderColor: canvasStroke,
-                    background: dark ? 'rgba(24,24,27,0.75)' : '#ffffff',
-                  }}
-                  onClick={() => setPreviewOpen(false)}
-                >
-                  <X className="h-4 w-4" strokeWidth={1.65} />
-                </button>
               </div>
 
-              <div
-                className="relative flex min-h-0 flex-1 flex-col overflow-hidden"
-                style={{
-                  backgroundColor: dark ? '#050508' : '#f4f4f5',
-                  backgroundImage: dark
-                    ? 'radial-gradient(circle at 20% -10%,rgba(45,212,191,0.07),transparent 52%), radial-gradient(circle at 85% -5%,rgba(6,182,212,0.06),transparent 45%)'
-                    : undefined,
-                }}
-              >
+              <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[#050508]">
+                {dark ? <MatrixBackdrop /> : null}
                 <iframe
                   title="Generated site preview"
-                  className="min-h-0 w-full flex-1 bg-neutral-950/15"
+                  className="relative z-[1] min-h-0 w-full flex-1 border-0 bg-neutral-950/[0.06]"
                   sandbox=""
                   srcDoc={html}
                 />
                 {loading ? (
-                  <div className="pointer-events-none absolute inset-x-0 bottom-8 flex justify-center px-6">
+                  <div className="pointer-events-none absolute inset-x-0 bottom-8 z-[2] flex justify-center px-6">
                     <div
                       className="inline-flex items-center gap-3 rounded-full border px-7 py-3 text-[14px] font-semibold shadow-2xl"
                       style={{
@@ -541,7 +559,7 @@ export function SiteBuilder() {
               </div>
 
               <div
-                className={`border-t px-4 py-2.5 ${dark ? 'border-white/[0.08]' : 'border-zinc-200/90'}`}
+                className={`shrink-0 border-t px-4 py-2.5 ${dark ? 'border-white/[0.08]' : 'border-zinc-200/90'}`}
                 style={{ background: dark ? 'rgba(5,5,6,0.35)' : 'rgba(249,250,251,0.8)' }}
               >
                 <p className="text-center text-[12px] font-normal leading-snug" style={{ color: dark ? '#71717a' : '#64748b' }}>

@@ -40,7 +40,7 @@ interface AgentChatPanelProps {
 function RobotAvatar({ isDark }: { isDark: boolean }) {
   return (
     <div
-      className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border"
+      className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border"
       style={{
         borderColor: isDark ? 'rgba(45,212,191,0.25)' : 'rgba(45,212,191,0.35)',
         background: isDark
@@ -50,7 +50,7 @@ function RobotAvatar({ isDark }: { isDark: boolean }) {
       }}
       aria-hidden
     >
-      <Bot className="h-[18px] w-[18px]" style={{ color: isDark ? '#5eead4' : '#0d9488' }} strokeWidth={1.75} />
+      <Bot className="h-5 w-5" style={{ color: isDark ? '#5eead4' : '#0d9488' }} strokeWidth={1.75} />
     </div>
   );
 }
@@ -81,12 +81,12 @@ export function AgentChatPanel({
   toolbarGithubHref = 'https://github.com/roshil-6/deepchoxcsuite',
 }: AgentChatPanelProps) {
   const muted = isDark ? '#71717a' : '#64748b';
-  const tealBorder = 'rgba(45,212,191,0.28)';
+  const tealBorder = 'rgba(34,211,238,0.22)';
   const userBubbleBg = isDark
-    ? 'linear-gradient(150deg,#0f3d46 0%,#134e4a 52%,#0d3d39 100%)'
-    : 'linear-gradient(150deg,#ccfbf1,#99f6e4)';
-  const userInk = isDark ? '#ecfdf5' : '#042f2e';
-  const columnBg = isDark ? '#050506' : '#f8fafc';
+    ? 'linear-gradient(135deg,#0c4a6e 8%,#0e7490 38%,#0f766f 76%,#115e56 100%)'
+    : 'linear-gradient(150deg,#cffafe,#99f6e4)';
+  const userInk = isDark ? '#f8fafc' : '#082f49';
+  const columnBg = isDark ? '#080809' : '#f8fafc';
 
   const showFollowUps = Boolean(currentSchema) && suggestions.length > 0;
 
@@ -132,7 +132,7 @@ export function AgentChatPanel({
   }, [toolbarGithubHref]);
 
   const runningCopy = 'Agent is running...';
-  const idleCopy = isDark ? 'Agent is idle' : 'Ready when you are';
+  const idleCopy = 'Ready';
   const hasToolbar = !!(onToolbarSave || onToolbarFork);
   const forkDisabled = Boolean(
     (!allowToolbarForkWithoutSchema && currentSchema === null) || isGenerating,
@@ -140,7 +140,7 @@ export function AgentChatPanel({
 
   return (
     <div
-      className="flex min-h-0 flex-1 flex-col rounded-[inherit] border-0 shadow-none outline-none ring-0"
+      className="studio-chat-root flex min-h-0 flex-1 flex-col rounded-[inherit] border-0 shadow-none outline-none ring-0 antialiased"
       style={{
         background: columnBg,
         color: isDark ? '#fafafa' : '#0f172a',
@@ -151,7 +151,7 @@ export function AgentChatPanel({
         <div
           ref={scrollContainerRef}
           onScroll={markScroll}
-          className="h-full overflow-y-auto overscroll-contain px-4 pb-6 pt-5"
+          className="h-full overflow-y-auto overscroll-contain px-3 pb-4 pt-4 sm:px-4 sm:pb-6 sm:pt-5"
           role="log"
           aria-live="polite"
           aria-relevant="additions"
@@ -161,30 +161,27 @@ export function AgentChatPanel({
               m.role === 'user' ? (
                 <div key={m.id} className="flex justify-end">
                   <div
-                    className="max-w-[min(440px,calc(100%-2rem))] rounded-[1.55rem] rounded-br-md px-4 py-3 text-[14px] leading-relaxed shadow-lg"
+                    className="max-w-[min(400px,calc(100%-0.5rem))] rounded-[1.25rem] rounded-br-lg px-4 py-2.5 text-[14px] leading-[1.65] shadow-xl sm:max-w-[min(400px,calc(100%-1.5rem))] sm:rounded-[1.375rem] sm:px-[1.1rem] sm:py-3"
                     style={{
                       border: `1px solid ${tealBorder}`,
                       background: userBubbleBg,
-                      boxShadow: isDark ? '0 18px 36px rgba(0,20,26,0.55)' : '0 14px 32px rgba(15,118,110,0.22)',
+                      boxShadow: isDark
+                        ? '0 20px 44px rgba(8,61,71,0.55), inset 0 1px 0 rgba(255,255,255,0.06)'
+                        : '0 14px 32px rgba(15,118,110,0.22)',
                       color: userInk,
                     }}
                   >
-                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: isDark ? '#99f6e4cc' : '#0f766e' }}>
-                      You
-                    </p>
                     <div className="whitespace-pre-wrap">{m.body}</div>
                   </div>
                 </div>
               ) : (
-                <div key={m.id} className="flex gap-3 pr-10">
+                <div key={m.id} className="flex gap-[0.625rem] pr-6 pt-1 sm:gap-3">
                   <RobotAvatar isDark={isDark} />
-                  <div className="min-w-0 flex-1 pt-2 text-[14px] leading-[1.7]" style={{ color: isDark ? '#e4e4e7' : '#334155' }}>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: muted }}>
-                        Agent
-                      </span>
-                    </div>
-                    <div className="mt-1.5 whitespace-pre-wrap">{m.body}</div>
+                  <div
+                    className="min-w-0 flex-1 text-[14px] leading-[1.75]"
+                    style={{ color: isDark ? '#fafafa' : '#1e293b' }}
+                  >
+                    <div className="whitespace-pre-wrap">{m.body}</div>
                   </div>
                 </div>
               ),
@@ -228,7 +225,7 @@ export function AgentChatPanel({
             ) : null}
 
             {showFollowUps ? (
-              <div className="space-y-3 pl-12">
+              <div className="space-y-3 pl-[3.125rem]">
                 <p className="text-[13px]" style={{ color: muted }}>
                   Pick a follow-up
                 </p>
@@ -251,15 +248,7 @@ export function AgentChatPanel({
                   ))}
                 </div>
               </div>
-            ) : currentSchema ? (
-              <p className="text-[13px] leading-relaxed pl-12" style={{ color: muted }}>
-                Describe the tweak you want; the preview syncs once the agent replies.
-              </p>
-            ) : (
-              <p className="text-[13px] leading-relaxed pl-12" style={{ color: muted }}>
-                Speak naturally about the flow you want. The canvas stays tidy until layout code lands.
-              </p>
-            )}
+            ) : null}
           </div>
         </div>
 
@@ -267,7 +256,7 @@ export function AgentChatPanel({
           <button
             type="button"
             onClick={() => scrollToBottom()}
-            className="absolute bottom-[220px] right-5 flex h-12 w-12 items-center justify-center rounded-full border shadow-2xl transition-transform hover:scale-[1.03] active:scale-[0.98] sm:bottom-36"
+            className="absolute bottom-[calc(17.25rem+env(safe-area-inset-bottom,0px))] right-3 flex h-11 w-11 items-center justify-center rounded-full border shadow-2xl transition-transform hover:scale-[1.03] active:scale-[0.98] sm:right-5 md:bottom-[15.5rem]"
             style={{
               borderColor: isDark ? 'rgba(63,63,70,0.55)' : 'rgba(226,232,240,1)',
               background: isDark ? '#18181b' : '#ffffff',
@@ -283,7 +272,7 @@ export function AgentChatPanel({
       </div>
 
       <div
-        className="shrink-0 px-4 pb-5 pt-3"
+        className="shrink-0 px-3 pb-[max(1rem,calc(env(safe-area-inset-bottom,0px)+0.5rem))] pt-2.5 sm:px-4 sm:pb-5 sm:pt-3"
         style={{
           borderTop: isDark ? '1px solid rgba(63,63,70,0.28)' : '1px solid rgba(226,232,240,0.85)',
           background: isDark ? 'rgba(4,6,10,0.82)' : 'rgba(249,251,253,1)',
@@ -353,26 +342,18 @@ export function AgentChatPanel({
 
         <form onSubmit={onSubmit} className="space-y-3">
           <div
-            className="rounded-[1.85rem] border px-5 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+            className="rounded-[1.2rem] border px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:rounded-[1.35rem] sm:px-[1.125rem] sm:py-[0.875rem]"
             style={{
               borderColor: isDark ? 'rgba(63,63,70,0.55)' : 'rgba(226,232,240,1)',
-              background: isDark ? '#0c0d10' : '#ffffff',
+              background: isDark ? '#0e0f14' : '#ffffff',
               boxShadow: isDark ? 'inset 0 1px 0 rgba(255,255,255,0.04)' : 'none',
             }}
           >
-            <div className="mb-4 flex flex-wrap items-center gap-3 text-[13px] font-medium">
-              <span
-                className="flex items-center gap-2"
-                style={{ color: isGenerating ? '#4ade80' : muted }}
-                aria-live="polite"
-              >
-                <span
-                  className="inline-flex h-[7px] w-[7px] rounded-full bg-emerald-400"
-                  style={{ visibility: 'visible', boxShadow: isGenerating ? '0 0 0 8px rgba(74,222,128,0.09)' : 'none' }}
-                  aria-hidden
-                />
-                ● {isGenerating ? runningCopy : idleCopy}
+            <div className="mb-3 flex flex-wrap items-center gap-2 text-[13px] font-medium tracking-[-0.01em]" aria-live="polite">
+              <span className="tabular-nums" style={{ color: isGenerating ? '#22c55e' : muted }}>
+                ●
               </span>
+              <span style={{ color: isGenerating ? '#86efac' : muted }}>{isGenerating ? runningCopy : idleCopy}</span>
             </div>
             <textarea
               id="studio-agent-msg"
@@ -393,10 +374,10 @@ export function AgentChatPanel({
             />
 
             <div
-              className="mt-4 flex flex-wrap items-center gap-6 border-t pt-4 text-[13px]"
+              className="mt-3 flex flex-col gap-3 border-t pt-3 text-[13px] sm:mt-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-6 sm:border-t sm:pt-4"
               style={{ borderColor: isDark ? 'rgba(63,63,70,0.35)' : 'rgba(226,232,240,0.95)' }}
             >
-              <div className="flex flex-wrap items-center gap-6">
+              <div className="flex flex-wrap items-center gap-5 sm:flex-nowrap sm:gap-6">
                 <button
                   type="button"
                   title="Attachments (soon)"
@@ -420,7 +401,12 @@ export function AgentChatPanel({
                 {hasToolbar ? (
                   <>
                     {onToolbarSave ? (
-                      <button type="button" className="font-semibold uppercase tracking-[0.16em]" style={{ color: isDark ? '#e4e4e7' : '#334155' }} onClick={() => void onToolbarSave()}>
+                      <button
+                        type="button"
+                        className="text-[13px] font-normal tracking-normal"
+                        style={{ color: isDark ? '#e4e4e7' : '#334155' }}
+                        onClick={() => void onToolbarSave()}
+                      >
                         Save
                       </button>
                     ) : null}
@@ -428,7 +414,7 @@ export function AgentChatPanel({
                       <button
                         type="button"
                         disabled={forkDisabled}
-                        className="font-semibold uppercase tracking-[0.16em] disabled:opacity-30"
+                        className="text-[13px] font-normal tracking-normal disabled:opacity-30"
                         style={{ color: isDark ? '#e4e4e7' : '#334155' }}
                         onClick={() => void onToolbarFork()}
                       >
@@ -438,7 +424,7 @@ export function AgentChatPanel({
                   </>
                 ) : null}
               </div>
-              <div className="ml-auto flex flex-wrap items-center gap-4">
+              <div className="flex w-full shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 sm:w-auto sm:justify-end sm:gap-4 sm:self-center">
                 <button
                   type="button"
                   title="Voice (soon)"

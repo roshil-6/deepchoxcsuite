@@ -26,7 +26,7 @@ export function MobileBottomNav({ activeView, onSwitchView, onOpenMore }: Props)
         <nav
             aria-label="Mobile navigation"
             className={[
-                'fixed inset-x-0 bottom-0 z-40 flex items-start justify-around border-t lg:hidden',
+                'fixed inset-x-0 bottom-0 z-40 flex items-start justify-evenly border-t pt-1 lg:hidden',
                 dark ? 'border-[#262626]' : 'border-neutral-200',
             ].join(' ')}
             style={{
@@ -45,7 +45,7 @@ export function MobileBottomNav({ activeView, onSwitchView, onOpenMore }: Props)
                         onClick={() => onSwitchView(view)}
                         aria-label={label}
                         aria-current={active ? 'page' : undefined}
-                        className={`flex flex-1 flex-col items-center gap-1 px-1 pt-2.5 pb-1.5 transition-colors ${
+                        className={`flex min-h-[3.125rem] min-w-0 flex-1 flex-col items-center justify-center gap-1 px-1.5 pb-2 pt-2 transition-colors max-[380px]:px-1 ${
                             active
                                 ? dark
                                     ? 'text-neutral-100'
@@ -65,7 +65,7 @@ export function MobileBottomNav({ activeView, onSwitchView, onOpenMore }: Props)
                             )}
                             <Icon className="h-[1.2rem] w-[1.2rem]" strokeWidth={active ? 2.1 : 1.7} />
                         </div>
-                        <span className={`max-w-[4.25rem] truncate font-sans text-[9px] leading-none ${active ? 'font-semibold' : 'font-medium'}`}>
+                        <span className={`max-w-[4.75rem] truncate font-sans text-[10px] leading-tight max-[380px]:text-[9px] ${active ? 'font-semibold' : 'font-medium'}`}>
                             {label}
                         </span>
                     </button>
@@ -76,12 +76,12 @@ export function MobileBottomNav({ activeView, onSwitchView, onOpenMore }: Props)
                 type="button"
                 onClick={onOpenMore}
                 aria-label="More navigation options"
-                className={`flex flex-1 flex-col items-center gap-1 px-1 pt-2.5 pb-1.5 transition-colors ${
+                className={`flex min-h-[3.125rem] min-w-0 flex-1 flex-col items-center justify-center gap-1 px-1.5 pb-2 pt-2 transition-colors max-[380px]:px-1 ${
                     dark ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-500 hover:text-neutral-800'
                 }`}
             >
                 <Menu className="h-[1.2rem] w-[1.2rem]" strokeWidth={1.7} />
-                <span className="font-sans text-[9px] font-medium leading-none">More</span>
+                <span className="font-sans text-[10px] font-medium leading-tight max-[380px]:text-[9px]">More</span>
             </button>
         </nav>
     );
