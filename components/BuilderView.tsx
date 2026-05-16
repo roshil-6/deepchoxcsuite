@@ -342,7 +342,6 @@ export function BuilderView() {
           showExportMenu={showExportMenu}
           setShowExportMenu={setShowExportMenu}
           onExport={handleExport}
-          onApplySuggestion={applySuggestion}
           selectedSectionIndex={selectedSectionIndex}
           onSelectSection={setSelectedSectionIndex}
         />
