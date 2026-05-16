@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { Bot, ChevronDown, Github, Loader2, Mic, Paperclip, Send, Sparkles, Square } from 'lucide-react';
 import type { UISchema } from '@/lib/uiSchema';
 
 export type ThreadMessage = {
@@ -26,9 +27,32 @@ interface AgentChatPanelProps {
   onSubmit: (e: React.FormEvent) => void;
   onIterate: (e: React.FormEvent) => void;
   onApplySuggestion: (suggestion: string) => void;
-  /** Rendered at the top of the composer footer (Sites tone presets, etc.). */
   slotAboveComposer?: React.ReactNode;
   submitLabel?: string;
+  onAbort?: () => void;
+  onToolbarSave?: () => void;
+  onToolbarFork?: () => void;
+  /** Lets Sites fork copy without passing a UISchema. Defaults to requiring `currentSchema`. */
+  allowToolbarForkWithoutSchema?: boolean;
+  toolbarGithubHref?: string;
+}
+
+function RobotAvatar({ isDark }: { isDark: boolean }) {
+  return (
+    <div
+      className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border"
+      style={{
+        borderColor: isDark ? 'rgba(45,212,191,0.25)' : 'rgba(45,212,191,0.35)',
+        background: isDark
+          ? 'linear-gradient(165deg,rgba(6,182,212,0.12),rgba(63,63,70,0.45))'
+          : 'linear-gradient(165deg,rgba(6,182,212,0.15),rgba(241,245,249,1))',
+        boxShadow: isDark ? '0 8px 20px rgba(0,0,0,0.35)' : '0 10px 24px rgba(15,23,42,0.08)',
+      }}
+      aria-hidden
+    >
+      <Bot className="h-[18px] w-[18px]" style={{ color: isDark ? '#5eead4' : '#0d9488' }} strokeWidth={1.75} />
+    </div>
+  );
 }
 
 export function AgentChatPanel({
@@ -50,157 +74,259 @@ export function AgentChatPanel({
   onApplySuggestion,
   slotAboveComposer,
   submitLabel = 'Send',
+  onAbort,
+  onToolbarSave,
+  onToolbarFork,
+  allowToolbarForkWithoutSchema = false,
+  toolbarGithubHref = 'https://github.com/roshil-6/deepchoxcsuite',
 }: AgentChatPanelProps) {
   const muted = isDark ? '#71717a' : '#64748b';
-  const bubbleUser = isDark ? '#27272a' : '#e4e4e7';
-  const bubbleAssist = isDark ? 'rgba(39,39,42,0.55)' : 'rgba(241,245,249,0.98)';
-  const strokeComposer = isDark ? 'rgba(63,63,70,0.55)' : 'rgba(226,232,240,1)';
-  const scrimFoot = isDark ? 'rgba(8,8,10,0.92)' : 'rgba(255,255,255,0.96)';
+  const tealBorder = 'rgba(45,212,191,0.28)';
+  const userBubbleBg = isDark
+    ? 'linear-gradient(150deg,#0f3d46 0%,#134e4a 52%,#0d3d39 100%)'
+    : 'linear-gradient(150deg,#ccfbf1,#99f6e4)';
+  const userInk = isDark ? '#ecfdf5' : '#042f2e';
+  const columnBg = isDark ? '#050506' : '#f8fafc';
 
   const showFollowUps = Boolean(currentSchema) && suggestions.length > 0;
 
-  const scrollRef = React.useRef<HTMLDivElement>(null);
-  React.useEffect(() => {
-    const el = scrollRef.current;
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+  const [nearBottom, setNearBottom] = React.useState(true);
+
+  const markScroll = React.useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const gap = el.scrollHeight - el.scrollTop - el.clientHeight;
+    setNearBottom(gap < 72);
+  }, []);
+
+  const scrollToBottom = React.useCallback(() => {
+    const el = scrollContainerRef.current;
     if (!el) return;
     el.scrollTop = el.scrollHeight;
-  }, [messages.length, suggestionHint, inlineError, showIteration, suggestions.length]);
+    setNearBottom(true);
+  }, []);
+
+  React.useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    if (nearBottom) el.scrollTop = el.scrollHeight;
+  }, [messages.length, isGenerating, nearBottom]);
+
+  React.useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const prev = scrollContainerRef.current;
+    if (!prev) return;
+    const ro = typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(() => {
+          markScroll();
+        })
+      : null;
+    ro?.observe(el);
+    return () => ro?.disconnect();
+  }, [markScroll]);
+
+  const githubJump = React.useCallback(() => {
+    if (toolbarGithubHref) window.open(toolbarGithubHref, '_blank', 'noopener,noreferrer');
+  }, [toolbarGithubHref]);
+
+  const runningCopy = 'Agent is running...';
+  const idleCopy = isDark ? 'Agent is idle' : 'Ready when you are';
+  const hasToolbar = !!(onToolbarSave || onToolbarFork);
+  const forkDisabled = Boolean(
+    (!allowToolbarForkWithoutSchema && currentSchema === null) || isGenerating,
+  );
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <div
-        ref={scrollRef}
-        className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-3"
-        role="log"
-        aria-live="polite"
-        aria-relevant="additions"
-      >
-        <div className="flex flex-col gap-3 pb-3">
-          {messages.map((m) => (
-            <div
-              key={m.id}
-              className={`max-w-[95%] rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed ${
-                m.role === 'user' ? 'ml-auto' : ''
-              }`}
-              style={{
-                background: m.role === 'user' ? bubbleUser : bubbleAssist,
-                color: isDark ? '#fafafa' : '#0f172a',
-                border:
-                  m.role === 'assistant' || m.role === 'system'
-                    ? `1px solid ${isDark ? 'rgba(63,63,70,0.45)' : 'rgba(226,232,240,1)'}`
-                    : undefined,
-              }}
-            >
-              {m.role === 'assistant' || m.role === 'system' ? (
-                <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider" style={{ color: muted }}>
-                  {m.role === 'system' ? 'System' : 'Agent'}
-                </p>
-              ) : (
-                <p className="mb-1 text-right text-[10px] font-semibold uppercase tracking-wider" style={{ color: muted }}>
-                  You
-                </p>
-              )}
-              <div className="whitespace-pre-wrap">{m.body}</div>
-            </div>
-          ))}
-
-          {inlineError ? (
-            <div
-              className="rounded-2xl border px-4 py-2.5 text-[13px]"
-              style={{
-                borderColor: '#ef44444d',
-                background: '#450a0a33',
-                color: '#fca5a5',
-              }}
-              role="alert"
-            >
-              {inlineError}
-            </div>
-          ) : null}
-
-          {suggestionHint ? (
-            <p className="px-1 text-center text-[12px]" style={{ color: muted }}>
-              {suggestionHint}
-            </p>
-          ) : null}
-
-          {showFollowUps ? (
-            <div className="space-y-2">
-              <p className="px-1 text-[12px] font-medium" style={{ color: muted }}>
-                Tap a follow-up to paste it:
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {suggestions.map((suggestion, index) => (
-                  <button
-                    key={`${suggestion}-${index}`}
-                    type="button"
-                    onClick={() => onApplySuggestion(suggestion)}
-                    disabled={isGenerating}
-                    className="max-w-full rounded-xl px-3 py-2 text-left text-[13px] leading-snug disabled:opacity-40"
+    <div
+      className="flex min-h-0 flex-1 flex-col rounded-[inherit] border-0 shadow-none outline-none ring-0"
+      style={{
+        background: columnBg,
+        color: isDark ? '#fafafa' : '#0f172a',
+      }}
+      aria-busy={isGenerating}
+    >
+      <div className="relative min-h-0 flex-1">
+        <div
+          ref={scrollContainerRef}
+          onScroll={markScroll}
+          className="h-full overflow-y-auto overscroll-contain px-4 pb-6 pt-5"
+          role="log"
+          aria-live="polite"
+          aria-relevant="additions"
+        >
+          <div className="flex flex-col gap-6">
+            {messages.map((m) =>
+              m.role === 'user' ? (
+                <div key={m.id} className="flex justify-end">
+                  <div
+                    className="max-w-[min(440px,calc(100%-2rem))] rounded-[1.55rem] rounded-br-md px-4 py-3 text-[14px] leading-relaxed shadow-lg"
                     style={{
-                      border: `1px solid ${strokeComposer}`,
-                      background: isDark ? 'rgba(24,24,27,0.5)' : '#ffffff',
-                      color: isDark ? '#e4e4e7' : '#334155',
+                      border: `1px solid ${tealBorder}`,
+                      background: userBubbleBg,
+                      boxShadow: isDark ? '0 18px 36px rgba(0,20,26,0.55)' : '0 14px 32px rgba(15,118,110,0.22)',
+                      color: userInk,
                     }}
                   >
-                    {suggestion.length > 112 ? `${suggestion.slice(0, 112)}…` : suggestion}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : currentSchema ? (
-            <p className="px-1 text-[12px]" style={{ color: muted }}>
-              Reply below to tweak the canvas. Toggle Refinement when you want a separate change field.
-            </p>
-          ) : null}
+                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: isDark ? '#99f6e4cc' : '#0f766e' }}>
+                      You
+                    </p>
+                    <div className="whitespace-pre-wrap">{m.body}</div>
+                  </div>
+                </div>
+              ) : (
+                <div key={m.id} className="flex gap-3 pr-10">
+                  <RobotAvatar isDark={isDark} />
+                  <div className="min-w-0 flex-1 pt-2 text-[14px] leading-[1.7]" style={{ color: isDark ? '#e4e4e7' : '#334155' }}>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: muted }}>
+                        Agent
+                      </span>
+                    </div>
+                    <div className="mt-1.5 whitespace-pre-wrap">{m.body}</div>
+                  </div>
+                </div>
+              ),
+            )}
 
-          {!currentSchema ? (
-            <p className="px-1 text-[12px]" style={{ color: muted }}>
-              Type below and hit Send when you&apos;re ready. The preview updates without starter chips.
-            </p>
-          ) : null}
+            {isGenerating ? (
+              <div className="flex items-center gap-3 pl-[3px]">
+                <div
+                  className="flex h-9 w-9 items-center justify-center rounded-full border"
+                  style={{
+                    borderColor: isDark ? 'rgba(63,63,70,0.45)' : 'rgba(226,232,240,1)',
+                    background: isDark ? '#111114' : '#ffffff',
+                  }}
+                >
+                  <Sparkles className="h-[18px] w-[18px] animate-pulse text-emerald-300" aria-hidden strokeWidth={1.65} />
+                </div>
+                <p className="text-[14px]" style={{ color: isDark ? '#a7f3d0' : '#059669' }}>
+                  Making things click...
+                </p>
+              </div>
+            ) : null}
+
+            {inlineError ? (
+              <div
+                className="rounded-3xl border px-5 py-3 text-[13px]"
+                style={{
+                  borderColor: '#f8717166',
+                  background: isDark ? 'rgba(69,10,10,0.32)' : 'rgba(254,226,226,1)',
+                  color: isDark ? '#fecaca' : '#991b1b',
+                }}
+                role="alert"
+              >
+                {inlineError}
+              </div>
+            ) : null}
+
+            {suggestionHint ? (
+              <p className="text-center text-[13px]" style={{ color: muted }}>
+                {suggestionHint}
+              </p>
+            ) : null}
+
+            {showFollowUps ? (
+              <div className="space-y-3 pl-12">
+                <p className="text-[13px]" style={{ color: muted }}>
+                  Pick a follow-up
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {suggestions.map((suggestion, index) => (
+                    <button
+                      key={`${suggestion}-${index}`}
+                      type="button"
+                      onClick={() => onApplySuggestion(suggestion)}
+                      disabled={isGenerating}
+                      className="max-w-full rounded-2xl border px-4 py-2.5 text-left text-[13px] leading-snug transition-opacity disabled:opacity-40"
+                      style={{
+                        borderColor: tealBorder,
+                        background: isDark ? 'rgba(8,52,54,0.35)' : 'rgba(236,253,245,1)',
+                        color: isDark ? '#e7fffa' : '#0f766e',
+                      }}
+                    >
+                      {suggestion.length > 132 ? `${suggestion.slice(0, 132)}…` : suggestion}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : currentSchema ? (
+              <p className="text-[13px] leading-relaxed pl-12" style={{ color: muted }}>
+                Describe the tweak you want; the preview syncs once the agent replies.
+              </p>
+            ) : (
+              <p className="text-[13px] leading-relaxed pl-12" style={{ color: muted }}>
+                Speak naturally about the flow you want. The canvas stays tidy until layout code lands.
+              </p>
+            )}
+          </div>
         </div>
+
+        {!nearBottom ? (
+          <button
+            type="button"
+            onClick={() => scrollToBottom()}
+            className="absolute bottom-[220px] right-5 flex h-12 w-12 items-center justify-center rounded-full border shadow-2xl transition-transform hover:scale-[1.03] active:scale-[0.98] sm:bottom-36"
+            style={{
+              borderColor: isDark ? 'rgba(63,63,70,0.55)' : 'rgba(226,232,240,1)',
+              background: isDark ? '#18181b' : '#ffffff',
+              boxShadow: isDark ? '0 26px 50px rgba(0,0,0,0.55)' : '0 26px 50px rgba(15,23,42,0.18)',
+              color: isDark ? '#fafafa' : '#0f172a',
+              zIndex: 5,
+            }}
+            aria-label="Scroll chat to newest messages"
+          >
+            <ChevronDown className="h-6 w-6" aria-hidden strokeWidth={1.75} />
+          </button>
+        ) : null}
       </div>
 
       <div
-        className="shrink-0 border-t px-3 pb-4 pt-2"
-        style={{ borderColor: isDark ? 'rgba(63,63,70,0.35)' : 'rgba(226,232,240,0.85)', background: scrimFoot }}
+        className="shrink-0 px-4 pb-5 pt-3"
+        style={{
+          borderTop: isDark ? '1px solid rgba(63,63,70,0.28)' : '1px solid rgba(226,232,240,0.85)',
+          background: isDark ? 'rgba(4,6,10,0.82)' : 'rgba(249,251,253,1)',
+          backdropFilter: 'blur(12px)',
+        }}
       >
-        {slotAboveComposer ? <div className="mb-3">{slotAboveComposer}</div> : null}
+        {slotAboveComposer ? <div className="mb-4">{slotAboveComposer}</div> : null}
+
         {currentSchema != null && showIteration ? (
-          <form onSubmit={onIterate} className="mb-3 space-y-2">
-            <label className="block text-[11px] font-medium" htmlFor="iter-reply" style={{ color: muted }}>
-              Refinement
+          <form onSubmit={onIterate} className="mb-4 rounded-3xl border p-4" style={{ borderColor: tealBorder }}>
+            <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: muted }} htmlFor="iter-reply">
+              Targeted tweak
             </label>
             <textarea
               id="iter-reply"
               value={iterationPrompt}
               onChange={(e) => setIterationPrompt(e.target.value)}
-              placeholder="Precise tweak for this draft..."
+              placeholder="Fine-grained edits for this layout..."
               rows={2}
-              className="w-full resize-none rounded-xl border px-3 py-2 text-[13px] outline-none placeholder:text-zinc-500"
+              className="mb-3 w-full resize-none rounded-2xl border px-4 py-3 text-[13px] leading-relaxed outline-none"
               style={{
-                borderColor: strokeComposer,
-                background: isDark ? 'rgba(24,24,27,0.6)' : '#f8fafc',
+                borderColor: isDark ? 'rgba(82,82,91,0.55)' : 'rgba(203,213,225,1)',
+                background: isDark ? '#101014' : '#ffffff',
                 color: isDark ? '#fafafa' : '#0f172a',
               }}
             />
-            <div className="flex justify-between gap-2">
+            <div className="flex justify-end gap-3">
               <button
                 type="button"
-                onClick={() => setIterationPrompt('')}
-                className="text-[12px] font-medium"
+                className="text-[13px] font-medium"
                 style={{ color: muted }}
+                onClick={() => setIterationPrompt('')}
               >
                 Clear
               </button>
               <button
                 type="submit"
                 disabled={!iterationPrompt.trim() || isGenerating}
-                className="rounded-xl px-4 py-2 text-[12px] font-semibold disabled:opacity-35"
+                className="rounded-full px-5 py-2 text-[13px] font-semibold disabled:opacity-35"
                 style={{
-                  background: isDark ? '#e4e4e7' : '#0f172a',
-                  color: isDark ? '#09090b' : '#fafafa',
+                  border: `1px solid ${tealBorder}`,
+                  background: 'linear-gradient(130deg,#0f766f,#059669)',
+                  color: '#f0fdfa',
                 }}
               >
                 Apply tweak
@@ -209,61 +335,165 @@ export function AgentChatPanel({
           </form>
         ) : null}
 
-        <div className="flex items-center justify-between gap-2 pb-2">
-          {currentSchema ? (
-            <button
-              type="button"
-              onClick={() => setShowIteration(!showIteration)}
-              className="rounded-lg px-2 py-1 text-[11px] font-medium transition-colors"
-              style={{
-                color: showIteration ? (isDark ? '#6ee7b7' : '#0f766e') : muted,
-                background: showIteration ? (isDark ? 'rgba(45,212,165,0.12)' : '#ecfdf5') : 'transparent',
-              }}
-            >
-              Refinement field
-            </button>
-          ) : (
-            <span aria-hidden />
-          )}
-          <span className="text-[11px]" style={{ color: isGenerating ? '#34d399' : muted }}>
-            {isGenerating ? 'Working...' : 'Ready'}
-          </span>
-        </div>
-
-        <form onSubmit={onSubmit} className="flex items-end gap-2">
-          <div
-            className="relative min-h-[44px] flex-1 rounded-[1.35rem] border px-3 py-2"
+        {currentSchema ? (
+          <button
+            type="button"
+            onClick={() => setShowIteration(!showIteration)}
+            className="mb-3 px-2 text-[12px] font-semibold"
             style={{
-              borderColor: strokeComposer,
-              background: isDark ? 'rgba(24,24,27,0.55)' : '#ffffff',
+              color: showIteration ? (isDark ? '#34d399' : '#047857') : muted,
+              letterSpacing: '0.04em',
+              textDecoration: showIteration ? 'underline' : 'none',
+              textUnderlineOffset: 4,
             }}
           >
+            {showIteration ? 'Hide refinement' : 'Precise tweaks'}
+          </button>
+        ) : null}
+
+        <form onSubmit={onSubmit} className="space-y-3">
+          <div
+            className="rounded-[1.85rem] border px-5 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+            style={{
+              borderColor: isDark ? 'rgba(63,63,70,0.55)' : 'rgba(226,232,240,1)',
+              background: isDark ? '#0c0d10' : '#ffffff',
+              boxShadow: isDark ? 'inset 0 1px 0 rgba(255,255,255,0.04)' : 'none',
+            }}
+          >
+            <div className="mb-4 flex flex-wrap items-center gap-3 text-[13px] font-medium">
+              <span
+                className="flex items-center gap-2"
+                style={{ color: isGenerating ? '#4ade80' : muted }}
+                aria-live="polite"
+              >
+                <span
+                  className="inline-flex h-[7px] w-[7px] rounded-full bg-emerald-400"
+                  style={{ visibility: 'visible', boxShadow: isGenerating ? '0 0 0 8px rgba(74,222,128,0.09)' : 'none' }}
+                  aria-hidden
+                />
+                ● {isGenerating ? runningCopy : idleCopy}
+              </span>
+            </div>
             <textarea
+              id="studio-agent-msg"
+              name="agentMessage"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Message the agent..."
-              rows={2}
-              className="max-h-[120px] min-h-[54px] w-full resize-none border-0 bg-transparent text-[14px] leading-relaxed outline-none placeholder:text-zinc-500 sm:max-h-[160px]"
+              placeholder="Message Agent"
+              rows={3}
+              disabled={false}
+              className="w-full resize-none border-0 bg-transparent text-[14px] leading-relaxed outline-none placeholder:text-[#52525bcc]"
               style={{ color: isDark ? '#fafafa' : '#0f172a' }}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                if (e.key === 'Enter' && !e.shiftKey && (e.ctrlKey || e.metaKey)) {
                   e.preventDefault();
                   e.currentTarget.form?.requestSubmit();
                 }
               }}
             />
+
+            <div
+              className="mt-4 flex flex-wrap items-center gap-6 border-t pt-4 text-[13px]"
+              style={{ borderColor: isDark ? 'rgba(63,63,70,0.35)' : 'rgba(226,232,240,0.95)' }}
+            >
+              <div className="flex flex-wrap items-center gap-6">
+                <button
+                  type="button"
+                  title="Attachments (soon)"
+                  className="rounded-full border border-transparent p-2 hover:border-white/10"
+                  style={{ color: muted }}
+                  onClick={() => {
+                    /* reserved */
+                  }}
+                >
+                  <Paperclip className="h-5 w-5" strokeWidth={1.65} />
+                </button>
+                <button
+                  type="button"
+                  title="Deepchox on GitHub"
+                  className="rounded-full border border-transparent p-2 hover:border-white/10"
+                  style={{ color: muted }}
+                  onClick={githubJump}
+                >
+                  <Github className="h-5 w-5" strokeWidth={1.65} />
+                </button>
+                {hasToolbar ? (
+                  <>
+                    {onToolbarSave ? (
+                      <button type="button" className="font-semibold uppercase tracking-[0.16em]" style={{ color: isDark ? '#e4e4e7' : '#334155' }} onClick={() => void onToolbarSave()}>
+                        Save
+                      </button>
+                    ) : null}
+                    {onToolbarFork ? (
+                      <button
+                        type="button"
+                        disabled={forkDisabled}
+                        className="font-semibold uppercase tracking-[0.16em] disabled:opacity-30"
+                        style={{ color: isDark ? '#e4e4e7' : '#334155' }}
+                        onClick={() => void onToolbarFork()}
+                      >
+                        Fork
+                      </button>
+                    ) : null}
+                  </>
+                ) : null}
+              </div>
+              <div className="ml-auto flex flex-wrap items-center gap-4">
+                <button
+                  type="button"
+                  title="Voice (soon)"
+                  className="rounded-full border border-transparent p-2 hover:border-white/10"
+                  style={{ color: muted }}
+                >
+                  <Mic className="h-5 w-5" strokeWidth={1.65} />
+                </button>
+                {isGenerating && onAbort ? (
+                  <button
+                    type="button"
+                    onClick={() => onAbort()}
+                    className="relative flex h-12 w-12 items-center justify-center rounded-full border"
+                    title="Stop"
+                    aria-label="Stop generation"
+                    style={{
+                      borderColor: isDark ? 'rgba(244,244,245,0.45)' : 'rgba(71,85,105,1)',
+                      background: isDark ? '#f4f4f5' : '#0f172a',
+                      color: isDark ? '#09090b' : '#fafafa',
+                    }}
+                  >
+                    <Square className="h-4 w-4 fill-current" aria-hidden />
+                  </button>
+                ) : isGenerating ? (
+                  <div
+                    className="flex h-12 w-12 items-center justify-center rounded-full border"
+                    style={{
+                      borderColor: isDark ? 'rgba(63,63,70,0.55)' : 'rgba(203,213,225,1)',
+                      background: isDark ? '#111114' : '#f8fafc',
+                    }}
+                    aria-hidden
+                  >
+                    <Loader2 className="h-6 w-6 animate-spin text-emerald-400" />
+                  </div>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={!prompt.trim()}
+                    className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full border shadow-lg disabled:opacity-35"
+                    title={submitLabel}
+                    aria-label={submitLabel}
+                    style={{
+                      borderColor: tealBorder,
+                      background: 'linear-gradient(155deg,#0f766f,#0891b2)',
+                      color: '#f0fdf4',
+                      boxShadow: '0 20px 30px rgba(7,117,134,0.35)',
+                    }}
+                  >
+                    <Send className="ml-px h-[22px] w-[22px]" strokeWidth={1.85} />
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
-          <button
-            type="submit"
-            disabled={!prompt.trim() || isGenerating}
-            className="flex h-[44px] min-w-[76px] shrink-0 items-center justify-center rounded-full px-5 text-[13px] font-semibold disabled:opacity-35 sm:h-[54px]"
-            style={{
-              background: isDark ? '#f8fafc' : '#0f172a',
-              color: isDark ? '#09090b' : '#fafafa',
-            }}
-          >
-            {isGenerating ? '...' : submitLabel}
-          </button>
+          <p className="sr-only">{`Ctrl/Cmd+Enter submits; primary action is labeled ${submitLabel}.`}</p>
         </form>
       </div>
     </div>
