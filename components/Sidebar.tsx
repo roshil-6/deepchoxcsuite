@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Plus, LogOut, PanelLeftClose, PanelLeftOpen,
-  Clock, FolderOpen, Cpu, Search, Sun, Moon, LayoutTemplate,
+  Clock, FolderOpen, Sun, Moon, LayoutTemplate,
   Wand2,
 } from 'lucide-react';
 import { useTheme } from '@/lib/ThemeContext';
@@ -17,7 +17,7 @@ interface EngProjectMeta {
   createdAt: number;
 }
 
-export type AppView = 'engineering' | 'research' | 'sites' | 'builder';
+export type AppView = 'crm-builder';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -136,8 +136,8 @@ export function Sidebar({
     return () => { window.removeEventListener('storage', onStorage); clearInterval(t); };
   }, [refresh]);
 
-  const handleNewProject = () => { onNewProject(); onSwitchView('engineering'); };
-  const handleSelectProject = (id: string) => { onSelectProject(id); onSwitchView('engineering'); };
+  const handleNewProject = () => { onNewProject(); onSwitchView('crm-builder'); };
+  const handleSelectProject = (id: string) => { onSelectProject(id); onSwitchView('crm-builder'); };
 
   return (
     <aside
@@ -204,30 +204,9 @@ export function Sidebar({
           {!collapsed && <SectionLabel dark={dark}>Workspace</SectionLabel>}
           <div className="mt-2 space-y-1">
             <NavBtn
-              icon={Cpu} label="Engineering"
-              active={activeView === 'engineering'}
-              onClick={() => onSwitchView('engineering')}
-              collapsed={collapsed}
-              dark={dark}
-            />
-            <NavBtn
-              icon={Search} label="Research"
-              active={activeView === 'research'}
-              onClick={() => onSwitchView('research')}
-              collapsed={collapsed}
-              dark={dark}
-            />
-            <NavBtn
-              icon={LayoutTemplate} label="Sites"
-              active={activeView === 'sites'}
-              onClick={() => onSwitchView('sites')}
-              collapsed={collapsed}
-              dark={dark}
-            />
-            <NavBtn
-              icon={Wand2} label="Builder"
-              active={activeView === 'builder'}
-              onClick={() => onSwitchView('builder')}
+              icon={Wand2} label="CRM Builder"
+              active={activeView === 'crm-builder'}
+              onClick={() => onSwitchView('crm-builder')}
               collapsed={collapsed}
               dark={dark}
             />
@@ -266,7 +245,7 @@ export function Sidebar({
               {projects.length > 0 ? (
                 <div className="space-y-1">
                   {projects.map((p) => {
-                    const active = selectedProjectId === p.id && activeView === 'engineering';
+                    const active = selectedProjectId === p.id && activeView === 'crm-builder';
                     return (
                       <button
                         key={p.id}

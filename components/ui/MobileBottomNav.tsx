@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Cpu, Search, LayoutTemplate, Menu, Wand2 } from 'lucide-react';
+import { Menu, Wand2 } from 'lucide-react';
 import { useTheme } from '@/lib/ThemeContext';
 import type { AppView } from '@/components/Sidebar';
 
@@ -11,11 +11,8 @@ type Props = {
     onOpenMore: () => void;
 };
 
-const VIEWS: { view: AppView; icon: typeof Cpu; label: string }[] = [
-    { view: 'engineering', icon: Cpu, label: 'Engineering' },
-    { view: 'research', icon: Search, label: 'Research' },
-    { view: 'sites', icon: LayoutTemplate, label: 'Sites' },
-    { view: 'builder', icon: Wand2, label: 'Builder' },
+const VIEWS: { view: AppView; icon: typeof Wand2; label: string }[] = [
+    { view: 'crm-builder', icon: Wand2, label: 'Builder' },
 ];
 
 export function MobileBottomNav({ activeView, onSwitchView, onOpenMore }: Props) {
