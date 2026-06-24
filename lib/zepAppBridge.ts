@@ -6,7 +6,7 @@
 export const DEEPCHOX_ZEP_NAV_EVENT = 'deepchox-zep-nav';
 
 export type ZepNavDetail =
-  | { kind: 'set_view'; view: 'engineering' | 'research' | 'sites' | 'builder' }
+  | { kind: 'set_view'; view: 'crm-builder' }
   | { kind: 'new_project' };
 
 /** Session mirrors for Zep status/listing (filled from app/page ThemedLayout). */
@@ -18,10 +18,10 @@ export function dispatchZepNav(detail: ZepNavDetail) {
   window.dispatchEvent(new CustomEvent(DEEPCHOX_ZEP_NAV_EVENT, { detail }));
 }
 
-export function readActiveShellView(): 'engineering' | 'research' | 'sites' | 'builder' | null {
+export function readActiveShellView(): 'crm-builder' | null {
   try {
     const v = sessionStorage.getItem(SS_ACTIVE_APP_VIEW);
-    if (v === 'engineering' || v === 'research' || v === 'sites' || v === 'builder') return v;
+    if (v === 'crm-builder') return v;
   } catch { /* ignore */ }
   return null;
 }

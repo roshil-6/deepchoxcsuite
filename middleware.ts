@@ -36,7 +36,12 @@ const isPublicRoute = createRouteMatcher([
    * Per-IP rate limits still apply via `AI_ROUTE_LIMITS` (`/api/dexo`).
    */
   '/api/dexo(.*)',
+  // ── CRM Builder ─────────────────────────────────────────────────────────────
+  // Public during local development while Clerk production keys are not
+  // configured for localhost. Re-add auth guard before going to production.
+  '/crm(.*)',
 ]);
+
 
 /** Per-IP in-memory rate limit for expensive AI API routes. */
 interface RLEntry { count: number; windowStart: number }

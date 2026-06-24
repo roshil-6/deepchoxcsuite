@@ -4,8 +4,8 @@ import { SITE_BRAND, SITE_META_DESCRIPTION, siteMetadataBase } from '@/lib/siteS
 const FALLBACK_ORIGIN = 'https://deepchox.app';
 
 export default function manifest(): MetadataRoute.Manifest {
-  const origin = siteMetadataBase()?.origin ?? FALLBACK_ORIGIN;
-  const base = origin.replace(/\/$/, '');
+  const metadataBase = siteMetadataBase();
+  const base = metadataBase ? metadataBase.origin.replace(/\/$/, '') : '';
 
   return {
     name: SITE_BRAND,
