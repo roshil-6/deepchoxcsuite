@@ -8,6 +8,7 @@ import { formatRegionalPricePair, getProBillingAmounts } from '@/lib/billingConf
 import { usePricingRegion } from '@/hooks/usePricingRegion';
 import { SITE_HERO_H1, SITE_HERO_LEAD, SITE_PULL_QUOTE, SITE_TAGLINE_SHORT } from '@/lib/siteSeo';
 import { LandingClerkAuth, LANDING_SIGN_IN_HREF, LANDING_SIGN_UP_HREF } from '@/components/LandingClerkAuth';
+import { FaultyTerminal } from '@/components/FaultyTerminal';
 
 /** @deprecated Hero is Clerk sign-in; kept for older imports / env docs. */
 export const LANDING_HERO_VIDEO_DEFAULT = '/landing-hero-demo.mp4';
@@ -38,6 +39,24 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
 
             {/* -- FaultyTerminal WebGL background -- */}
             <div className="pointer-events-none fixed inset-0 z-0" aria-hidden>
+                <FaultyTerminal
+                    scale={1.5}
+                    gridMul={[2, 1]}
+                    digitSize={1.2}
+                    timeScale={0.22}
+                    scanlineIntensity={0.4}
+                    glitchAmount={0.35}
+                    flickerAmount={0.35}
+                    noiseAmp={1}
+                    chromaticAberration={0}
+                    dither={0}
+                    curvature={0.06}
+                    tint="#8b7fe8"
+                    mouseReact={true}
+                    mouseStrength={0.35}
+                    pageLoadAnimation={true}
+                    brightness={0.38}
+                />
                 {/* Dark vignette overlay — keeps content readable */}
                 <div
                     className="absolute inset-0"
