@@ -30,7 +30,7 @@ export function ProjectSidebar({ projectId }: { projectId: string }) {
   ];
 
   return (
-    <div className="flex w-60 shrink-0 flex-col border-r border-[#e5e7eb] bg-white">
+    <div className="flex w-48 shrink-0 flex-col border-r border-[#e5e7eb] bg-[#fafafa]">
       {/* Header */}
       <div className="flex h-14 items-center gap-2 px-4 border-b border-[#e5e7eb]">
         <Link

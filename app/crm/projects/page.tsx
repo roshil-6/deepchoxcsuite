@@ -37,9 +37,9 @@ export default function ProjectsPage() {
         </div>
       </div>
 
-      <div className="flex-1 p-8">
+      <div className="flex-1 px-6 py-5">
         {/* Search */}
-        <div className="mb-6 flex max-w-sm items-center gap-2 rounded-md border border-[#e5e7eb] bg-white px-3 py-2 shadow-sm">
+        <div className="mb-5 flex max-w-sm items-center gap-2 rounded-md border border-[#e5e7eb] bg-white px-3 py-1.5 shadow-sm">
           <Search className="h-4 w-4 text-[#9ca3af]" />
           <input
             type="text"

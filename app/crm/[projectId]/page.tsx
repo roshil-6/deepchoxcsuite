@@ -63,7 +63,7 @@ export default function ProjectDashboard({ params }: { params: Promise<{ project
         </div>
       </div>
 
-      <div className="flex-1 p-8 space-y-8 overflow-y-auto">
+      <div className="flex-1 px-6 py-5 space-y-6 overflow-y-auto">
         {/* Stat Cards */}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {stats.map((stat, i) => (
