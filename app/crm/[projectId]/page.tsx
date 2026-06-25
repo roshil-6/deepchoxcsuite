@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useProject } from '@/lib/crm/store';
-import { Activity, Database, Users, Link as LinkIcon, BarChart3, Plus } from 'lucide-react';
+import { Activity, Database, Users, Link as LinkIcon, BarChart3, Plus, ArrowRight, Lightbulb, Compass, Code } from 'lucide-react';
 import Link from 'next/link';
 import { use } from 'react';
 
@@ -19,15 +19,41 @@ export default function ProjectDashboard({ params }: { params: Promise<{ project
     { label: 'Active Views', value: project.tables.reduce((a, t) => a + t.views.length, 0), icon: Activity, href: `/crm/${projectId}/views` },
   ];
 
+  const directives = [
+    {
+      title: 'Define Table Schema',
+      desc: 'Define custom tables, properties, and data types to hold leads, accounts, or support tickets.',
+      href: `/crm/${projectId}/tables`,
+      icon: Database
+    },
+    {
+      title: 'Generate Collect Forms',
+      desc: 'Build web-embeddable intake forms to inject records straight into your custom pipeline.',
+      href: `/crm/${projectId}/forms`,
+      icon: Code
+    },
+    {
+      title: 'Connect Integrations',
+      desc: 'Sync CRM resources with external databases, webhooks, or REST APIs automatically.',
+      href: `/crm/${projectId}/integrations`,
+      icon: LinkIcon
+    }
+  ];
+
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-b border-[#e5e7eb] bg-white px-8 py-5">
-        <h1 className="text-lg font-semibold text-[#111827]">Dashboard</h1>
-        <p className="mt-0.5 text-sm text-[#6b7280]">Overview for {project.name}.</p>
+      <div className="border-b border-[#e5e7eb] bg-white px-8 py-5 flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-semibold text-[#111827]">Dashboard</h1>
+          <p className="mt-0.5 text-sm text-[#6b7280]">Overview for {project.name}.</p>
+        </div>
+        <div className="text-xs text-[#6b7280] italic max-w-xs text-right hidden md:block">
+          "The best way to predict the future is to create it." — Peter Drucker
+        </div>
       </div>
 
-      <div className="flex-1 p-8">
+      <div className="flex-1 p-8 space-y-8 overflow-y-auto">
         {/* Stat Cards */}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {stats.map((stat, i) => (
@@ -47,10 +73,41 @@ export default function ProjectDashboard({ params }: { params: Promise<{ project
           ))}
         </div>
 
+        {/* Builder Directives */}
+        <div>
+          <div className="mb-4 flex items-center gap-2">
+            <Compass className="h-5 w-5 text-[#7c3aed]" />
+            <h2 className="text-[15px] font-semibold text-[#111827]">Directives & Checklist</h2>
+          </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {directives.map((dir, i) => (
+              <Link
+                key={i}
+                href={dir.href}
+                className="group flex flex-col justify-between p-5 rounded-xl border border-[#e5e7eb] bg-white hover:border-[#7c3aed]/30 hover:shadow-md transition-all"
+              >
+                <div>
+                  <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-[#ede9fe]">
+                    <dir.icon className="h-4 w-4 text-[#7c3aed]" />
+                  </div>
+                  <h3 className="text-sm font-semibold text-[#111827]">{dir.title}</h3>
+                  <p className="mt-1 text-xs text-[#6b7280] leading-relaxed">{dir.desc}</p>
+                </div>
+                <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-[#7c3aed] group-hover:text-[#6d28d9]">
+                  Get Started <ArrowRight className="h-3 w-3" />
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+
         {/* Resources */}
-        <div className="mt-10">
+        <div>
           <div className="mb-5 flex items-center justify-between">
-            <h2 className="text-[15px] font-semibold text-[#111827]">Resources & Metrics</h2>
+            <div className="flex items-center gap-2">
+              <Lightbulb className="h-5 w-5 text-[#7c3aed]" />
+              <h2 className="text-[15px] font-semibold text-[#111827]">Resources & Metrics</h2>
+            </div>
             <button className="flex items-center gap-1.5 text-sm font-medium text-[#7c3aed] hover:text-[#6d28d9]">
               <Plus className="h-4 w-4" />
               Add Resource
