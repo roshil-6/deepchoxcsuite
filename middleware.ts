@@ -40,6 +40,7 @@ const isPublicRoute = createRouteMatcher([
   // Public during local development while Clerk production keys are not
   // configured for localhost. Re-add auth guard before going to production.
   '/crm(.*)',
+  '/manifest.webmanifest',
 ]);
 
 
