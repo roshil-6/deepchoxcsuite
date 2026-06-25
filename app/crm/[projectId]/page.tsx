@@ -40,6 +40,16 @@ export default function ProjectDashboard({ params }: { params: Promise<{ project
     }
   ];
 
+  const supportQuotes = [
+    "Build your custom CRM pipelines here.",
+    "No-code database architectures, customized by you.",
+    "Operational clarity starts with well-structured data.",
+    "Simplify customer operations and automate lead flows."
+  ];
+
+  // Simple deterministic select based on project name length to avoid hydration mismatch
+  const quote = supportQuotes[project.name.length % supportQuotes.length];
+
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
@@ -48,8 +58,8 @@ export default function ProjectDashboard({ params }: { params: Promise<{ project
           <h1 className="text-lg font-semibold text-[#111827]">Dashboard</h1>
           <p className="mt-0.5 text-sm text-[#6b7280]">Overview for {project.name}.</p>
         </div>
-        <div className="text-xs text-[#6b7280] italic max-w-xs text-right hidden md:block">
-          "The best way to predict the future is to create it." — Peter Drucker
+        <div className="text-xs text-[#7c3aed] font-medium max-w-xs text-right hidden md:block">
+          {quote}
         </div>
       </div>
 
