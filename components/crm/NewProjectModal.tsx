@@ -13,7 +13,7 @@ interface NewProjectModalProps {
 
 export function NewProjectModal({ isOpen, onClose }: NewProjectModalProps) {
   const router = useRouter();
-  const [tab, setTab] = useState<'manual' | 'ai' | 'db'>('manual');
+  const [tab, setTab] = useState<'manual' | 'ai' | 'db'>('ai');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [prompt, setPrompt] = useState('');
