@@ -41,10 +41,11 @@ export default function ProjectDashboard({ params }: { params: Promise<{ project
   ];
 
   const supportQuotes = [
-    "Build your custom CRM pipelines here.",
-    "No-code database architectures, customized by you.",
-    "Operational clarity starts with well-structured data.",
-    "Simplify customer operations and automate lead flows."
+    "“The structure of your data determines the efficiency of your business workflow.” — Operations Masterclass",
+    "“No-code database architectures allow operators to adapt faster than any developer could write code.” — SaaS Essentials",
+    "“Operational clarity starts with well-defined database columns. Keep them simple, clean, and typed.” — CRM Architect Guide",
+    "“Simplify customer operations by mapping out who your clients are, what they purchase, and when they contact you.” — Customer Success Manual",
+    "“A dashboard's role is to keep team members aligned. Use checklists to guide daily productivity.” — Executive Playbook"
   ];
 
   // Simple deterministic select based on project name length to avoid hydration mismatch
@@ -59,11 +60,11 @@ export default function ProjectDashboard({ params }: { params: Promise<{ project
           <p className="mt-0.5 text-sm text-[#6b7280]">Overview for {project.name}.</p>
         </div>
         <div className="text-xs text-[#7c3aed] font-medium max-w-xs text-right hidden md:block">
-          {quote}
+          Operational Support Panel Active
         </div>
       </div>
 
-      <div className="flex-1 p-8 space-y-8 overflow-y-auto">
+      <div className="flex-1 px-6 py-5 space-y-6 overflow-y-auto">
         {/* Stat Cards */}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {stats.map((stat, i) => (
@@ -81,6 +82,24 @@ export default function ProjectDashboard({ params }: { params: Promise<{ project
               </div>
             </Link>
           ))}
+        </div>
+
+        {/* Operational Insights & Quote Card */}
+        <div className="rounded-xl border border-violet-100 bg-white p-5 shadow-sm flex items-start gap-4">
+          <div className="mt-0.5 rounded-lg bg-[#ede9fe] p-2.5 text-[#7c3aed] shrink-0">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#7c3aed] mb-1.5">Operational Guidance Quote</h3>
+            <p className="text-sm font-serif italic text-zinc-750 leading-relaxed mb-3">
+              {quote}
+            </p>
+            <div className="border-t border-[#f3f4f6] pt-2.5 text-xs text-[#6b7280] leading-relaxed">
+              🚀 <strong>Workspace Directives:</strong> Customize your tables to track records, design high-converting client intake forms, and sync with your source databases to build a robust operations portal.
+            </div>
+          </div>
         </div>
 
         {/* Builder Directives */}

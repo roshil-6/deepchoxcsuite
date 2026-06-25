@@ -13,7 +13,7 @@ export function GlobalSidebar() {
   ];
 
   return (
-    <div className="flex w-60 shrink-0 flex-col border-r border-[#e5e7eb] bg-white">
+    <div className="flex w-48 shrink-0 flex-col border-r border-[#e5e7eb] bg-[#fafafa]">
       {/* Logo */}
       <div className="flex h-14 items-center px-5 border-b border-[#e5e7eb]">
         <span className="text-[15px] font-bold text-[#111827] tracking-tight">CRM Builder</span>
