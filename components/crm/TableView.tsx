@@ -13,6 +13,9 @@ interface TableViewProps {
 export function TableView({ table, onAddField }: TableViewProps) {
   const { records, updateRecords } = useRecords(table.id);
   const [editingCell, setEditingCell] = useState<{ recordId: string; fieldId: string } | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newFieldName, setNewFieldName] = useState('');
+  const [newFieldType, setNewFieldType] = useState('Text');
 
   const handleAddRecord = () => {
     const newRecord: RecordData = {
@@ -30,18 +33,80 @@ export function TableView({ table, onAddField }: TableViewProps) {
     ));
   };
 
-  const handleAddFieldClick = () => {
-    const name = prompt('Enter field name:');
-    if (!name) return;
-    const type = prompt('Enter field type (Text, Long Text, Email, Phone, Number, Currency, Date, Checkbox, Dropdown, Multi Select, Status, Address, URL, File Upload, Image Upload, Relation, Formula, Auto Increment):', 'Text');
-    if (!type) return;
+  const handleSubmitField = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newFieldName.trim()) return;
     if (onAddField) {
-      onAddField(name, type as any);
+      onAddField(newFieldName.trim(), newFieldType);
     }
+    setNewFieldName('');
+    setNewFieldType('Text');
+    setIsModalOpen(false);
   };
 
+  const fieldTypes = [
+    'Text', 'Long Text', 'Email', 'Phone', 'Number', 'Currency', 'Date', 'Checkbox', 'Dropdown', 'Status'
+  ];
+
   return (
-    <div className="flex h-full flex-col bg-white">
+    <div className="flex h-full flex-col bg-white relative">
+      {/* Field Creator Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4 backdrop-blur-[4px]">
+          <div className="w-full max-w-sm rounded-xl border border-zinc-200 bg-white shadow-lg overflow-hidden font-sans">
+            <div className="flex items-center justify-between border-b border-zinc-100 px-5 py-4">
+              <h3 className="text-sm font-semibold text-zinc-900">Add Table Field</h3>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="rounded-md p-1 text-zinc-400 hover:bg-zinc-50 hover:text-zinc-700 text-xs"
+              >
+                Cancel
+              </button>
+            </div>
+            <form onSubmit={handleSubmitField} className="p-5 space-y-4">
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-zinc-500 uppercase tracking-wider">Field Name</label>
+                <input
+                  type="text"
+                  value={newFieldName}
+                  onChange={(e) => setNewFieldName(e.target.value)}
+                  placeholder="e.g. Phone Number"
+                  className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-violet-600"
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-zinc-500 uppercase tracking-wider">Field Type</label>
+                <select
+                  value={newFieldType}
+                  onChange={(e) => setNewFieldType(e.target.value)}
+                  className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-violet-600"
+                >
+                  {fieldTypes.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex gap-2 justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="rounded-md px-4 py-2 text-sm font-medium text-zinc-600 transition hover:bg-zinc-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={!newFieldName.trim()}
+                  className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-50"
+                >
+                  Add Field
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       <div className="flex-1 overflow-auto">
         <table className="w-full border-collapse text-sm">
           {/* Column Headers */}
@@ -58,7 +123,7 @@ export function TableView({ table, onAddField }: TableViewProps) {
               ))}
               <th className="w-20 px-4 py-3">
                 <button
-                  onClick={handleAddFieldClick}
+                  onClick={() => setIsModalOpen(true)}
                   className="flex items-center gap-1 text-[#7c3aed] hover:text-[#6d28d9] text-xs font-medium"
                 >
                   <Plus className="h-3.5 w-3.5" />
