@@ -162,7 +162,7 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                                 <span
                                     className="mt-6 font-[family-name:var(--font-brand-display)] text-[clamp(1.75rem,5vw,3rem)] font-semibold leading-[1.05] tracking-[0.02em] text-white/90"
                                 >
-                                    Deepchox
+                                    CRM Builder
                                 </span>
                                 <span
                                     className="mt-4 block h-px w-20 bg-gradient-to-r from-transparent via-brand-teal/60 to-transparent"
@@ -171,88 +171,88 @@ export function LandingPage({ onContinueGuest }: LandingPageProps) {
                                 <p className="mt-5 max-w-[26rem] font-sans text-[16px] font-light leading-[1.7] text-zinc-300 sm:max-w-[30rem] sm:text-[18px]">
                                     {SITE_TAGLINE_SHORT}
                                 </p>
-                            </div>
-                        </div>
-
-                        {/* Auth — links to `/sign-in` & `/sign-up` (path routing; OAuth works reliably there) */}
-                        <div
-                            id="landing-auth"
-                            className="relative z-[35] mx-auto mt-6 w-full max-w-sm scroll-mt-28 sm:mt-7 sm:max-w-md"
-                        >
-                            <div className="rounded-2xl border border-white/15 bg-white p-4 shadow-[0_24px_48px_rgba(0,0,0,0.35)] sm:p-5">
-                                <LandingClerkAuth />
-                            </div>
-                            <div className="mt-4 flex flex-col items-center gap-2">
-                                <button
-                                    type="button"
-                                    onClick={continueWithoutSigningIn}
-                                    className="rounded-full border border-zinc-500/55 bg-zinc-900/40 px-4 py-2 font-sans text-[12px] font-semibold text-zinc-200 transition hover:border-zinc-400/80 hover:bg-zinc-800/60 hover:text-white sm:text-[13px]"
-                                >
-                                    Continue without signing in
-                                </button>
-                                <p className="max-w-sm text-center font-sans text-[11px] leading-snug text-zinc-500">
-                                    Browse first. You'll be asked to sign in when you add a venture.
-                                </p>
-                            </div>
-                        </div>
-
-                        <h1 className="font-serif mx-auto mt-5 max-w-[24ch] text-balance text-[clamp(2.15rem,6vw,4.25rem)] font-semibold leading-[1.08] tracking-[0.015em] text-white sm:mt-6 sm:max-w-[28ch] [text-shadow:0_4px_40px_rgba(0,0,0,0.55)]">
-                            {SITE_HERO_H1}
-                        </h1>
-                    </div>
-                </section>
-
-                <section className="mx-auto w-full max-w-[56rem] px-5 pb-16 pt-6 sm:px-10 sm:pb-24 lg:max-w-[72rem] lg:px-14">
-                    <div className="mx-auto h-px w-32 bg-gradient-to-r from-transparent via-zinc-500 to-transparent sm:w-40" aria-hidden />
-
-                    <div className="mt-12 grid gap-10 text-left lg:mt-14 lg:grid-cols-2 lg:gap-x-16 lg:gap-y-0">
-                            <p className="font-serif text-[clamp(1.35rem,2.8vw,1.85rem)] font-normal italic leading-[1.55] text-zinc-200 lg:leading-[1.5] [text-shadow:0_2px_20px_rgba(0,0,0,0.5)]">
-                                {SITE_PULL_QUOTE}
-                            </p>
-                            <p className="font-sans text-[clamp(1.05rem,2.1vw,1.25rem)] font-normal leading-[1.75] text-zinc-300 lg:text-[1.35rem] lg:leading-[1.8]">
-                                {SITE_HERO_LEAD}
-                            </p>
-                        </div>
-
-                        <div
-                            className="mt-16 grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-5 lg:mt-20"
-                            role="list"
-                        >
-                            {[
-                                {
-                                    t: 'Research',
-                                    d: 'Live web research so you build from real markets and sources, not guesswork.',
-                                },
-                                {
-                                    t: 'Actions',
-                                    d: 'Concrete suggestions for your venture — not only chat, but changes you can apply.',
-                                },
-                                {
-                                    t: 'A full team',
-                                    d: 'Strategy, product, finance, GTM, and intel — one workspace, like a co-founding team.',
-                                },
-                            ].map(({ t, d }) => (
-                                <span
-                                    key={t}
-                                    role="listitem"
-                                    className="flex flex-col gap-2 border-l-2 border-zinc-600 bg-black/25 px-6 py-5 text-left backdrop-blur-[2px] sm:min-h-[140px]"
-                                >
-                                    <span className="font-sans text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">Capability</span>
-                                    <span className="font-sans text-[17px] font-bold leading-tight text-zinc-50">{t}</span>
-                                    <span className="font-sans text-[15px] font-normal leading-snug text-zinc-400">{d}</span>
-                                </span>
-                            ))}
-                        </div>
-
-                        <p className="mt-16 max-w-3xl text-left font-sans text-[16px] leading-[1.75] text-zinc-500 sm:text-[17px] lg:mt-20">
-                            Move your cursor across the screen.{' '}
-                            <Link
-                                href="/guide"
-                                className="font-bold text-zinc-300 underline decoration-zinc-600 underline-offset-[7px] transition hover:text-white"
-                            >
-                                Read the product guide
-                            </Link>
-                        </p>
+                             </div>
+                         </div>
+ 
+                         {/* Auth — links to `/sign-in` & `/sign-up` (path routing; OAuth works reliably there) */}
+                         <div
+                             id="landing-auth"
+                             className="relative z-[35] mx-auto mt-6 w-full max-w-sm scroll-mt-28 sm:mt-7 sm:max-w-md"
+                         >
+                             <div className="rounded-2xl border border-white/15 bg-white p-4 shadow-[0_24px_48px_rgba(0,0,0,0.35)] sm:p-5">
+                                 <LandingClerkAuth />
+                             </div>
+                             <div className="mt-4 flex flex-col items-center gap-2">
+                                 <button
+                                     type="button"
+                                     onClick={continueWithoutSigningIn}
+                                     className="rounded-full border border-zinc-500/55 bg-zinc-900/40 px-4 py-2 font-sans text-[12px] font-semibold text-zinc-200 transition hover:border-zinc-400/80 hover:bg-zinc-800/60 hover:text-white sm:text-[13px]"
+                                 >
+                                     Continue without signing in
+                                 </button>
+                                 <p className="max-w-sm text-center font-sans text-[11px] leading-snug text-zinc-500">
+                                     Browse first. You'll be asked to sign in when you add a project.
+                                 </p>
+                             </div>
+                         </div>
+ 
+                         <h1 className="font-serif mx-auto mt-5 max-w-[24ch] text-balance text-[clamp(2.15rem,6vw,4.25rem)] font-semibold leading-[1.08] tracking-[0.015em] text-white sm:mt-6 sm:max-w-[28ch] [text-shadow:0_4px_40px_rgba(0,0,0,0.55)]">
+                             {SITE_HERO_H1}
+                         </h1>
+                     </div>
+                 </section>
+ 
+                 <section className="mx-auto w-full max-w-[56rem] px-5 pb-16 pt-6 sm:px-10 sm:pb-24 lg:max-w-[72rem] lg:px-14">
+                     <div className="mx-auto h-px w-32 bg-gradient-to-r from-transparent via-zinc-500 to-transparent sm:w-40" aria-hidden />
+ 
+                     <div className="mt-12 grid gap-10 text-left lg:mt-14 lg:grid-cols-2 lg:gap-x-16 lg:gap-y-0">
+                             <p className="font-serif text-[clamp(1.35rem,2.8vw,1.85rem)] font-normal italic leading-[1.55] text-zinc-200 lg:leading-[1.5] [text-shadow:0_2px_20px_rgba(0,0,0,0.5)]">
+                                 {SITE_PULL_QUOTE}
+                             </p>
+                             <p className="font-sans text-[clamp(1.05rem,2.1vw,1.25rem)] font-normal leading-[1.75] text-zinc-300 lg:text-[1.35rem] lg:leading-[1.8]">
+                                 {SITE_HERO_LEAD}
+                             </p>
+                         </div>
+ 
+                         <div
+                             className="mt-16 grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-5 lg:mt-20"
+                             role="list"
+                         >
+                             {[
+                                 {
+                                     t: 'Custom Tables',
+                                     d: 'Design rich database schemas and custom property grids tailored to your workflows.',
+                                 },
+                                 {
+                                     t: 'Intake Forms',
+                                     d: 'Instantly generate web forms to capture client data and inject them straight into tables.',
+                                 },
+                                 {
+                                     t: 'Dynamic Views',
+                                     d: 'Track items differently using interactive tables, lists, and visual pipelines.',
+                                 },
+                             ].map(({ t, d }) => (
+                                 <span
+                                     key={t}
+                                     role="listitem"
+                                     className="flex flex-col gap-2 border-l-2 border-[#7c3aed] bg-black/25 px-6 py-5 text-left backdrop-blur-[2px] sm:min-h-[140px]"
+                                 >
+                                     <span className="font-sans text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">Core Engine</span>
+                                     <span className="font-sans text-[17px] font-bold leading-tight text-zinc-50">{t}</span>
+                                     <span className="font-sans text-[15px] font-normal leading-snug text-zinc-400">{d}</span>
+                                 </span>
+                             ))}
+                         </div>
+ 
+                         <p className="mt-16 max-w-3xl text-left font-sans text-[16px] leading-[1.75] text-zinc-500 sm:text-[17px] lg:mt-20">
+                             Move your cursor across the screen.{' '}
+                             <Link
+                                 href="/guide"
+                                 className="font-bold text-zinc-300 underline decoration-zinc-600 underline-offset-[7px] transition hover:text-white"
+                             >
+                                 Read the builder guide
+                             </Link>
+                         </p>
                 </section>
 
                 {/* -- Pricing -- */}

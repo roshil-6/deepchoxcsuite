@@ -3,33 +3,33 @@
  * Set NEXT_PUBLIC_SITE_URL in production for correct canonical & Open Graph URLs.
  */
 
-export const SITE_BRAND = 'Deepchox';
+export const SITE_BRAND = 'CRM Builder';
 export const SITE_ORG = 'northROSC LABS';
 
 /** Primary title */
-/** Use ASCII separators in public strings so snippets never show UTF-8 mojibake (e.g. em dash â€"). */
-export const SITE_TITLE_DEFAULT = 'Deepchox - your complete AI co-founder';
+/** Use ASCII separators in public strings so snippets never show UTF-8 mojibake (e.g. em dash —). */
+export const SITE_TITLE_DEFAULT = 'CRM Builder - create customized CRM systems without code';
 
 /** Meta description */
 export const SITE_META_DESCRIPTION =
-    'Deepchox is your complete co-founder: research, a full working team for your venture, and real help to build - not just instructions, but actions. From northROSC LABS.';
+    'CRM Builder allows companies to create and operate fully customized CRM systems without hiring developers. From northROSC LABS.';
 
 /** Open Graph / social */
 export const SITE_OG_DESCRIPTION =
-    'Research, build your venture, and get a complete working team - actions, not just instructions. Your AI co-founder.';
+    'Build, customize, and operate operational databases and client intake forms instantly without developers.';
 
 /** Nav / footer / hero subheads */
 export const SITE_TAGLINE_SHORT =
-    'Your complete co-founder - research, actions, a team for your venture';
+    'Your fully customized CRM operating system — no developers required';
 
-export const SITE_HERO_H1 = 'Your complete co-founder for building your venture';
+export const SITE_HERO_H1 = 'Create custom CRM systems without hiring developers';
 
 export const SITE_HERO_LEAD =
-    'Research that helps you move forward. A full working team behind one venture - not only instructions, but actions you can use.';
+    'Build customized databases, design lead collection forms, set active views, and integrate workflow data channels instantly.';
 
 /** Short italic-style line on the landing page */
 export const SITE_PULL_QUOTE =
-    'Not just instructions - actions. Research, a complete working team, and help to build your venture.';
+    'No-code database architectures, customized by you to align with your business operations.';
 
 export const SITE_KEYWORDS = [
     'AI co-founder',
