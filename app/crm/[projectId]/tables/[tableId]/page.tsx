@@ -8,12 +8,23 @@ import { use } from 'react';
 
 export default function TableSpreadsheetPage({ params }: { params: Promise<{ projectId: string; tableId: string }> }) {
   const { projectId, tableId } = use(params);
-  const { project } = useProject(projectId);
+  const { project, updateProject } = useProject(projectId);
 
   if (!project) return null;
 
   const table = project.tables.find(t => t.id === tableId);
   if (!table) return <div className="p-8 text-[#6b7280]">Table not found.</div>;
+
+  const handleAddField = (name: string, type: any) => {
+    const newField = { id: Math.random().toString(36).substring(2, 11), name, type };
+    const updatedTables = project.tables.map(t => {
+      if (t.id === tableId) {
+        return { ...t, fields: [...t.fields, newField] };
+      }
+      return t;
+    });
+    updateProject({ ...project, tables: updatedTables, updatedAt: Date.now() });
+  };
 
   return (
     <div className="flex h-full flex-col">
@@ -38,7 +49,7 @@ export default function TableSpreadsheetPage({ params }: { params: Promise<{ pro
 
       {/* Spreadsheet */}
       <div className="flex-1 overflow-hidden">
-        <TableView table={table} />
+        <TableView table={table} onAddField={handleAddField} />
       </div>
     </div>
   );

@@ -25,7 +25,7 @@ export default function ProjectsPage() {
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 rounded-md bg-[#7c3aed] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#6d28d9]"
+          className="flex items-center gap-2 rounded-md bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800"
         >
           <Plus className="h-4 w-4" />
           New Project
@@ -52,7 +52,7 @@ export default function ProjectsPage() {
             <p className="mt-1 text-sm text-[#9ca3af]">Create your first CRM project to get started.</p>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="mt-4 flex items-center gap-2 rounded-md bg-[#7c3aed] px-4 py-2 text-sm font-medium text-white hover:bg-[#6d28d9]"
+              className="mt-4 flex items-center gap-2 rounded-md bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800"
             >
               <Plus className="h-4 w-4" />
               Create Project

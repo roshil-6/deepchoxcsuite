@@ -7,9 +7,10 @@ import { Plus } from 'lucide-react';
 
 interface TableViewProps {
   table: Table;
+  onAddField?: (name: string, type: any) => void;
 }
 
-export function TableView({ table }: TableViewProps) {
+export function TableView({ table, onAddField }: TableViewProps) {
   const { records, updateRecords } = useRecords(table.id);
   const [editingCell, setEditingCell] = useState<{ recordId: string; fieldId: string } | null>(null);
 
@@ -29,6 +30,16 @@ export function TableView({ table }: TableViewProps) {
     ));
   };
 
+  const handleAddFieldClick = () => {
+    const name = prompt('Enter field name:');
+    if (!name) return;
+    const type = prompt('Enter field type (Text, Long Text, Email, Phone, Number, Currency, Date, Checkbox, Dropdown, Multi Select, Status, Address, URL, File Upload, Image Upload, Relation, Formula, Auto Increment):', 'Text');
+    if (!type) return;
+    if (onAddField) {
+      onAddField(name, type as any);
+    }
+  };
+
   return (
     <div className="flex h-full flex-col bg-white">
       <div className="flex-1 overflow-auto">
@@ -46,7 +57,10 @@ export function TableView({ table }: TableViewProps) {
                 </th>
               ))}
               <th className="w-20 px-4 py-3">
-                <button className="flex items-center gap-1 text-[#7c3aed] hover:text-[#6d28d9] text-xs font-medium">
+                <button
+                  onClick={handleAddFieldClick}
+                  className="flex items-center gap-1 text-[#7c3aed] hover:text-[#6d28d9] text-xs font-medium"
+                >
                   <Plus className="h-3.5 w-3.5" />
                   Field
                 </button>
