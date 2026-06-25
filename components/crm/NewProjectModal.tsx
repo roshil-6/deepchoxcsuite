@@ -47,36 +47,119 @@ export function NewProjectModal({ isOpen, onClose }: NewProjectModalProps) {
   const handleAIGenerate = async () => {
     if (!prompt.trim()) return;
     setIsGenerating(true);
+    
+    // Simulating intelligent dynamic CRM schema extraction based on the prompt text
     setTimeout(() => {
+      const input = prompt.toLowerCase();
+      const extractedTables: any[] = [];
+      const extractedForms: any[] = [];
+      
+      // Determine project name from context keywords
+      let projectName = "AI Custom CRM";
+      if (input.includes("sales") || input.includes("lead")) {
+        projectName = "Sales & Lead CRM";
+      } else if (input.includes("support") || input.includes("ticket") || input.includes("help")) {
+        projectName = "Support & Helpdesk CRM";
+      } else if (input.includes("consult") || input.includes("client")) {
+        projectName = "Client Consult CRM";
+      } else if (input.includes("hr") || input.includes("hiring") || input.includes("employee")) {
+        projectName = "HR & Recruitment CRM";
+      }
+
+      // 1. Leads / Contacts Extraction
+      if (input.includes("lead") || input.includes("contact") || input.includes("client") || input.includes("customer") || true) {
+        const tableId = generateId();
+        const fields = [
+          { id: generateId(), name: "Full Name", type: "Text" },
+          { id: generateId(), name: "Email Address", type: "Email" },
+          { id: generateId(), name: "Phone Number", type: "Phone" },
+          { id: generateId(), name: "Company", type: "Text" },
+          { id: generateId(), name: "Status", type: "Status", options: ["New Lead", "Contacted", "Proposal Sent", "Closed Won", "Lost"] }
+        ];
+
+        extractedTables.push({
+          id: tableId,
+          name: input.includes("lead") ? "Leads" : input.includes("client") ? "Clients" : "Contacts",
+          views: [{ id: generateId(), name: "Active List", type: "table" }],
+          fields
+        });
+
+        // Auto-generate a dynamic client intake web form feeding into this table
+        extractedForms.push({
+          id: generateId(),
+          name: "Client Intake Form",
+          tableId,
+          fields: fields.map(f => ({
+            id: generateId(),
+            fieldId: f.id,
+            label: f.name,
+            required: f.name === "Full Name" || f.name === "Email Address"
+          }))
+        });
+      }
+
+      // 2. Deals / Opportunities / Invoices Extraction
+      if (input.includes("deal") || input.includes("sales") || input.includes("invoice") || input.includes("billing")) {
+        const tableId = generateId();
+        const fields = [
+          { id: generateId(), name: "Deal Name", type: "Text" },
+          { id: generateId(), name: "Value", type: "Currency" },
+          { id: generateId(), name: "Stage", type: "Status", options: ["Discovery", "Negotiation", "Contract Pending", "Closed"] },
+          { id: generateId(), name: "Close Date", type: "Date" }
+        ];
+        extractedTables.push({
+          id: tableId,
+          name: input.includes("invoice") ? "Invoices" : "Deals",
+          views: [{ id: generateId(), name: "Sales Pipeline", type: "table" }],
+          fields
+        });
+      }
+
+      // 3. Support Tickets / Tasks Extraction
+      if (input.includes("ticket") || input.includes("support") || input.includes("task") || input.includes("appointment")) {
+        const tableId = generateId();
+        const fields = [
+          { id: generateId(), name: "Subject / Title", type: "Text" },
+          { id: generateId(), name: "Priority", type: "Status", options: ["Low", "Medium", "High", "Critical"] },
+          { id: generateId(), name: "Due Date", type: "Date" },
+          { id: generateId(), name: "Assigned To", type: "Text" }
+        ];
+        extractedTables.push({
+          id: tableId,
+          name: input.includes("ticket") ? "Tickets" : "Tasks",
+          views: [{ id: generateId(), name: "All Issues", type: "table" }],
+          fields
+        });
+      }
+
       const newProject: Project = {
         id: generateId(),
-        name: 'AI Generated CRM',
-        description: prompt.substring(0, 80),
+        name: projectName,
+        description: prompt.substring(0, 100) + "...",
         createdAt: Date.now(),
         updatedAt: Date.now(),
-        tables: [
+        tables: extractedTables,
+        forms: extractedForms,
+        team: [
+          { id: generateId(), email: "founder@northrosc.com", role: "Admin" }
+        ],
+        integrations: [],
+        resources: [
           {
             id: generateId(),
-            name: 'Leads',
-            views: [{ id: generateId(), name: 'All Leads', type: 'table' }],
-            fields: [
-              { id: generateId(), name: 'Name', type: 'Text' },
-              { id: generateId(), name: 'Email', type: 'Email' },
-              { id: generateId(), name: 'Status', type: 'Status', options: ['New', 'Contacted', 'Qualified', 'Lost'] }
-            ]
+            name: "AI Schema Extraction",
+            type: "List",
+            config: { parsedTables: extractedTables.map(t => t.name) }
           }
-        ],
-        forms: [],
-        team: [],
-        integrations: [],
-        resources: []
+        ]
       };
+
       const projects = getProjects();
       saveProjects([...projects, newProject]);
       setIsGenerating(false);
       onClose();
       router.push(`/crm/${newProject.id}`);
-    }, 1500);
+    }, 2000);
   };
 
   const handleConnectDb = async (e: React.FormEvent) => {
