@@ -1,4 +1,5 @@
 // PostgreSQL on Render (or any URL in DATABASE_URL)
+// Vercel / other hosts outside Render: use the Postgres external URL — internal dpg-* hostnames are unreachable (migrate + API).
 // Run: npx prisma migrate dev  (local)  |  npx prisma migrate deploy  (Render build/start)
 
 generator client {
