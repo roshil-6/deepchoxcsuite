@@ -122,7 +122,7 @@ export default function RootLayout({
     <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up">
       <html lang="en">
         <body
-          className={`${inter.variable} ${playfair.variable} ${jetbrains.variable} ${syne.variable} font-sans text-brand-text antialiased overflow-x-hidden leading-normal tracking-normal`}
+          className={`${inter.variable} ${jetbrains.variable} font-sans bg-[#FCFBFD] text-[#211D25] antialiased overflow-x-hidden min-h-screen selection:bg-[#F0EAF8] selection:text-[#4C268F]`}
         >
           <Script
             id="site-json-ld"

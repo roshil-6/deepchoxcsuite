@@ -1,122 +1,78 @@
 /**
- * Central SEO + marketing copy (metadata, landing hero, structured data).
- * Set NEXT_PUBLIC_SITE_URL in production for correct canonical & Open Graph URLs.
+ * Central SEO + copy for CLAPFETCH by Northrosc.
+ * Clean, human, consumer media utility.
  */
 
-export const SITE_BRAND = 'CRM Builder';
-export const SITE_ORG = 'northROSC LABS';
+export const SITE_BRAND = 'Clapfetch';
+export const SITE_ORG = 'Northrosc';
+export const SITE_DOMAIN = 'northrosc.com';
 
 /** Primary title */
-/** Use ASCII separators in public strings so snippets never show UTF-8 mojibake (e.g. em dash —). */
-export const SITE_TITLE_DEFAULT = 'CRM Builder - create customized CRM systems without code';
+export const SITE_TITLE_DEFAULT = 'Clapfetch — Take what you need. Leave the rest.';
 
 /** Meta description */
 export const SITE_META_DESCRIPTION =
-    'CRM Builder allows companies to create and operate fully customized CRM systems without hiring developers. From northROSC LABS.';
+  'Import or upload media. Find the moment you want, cut it, turn it into audio, create a ringtone, add subtitles or save it for later. A Northrosc product.';
 
 /** Open Graph / social */
 export const SITE_OG_DESCRIPTION =
-    'Build, customize, and operate operational databases and client intake forms instantly without developers.';
+  'Cut media, extract audio, make ringtones, find moments, generate subtitles, and organize your music library with Clapfetch.';
 
 /** Nav / footer / hero subheads */
-export const SITE_TAGLINE_SHORT =
-    'Your fully customized CRM operating system — no developers required';
+export const SITE_TAGLINE_SHORT = 'by Northrosc';
 
-export const SITE_HERO_H1 = 'Create custom CRM systems without hiring developers';
+export const SITE_HERO_H1 = 'Take what you need. Leave the rest.';
 
 export const SITE_HERO_LEAD =
-    'Build customized databases, design lead collection forms, set active views, and integrate workflow data channels instantly.';
+  'Import or upload media. Find the moment you want, cut it, turn it into audio, create a ringtone, add subtitles or save it for later.';
 
-/** Short italic-style line on the landing page */
 export const SITE_PULL_QUOTE =
-    'No-code database architectures, customized by you to align with your business operations.';
+  'Keep the part that matters.';
 
 export const SITE_KEYWORDS = [
-    'AI co-founder',
-    'virtual AI office',
-    'AI venture workspace',
-    'solo founder tools',
-    'startup operating system',
-    'build your venture',
-    'startup research',
-    'founder tools',
-    'AI working team',
-    'AI desk agents',
-    'staff sync',
-    'venture intelligence',
-    'actions not instructions',
-    'northROSC',
-    'Deepchox',
-    'venture building',
-    'GPT Claude routing',
-    'founder dashboard',
-    'AI strategy memo',
-    'Jarvis-style AI assistant',
+  'Clapfetch',
+  'Northrosc',
+  'cut video',
+  'extract audio',
+  'make ringtone',
+  'find moment',
+  'generate subtitles',
+  'media utility',
+  'video trimmer',
+  'audio extractor',
+  'clean media tool',
 ] as const;
 
-/** Relative path served by app/opengraph-image (PNG); resolved with metadataBase in layout. */
 export const SITE_OG_IMAGE_PATH = '/opengraph-image';
 
 export function siteMetadataBase(): URL | undefined {
-    const raw = typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_SITE_URL?.trim() : undefined;
-    if (!raw) return undefined;
-    try {
-        return new URL(raw.endsWith('/') ? raw.slice(0, -1) : raw);
-    } catch {
-        return undefined;
-    }
+  const url = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (!url) return new URL('https://northrosc.com');
+  try {
+    return new URL(url);
+  } catch {
+    return new URL('https://northrosc.com');
+  }
 }
 
-export function siteJsonLd(baseUrl: string | undefined): Record<string, unknown> {
-    const url = (baseUrl ?? 'https://deepchox.app').replace(/\/$/, '');
-    const orgId = `${url}#organization`;
-    const logoUrl = `${url}/deepchox-mark.svg`;
-
-    return {
-        '@context': 'https://schema.org',
-        '@graph': [
-            {
-                '@type': 'WebSite',
-                '@id': `${url}#website`,
-                url,
-                name: SITE_BRAND,
-                description: SITE_META_DESCRIPTION,
-                inLanguage: 'en-US',
-                publisher: { '@id': orgId },
-                potentialAction: {
-                    '@type': 'ReadAction',
-                    target: [`${url}/`, `${url}/guide`],
-                },
-            },
-            {
-                '@type': 'SoftwareApplication',
-                '@id': `${url}#software`,
-                name: SITE_BRAND,
-                applicationCategory: 'BusinessApplication',
-                operatingSystem: 'Web',
-                description: SITE_META_DESCRIPTION,
-                url,
-                offers: {
-                    '@type': 'Offer',
-                    price: '0',
-                    priceCurrency: 'USD',
-                    description: 'Founder tier free; Pro subscription available',
-                },
-                provider: { '@id': orgId },
-                publisher: { '@id': orgId },
-            },
-            {
-                '@type': 'Organization',
-                '@id': orgId,
-                name: SITE_ORG,
-                url,
-                logo: {
-                    '@type': 'ImageObject',
-                    url: logoUrl,
-                },
-                description: SITE_OG_DESCRIPTION,
-                brand: { '@type': 'Brand', name: SITE_BRAND },
-            },
-        ],
-    };
+export function siteJsonLd(baseUrl?: string) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'Clapfetch',
+    author: {
+      '@type': 'Organization',
+      name: 'Northrosc',
+      url: 'https://northrosc.com',
+    },
+    applicationCategory: 'MultimediaApplication',
+    operatingSystem: 'Any',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+    },
+    description: SITE_META_DESCRIPTION,
+    url: baseUrl || 'https://northrosc.com',
+  };
 }
