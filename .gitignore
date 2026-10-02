@@ -36,3 +36,7 @@ npm-debug.log*
 
 # Vercel
 .vercel
+
+# Media storage
+storage/
+

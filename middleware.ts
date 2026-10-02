@@ -35,7 +35,14 @@ const isPublicRoute = createRouteMatcher([
    * Deepchox gateway (Jarvis converse, convo sync, etc.) — must work for signed-out guests in the workspace.
    * Per-IP rate limits still apply via `AI_ROUTE_LIMITS` (`/api/dexo`).
    */
-  '/api/dexo(.*)',
+  // ── Clapfetch Media Workspace Routes ──────────────────────────────────────────
+  '/api/clip-finder(.*)',
+  '/api/downloader(.*)',
+  '/api/shorts-generator(.*)',
+  '/api/subtitles(.*)',
+  '/api/upload(.*)',
+  '/api/process(.*)',
+  '/api/download(.*)',
   // ── CRM Builder ─────────────────────────────────────────────────────────────
   // Public during local development while Clerk production keys are not
   // configured for localhost. Re-add auth guard before going to production.
