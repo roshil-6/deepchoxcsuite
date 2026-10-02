@@ -44,6 +44,7 @@ export function HeroMediaInput({ onMediaLoaded }: HeroMediaInputProps) {
           url: json.data.videoUrl || '/sample-video.mp4',
           thumbnailUrl: json.data.thumbnail,
           title: json.data.title,
+          youtubeId: json.data.youtubeId,
           mimeType: 'video/mp4',
           fileSize: 45 * 1024 * 1024,
           durationSeconds: json.data.durationSeconds || 15,

@@ -20,6 +20,7 @@ export interface WorkspaceMedia {
   source: 'upload' | 'link';
   sourceUrl?: string;
   storagePath?: string;
+  youtubeId?: string;
 }
 
 // ─── Timeline / Selection ──────────────────────────────
