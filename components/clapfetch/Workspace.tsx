@@ -82,7 +82,7 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
   const [showAdvancedCompress, setShowAdvancedCompress] = useState(false);
   const [compressResolution, setCompressResolution] = useState('original');
   const [muteAudio, setMuteAudio] = useState(false);
-  const [playerMode, setPlayerMode] = useState<'embed' | 'poster'>('embed');
+  const [playerMode, setPlayerMode] = useState<'embed' | 'poster'>('poster');
 
   const handleReplaceFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -498,7 +498,9 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
           <div className="flex items-center gap-2 text-[#4A4453]">
             <AlertCircle className="w-4 h-4 text-[#8061C9] shrink-0" />
             <span>
-              If YouTube or the content owner restricts web embeds, use <strong>Poster View</strong> or open on YouTube.
+              {playerMode === 'poster'
+                ? 'Previewing video card & timeline. Embed restrictions (e.g. Formula 1) bypassed.'
+                : 'If YouTube shows "Video unavailable", switch back to Poster View.'}
             </span>
           </div>
 
@@ -508,7 +510,7 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
               className="px-3 py-1.5 rounded-[10px] bg-white border border-[#DDD6E2] text-[#211D25] hover:border-[#8061C9] font-medium transition cursor-pointer flex items-center gap-1.5"
             >
               <ImageIcon className="w-3.5 h-3.5 text-[#6D3FC0]" />
-              <span>{playerMode === 'embed' ? 'Switch to Poster' : 'Switch to Player'}</span>
+              <span>{playerMode === 'embed' ? 'Switch to Poster' : 'Try Embedded Player'}</span>
             </button>
 
             {media.sourceUrl && (
