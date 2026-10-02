@@ -41,7 +41,7 @@ export function HeroMediaInput({ onMediaLoaded }: HeroMediaInputProps) {
         onMediaLoaded({
           id: `media-${Date.now()}`,
           filename: json.data.title || 'Imported Media',
-          url: json.data.videoUrl || 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+          url: json.data.videoUrl || '/sample-video.mp4',
           thumbnailUrl: json.data.thumbnail,
           title: json.data.title,
           mimeType: 'video/mp4',
