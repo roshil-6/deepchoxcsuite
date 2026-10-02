@@ -195,11 +195,65 @@ async function runTests() {
           attempts++;
         }
         report('Audio Extraction to MP3', completed, `Job: ${json.jobId}, Completed: ${completed}`);
+
+        if (completed) {
+          const dlRes = await fetch(`${BASE_URL}/api/download/${json.jobId}`);
+          const dlContentType = dlRes.headers.get('content-type');
+          const dlBuffer = await dlRes.arrayBuffer();
+          report(
+            'Download Streaming API (MP3 Audio)',
+            dlRes.ok && dlBuffer.byteLength > 1000 && dlContentType?.includes('audio'),
+            `HTTP: ${dlRes.status}, Content-Type: ${dlContentType}, Length: ${dlBuffer.byteLength} bytes`
+          );
+        }
       } else {
         report('Audio Extraction Job', false, JSON.stringify(json));
       }
     } catch (err) {
       report('Audio Extraction Job', false, err.message);
+    }
+
+    // TEST 6b: Audio Extraction to WAV & Download
+    try {
+      const res = await fetch(`${BASE_URL}/api/process`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mediaId: uploadedMedia.id,
+          storagePath: uploadedMedia.storagePath,
+          type: 'audio_extract',
+          params: { format: 'wav' },
+        }),
+      });
+      const json = await res.json();
+      if (res.ok && json.ok && json.jobId) {
+        let attempts = 0;
+        let completed = false;
+        while (attempts < 15 && !completed) {
+          await new Promise((r) => setTimeout(r, 1000));
+          const pRes = await fetch(`${BASE_URL}/api/process/${json.jobId}`);
+          const pJson = await pRes.json();
+          if (pJson.job?.status === 'completed') {
+            completed = true;
+            break;
+          }
+          attempts++;
+        }
+        if (completed) {
+          const dlRes = await fetch(`${BASE_URL}/api/download/${json.jobId}`);
+          const dlContentType = dlRes.headers.get('content-type');
+          const dlBuffer = await dlRes.arrayBuffer();
+          report(
+            'Download Streaming API (WAV Audio)',
+            dlRes.ok && dlBuffer.byteLength > 1000,
+            `HTTP: ${dlRes.status}, Content-Type: ${dlContentType}, Length: ${dlBuffer.byteLength} bytes`
+          );
+        } else {
+          report('Audio Extraction to WAV', false, 'Job did not complete');
+        }
+      }
+    } catch (err) {
+      report('Audio Extraction to WAV', false, err.message);
     }
   }
 
@@ -232,6 +286,17 @@ async function runTests() {
           attempts++;
         }
         report('iPhone Ringtone Creation (M4R format)', completed, `Job: ${json.jobId}, Completed: ${completed}`);
+
+        if (completed) {
+          const dlRes = await fetch(`${BASE_URL}/api/download/${json.jobId}`);
+          const dlContentType = dlRes.headers.get('content-type');
+          const dlBuffer = await dlRes.arrayBuffer();
+          report(
+            'Download Streaming API (iPhone M4R Ringtone)',
+            dlRes.ok && dlBuffer.byteLength > 1000,
+            `HTTP: ${dlRes.status}, Content-Type: ${dlContentType}, Length: ${dlBuffer.byteLength} bytes`
+          );
+        }
       } else {
         report('Ringtone Job', false, JSON.stringify(json));
       }

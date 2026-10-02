@@ -54,7 +54,10 @@ export async function GET(
   if (ext === '.mp3') contentType = 'audio/mpeg';
   if (ext === '.wav') contentType = 'audio/wav';
   if (ext === '.m4r') contentType = 'audio/mp4';
+  if (ext === '.m4a' || ext === '.aac') contentType = 'audio/aac';
+  if (ext === '.flac') contentType = 'audio/flac';
   if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';
+  if (ext === '.png') contentType = 'image/png';
   if (ext === '.srt') contentType = 'application/x-subrip';
   if (ext === '.vtt') contentType = 'text/vtt';
 

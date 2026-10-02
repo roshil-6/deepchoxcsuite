@@ -92,7 +92,7 @@ export interface CutParams {
 export interface AudioExtractParams {
   startMs?: number;
   endMs?: number;
-  format: 'mp3' | 'wav' | 'aac';
+  format: 'mp3' | 'wav' | 'aac' | 'flac' | 'm4a';
   bitrate?: number; // kbps
 }
 

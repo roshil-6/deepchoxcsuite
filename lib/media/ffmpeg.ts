@@ -60,17 +60,36 @@ export async function cutVideo(inputPath: string, outputPath: string, startMs: n
   });
 }
 
-export async function extractAudio(inputPath: string, outputPath: string, format: 'mp3'|'wav'|'aac', bitrate?: number, startMs?: number, endMs?: number): Promise<void> {
+export async function extractAudio(
+  inputPath: string,
+  outputPath: string,
+  format: 'mp3' | 'wav' | 'aac' | 'flac' | 'm4a',
+  bitrate?: number,
+  startMs?: number,
+  endMs?: number
+): Promise<void> {
   return new Promise((resolve, reject) => {
-    let command = ffmpeg(inputPath).noVideo().format(format);
-    
-    if (bitrate) {
-      command = command.audioBitrate(bitrate);
+    let command = ffmpeg(inputPath).noVideo();
+
+    if (format === 'mp3') {
+      command = command.format('mp3').audioCodec('libmp3lame');
+    } else if (format === 'wav') {
+      command = command.format('wav');
+    } else if (format === 'flac') {
+      command = command.format('flac');
+    } else if (format === 'm4a' || format === 'aac') {
+      command = command.format('mp4').audioCodec('aac');
     } else {
-      command = command.audioBitrate('320k');
+      command = command.format(format);
     }
-    
-    if (startMs !== undefined && endMs !== undefined) {
+
+    if (bitrate && format !== 'wav' && format !== 'flac') {
+      command = command.audioBitrate(bitrate);
+    } else if (format === 'mp3') {
+      command = command.audioBitrate(320);
+    }
+
+    if (startMs !== undefined && endMs !== undefined && endMs > startMs) {
       command = command.setStartTime(startMs / 1000).setDuration((endMs - startMs) / 1000);
     }
 
