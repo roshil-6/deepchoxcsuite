@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^7.2.3",
+    "@distube/ytdl-core": "^4.16.12",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@ffprobe-installer/ffprobe": "^2.1.2",
     "@prisma/client": "^6.19.0",

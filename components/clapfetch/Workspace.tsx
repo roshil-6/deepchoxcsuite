@@ -22,6 +22,9 @@ import {
   AlertCircle,
   Loader2,
   ArrowLeft,
+  ExternalLink,
+  Upload,
+  Image as ImageIcon,
 } from 'lucide-react';
 
 interface WorkspaceProps {
@@ -79,6 +82,64 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
   const [showAdvancedCompress, setShowAdvancedCompress] = useState(false);
   const [compressResolution, setCompressResolution] = useState('original');
   const [muteAudio, setMuteAudio] = useState(false);
+  const [playerMode, setPlayerMode] = useState<'embed' | 'poster'>('poster');
+
+  const handleReplaceFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const localBlobUrl = URL.createObjectURL(file);
+    const isAudio = file.type.startsWith('audio/') || /\.(mp3|wav|m4a|aac|flac)$/i.test(file.name);
+
+    let duration = 60;
+    try {
+      const mediaEl = document.createElement(isAudio ? 'audio' : 'video');
+      mediaEl.src = localBlobUrl;
+      await new Promise<void>((res) => {
+        mediaEl.onloadedmetadata = () => {
+          if (mediaEl.duration && !isNaN(mediaEl.duration)) duration = Math.round(mediaEl.duration);
+          res();
+        };
+        setTimeout(res, 1200);
+      });
+    } catch {}
+
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.ok && data.media) {
+        setMedia({
+          ...data.media,
+          url: localBlobUrl,
+          title: file.name.replace(/\.[^/.]+$/, ''),
+        });
+      } else {
+        setMedia({
+          id: `media-${Date.now()}`,
+          filename: file.name,
+          url: localBlobUrl,
+          title: file.name.replace(/\.[^/.]+$/, ''),
+          mimeType: file.type || (isAudio ? 'audio/mpeg' : 'video/mp4'),
+          fileSize: file.size,
+          durationSeconds: duration,
+          source: 'upload',
+        });
+      }
+    } catch {
+      setMedia({
+        id: `media-${Date.now()}`,
+        filename: file.name,
+        url: localBlobUrl,
+        title: file.name.replace(/\.[^/.]+$/, ''),
+        mimeType: file.type || (isAudio ? 'audio/mpeg' : 'video/mp4'),
+        fileSize: file.size,
+        durationSeconds: duration,
+        source: 'upload',
+      });
+    }
+  };
 
   // Processing job execution state
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
@@ -353,15 +414,41 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
       </div>
 
       {/* ─── Media Preview ─── */}
-      <div className="relative rounded-[22px] overflow-hidden bg-[#18161D] aspect-video max-h-[440px] mx-auto mb-6 flex items-center justify-center">
+      <div className="relative rounded-[22px] overflow-hidden bg-[#18161D] aspect-video max-h-[440px] mx-auto mb-3 flex items-center justify-center">
         {media.youtubeId ? (
-          <iframe
-            src={`https://www.youtube-nocookie.com/embed/${media.youtubeId}?autoplay=0&rel=0&modestbranding=1`}
-            className="w-full h-full border-0"
-            title={media.title}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
+          playerMode === 'embed' ? (
+            <iframe
+              src={`https://www.youtube.com/embed/${media.youtubeId}?autoplay=0&rel=0`}
+              className="w-full h-full border-0"
+              title={media.title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          ) : (
+            <div className="relative w-full h-full flex items-center justify-center bg-black">
+              {/* Poster image */}
+              <img
+                src={media.thumbnailUrl || `https://i.ytimg.com/vi/${media.youtubeId}/hqdefault.jpg`}
+                alt={media.title}
+                className="w-full h-full object-contain opacity-85"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-between p-6 pointer-events-none">
+                <div className="flex justify-end">
+                  <span className="px-3 py-1 rounded-[8px] bg-black/60 backdrop-blur-md text-white/90 text-xs font-medium">
+                    Poster View
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-white text-base sm:text-lg font-semibold drop-shadow max-w-xl line-clamp-2">
+                    {media.title}
+                  </h3>
+                  <p className="text-white/70 text-xs mt-1">
+                    Timeline scrubber active below. Use start/end bounds to cut, extract audio, or create clips.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )
         ) : !isAudioOnly ? (
           <video
             ref={videoRef}
@@ -404,6 +491,48 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
           </div>
         )}
       </div>
+
+      {/* ─── Link / YouTube Helper Bar with Options ─── */}
+      {media.youtubeId && (
+        <div className="mb-6 px-4 py-3 rounded-[16px] bg-[#FAF8FD] border border-[#E9E4EF] flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 text-[#4A4453]">
+            <AlertCircle className="w-4 h-4 text-[#8061C9] shrink-0" />
+            <span>
+              {playerMode === 'poster'
+                ? 'Previewing video card & timeline. Embed restrictions (e.g. Formula 1) bypassed.'
+                : 'If YouTube shows "Video unavailable", switch back to Poster View.'}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPlayerMode(playerMode === 'embed' ? 'poster' : 'embed')}
+              className="px-3 py-1.5 rounded-[10px] bg-white border border-[#DDD6E2] text-[#211D25] hover:border-[#8061C9] font-medium transition cursor-pointer flex items-center gap-1.5"
+            >
+              <ImageIcon className="w-3.5 h-3.5 text-[#6D3FC0]" />
+              <span>{playerMode === 'embed' ? 'Switch to Poster' : 'Try Embedded Player'}</span>
+            </button>
+
+            {media.sourceUrl && (
+              <a
+                href={media.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-1.5 rounded-[10px] bg-[#F5F1FA] text-[#6D3FC0] hover:bg-[#EFE7FA] font-medium flex items-center gap-1.5 transition"
+              >
+                <span>Watch on YouTube</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            )}
+
+            <label className="px-3 py-1.5 rounded-[10px] bg-[#6D3FC0] text-white hover:bg-[#5C35A3] font-medium flex items-center gap-1.5 cursor-pointer transition">
+              <Upload className="w-3.5 h-3.5" />
+              <span>Upload local file</span>
+              <input type="file" accept="video/*,audio/*" onChange={handleReplaceFile} className="hidden" />
+            </label>
+          </div>
+        </div>
+      )}
 
       {/* ─── Precision Timeline Scrubber ─── */}
       <div className="mb-8">
