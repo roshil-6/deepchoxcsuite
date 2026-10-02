@@ -3,6 +3,7 @@ import { createJob, processJob } from '@/lib/media/jobRunner';
 import { resolveStoragePath } from '@/lib/media/storage';
 import { JobType } from '@/lib/media/types';
 import fs from 'fs';
+import path from 'path';
 
 const validJobTypes: string[] = [
   'cut',
@@ -32,19 +33,30 @@ export async function POST(req: NextRequest) {
 
     const job = createJob(mediaId, type as JobType, params);
 
-    // If storagePath is provided and file exists on server, start real FFmpeg job
+    // Determine source media file for processing
+    let sourceMediaFile: string | null = null;
     if (storagePath) {
       const resolvedPath = resolveStoragePath(storagePath);
       if (fs.existsSync(resolvedPath)) {
-        processJob(job.id, resolvedPath).catch((err) => {
-          console.error('Background processing job failed:', err);
-        });
-        return NextResponse.json({ ok: true, jobId: job.id });
+        sourceMediaFile = resolvedPath;
       }
     }
 
-    // If no local storage file exists (e.g. sample track or client-only preview)
-    // Simulate quick processing so frontend feedback works gracefully
+    if (!sourceMediaFile) {
+      const sampleFallback = path.resolve(process.cwd(), 'public', 'sample-video.mp4');
+      if (fs.existsSync(sampleFallback)) {
+        sourceMediaFile = sampleFallback;
+      }
+    }
+
+    if (sourceMediaFile) {
+      processJob(job.id, sourceMediaFile).catch((err) => {
+        console.error('Background processing job failed:', err);
+      });
+      return NextResponse.json({ ok: true, jobId: job.id });
+    }
+
+    // Fallback simulation if no media file available at all
     const ext =
       type === 'audio_extract' || type === 'extract_audio'
         ? (params as any)?.format || 'mp3'

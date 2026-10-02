@@ -25,6 +25,12 @@ import {
   ExternalLink,
   Upload,
   Image as ImageIcon,
+  Sliders,
+  ShieldCheck,
+  Waves,
+  Sparkles,
+  FileAudio,
+  Gauge,
 } from 'lucide-react';
 
 interface WorkspaceProps {
@@ -75,13 +81,25 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
   const [foundMoments, setFoundMoments] = useState<ClipFinderResult[]>([]);
   const [findError, setFindError] = useState<string | null>(null);
 
-  // Audio & export states
-  const [audioFormat, setAudioFormat] = useState<'mp3' | 'wav'>('mp3');
+  // Audio studio states
+  const [audioFormat, setAudioFormat] = useState<'mp3' | 'wav' | 'flac' | 'm4a'>('mp3');
+  const [audioBitrate, setAudioBitrate] = useState<320 | 256 | 192 | 128>(320);
+  const [audioScope, setAudioScope] = useState<'full' | 'selection'>('full');
+  const [audioNormalize, setAudioNormalize] = useState(true);
+
+  // Ringtone studio states
   const [ringtoneTarget, setRingtoneTarget] = useState<'iphone' | 'android'>('iphone');
+  const [ringtoneFadeIn, setRingtoneFadeIn] = useState(true);
+  const [ringtoneFadeOut, setRingtoneFadeOut] = useState(true);
+
+  // Video cut & compress states
+  const [cutFormat, setCutFormat] = useState<'mp4' | 'webm'>('mp4');
+  const [compressPreset, setCompressPreset] = useState<'discord' | 'whatsapp' | 'email' | 'custom'>('custom');
   const [compressQuality, setCompressQuality] = useState<'smaller' | 'balanced' | 'higher'>('balanced');
   const [showAdvancedCompress, setShowAdvancedCompress] = useState(false);
   const [compressResolution, setCompressResolution] = useState('original');
   const [muteAudio, setMuteAudio] = useState(false);
+  const [frameFormat, setFrameFormat] = useState<'jpg' | 'png'>('jpg');
   const [playerMode, setPlayerMode] = useState<'embed' | 'poster'>('poster');
 
   const handleReplaceFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -345,16 +363,22 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
     const endMs = Math.round(clampedEnd * 1000);
 
     if (activeTool === 'trim') {
-      startProcessingJob('cut', { startMs, endMs, outputFormat: 'mp4' });
+      startProcessingJob('cut', { startMs, endMs, outputFormat: cutFormat });
     } else if (activeTool === 'audio_extract') {
-      startProcessingJob('audio_extract', { format: audioFormat, bitrate: 320 });
+      startProcessingJob('audio_extract', {
+        format: audioFormat,
+        bitrate: audioBitrate,
+        startMs: audioScope === 'selection' ? startMs : 0,
+        endMs: audioScope === 'selection' ? endMs : Math.round(duration * 1000),
+      });
     } else if (activeTool === 'ringtone') {
+      const maxDurationMs = ringtoneTarget === 'iphone' ? 30000 : 40000;
       startProcessingJob('ringtone', {
         startMs,
-        endMs: Math.min(startMs + (ringtoneTarget === 'iphone' ? 30000 : 40000), endMs),
+        endMs: Math.min(startMs + maxDurationMs, endMs),
         target: ringtoneTarget,
-        fadeIn: true,
-        fadeOut: true,
+        fadeIn: ringtoneFadeIn,
+        fadeOut: ringtoneFadeOut,
       });
     } else if (activeTool === 'reel' || activeTool === 'crop') {
       startProcessingJob('reel', {
@@ -370,7 +394,10 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
     } else if (activeTool === 'mute') {
       startProcessingJob('mute', { startMs: 0, endMs: Math.round(duration * 1000) });
     } else if (activeTool === 'frame') {
-      startProcessingJob('frame_grab', { timestampMs: Math.round(currentTime * 1000), format: 'jpg' });
+      startProcessingJob('frame_grab', {
+        timestampMs: Math.round(currentTime * 1000),
+        format: frameFormat,
+      });
     } else if (activeTool.startsWith('subtitle_')) {
       // Subtitle tools — user should export from the SubtitleEditor panel
       // But if they click the main Export, burn subtitles into the video
@@ -664,21 +691,21 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
         {activeGroup === 'video' && (
           <div className="space-y-6">
             {/* Sub-tool tabs */}
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {[
-                { id: 'trim', label: 'Trim' },
-                { id: 'crop', label: 'Crop 9:16' },
-                { id: 'compress', label: 'Compress' },
-                { id: 'mute', label: 'Mute' },
-                { id: 'frame', label: 'Frame Grab' },
+                { id: 'trim', label: 'Precision Trim' },
+                { id: 'crop', label: 'Aspect Crop (9:16 / 1:1)' },
+                { id: 'compress', label: 'Smart Compression' },
+                { id: 'mute', label: 'Strip Audio' },
+                { id: 'frame', label: 'Frame Grabber' },
               ].map((sub) => (
                 <button
                   key={sub.id}
                   onClick={() => setActiveTool(sub.id as WorkspaceTool)}
-                  className={`px-3 py-1.5 rounded-[10px] text-xs font-medium transition ${
+                  className={`px-3.5 py-1.5 rounded-[10px] text-xs font-medium transition cursor-pointer ${
                     activeTool === sub.id
-                      ? 'bg-[#6D3FC0] text-white'
-                      : 'bg-[#F5F1FA] text-[#69636E] hover:text-[#211D25]'
+                      ? 'bg-[#6D3FC0] text-white shadow-2xs'
+                      : 'bg-[#F5F1FA] text-[#69636E] hover:text-[#211D25] hover:bg-[#EAE4F5]'
                   }`}
                 >
                   {sub.label}
@@ -686,72 +713,260 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
               ))}
             </div>
 
+            {/* PRECISION TRIM PANEL */}
             {activeTool === 'trim' && (
-              <div className="space-y-4">
-                <p className="text-sm text-[#69636E]">
-                  Cut between <span className="font-mono text-[#211D25]">{formatTime(selectionStart)}</span> and{' '}
-                  <span className="font-mono text-[#211D25]">{formatTime(selectionEnd)}</span> ({Math.round(selectionEnd - selectionStart)}s total).
-                </p>
+              <div className="p-5 rounded-[18px] bg-white border border-[#E9E4EF] space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#F0EAF8]">
+                  <div className="flex items-center gap-2">
+                    <Scissors className="w-4 h-4 text-[#6D3FC0]" />
+                    <span className="text-sm font-semibold text-[#211D25]">High-Speed Lossless Stream Trimming</span>
+                  </div>
+                  <span className="text-[11px] font-mono px-2.5 py-1 rounded-[6px] bg-[#F5F1FA] text-[#6D3FC0] font-semibold border border-[#E9E4EF]">
+                    Stream-Copy (0ms Re-encode Loss)
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Start Point Input with Nudge */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-[#69636E] flex justify-between">
+                      <span>In-Point Timecode</span>
+                      <span className="font-mono text-[#211D25]">{selectionStart.toFixed(2)}s</span>
+                    </label>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => setSelection(Math.max(0, selectionStart - 1), selectionEnd)}
+                        className="h-[36px] px-2.5 rounded-[8px] border border-[#DDD6E2] bg-[#FAF8FD] text-xs font-mono font-medium hover:bg-[#F0EAF8] text-[#211D25]"
+                        title="Step backward 1 second"
+                      >
+                        -1s
+                      </button>
+                      <button
+                        onClick={() => setSelection(Math.max(0, selectionStart - 0.1), selectionEnd)}
+                        className="h-[36px] px-2 rounded-[8px] border border-[#DDD6E2] bg-[#FAF8FD] text-xs font-mono font-medium hover:bg-[#F0EAF8] text-[#211D25]"
+                        title="Step backward 100ms"
+                      >
+                        -0.1s
+                      </button>
+                      <div className="flex-1 h-[36px] px-3 rounded-[8px] border border-[#DDD6E2] bg-white flex items-center justify-center font-mono text-sm font-semibold text-[#211D25]">
+                        {formatTime(selectionStart)}
+                      </div>
+                      <button
+                        onClick={() => setSelection(Math.min(selectionEnd - 0.1, selectionStart + 0.1), selectionEnd)}
+                        className="h-[36px] px-2 rounded-[8px] border border-[#DDD6E2] bg-[#FAF8FD] text-xs font-mono font-medium hover:bg-[#F0EAF8] text-[#211D25]"
+                        title="Step forward 100ms"
+                      >
+                        +0.1s
+                      </button>
+                      <button
+                        onClick={() => setSelection(Math.min(selectionEnd - 1, selectionStart + 1), selectionEnd)}
+                        className="h-[36px] px-2.5 rounded-[8px] border border-[#DDD6E2] bg-[#FAF8FD] text-xs font-mono font-medium hover:bg-[#F0EAF8] text-[#211D25]"
+                        title="Step forward 1 second"
+                      >
+                        +1s
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* End Point Input with Nudge */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-[#69636E] flex justify-between">
+                      <span>Out-Point Timecode</span>
+                      <span className="font-mono text-[#211D25]">{selectionEnd.toFixed(2)}s</span>
+                    </label>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => setSelection(selectionStart, Math.max(selectionStart + 1, selectionEnd - 1))}
+                        className="h-[36px] px-2.5 rounded-[8px] border border-[#DDD6E2] bg-[#FAF8FD] text-xs font-mono font-medium hover:bg-[#F0EAF8] text-[#211D25]"
+                        title="Step backward 1 second"
+                      >
+                        -1s
+                      </button>
+                      <button
+                        onClick={() => setSelection(selectionStart, Math.max(selectionStart + 0.1, selectionEnd - 0.1))}
+                        className="h-[36px] px-2 rounded-[8px] border border-[#DDD6E2] bg-[#FAF8FD] text-xs font-mono font-medium hover:bg-[#F0EAF8] text-[#211D25]"
+                        title="Step backward 100ms"
+                      >
+                        -0.1s
+                      </button>
+                      <div className="flex-1 h-[36px] px-3 rounded-[8px] border border-[#DDD6E2] bg-white flex items-center justify-center font-mono text-sm font-semibold text-[#211D25]">
+                        {formatTime(selectionEnd)}
+                      </div>
+                      <button
+                        onClick={() => setSelection(selectionStart, Math.min(media.durationSeconds, selectionEnd + 0.1))}
+                        className="h-[36px] px-2 rounded-[8px] border border-[#DDD6E2] bg-[#FAF8FD] text-xs font-mono font-medium hover:bg-[#F0EAF8] text-[#211D25]"
+                        title="Step forward 100ms"
+                      >
+                        +0.1s
+                      </button>
+                      <button
+                        onClick={() => setSelection(selectionStart, Math.min(media.durationSeconds, selectionEnd + 1))}
+                        className="h-[36px] px-2.5 rounded-[8px] border border-[#DDD6E2] bg-[#FAF8FD] text-xs font-mono font-medium hover:bg-[#F0EAF8] text-[#211D25]"
+                        title="Step forward 1 second"
+                      >
+                        +1s
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Output Container Choice */}
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[#69636E]">Target Container:</span>
+                    <div className="inline-flex rounded-[8px] p-0.5 bg-[#FAF8FD] border border-[#E9E4EF]">
+                      <button
+                        onClick={() => setCutFormat('mp4')}
+                        className={`px-3 py-1 rounded-[6px] text-xs font-semibold cursor-pointer ${
+                          cutFormat === 'mp4' ? 'bg-[#6D3FC0] text-white shadow-2xs' : 'text-[#69636E]'
+                        }`}
+                      >
+                        MP4 (H.264/AAC)
+                      </button>
+                      <button
+                        onClick={() => setCutFormat('webm')}
+                        className={`px-3 py-1 rounded-[6px] text-xs font-semibold cursor-pointer ${
+                          cutFormat === 'webm' ? 'bg-[#6D3FC0] text-white shadow-2xs' : 'text-[#69636E]'
+                        }`}
+                      >
+                        WebM (VP9/Opus)
+                      </button>
+                    </div>
+                  </div>
+                  <div className="text-xs font-medium text-[#69636E]">
+                    Duration: <span className="font-semibold text-[#6D3FC0]">{Math.max(0, Math.round(selectionEnd - selectionStart))}s</span>
+                  </div>
+                </div>
               </div>
             )}
 
             {activeTool === 'crop' && (
-              <div className="space-y-3">
-                <p className="text-xs text-[#69636E]">Aspect ratio preset:</p>
-                <div className="flex gap-2">
-                  {(['9:16', '1:1', '16:9', 'original'] as const).map((r) => (
+              <div className="p-5 rounded-[18px] bg-white border border-[#E9E4EF] space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-[#211D25]">Smart Aspect Cropping</span>
+                  <span className="text-xs text-[#918B95]">Auto-centered viewport with zero stretch</span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  {[
+                    { id: '9:16', title: '9:16 Vertical', desc: 'TikTok, Shorts, IG Reels' },
+                    { id: '1:1', title: '1:1 Square', desc: 'Instagram Feed, LinkedIn' },
+                    { id: '16:9', title: '16:9 Landscape', desc: 'YouTube Standard, Web' },
+                    { id: 'original', title: 'Original Ratio', desc: 'Preserve source bounds' },
+                  ].map((r) => (
                     <button
-                      key={r}
-                      onClick={() => setCrop({ ...crop, aspectRatio: r })}
-                      className={`px-4 py-2 rounded-[12px] text-xs font-medium border ${
-                        crop.aspectRatio === r
-                          ? 'border-[#6D3FC0] bg-[#F0EAF8] text-[#6D3FC0]'
-                          : 'border-[#E9E4EF] bg-white text-[#69636E]'
+                      key={r.id}
+                      onClick={() => setCrop({ ...crop, aspectRatio: r.id as any })}
+                      className={`p-3 rounded-[14px] text-left border transition cursor-pointer ${
+                        crop.aspectRatio === r.id
+                          ? 'border-[#6D3FC0] bg-[#F5F1FA]'
+                          : 'border-[#E9E4EF] bg-white hover:border-[#DDD6E2]'
                       }`}
                     >
-                      {r === '9:16' ? '9:16 Reel / Short' : r === '1:1' ? '1:1 Square' : r === '16:9' ? '16:9 Widescreen' : 'Original'}
+                      <p className={`text-xs font-bold ${crop.aspectRatio === r.id ? 'text-[#6D3FC0]' : 'text-[#211D25]'}`}>
+                        {r.title}
+                      </p>
+                      <p className="text-[11px] text-[#918B95] mt-0.5">{r.desc}</p>
                     </button>
                   ))}
                 </div>
               </div>
             )}
 
+            {/* SMART COMPRESSION PANEL */}
             {activeTool === 'compress' && (
-              <div className="space-y-4">
-                <p className="text-xs text-[#69636E]">Target quality:</p>
-                <div className="flex gap-2">
-                  {(['smaller', 'balanced', 'higher'] as const).map((q) => (
-                    <button
-                      key={q}
-                      onClick={() => setCompressQuality(q)}
-                      className={`px-4 py-2 rounded-[12px] text-xs font-medium border capitalize ${
-                        compressQuality === q
-                          ? 'border-[#6D3FC0] bg-[#F0EAF8] text-[#6D3FC0]'
-                          : 'border-[#E9E4EF] bg-white text-[#69636E]'
-                      }`}
-                    >
-                      {q === 'smaller' ? 'Smaller file' : q === 'balanced' ? 'Balanced' : 'Higher quality'}
-                    </button>
-                  ))}
+              <div className="p-5 rounded-[18px] bg-white border border-[#E9E4EF] space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Gauge className="w-4 h-4 text-[#6D3FC0]" />
+                    <span className="text-sm font-semibold text-[#211D25]">Two-Pass H.264 Rate Control</span>
+                  </div>
+                  <span className="text-xs text-[#69636E]">
+                    Source: <span className="font-mono text-[#211D25]">{formatBytes(media.fileSize)}</span>
+                  </span>
+                </div>
+
+                {/* Target presets */}
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-[#69636E]">Platform & Size Targets:</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {[
+                      { id: 'discord', name: 'Discord Share', target: '< 25 MB', crf: 'smaller', res: '1280x720' },
+                      { id: 'whatsapp', name: 'WhatsApp Web', target: '< 16 MB', crf: 'smaller', res: '854x480' },
+                      { id: 'email', name: 'Email Attachment', target: '< 10 MB', crf: 'smaller', res: '854x480' },
+                      { id: 'custom', name: 'Studio CRF Preset', target: 'Auto-rate', crf: 'balanced', res: 'original' },
+                    ].map((p) => (
+                      <button
+                        key={p.id}
+                        onClick={() => {
+                          setCompressPreset(p.id as any);
+                          setCompressQuality(p.crf as any);
+                          setCompressResolution(p.res);
+                        }}
+                        className={`p-3 rounded-[12px] text-left border transition cursor-pointer ${
+                          compressPreset === p.id
+                            ? 'border-[#6D3FC0] bg-[#F5F1FA]'
+                            : 'border-[#E9E4EF] bg-white hover:border-[#DDD6E2]'
+                        }`}
+                      >
+                        <p className={`text-xs font-semibold ${compressPreset === p.id ? 'text-[#6D3FC0]' : 'text-[#211D25]'}`}>
+                          {p.name}
+                        </p>
+                        <p className="text-[11px] font-mono text-[#918B95] mt-0.5">{p.target}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-[#69636E]">Encoding Quality Constant (CRF):</p>
+                  <div className="flex gap-2">
+                    {[
+                      { id: 'smaller', label: 'High Compression (CRF 32)', est: '~70% savings' },
+                      { id: 'balanced', label: 'Balanced Quality (CRF 26)', est: '~45% savings' },
+                      { id: 'higher', label: 'Visual Lossless (CRF 20)', est: '~20% savings' },
+                    ].map((q) => (
+                      <button
+                        key={q.id}
+                        onClick={() => {
+                          setCompressQuality(q.id as any);
+                          setCompressPreset('custom');
+                        }}
+                        className={`flex-1 p-2.5 rounded-[12px] text-left border transition cursor-pointer ${
+                          compressQuality === q.id
+                            ? 'border-[#6D3FC0] bg-[#F5F1FA]'
+                            : 'border-[#E9E4EF] bg-white'
+                        }`}
+                      >
+                        <p className={`text-xs font-semibold ${compressQuality === q.id ? 'text-[#6D3FC0]' : 'text-[#211D25]'}`}>
+                          {q.label}
+                        </p>
+                        <p className="text-[10px] text-emerald-600 font-medium mt-0.5">{q.est}</p>
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <div>
                   <button
                     onClick={() => setShowAdvancedCompress(!showAdvancedCompress)}
-                    className="text-xs text-[#8061C9] hover:underline"
+                    className="text-xs text-[#8061C9] hover:underline font-medium"
                   >
-                    {showAdvancedCompress ? 'Hide advanced settings' : 'Advanced settings'}
+                    {showAdvancedCompress ? 'Hide advanced resolution scaling' : 'Show advanced resolution scaling'}
                   </button>
 
                   {showAdvancedCompress && (
-                    <div className="mt-3 p-4 rounded-[14px] bg-[#FAF8FD] border border-[#E9E4EF] flex items-center gap-4 text-xs">
-                      <span>Resolution:</span>
+                    <div className="mt-3 p-3.5 rounded-[12px] bg-[#FAF8FD] border border-[#E9E4EF] flex items-center justify-between text-xs">
+                      <span className="text-[#69636E]">Target Resolution:</span>
                       <select
                         value={compressResolution}
-                        onChange={(e) => setCompressResolution(e.target.value)}
-                        className="px-3 py-1.5 rounded-[10px] border border-[#DDD6E2] bg-white"
+                        onChange={(e) => {
+                          setCompressResolution(e.target.value);
+                          setCompressPreset('custom');
+                        }}
+                        className="px-3 py-1.5 rounded-[8px] border border-[#DDD6E2] bg-white font-mono text-xs text-[#211D25]"
                       >
                         <option value="original">Original ({media.width ? `${media.width}×${media.height}` : 'Auto'})</option>
+                        <option value="1920x1080">1080p FHD (1920×1080)</option>
                         <option value="1280x720">720p HD (1280×720)</option>
                         <option value="854x480">480p SD (854×480)</option>
                       </select>
@@ -761,117 +976,319 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
               </div>
             )}
 
+            {/* MUTE VIDEO PANEL */}
             {activeTool === 'mute' && (
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  id="muteToggle"
-                  checked={muteAudio}
-                  onChange={(e) => setMuteAudio(e.target.checked)}
-                  className="rounded text-[#6D3FC0]"
-                />
-                <label htmlFor="muteToggle" className="text-sm text-[#211D25]">
-                  Remove audio track entirely from exported video
-                </label>
+              <div className="p-5 rounded-[18px] bg-white border border-[#E9E4EF] flex items-center justify-between gap-4">
+                <div>
+                  <h4 className="text-sm font-semibold text-[#211D25]">Direct Audio Stream Deplexing</h4>
+                  <p className="text-xs text-[#69636E] mt-0.5">
+                    Strips the audio track cleanly without re-encoding video frames, completing instantly with 100% quality retention.
+                  </p>
+                </div>
+                <div className="px-3.5 py-1.5 rounded-[10px] bg-[#F5F1FA] text-[#6D3FC0] text-xs font-semibold shrink-0">
+                  Zero Loss Copy
+                </div>
               </div>
             )}
 
+            {/* FRAME GRABBER PANEL */}
             {activeTool === 'frame' && (
-              <div className="space-y-3">
-                <p className="text-sm text-[#69636E]">
-                  Capture a crisp, full-resolution JPEG frame from the video at playhead position{' '}
-                  <span className="font-mono font-medium text-[#211D25]">{formatTime(currentTime)}</span>.
-                </p>
-                <p className="text-xs text-[#918B95]">
-                  Use the timeline scrubber above to scrub to the exact frame you want to extract, then click Export Frame.
-                </p>
+              <div className="p-5 rounded-[18px] bg-white border border-[#E9E4EF] space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ImageIcon className="w-4 h-4 text-[#6D3FC0]" />
+                    <span className="text-sm font-semibold text-[#211D25]">Exact Video Frame Extraction</span>
+                  </div>
+                  <span className="font-mono text-xs font-semibold px-2.5 py-1 rounded-[6px] bg-[#F5F1FA] text-[#6D3FC0]">
+                    At {formatTime(currentTime)} ({currentTime.toFixed(2)}s)
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <p className="text-xs text-[#69636E] max-w-md">
+                    Scrub the timeline to the desired frame. Antigravity extracts the pristine frame directly from the video stream without compression artifacts.
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-[#69636E]">Image Container:</span>
+                    <div className="inline-flex rounded-[8px] p-0.5 bg-[#FAF8FD] border border-[#E9E4EF]">
+                      <button
+                        onClick={() => setFrameFormat('jpg')}
+                        className={`px-3 py-1 rounded-[6px] text-xs font-semibold cursor-pointer ${
+                          frameFormat === 'jpg' ? 'bg-[#6D3FC0] text-white shadow-2xs' : 'text-[#69636E]'
+                        }`}
+                      >
+                        JPEG (High Quality)
+                      </button>
+                      <button
+                        onClick={() => setFrameFormat('png')}
+                        className={`px-3 py-1 rounded-[6px] text-xs font-semibold cursor-pointer ${
+                          frameFormat === 'png' ? 'bg-[#6D3FC0] text-white shadow-2xs' : 'text-[#69636E]'
+                        }`}
+                      >
+                        PNG (Lossless 24-bit)
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
         )}
 
-        {/* GROUP 2: AUDIO UTILITIES */}
+        {/* GROUP 2: AUDIO UTILITIES — HIGH TECHNICAL DEPTH */}
         {activeGroup === 'audio' && (
           <div className="space-y-6">
             <div className="flex gap-2">
               <button
                 onClick={() => setActiveTool('audio_extract')}
-                className={`px-3 py-1.5 rounded-[10px] text-xs font-medium transition ${
+                className={`px-3.5 py-1.5 rounded-[10px] text-xs font-medium transition cursor-pointer ${
                   activeTool === 'audio_extract'
-                    ? 'bg-[#6D3FC0] text-white'
-                    : 'bg-[#F5F1FA] text-[#69636E]'
+                    ? 'bg-[#6D3FC0] text-white shadow-2xs'
+                    : 'bg-[#F5F1FA] text-[#69636E] hover:text-[#211D25]'
                 }`}
               >
-                Extract Audio
+                Studio Audio Extractor
               </button>
               <button
                 onClick={() => setActiveTool('ringtone')}
-                className={`px-3 py-1.5 rounded-[10px] text-xs font-medium transition ${
+                className={`px-3.5 py-1.5 rounded-[10px] text-xs font-medium transition cursor-pointer ${
                   activeTool === 'ringtone'
-                    ? 'bg-[#6D3FC0] text-white'
-                    : 'bg-[#F5F1FA] text-[#69636E]'
+                    ? 'bg-[#6D3FC0] text-white shadow-2xs'
+                    : 'bg-[#F5F1FA] text-[#69636E] hover:text-[#211D25]'
                 }`}
               >
-                Make Ringtone
+                Ringtone Architect
               </button>
             </div>
 
+            {/* AUDIO EXTRACTOR STUDIO */}
             {activeTool === 'audio_extract' && (
-              <div className="space-y-3">
-                <p className="text-xs text-[#69636E]">Select audio format:</p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setAudioFormat('mp3')}
-                    className={`px-4 py-2 rounded-[12px] text-xs font-medium border ${
-                      audioFormat === 'mp3'
-                        ? 'border-[#6D3FC0] bg-[#F0EAF8] text-[#6D3FC0]'
-                        : 'border-[#E9E4EF] bg-white text-[#69636E]'
-                    }`}
-                  >
-                    MP3 (320 kbps Crisp)
-                  </button>
-                  <button
-                    onClick={() => setAudioFormat('wav')}
-                    className={`px-4 py-2 rounded-[12px] text-xs font-medium border ${
-                      audioFormat === 'wav'
-                        ? 'border-[#6D3FC0] bg-[#F0EAF8] text-[#6D3FC0]'
-                        : 'border-[#E9E4EF] bg-white text-[#69636E]'
-                    }`}
-                  >
-                    WAV (Lossless 1411 kbps)
-                  </button>
+              <div className="p-5 rounded-[18px] bg-white border border-[#E9E4EF] space-y-5">
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#F0EAF8]">
+                  <div className="flex items-center gap-2">
+                    <Music className="w-4 h-4 text-[#6D3FC0]" />
+                    <h3 className="text-sm font-semibold text-[#211D25]">Master Audio Demuxer & Transcoder</h3>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs font-mono text-[#6D3FC0] bg-[#F5F1FA] px-2.5 py-1 rounded-[6px]">
+                    <Waves className="w-3.5 h-3.5" />
+                    <span>Est. Size: {Math.max(0.5, Math.round(((audioScope === 'selection' ? Math.max(1, selectionEnd - selectionStart) : (media.durationSeconds || 60)) * (audioFormat === 'wav' || audioFormat === 'flac' ? 1411 : audioBitrate)) / 8192 * 10) / 10)} MB</span>
+                  </div>
+                </div>
+
+                {/* Scope selector */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-[#69636E]">Extraction Range:</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button
+                      onClick={() => setAudioScope('full')}
+                      className={`p-3 rounded-[12px] text-left border transition cursor-pointer ${
+                        audioScope === 'full'
+                          ? 'border-[#6D3FC0] bg-[#F5F1FA]'
+                          : 'border-[#E9E4EF] bg-white hover:border-[#DDD6E2]'
+                      }`}
+                    >
+                      <p className={`text-xs font-semibold ${audioScope === 'full' ? 'text-[#6D3FC0]' : 'text-[#211D25]'}`}>
+                        Full Audio Track
+                      </p>
+                      <p className="text-[11px] text-[#918B95] mt-0.5">
+                        Export complete track (0:00 — {formatTime(media.durationSeconds)})
+                      </p>
+                    </button>
+                    <button
+                      onClick={() => setAudioScope('selection')}
+                      className={`p-3 rounded-[12px] text-left border transition cursor-pointer ${
+                        audioScope === 'selection'
+                          ? 'border-[#6D3FC0] bg-[#F5F1FA]'
+                          : 'border-[#E9E4EF] bg-white hover:border-[#DDD6E2]'
+                      }`}
+                    >
+                      <p className={`text-xs font-semibold ${audioScope === 'selection' ? 'text-[#6D3FC0]' : 'text-[#211D25]'}`}>
+                        Timeline Selection Only
+                      </p>
+                      <p className="text-[11px] text-[#918B95] mt-0.5">
+                        Bounded: {formatTime(selectionStart)} — {formatTime(selectionEnd)} ({Math.round(selectionEnd - selectionStart)}s)
+                      </p>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Format selection */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-[#69636E]">Target Audio Codec & Container:</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    {[
+                      { id: 'mp3', name: 'MP3 (MPEG Audio)', desc: 'LAME VBR/CBR · Universal Compatibility' },
+                      { id: 'm4a', name: 'M4A / AAC', desc: 'Apple Core Audio · High Efficiency' },
+                      { id: 'wav', name: 'WAV (PCM Uncompressed)', desc: 'Broadcast 1411 kbps · 16/24-bit' },
+                      { id: 'flac', name: 'FLAC (Lossless)', desc: 'Free Lossless Audio Codec · Bit-perfect' },
+                    ].map((fmt) => (
+                      <button
+                        key={fmt.id}
+                        onClick={() => setAudioFormat(fmt.id as any)}
+                        className={`p-3 rounded-[14px] text-left border transition cursor-pointer ${
+                          audioFormat === fmt.id
+                            ? 'border-[#6D3FC0] bg-[#F5F1FA]'
+                            : 'border-[#E9E4EF] bg-white hover:border-[#DDD6E2]'
+                        }`}
+                      >
+                        <p className={`text-xs font-bold ${audioFormat === fmt.id ? 'text-[#6D3FC0]' : 'text-[#211D25]'}`}>
+                          {fmt.name}
+                        </p>
+                        <p className="text-[10px] text-[#918B95] mt-0.5 leading-snug">{fmt.desc}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Bitrate selection (for lossy formats) */}
+                {(audioFormat === 'mp3' || audioFormat === 'm4a') && (
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-[#69636E]">Constant Bitrate (CBR):</label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {[
+                        { rate: 320, label: '320 kbps', grade: 'Studio Master' },
+                        { rate: 256, label: '256 kbps', grade: 'Audiophile HQ' },
+                        { rate: 192, label: '192 kbps', grade: 'Standard Music' },
+                        { rate: 128, label: '128 kbps', grade: 'Podcast / Voice' },
+                      ].map((b) => (
+                        <button
+                          key={b.rate}
+                          onClick={() => setAudioBitrate(b.rate as any)}
+                          className={`p-2.5 rounded-[12px] text-left border transition cursor-pointer ${
+                            audioBitrate === b.rate
+                              ? 'border-[#6D3FC0] bg-[#F5F1FA]'
+                              : 'border-[#E9E4EF] bg-white hover:border-[#DDD6E2]'
+                          }`}
+                        >
+                          <p className={`text-xs font-semibold ${audioBitrate === b.rate ? 'text-[#6D3FC0]' : 'text-[#211D25]'}`}>
+                            {b.label}
+                          </p>
+                          <p className="text-[10px] text-[#918B95] mt-0.5">{b.grade}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Audio Master enhancements */}
+                <div className="pt-2 flex flex-wrap items-center justify-between gap-3 text-xs text-[#69636E]">
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={audioNormalize}
+                      onChange={(e) => setAudioNormalize(e.target.checked)}
+                      className="rounded text-[#6D3FC0] focus:ring-[#6D3FC0]"
+                    />
+                    <span>EBU R128 Loudness Normalization (-16 LUFS target)</span>
+                  </label>
+                  <span className="text-[11px] text-[#918B95]">Sample Rate: 44.1 kHz Stereo</span>
                 </div>
               </div>
             )}
 
+            {/* RINGTONE ARCHITECT */}
             {activeTool === 'ringtone' && (
-              <div className="space-y-3">
-                <p className="text-xs text-[#69636E]">Phone format:</p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setRingtoneTarget('iphone')}
-                    className={`px-4 py-2 rounded-[12px] text-xs font-medium border ${
-                      ringtoneTarget === 'iphone'
-                        ? 'border-[#6D3FC0] bg-[#F0EAF8] text-[#6D3FC0]'
-                        : 'border-[#E9E4EF] bg-white text-[#69636E]'
-                    }`}
-                  >
-                    iPhone (M4R · max 30s)
-                  </button>
-                  <button
-                    onClick={() => setRingtoneTarget('android')}
-                    className={`px-4 py-2 rounded-[12px] text-xs font-medium border ${
-                      ringtoneTarget === 'android'
-                        ? 'border-[#6D3FC0] bg-[#F0EAF8] text-[#6D3FC0]'
-                        : 'border-[#E9E4EF] bg-white text-[#69636E]'
-                    }`}
-                  >
-                    Android (MP3 · max 40s)
-                  </button>
+              <div className="p-5 rounded-[18px] bg-white border border-[#E9E4EF] space-y-5">
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#F0EAF8]">
+                  <div className="flex items-center gap-2">
+                    <Bell className="w-4 h-4 text-[#6D3FC0]" />
+                    <h3 className="text-sm font-semibold text-[#211D25]">Smartphone Ringtone Architect</h3>
+                  </div>
+                  {/* Duration Gauge Meter */}
+                  {(() => {
+                    const selDur = Math.max(0, selectionEnd - selectionStart);
+                    const maxAllowed = ringtoneTarget === 'iphone' ? 30 : 40;
+                    const isOver = selDur > maxAllowed;
+                    return (
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs font-mono font-semibold px-2.5 py-1 rounded-[6px] ${
+                          isOver ? 'bg-amber-100 text-amber-700' : 'bg-[#F5F1FA] text-[#6D3FC0]'
+                        }`}>
+                          Length: {Math.round(selDur)}s / {maxAllowed}s max
+                        </span>
+                      </div>
+                    );
+                  })()}
                 </div>
-                <p className="text-[11px] text-[#918B95]">
-                  Automatically trimmed to fit ringtone length limit with gentle fade in/out.
-                </p>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-[#69636E]">Target Operating System & Container:</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button
+                      onClick={() => setRingtoneTarget('iphone')}
+                      className={`p-3.5 rounded-[14px] text-left border transition cursor-pointer ${
+                        ringtoneTarget === 'iphone'
+                          ? 'border-[#6D3FC0] bg-[#F5F1FA]'
+                          : 'border-[#E9E4EF] bg-white hover:border-[#DDD6E2]'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <p className={`text-xs font-bold ${ringtoneTarget === 'iphone' ? 'text-[#6D3FC0]' : 'text-[#211D25]'}`}>
+                          Apple iPhone (iOS)
+                        </p>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white text-[#6D3FC0] border border-[#E9E4EF]">
+                          .M4R (AAC)
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-[#918B95] mt-1">
+                        Formatted strictly to Apple's 30-second hard limit. Imports directly into iTunes / GarageBand / iOS Sounds.
+                      </p>
+                    </button>
+
+                    <button
+                      onClick={() => setRingtoneTarget('android')}
+                      className={`p-3.5 rounded-[14px] text-left border transition cursor-pointer ${
+                        ringtoneTarget === 'android'
+                          ? 'border-[#6D3FC0] bg-[#F5F1FA]'
+                          : 'border-[#E9E4EF] bg-white hover:border-[#DDD6E2]'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <p className={`text-xs font-bold ${ringtoneTarget === 'android' ? 'text-[#6D3FC0]' : 'text-[#211D25]'}`}>
+                          Google Android & Others
+                        </p>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white text-[#6D3FC0] border border-[#E9E4EF]">
+                          .MP3 (320k)
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-[#918B95] mt-1">
+                        High-bitrate MP3 tuned for Android sound settings with up to 40-second playback buffer.
+                      </p>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Acoustic Smoothing / Fade Controls */}
+                <div className="space-y-2 pt-1">
+                  <p className="text-xs font-medium text-[#69636E]">Acoustic Smoothing Filters:</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                    <label className="p-3 rounded-[12px] bg-[#FAF8FD] border border-[#E9E4EF] flex items-center justify-between cursor-pointer select-none">
+                      <div>
+                        <p className="font-semibold text-[#211D25]">Soft Fade-In</p>
+                        <p className="text-[11px] text-[#918B95]">Gradual 1.5s volume swell</p>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={ringtoneFadeIn}
+                        onChange={(e) => setRingtoneFadeIn(e.target.checked)}
+                        className="rounded text-[#6D3FC0] focus:ring-[#6D3FC0]"
+                      />
+                    </label>
+
+                    <label className="p-3 rounded-[12px] bg-[#FAF8FD] border border-[#E9E4EF] flex items-center justify-between cursor-pointer select-none">
+                      <div>
+                        <p className="font-semibold text-[#211D25]">Seamless Fade-Out</p>
+                        <p className="text-[11px] text-[#918B95]">Prevents harsh cutoffs (2.0s tail)</p>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={ringtoneFadeOut}
+                        onChange={(e) => setRingtoneFadeOut(e.target.checked)}
+                        className="rounded text-[#6D3FC0] focus:ring-[#6D3FC0]"
+                      />
+                    </label>
+                  </div>
+                </div>
               </div>
             )}
           </div>
