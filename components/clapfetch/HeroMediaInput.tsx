@@ -41,11 +41,12 @@ export function HeroMediaInput({ onMediaLoaded }: HeroMediaInputProps) {
         onMediaLoaded({
           id: `media-${Date.now()}`,
           filename: json.data.title || 'Imported Media',
-          url: json.data.thumbnail || 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=1000&auto=format&fit=crop&q=80',
+          url: json.data.videoUrl || 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+          thumbnailUrl: json.data.thumbnail,
           title: json.data.title,
           mimeType: 'video/mp4',
           fileSize: 45 * 1024 * 1024,
-          durationSeconds: json.data.durationSeconds || 180,
+          durationSeconds: json.data.durationSeconds || 15,
           source: 'link',
           sourceUrl: trimmed,
         });

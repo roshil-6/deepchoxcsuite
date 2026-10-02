@@ -123,8 +123,17 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
       el.pause();
       setIsPlaying(false);
     } else {
-      el.play();
-      setIsPlaying(true);
+      const playPromise = el.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => setIsPlaying(true))
+          .catch((err) => {
+            console.warn('Playback prevented or unsupported source:', err);
+            setIsPlaying(false);
+          });
+      } else {
+        setIsPlaying(true);
+      }
     }
   };
 
@@ -352,6 +361,10 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
             className="w-full h-full object-contain"
             onTimeUpdate={handleTimeUpdate}
             onEnded={() => setIsPlaying(false)}
+            onError={() => {
+              console.warn('Video failed to load source:', media.url);
+              setIsPlaying(false);
+            }}
             onClick={togglePlay}
           />
         ) : (
@@ -361,6 +374,10 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
               src={media.url}
               onTimeUpdate={handleTimeUpdate}
               onEnded={() => setIsPlaying(false)}
+              onError={() => {
+                console.warn('Audio failed to load source:', media.url);
+                setIsPlaying(false);
+              }}
             />
             <div className="w-16 h-16 rounded-full bg-[#6D3FC0]/20 flex items-center justify-center mb-3">
               <Music className="w-8 h-8 text-[#8061C9]" />

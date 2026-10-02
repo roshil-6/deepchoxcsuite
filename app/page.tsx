@@ -41,11 +41,12 @@ export default function Home() {
       setLoadedMedia({
         id: 'sample-session',
         filename: 'Sample Media Session.mp4',
-        url: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=1000&auto=format&fit=crop&q=80',
+        url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+        thumbnailUrl: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=1000&auto=format&fit=crop&q=80',
         title: 'Sample Media Session',
         mimeType: 'video/mp4',
-        fileSize: 42 * 1024 * 1024,
-        durationSeconds: 258,
+        fileSize: 15 * 1024 * 1024,
+        durationSeconds: 15,
         source: 'link',
       });
     }
