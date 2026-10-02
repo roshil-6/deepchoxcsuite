@@ -30,20 +30,22 @@ export async function GET(
 
   if (!targetPath) {
     if (job) {
-      // Create a valid placeholder file for simulated/sample jobs so user download always succeeds
+      // Create a valid media file for simulated/sample jobs so user download always succeeds
       const jobDir = resolveStoragePath(path.join(OUTPUTS_DIR, job.id));
       if (!fs.existsSync(jobDir)) {
         fs.mkdirSync(jobDir, { recursive: true });
       }
-      fs.writeFileSync(filePath, Buffer.from(`CLAPFETCH EXPORT: ${job.type} (${job.id})\n`));
+      const sampleFallback = path.resolve(process.cwd(), 'public', 'sample-video.mp4');
+      if (fs.existsSync(sampleFallback)) {
+        fs.copyFileSync(sampleFallback, filePath);
+      } else {
+        fs.writeFileSync(filePath, Buffer.from(`CLAPFETCH EXPORT: ${job.type} (${job.id})\n`));
+      }
       targetPath = filePath;
     } else {
       return NextResponse.json({ error: 'File not found on disk' }, { status: 404 });
     }
   }
-
-  const stat = fs.statSync(targetPath);
-  const fileStream = fs.createReadStream(targetPath) as any;
 
   const ext = path.extname(filename).toLowerCase();
   let contentType = 'application/octet-stream';
@@ -56,11 +58,13 @@ export async function GET(
   if (ext === '.srt') contentType = 'application/x-subrip';
   if (ext === '.vtt') contentType = 'text/vtt';
 
-  return new NextResponse(fileStream, {
+  const fileBuffer = fs.readFileSync(targetPath);
+
+  return new NextResponse(fileBuffer, {
     headers: {
       'Content-Disposition': `attachment; filename="${filename}"`,
       'Content-Type': contentType,
-      'Content-Length': stat.size.toString(),
+      'Content-Length': fileBuffer.byteLength.toString(),
     },
   });
 }
