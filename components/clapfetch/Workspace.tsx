@@ -354,7 +354,15 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
 
       {/* ─── Media Preview ─── */}
       <div className="relative rounded-[22px] overflow-hidden bg-[#18161D] aspect-video max-h-[440px] mx-auto mb-6 flex items-center justify-center">
-        {!isAudioOnly ? (
+        {media.youtubeId ? (
+          <iframe
+            src={`https://www.youtube-nocookie.com/embed/${media.youtubeId}?autoplay=0&rel=0&modestbranding=1`}
+            className="w-full h-full border-0"
+            title={media.title}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        ) : !isAudioOnly ? (
           <video
             ref={videoRef}
             src={media.url}

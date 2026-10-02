@@ -43,6 +43,8 @@ const isPublicRoute = createRouteMatcher([
   '/api/upload(.*)',
   '/api/process(.*)',
   '/api/download(.*)',
+  '/sample-video.mp4(.*)',
+  '/landing-hero-demo.mp4(.*)',
   // ── CRM Builder ─────────────────────────────────────────────────────────────
   // Public during local development while Clerk production keys are not
   // configured for localhost. Re-add auth guard before going to production.
@@ -160,7 +162,7 @@ export default clerkMiddleware(async (auth, req) => {
 export const config = {
   matcher: [
     // Skip Next.js internals, static files, and SEO routes (must not run Clerk — else crawlers get HTML sign-in).
-    '/((?!_next/static|_next/image|favicon.ico|deepchox-mark.svg|sitemap\\.xml|robots\\.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|deepchox-mark.svg|sitemap\\.xml|robots\\.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|mp4|webm|mp3|wav|m4a|aac|flac)$).*)',
     '/(api|trpc)(.*)',
   ],
 };
