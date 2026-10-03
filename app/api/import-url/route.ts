@@ -8,7 +8,7 @@ import { mediaUrlFor } from '@/lib/media/storage';
 import { THUMBNAILS_DIR } from '@/lib/media/config';
 
 export const runtime = 'nodejs';
-export const maxDuration = 900;
+export const maxDuration = 300;
 
 /**
  * POST { url } → downloads the real media behind a link (max 1080p) into

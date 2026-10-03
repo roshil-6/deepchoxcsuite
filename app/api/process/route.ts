@@ -5,7 +5,7 @@ import { downloadLinkVideo, LinkError } from '@/lib/media/ytdlp';
 import { JobType } from '@/lib/media/types';
 
 export const runtime = 'nodejs';
-export const maxDuration = 900;
+export const maxDuration = 300;
 
 const validJobTypes: string[] = [
   'cut',

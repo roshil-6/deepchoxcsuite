@@ -3,7 +3,7 @@ import { downloadLinkAudio, downloadLinkVideo, getLinkInfo, LinkError, LinkQuali
 import { serveFile } from '@/lib/media/serveFile';
 
 export const runtime = 'nodejs';
-export const maxDuration = 900;
+export const maxDuration = 300;
 
 const QUALITIES = new Set(['best', '2160', '1440', '1080', '720', '480', '360', '240', '144']);
 
