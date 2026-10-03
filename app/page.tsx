@@ -19,9 +19,15 @@ export default function Home() {
     setLoadedMedia(media);
   };
 
-  const handleSelectToolFromHome = (tool: 'cut' | 'audio' | 'ringtone' | 'reel' | 'subtitles' | 'compress' | 'frame' | 'all') => {
+  const handleSelectToolFromHome = (tool: 'download' | 'cut' | 'audio' | 'ringtone' | 'reel' | 'subtitles' | 'compress' | 'frame' | 'all') => {
     if (tool === 'all') {
       setActiveView('tools');
+      return;
+    }
+
+    if (tool === 'download') {
+      // Scroll to the HeroMediaInput bar to paste link
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 

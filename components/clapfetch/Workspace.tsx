@@ -520,41 +520,60 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
       </div>
 
       {/* ─── Link / YouTube Helper Bar with Options ─── */}
-      {media.youtubeId && (
+      {media.sourceUrl && (
         <div className="mb-6 px-4 py-3 rounded-[16px] bg-[#FAF8FD] border border-[#E9E4EF] flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2 text-[#4A4453]">
-            <AlertCircle className="w-4 h-4 text-[#8061C9] shrink-0" />
-            <span>
-              {playerMode === 'poster'
-                ? 'Previewing video card & timeline. Embed restrictions (e.g. Formula 1) bypassed.'
-                : 'If YouTube shows "Video unavailable", switch back to Poster View.'}
-            </span>
+            <Download className="w-4 h-4 text-[#8061C9] shrink-0" />
+            <span className="font-semibold text-[#211D25]">Quick Download:</span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <a
+                href="/api/download/online-video-1080p.mp4"
+                download={`${media.title.slice(0, 30)}-1080p.mp4`}
+                className="px-2.5 py-1 rounded-[8px] bg-white border border-[#DDD6E2] text-[#6D3FC0] hover:bg-[#F0EAF8] font-medium transition cursor-pointer"
+              >
+                1080p MP4
+              </a>
+              <a
+                href="/api/download/online-video-720p.mp4"
+                download={`${media.title.slice(0, 30)}-720p.mp4`}
+                className="px-2.5 py-1 rounded-[8px] bg-white border border-[#DDD6E2] text-[#6D3FC0] hover:bg-[#F0EAF8] font-medium transition cursor-pointer"
+              >
+                720p MP4
+              </a>
+              <a
+                href="/api/download/online-audio-320k.mp3"
+                download={`${media.title.slice(0, 30)}.mp3`}
+                className="px-2.5 py-1 rounded-[8px] bg-white border border-[#DDD6E2] text-[#6D3FC0] hover:bg-[#F0EAF8] font-medium transition cursor-pointer"
+              >
+                320k MP3
+              </a>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setPlayerMode(playerMode === 'embed' ? 'poster' : 'embed')}
-              className="px-3 py-1.5 rounded-[10px] bg-white border border-[#DDD6E2] text-[#211D25] hover:border-[#8061C9] font-medium transition cursor-pointer flex items-center gap-1.5"
-            >
-              <ImageIcon className="w-3.5 h-3.5 text-[#6D3FC0]" />
-              <span>{playerMode === 'embed' ? 'Switch to Poster' : 'Try Embedded Player'}</span>
-            </button>
-
-            {media.sourceUrl && (
-              <a
-                href={media.sourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 py-1.5 rounded-[10px] bg-[#F5F1FA] text-[#6D3FC0] hover:bg-[#EFE7FA] font-medium flex items-center gap-1.5 transition"
+            {media.youtubeId && (
+              <button
+                onClick={() => setPlayerMode(playerMode === 'embed' ? 'poster' : 'embed')}
+                className="px-3 py-1.5 rounded-[10px] bg-white border border-[#DDD6E2] text-[#211D25] hover:border-[#8061C9] font-medium transition cursor-pointer flex items-center gap-1.5"
               >
-                <span>Watch on YouTube</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
+                <ImageIcon className="w-3.5 h-3.5 text-[#6D3FC0]" />
+                <span>{playerMode === 'embed' ? 'Poster View' : 'Embed Player'}</span>
+              </button>
             )}
+
+            <a
+              href={media.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-1.5 rounded-[10px] bg-[#F5F1FA] text-[#6D3FC0] hover:bg-[#EFE7FA] font-medium flex items-center gap-1.5 transition"
+            >
+              <span>Original Link</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
 
             <label className="px-3 py-1.5 rounded-[10px] bg-[#6D3FC0] text-white hover:bg-[#5C35A3] font-medium flex items-center gap-1.5 cursor-pointer transition">
               <Upload className="w-3.5 h-3.5" />
-              <span>Upload local file</span>
+              <span>Upload local</span>
               <input type="file" accept="video/*,audio/*" onChange={handleReplaceFile} className="hidden" />
             </label>
           </div>

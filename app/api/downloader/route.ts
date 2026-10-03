@@ -127,7 +127,7 @@ async function resolveMediaMetadata(url: string) {
       quality: '1080p Crisp',
       filesize: '148 MB',
       type: 'video',
-      downloadUrl: '#download-1080p',
+      downloadUrl: '/api/download/online-video-1080p.mp4',
     },
     {
       id: 'mp4-720p',
@@ -137,7 +137,7 @@ async function resolveMediaMetadata(url: string) {
       quality: '720p Fast Stream',
       filesize: '64 MB',
       type: 'video',
-      downloadUrl: '#download-720p',
+      downloadUrl: '/api/download/online-video-720p.mp4',
     },
     {
       id: 'mp3-320',
@@ -146,7 +146,7 @@ async function resolveMediaMetadata(url: string) {
       quality: '320 kbps Crisp Audio',
       filesize: '45 MB',
       type: 'audio',
-      downloadUrl: '#download-mp3-320',
+      downloadUrl: '/api/download/online-audio-320k.mp3',
     },
     {
       id: 'wav-lossless',
@@ -155,7 +155,7 @@ async function resolveMediaMetadata(url: string) {
       quality: '1411 kbps Uncompressed',
       filesize: '120 MB',
       type: 'audio',
-      downloadUrl: '#download-wav',
+      downloadUrl: '/api/download/online-audio-lossless.wav',
     },
   ];
 

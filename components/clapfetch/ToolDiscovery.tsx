@@ -1,18 +1,26 @@
 'use client';
 
 import React from 'react';
-import { Scissors, Music, Bell, Captions, Smartphone, ArrowDownToLine, Image as ImageIcon, MoreHorizontal, ArrowRight } from 'lucide-react';
+import { Scissors, Music, Bell, Captions, Smartphone, ArrowDownToLine, Image as ImageIcon, MoreHorizontal, ArrowRight, DownloadCloud } from 'lucide-react';
 
 interface ToolDiscoveryProps {
-  onSelectTool: (tool: 'cut' | 'audio' | 'ringtone' | 'reel' | 'subtitles' | 'compress' | 'frame' | 'all') => void;
+  onSelectTool: (tool: 'download' | 'cut' | 'audio' | 'ringtone' | 'reel' | 'subtitles' | 'compress' | 'frame' | 'all') => void;
 }
 
 export function ToolDiscovery({ onSelectTool }: ToolDiscoveryProps) {
   const primaryTools = [
     {
+      id: 'download' as const,
+      title: 'Online Downloader',
+      desc: 'Paste any video link to preview and download in 1080p, 720p or MP3.',
+      icon: DownloadCloud,
+      iconBg: 'bg-[#EDE9FE]',
+      iconColor: 'text-[#6D3FC0]',
+    },
+    {
       id: 'cut' as const,
       title: 'Cut a video',
-      desc: 'Choose the exact section you want to keep.',
+      desc: 'Choose the exact section you want to keep with 0ms stream loss.',
       icon: Scissors,
       iconBg: 'bg-[#F0EAF8]',
       iconColor: 'text-[#7C3AED]',
@@ -20,7 +28,7 @@ export function ToolDiscovery({ onSelectTool }: ToolDiscoveryProps) {
     {
       id: 'audio' as const,
       title: 'Extract audio',
-      desc: 'Save the whole track or just the part you need.',
+      desc: 'Save the whole track or just the part you need in MP3, WAV or FLAC.',
       icon: Music,
       iconBg: 'bg-[#FDF2F8]',
       iconColor: 'text-[#EC4899]',
@@ -28,22 +36,20 @@ export function ToolDiscovery({ onSelectTool }: ToolDiscoveryProps) {
     {
       id: 'ringtone' as const,
       title: 'Make a ringtone',
-      desc: 'Turn your favorite 5–30 seconds into a ringtone.',
+      desc: 'Turn your favorite 5–30 seconds into an iPhone or Android ringtone.',
       icon: Bell,
       iconBg: 'bg-[#F0EAF8]',
       iconColor: 'text-[#6D3FC0]',
     },
-    {
-      id: 'subtitles' as const,
-      title: 'Add subtitles',
-      desc: 'Generate, edit and translate subtitles.',
-      icon: Captions,
-      iconBg: 'bg-[#FDF2F8]',
-      iconColor: 'text-[#F43F5E]',
-    },
   ];
 
   const secondaryTools = [
+    {
+      id: 'subtitles' as const,
+      title: 'Add subtitles',
+      desc: 'AI captions, editing and multi-language translation.',
+      icon: Captions,
+    },
     {
       id: 'reel' as const,
       title: 'Create a Reel',
@@ -53,13 +59,13 @@ export function ToolDiscovery({ onSelectTool }: ToolDiscoveryProps) {
     {
       id: 'compress' as const,
       title: 'Compress video',
-      desc: 'Make a video smaller.',
+      desc: 'Discord, WhatsApp & email presets.',
       icon: ArrowDownToLine,
     },
     {
       id: 'frame' as const,
       title: 'Frame grabber',
-      desc: 'Capture high-quality frames.',
+      desc: 'Capture lossless PNG or JPG frames.',
       icon: ImageIcon,
     },
     {

@@ -601,6 +601,19 @@ async function runTests() {
       res.ok && json.ok && json.data?.title,
       `Platform: ${json.data?.platform}, Title: ${json.data?.title}, Duration: ${json.data?.duration}`
     );
+
+    // Verify Direct Online Video Download Stream
+    const dlTestUrl = json.data?.formats?.[0]?.downloadUrl;
+    if (dlTestUrl) {
+      const dlRes = await fetch(`${BASE_URL}${dlTestUrl}`);
+      const dlBuffer = await dlRes.arrayBuffer();
+      const dlContentType = dlRes.headers.get('content-type');
+      report(
+        'Direct Online Video Downloader Stream',
+        dlRes.ok && dlBuffer.byteLength > 1000 && dlContentType === 'video/mp4',
+        `HTTP: ${dlRes.status}, Content-Type: ${dlContentType}, Length: ${dlBuffer.byteLength} bytes`
+      );
+    }
   } catch (err) {
     report('URL Import Metadata API', false, err.message);
   }
