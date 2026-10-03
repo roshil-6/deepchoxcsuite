@@ -40,3 +40,4 @@ npm-debug.log*
 # Media storage
 storage/
 *.bundle
+bin/

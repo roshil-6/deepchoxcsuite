@@ -31,7 +31,9 @@ import {
   Sparkles,
   FileAudio,
   Gauge,
+  Film,
 } from 'lucide-react';
+import { VideoEditor } from './editor/VideoEditor';
 
 interface WorkspaceProps {
   media: WorkspaceMedia;
@@ -101,6 +103,7 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
   const [muteAudio, setMuteAudio] = useState(false);
   const [frameFormat, setFrameFormat] = useState<'jpg' | 'png'>('jpg');
   const [playerMode, setPlayerMode] = useState<'embed' | 'poster'>('poster');
+  const [mode, setMode] = useState<'editor' | 'tools'>(initialTool === 'editor' ? 'editor' : 'tools');
 
   const handleReplaceFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -175,7 +178,7 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
   useEffect(() => {
     setMedia(media);
     if (initialTool) {
-      setActiveTool(initialTool);
+      setActiveTool(initialTool === 'editor' ? 'trim' : initialTool);
       if (['audio_extract', 'audio_trim', 'ringtone'].includes(initialTool)) {
         setActiveGroup('audio');
       } else if (['subtitle_generate', 'subtitle_edit', 'subtitle_translate', 'subtitle_export'].includes(initialTool)) {
@@ -301,6 +304,7 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
         body: JSON.stringify({
           mediaId: media.id,
           storagePath: media.storagePath,
+          sourceUrl: media.sourceUrl,
           type,
           params,
         }),
@@ -440,6 +444,32 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
         </button>
       </div>
 
+      {/* ─── Mode switch: full timeline editor vs quick single-range tools ─── */}
+      {!isAudioOnly && (
+        <div className="flex items-center gap-1 p-1 mb-6 rounded-[14px] bg-[#F5F1FA] w-fit">
+          <button
+            onClick={() => setMode('editor')}
+            className={`h-9 px-4 rounded-[10px] text-sm font-semibold flex items-center gap-1.5 transition cursor-pointer ${
+              mode === 'editor' ? 'bg-white text-[#6D3FC0] shadow-2xs' : 'text-[#69636E] hover:text-[#211D25]'
+            }`}
+          >
+            <Film className="w-4 h-4" /> Timeline Editor
+          </button>
+          <button
+            onClick={() => setMode('tools')}
+            className={`h-9 px-4 rounded-[10px] text-sm font-semibold flex items-center gap-1.5 transition cursor-pointer ${
+              mode === 'tools' ? 'bg-white text-[#6D3FC0] shadow-2xs' : 'text-[#69636E] hover:text-[#211D25]'
+            }`}
+          >
+            <Sliders className="w-4 h-4" /> Quick Tools
+          </button>
+        </div>
+      )}
+
+      {mode === 'editor' && !isAudioOnly ? (
+        <VideoEditor media={media} />
+      ) : (
+      <>
       {/* ─── Media Preview ─── */}
       <div className="relative rounded-[22px] overflow-hidden bg-[#18161D] aspect-video max-h-[440px] mx-auto mb-3 flex items-center justify-center">
         {media.youtubeId ? (
@@ -526,27 +556,19 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
             <Download className="w-4 h-4 text-[#8061C9] shrink-0" />
             <span className="font-semibold text-[#211D25]">Quick Download:</span>
             <div className="flex items-center gap-1.5 flex-wrap">
-              <a
-                href="/api/download/online-video-1080p.mp4"
-                download={`${media.title.slice(0, 30)}-1080p.mp4`}
-                className="px-2.5 py-1 rounded-[8px] bg-white border border-[#DDD6E2] text-[#6D3FC0] hover:bg-[#F0EAF8] font-medium transition cursor-pointer"
-              >
-                1080p MP4
-              </a>
-              <a
-                href="/api/download/online-video-720p.mp4"
-                download={`${media.title.slice(0, 30)}-720p.mp4`}
-                className="px-2.5 py-1 rounded-[8px] bg-white border border-[#DDD6E2] text-[#6D3FC0] hover:bg-[#F0EAF8] font-medium transition cursor-pointer"
-              >
-                720p MP4
-              </a>
-              <a
-                href="/api/download/online-audio-320k.mp3"
-                download={`${media.title.slice(0, 30)}.mp3`}
-                className="px-2.5 py-1 rounded-[8px] bg-white border border-[#DDD6E2] text-[#6D3FC0] hover:bg-[#F0EAF8] font-medium transition cursor-pointer"
-              >
-                320k MP3
-              </a>
+              {[
+                { label: '1080p MP4', href: `/api/fetch-media?kind=video&q=1080&url=${encodeURIComponent(media.sourceUrl)}` },
+                { label: '720p MP4', href: `/api/fetch-media?kind=video&q=720&url=${encodeURIComponent(media.sourceUrl)}` },
+                { label: '320k MP3', href: `/api/fetch-media?kind=audio&format=mp3&bitrate=320&url=${encodeURIComponent(media.sourceUrl)}` },
+              ].map((l) => (
+                <a
+                  key={l.label}
+                  href={l.href}
+                  className="px-2.5 py-1 rounded-[8px] bg-white border border-[#DDD6E2] text-[#6D3FC0] hover:bg-[#F0EAF8] font-medium transition cursor-pointer"
+                >
+                  {l.label}
+                </a>
+              ))}
             </div>
           </div>
 
@@ -1502,6 +1524,8 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
           </span>
         </button>
       </div>
+      </>
+      )}
     </div>
   );
 }

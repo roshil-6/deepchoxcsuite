@@ -96,22 +96,43 @@ export function HeroMediaInput({ onMediaLoaded }: HeroMediaInputProps) {
     }
   };
 
-  const handleOpenInWorkspace = () => {
-    if (!previewData) return;
+  const [preparing, setPreparing] = useState<string | null>(null);
 
-    onMediaLoaded({
-      id: `media-${Date.now()}`,
-      filename: previewData.title || 'Online Video',
-      url: previewData.videoUrl || '/sample-video.mp4',
-      thumbnailUrl: previewData.thumbnail,
-      title: previewData.title,
-      youtubeId: previewData.youtubeId,
-      mimeType: 'video/mp4',
-      fileSize: 45 * 1024 * 1024,
-      durationSeconds: previewData.durationSeconds || 15,
-      source: 'link',
-      sourceUrl: previewData.url,
-    });
+  const handleDownload = async (fmt: MediaFormat) => {
+    setErrorMsg('');
+    setPreparing(fmt.id);
+    try {
+      // Ask the server to fetch + convert first so we can show progress and real errors
+      const res = await fetch(`${fmt.downloadUrl}&prepare=1`);
+      const json = await res.json().catch(() => ({ ok: false, error: 'Download failed' }));
+      if (!json.ok) throw new Error(json.error || 'Download failed');
+      // File is now cached on the server → this navigation downloads instantly
+      window.location.href = fmt.downloadUrl;
+    } catch (e: any) {
+      setErrorMsg(e?.message || 'Download failed');
+    } finally {
+      setPreparing(null);
+    }
+  };
+
+  const handleOpenInWorkspace = async () => {
+    if (!previewData) return;
+    setErrorMsg('');
+    setPreparing('studio');
+    try {
+      const res = await fetch('/api/import-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: previewData.url }),
+      });
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error || 'Could not import this video');
+      onMediaLoaded({ ...json.media, title: previewData.title || json.media.title });
+    } catch (e: any) {
+      setErrorMsg(e?.message || 'Could not import this video');
+    } finally {
+      setPreparing(null);
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -334,26 +355,33 @@ export function HeroMediaInput({ onMediaLoaded }: HeroMediaInputProps) {
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 {(() => {
                   const currentFmt = previewData.formats.find((f) => f.id === selectedFormat) || previewData.formats[0];
+                  const isPreparing = preparing === currentFmt?.id;
                   return (
-                    <a
-                      href={currentFmt?.downloadUrl || '/api/download/online-video-1080p.mp4'}
-                      download={`${previewData.title.slice(0, 30)}.${currentFmt?.ext || 'mp4'}`}
-                      className="flex-1 h-[46px] rounded-[12px] bg-[#6D3FC0] text-white text-sm font-semibold hover:bg-[#5C35A3] transition shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                    <button
+                      onClick={() => currentFmt && handleDownload(currentFmt)}
+                      disabled={!!preparing || !currentFmt}
+                      className="flex-1 h-[46px] rounded-[12px] bg-[#6D3FC0] text-white text-sm font-semibold hover:bg-[#5C35A3] transition shadow-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
                     >
-                      <Download className="w-4 h-4" />
-                      <span>Download {currentFmt?.label || 'Video'}</span>
-                    </a>
+                      {isPreparing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                      <span>{isPreparing ? 'Preparing download…' : `Download ${currentFmt?.label || 'Video'}`}</span>
+                    </button>
                   );
                 })()}
 
                 <button
                   onClick={handleOpenInWorkspace}
-                  className="h-[46px] px-6 rounded-[12px] bg-[#FAF8FD] border border-[#DDD6E2] text-[#211D25] text-sm font-semibold hover:border-[#6D3FC0] hover:text-[#6D3FC0] hover:bg-[#F5F1FA] transition flex items-center justify-center gap-2 cursor-pointer"
+                  disabled={!!preparing}
+                  className="h-[46px] px-6 rounded-[12px] bg-[#FAF8FD] border border-[#DDD6E2] text-[#211D25] text-sm font-semibold hover:border-[#6D3FC0] hover:text-[#6D3FC0] hover:bg-[#F5F1FA] transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
                 >
-                  <Sliders className="w-4 h-4 text-[#6D3FC0]" />
-                  <span>Cut, Trim or Subtitle in Studio</span>
+                  {preparing === 'studio' ? <Loader2 className="w-4 h-4 animate-spin text-[#6D3FC0]" /> : <Sliders className="w-4 h-4 text-[#6D3FC0]" />}
+                  <span>{preparing === 'studio' ? 'Loading video…' : 'Edit in Studio'}</span>
                 </button>
               </div>
+              {preparing && (
+                <p className="text-[11px] text-[#918B95] text-center">
+                  Fetching the real video from the source. Long videos can take a minute.
+                </p>
+              )}
             </div>
           )}
 

@@ -19,8 +19,8 @@ export function ToolDiscovery({ onSelectTool }: ToolDiscoveryProps) {
     },
     {
       id: 'cut' as const,
-      title: 'Cut a video',
-      desc: 'Choose the exact section you want to keep with 0ms stream loss.',
+      title: 'Video editor',
+      desc: 'Split, cut, copy/paste, drag to reorder, trim, crop and join multiple videos.',
       icon: Scissors,
       iconBg: 'bg-[#F0EAF8]',
       iconColor: 'text-[#7C3AED]',

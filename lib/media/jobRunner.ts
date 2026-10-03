@@ -1,7 +1,7 @@
-import { ProcessingJob, JobType, ProcessingParams, CutParams, AudioExtractParams, RingtoneParams, ReelParams, CompressParams, SubtitleParams, MuteParams, FrameGrabParams } from '@/lib/media/types';
+import { ProcessingJob, JobType, ProcessingParams, CutParams, AudioExtractParams, RingtoneParams, ReelParams, CompressParams, SubtitleParams, MuteParams, FrameGrabParams, TimelineRenderParams } from '@/lib/media/types';
 import { v4 as uuid } from 'uuid';
 import { getTempOutputPath, saveOutput } from '@/lib/media/storage';
-import { cutVideo, extractAudio, createRingtone, createReel, compressVideo, burnSubtitles, muteVideo, grabFrame } from '@/lib/media/ffmpeg';
+import { cutVideo, extractAudio, createRingtone, createReel, compressVideo, burnSubtitles, muteVideo, grabFrame, renderTimeline, RenderClipInput } from '@/lib/media/ffmpeg';
 
 const jobs: Map<string, ProcessingJob> =
   (globalThis as any).__clapfetch_jobs__ ||
@@ -114,4 +114,36 @@ function getExtensionForJob(type: JobType, params: ProcessingParams): string {
     return (params as FrameGrabParams).format || 'jpg';
   }
   return 'mp4';
+}
+
+/**
+ * Run a timeline render job. `clips` must already be resolved to absolute,
+ * validated paths by the caller.
+ */
+export async function processTimelineJob(jobId: string, clips: RenderClipInput[]): Promise<void> {
+  const job = jobs.get(jobId);
+  if (!job) return;
+  job.status = 'processing';
+  job.progress = 1;
+  job.updatedAt = new Date().toISOString();
+
+  try {
+    const p = job.params as TimelineRenderParams;
+    const tempOutputPath = getTempOutputPath('mp4');
+    await renderTimeline(clips, tempOutputPath, { crop: p.crop, outputHeight: p.outputHeight }, (pct) => {
+      job.progress = pct;
+      job.updatedAt = new Date().toISOString();
+    });
+    await saveOutput(tempOutputPath, job.id, `${job.id}.mp4`);
+    job.status = 'completed';
+    job.progress = 100;
+    job.outputUrl = `/api/download/${job.id}`;
+    job.outputFilename = `${job.id}.mp4`;
+    job.updatedAt = new Date().toISOString();
+  } catch (error: any) {
+    console.error('Timeline render error:', error);
+    job.status = 'failed';
+    job.errorMessage = error?.message || 'Render failed';
+    job.updatedAt = new Date().toISOString();
+  }
 }

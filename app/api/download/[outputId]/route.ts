@@ -1,81 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getJob } from '@/lib/media/jobRunner';
-import { resolveStoragePath } from '@/lib/media/storage';
 import { OUTPUTS_DIR } from '@/lib/media/config';
+import { serveFile } from '@/lib/media/serveFile';
 import fs from 'fs';
 import path from 'path';
+
+export const runtime = 'nodejs';
+
+const FRIENDLY_PREFIX: Record<string, string> = {
+  cut: 'trimmed',
+  audio_extract: 'audio',
+  extract_audio: 'audio',
+  ringtone: 'ringtone',
+  reel: 'reel',
+  compress: 'compressed',
+  mute: 'muted',
+  frame_grab: 'frame',
+  subtitle_burn: 'subtitled',
+  subtitle: 'subtitled',
+  timeline_render: 'edit',
+};
 
 export async function GET(
   req: NextRequest,
   context: { params: Promise<{ outputId: string }> | { outputId: string } }
 ) {
-  const resolvedParams = await Promise.resolve(context.params);
-  const { outputId } = resolvedParams;
-
-  if (!outputId) {
-    return NextResponse.json({ error: 'Output ID missing' }, { status: 400 });
+  const { outputId } = await Promise.resolve(context.params);
+  if (!outputId || /[\\/]|\.\./.test(outputId)) {
+    return NextResponse.json({ ok: false, error: 'Invalid output id' }, { status: 400 });
   }
 
-  // outputId can be jobId or direct filename
   const job = getJob(outputId);
-  const filename = job?.outputFilename || outputId;
-  const filePath = resolveStoragePath(path.join(OUTPUTS_DIR, job ? job.id : '', filename));
-  const fallbackPath = resolveStoragePath(path.join(OUTPUTS_DIR, filename));
-
-  let targetPath = fs.existsSync(filePath)
-    ? filePath
-    : fs.existsSync(fallbackPath)
-    ? fallbackPath
-    : null;
-
-  if (!targetPath) {
-    if (job) {
-      // Create a valid media file for simulated/sample jobs so user download always succeeds
-      const jobDir = resolveStoragePath(path.join(OUTPUTS_DIR, job.id));
-      if (!fs.existsSync(jobDir)) {
-        fs.mkdirSync(jobDir, { recursive: true });
-      }
-      const sampleFallback = path.resolve(process.cwd(), 'public', 'sample-video.mp4');
-      if (fs.existsSync(sampleFallback)) {
-        fs.copyFileSync(sampleFallback, filePath);
-      } else {
-        fs.writeFileSync(filePath, Buffer.from(`CLAPFETCH EXPORT: ${job.type} (${job.id})\n`));
-      }
-      targetPath = filePath;
-    } else if (outputId.startsWith('online-') || outputId.startsWith('quick-') || outputId.includes('.')) {
-      // Direct online video downloader fallback
-      const sampleFallback = path.resolve(process.cwd(), 'public', 'sample-video.mp4');
-      if (fs.existsSync(sampleFallback)) {
-        targetPath = sampleFallback;
-      } else {
-        return NextResponse.json({ error: 'File not found on disk' }, { status: 404 });
-      }
-    } else {
-      return NextResponse.json({ error: 'File not found on disk' }, { status: 404 });
-    }
+  if (!job) {
+    return NextResponse.json({ ok: false, error: 'This export no longer exists. Please run the tool again.' }, { status: 404 });
+  }
+  if (job.status !== 'completed' || !job.outputFilename) {
+    return NextResponse.json({ ok: false, error: `Export is ${job.status}` }, { status: 409 });
   }
 
-  const ext = path.extname(filename).toLowerCase();
-  let contentType = 'application/octet-stream';
-  if (ext === '.mp4') contentType = 'video/mp4';
-  if (ext === '.webm') contentType = 'video/webm';
-  if (ext === '.mp3') contentType = 'audio/mpeg';
-  if (ext === '.wav') contentType = 'audio/wav';
-  if (ext === '.m4r') contentType = 'audio/mp4';
-  if (ext === '.m4a' || ext === '.aac') contentType = 'audio/aac';
-  if (ext === '.flac') contentType = 'audio/flac';
-  if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';
-  if (ext === '.png') contentType = 'image/png';
-  if (ext === '.srt') contentType = 'application/x-subrip';
-  if (ext === '.vtt') contentType = 'text/vtt';
+  const filePath = path.join(OUTPUTS_DIR, job.id, job.outputFilename);
+  if (!fs.existsSync(filePath)) {
+    return NextResponse.json({ ok: false, error: 'Export file is missing on the server.' }, { status: 404 });
+  }
 
-  const fileBuffer = fs.readFileSync(targetPath);
-
-  return new NextResponse(fileBuffer, {
-    headers: {
-      'Content-Disposition': `attachment; filename="${filename}"`,
-      'Content-Type': contentType,
-      'Content-Length': fileBuffer.byteLength.toString(),
-    },
-  });
+  const ext = path.extname(job.outputFilename);
+  const stamp = new Date(job.createdAt).toISOString().slice(0, 19).replace(/[:T]/g, '-');
+  const downloadName = `clapfetch-${FRIENDLY_PREFIX[job.type] || job.type}-${stamp}${ext}`;
+  return serveFile(req, filePath, { downloadName });
 }
