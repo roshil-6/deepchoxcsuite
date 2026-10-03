@@ -37,13 +37,12 @@ export async function generateThumbnail(inputPath: string, outputPath: string, t
   return new Promise((resolve, reject) => {
     const timestamp = timestampSec !== undefined ? timestampSec : 1;
     ffmpeg(inputPath)
-      .screenshots({
-        timestamps: [timestamp] as any,
-        filename: outputPath.split('/').pop() || outputPath.split('\\').pop() || 'thumbnail.jpg',
-        folder: outputPath.substring(0, Math.max(outputPath.lastIndexOf('/'), outputPath.lastIndexOf('\\'))) || '.',
-      })
+      .inputOptions(['-ss', String(Math.max(0, timestamp))])
+      .outputOptions(['-frames:v', '1', '-q:v', '3', '-vf', 'scale=480:-2'])
+      .output(outputPath)
       .on('end', () => resolve())
-      .on('error', (err) => reject(err));
+      .on('error', (err) => reject(err))
+      .run();
   });
 }
 
@@ -222,6 +221,124 @@ export async function grabFrame(inputPath: string, outputPath: string, timestamp
       .output(outputPath)
       .on('end', () => resolve())
       .on('error', (err) => reject(err))
+      .run();
+  });
+}
+
+// ─── Timeline renderer ────────────────────────────────
+
+export interface RenderClipInput {
+  path: string;
+  inSec: number;
+  outSec: number;
+  muted?: boolean;
+  volume?: number;
+}
+
+const even = (n: number) => Math.max(2, Math.round(n / 2) * 2);
+
+function timemarkToSec(t?: string): number {
+  if (!t) return 0;
+  const [h, m, s] = t.split(':').map(Number);
+  return (h || 0) * 3600 + (m || 0) * 60 + (s || 0);
+}
+
+/**
+ * Render an edited timeline: every clip is trimmed, normalised to a common
+ * canvas (first clip's resolution, letterboxed), concatenated in order,
+ * optionally cropped (normalised rect) and scaled to an output height.
+ * Clips without audio (or muted) get silent audio so concat stays in sync.
+ */
+export async function renderTimeline(
+  clips: RenderClipInput[],
+  outputPath: string,
+  opts: { crop?: { x: number; y: number; w: number; h: number } | null; outputHeight?: number | null } = {},
+  onProgress?: (pct: number) => void
+): Promise<void> {
+  if (clips.length === 0) throw new Error('Timeline is empty');
+
+  const probes = await Promise.all(clips.map((c) => probeMedia(c.path)));
+  const firstVideo = probes.find((p) => p.hasVideo && p.width && p.height);
+  if (!firstVideo) throw new Error('Timeline has no video clips');
+  probes.forEach((p, i) => {
+    if (!p.hasVideo) throw new Error(`Clip ${i + 1} has no video track`);
+  });
+
+  const W = even(firstVideo.width!);
+  const H = even(firstVideo.height!);
+  const total = clips.reduce((s, c) => s + (c.outSec - c.inSec), 0);
+
+  const filters: string[] = [];
+  const concatInputs: string[] = [];
+  clips.forEach((c, i) => {
+    const d = (c.outSec - c.inSec).toFixed(3);
+    filters.push(
+      `[${i}:v]trim=duration=${d},setpts=PTS-STARTPTS,` +
+        `scale=${W}:${H}:force_original_aspect_ratio=decrease,` +
+        `pad=${W}:${H}:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1,fps=30,format=yuv420p[v${i}]`
+    );
+    const vol = typeof c.volume === 'number' ? Math.max(0, Math.min(2, c.volume)) : 1;
+    if (probes[i].hasAudio && !c.muted && vol > 0) {
+      filters.push(
+        `[${i}:a]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,` +
+          `volume=${vol.toFixed(2)},apad,atrim=duration=${d},asetpts=PTS-STARTPTS[a${i}]`
+      );
+    } else {
+      filters.push(`anullsrc=r=48000:cl=stereo,atrim=duration=${d},aformat=sample_fmts=fltp:channel_layouts=stereo[a${i}]`);
+    }
+    concatInputs.push(`[v${i}][a${i}]`);
+  });
+  filters.push(`${concatInputs.join('')}concat=n=${clips.length}:v=1:a=1[cv][ca]`);
+
+  let last = 'cv';
+  const post: string[] = [];
+  const crop = opts.crop;
+  if (crop && (crop.w < 0.999 || crop.h < 0.999 || crop.x > 0.001 || crop.y > 0.001)) {
+    const cw = Math.min(W, even(crop.w * W));
+    const ch = Math.min(H, even(crop.h * H));
+    const cx = Math.min(W - cw, Math.max(0, Math.round(crop.x * W)));
+    const cy = Math.min(H - ch, Math.max(0, Math.round(crop.y * H)));
+    post.push(`crop=${cw}:${ch}:${cx}:${cy}`);
+  }
+  if (opts.outputHeight && opts.outputHeight > 0) {
+    post.push(`scale=-2:${even(opts.outputHeight)}`);
+  }
+  if (post.length) {
+    filters.push(`[cv]${post.join(',')},setsar=1[outv]`);
+    last = 'outv';
+  }
+
+  return new Promise((resolve, reject) => {
+    const cmd = ffmpeg();
+    clips.forEach((c) => {
+      cmd.input(c.path).inputOptions(['-ss', c.inSec.toFixed(3), '-t', (c.outSec - c.inSec + 0.5).toFixed(3)]);
+    });
+    cmd
+      .complexFilter(filters.join(';'))
+      .outputOptions([
+        '-map', `[${last}]`,
+        '-map', '[ca]',
+        '-c:v', 'libx264',
+        '-preset', 'veryfast',
+        '-crf', '20',
+        '-pix_fmt', 'yuv420p',
+        '-c:a', 'aac',
+        '-b:a', '192k',
+        '-movflags', '+faststart',
+        '-t', total.toFixed(3),
+      ])
+      .output(outputPath)
+      .on('progress', (p) => {
+        if (onProgress && total > 0) {
+          const pct = Math.round((timemarkToSec(p.timemark) / total) * 100);
+          onProgress(Math.max(1, Math.min(99, pct)));
+        }
+      })
+      .on('end', () => resolve())
+      .on('error', (err, _stdout, stderr) => {
+        const tail = String(stderr || '').split('\n').filter(Boolean).slice(-3).join(' | ');
+        reject(new Error(`${err.message}${tail ? ` — ${tail}` : ''}`));
+      })
       .run();
   });
 }

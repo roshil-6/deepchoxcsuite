@@ -63,7 +63,8 @@ export type JobType =
   | 'mute'
   | 'frame_grab'
   | 'subtitle_burn'
-  | 'subtitle';
+  | 'subtitle'
+  | 'timeline_render';
 
 export type JobStatus = 'queued' | 'processing' | 'completed' | 'failed';
 
@@ -137,6 +138,44 @@ export interface SubtitleBurnParams {
 
 export type SubtitleParams = SubtitleBurnParams;
 
+// ─── Timeline Editor ───────────────────────────────────
+
+/** A media asset available to the editor (uploaded or imported). */
+export interface EditorSource {
+  id: string;
+  name: string;
+  url: string;           // browser-playable URL
+  storagePath?: string;  // server path (required for rendering)
+  durationSeconds: number;
+  width?: number;
+  height?: number;
+  thumbnailUrl?: string;
+}
+
+/** A clip on the timeline: a [inSec, outSec) window into a source. */
+export interface TimelineClip {
+  id: string;
+  sourceId: string;
+  inSec: number;
+  outSec: number;
+  muted?: boolean;
+  volume?: number; // 0–2, 1 = unchanged
+}
+
+/** Normalised crop rectangle (0–1 of the frame). */
+export interface NormalizedCrop {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export interface TimelineRenderParams {
+  clips: { storagePath: string; inMs: number; outMs: number; muted?: boolean; volume?: number }[];
+  crop?: NormalizedCrop | null;
+  outputHeight?: number | null; // e.g. 1080, 720; null = canvas size
+}
+
 export type ProcessingParams =
   | CutParams
   | AudioExtractParams
@@ -145,11 +184,13 @@ export type ProcessingParams =
   | CompressParams
   | MuteParams
   | FrameGrabParams
-  | SubtitleBurnParams;
+  | SubtitleBurnParams
+  | TimelineRenderParams;
 
 // ─── Central Workspace State ───────────────────────────
 
 export type WorkspaceTool =
+  | 'editor'
   | 'trim'
   | 'crop'
   | 'reel'

@@ -31,7 +31,9 @@ import {
   Sparkles,
   FileAudio,
   Gauge,
+  Film,
 } from 'lucide-react';
+import { VideoEditor } from './editor/VideoEditor';
 
 interface WorkspaceProps {
   media: WorkspaceMedia;
@@ -101,6 +103,7 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
   const [muteAudio, setMuteAudio] = useState(false);
   const [frameFormat, setFrameFormat] = useState<'jpg' | 'png'>('jpg');
   const [playerMode, setPlayerMode] = useState<'embed' | 'poster'>('poster');
+  const [mode, setMode] = useState<'editor' | 'tools'>(initialTool === 'editor' ? 'editor' : 'tools');
 
   const handleReplaceFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -175,7 +178,7 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
   useEffect(() => {
     setMedia(media);
     if (initialTool) {
-      setActiveTool(initialTool);
+      setActiveTool(initialTool === 'editor' ? 'trim' : initialTool);
       if (['audio_extract', 'audio_trim', 'ringtone'].includes(initialTool)) {
         setActiveGroup('audio');
       } else if (['subtitle_generate', 'subtitle_edit', 'subtitle_translate', 'subtitle_export'].includes(initialTool)) {
@@ -301,6 +304,7 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
         body: JSON.stringify({
           mediaId: media.id,
           storagePath: media.storagePath,
+          sourceUrl: media.sourceUrl,
           type,
           params,
         }),
@@ -440,6 +444,32 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
         </button>
       </div>
 
+      {/* ─── Mode switch: full timeline editor vs quick single-range tools ─── */}
+      {!isAudioOnly && (
+        <div className="flex items-center gap-1 p-1 mb-6 rounded-[14px] bg-[#F5F1FA] w-fit">
+          <button
+            onClick={() => setMode('editor')}
+            className={`h-9 px-4 rounded-[10px] text-sm font-semibold flex items-center gap-1.5 transition cursor-pointer ${
+              mode === 'editor' ? 'bg-white text-[#6D3FC0] shadow-2xs' : 'text-[#69636E] hover:text-[#211D25]'
+            }`}
+          >
+            <Film className="w-4 h-4" /> Timeline Editor
+          </button>
+          <button
+            onClick={() => setMode('tools')}
+            className={`h-9 px-4 rounded-[10px] text-sm font-semibold flex items-center gap-1.5 transition cursor-pointer ${
+              mode === 'tools' ? 'bg-white text-[#6D3FC0] shadow-2xs' : 'text-[#69636E] hover:text-[#211D25]'
+            }`}
+          >
+            <Sliders className="w-4 h-4" /> Quick Tools
+          </button>
+        </div>
+      )}
+
+      {mode === 'editor' && !isAudioOnly ? (
+        <VideoEditor media={media} />
+      ) : (
+      <>
       {/* ─── Media Preview ─── */}
       <div className="relative rounded-[22px] overflow-hidden bg-[#18161D] aspect-video max-h-[440px] mx-auto mb-3 flex items-center justify-center">
         {media.youtubeId ? (
@@ -520,41 +550,52 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
       </div>
 
       {/* ─── Link / YouTube Helper Bar with Options ─── */}
-      {media.youtubeId && (
+      {media.sourceUrl && (
         <div className="mb-6 px-4 py-3 rounded-[16px] bg-[#FAF8FD] border border-[#E9E4EF] flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2 text-[#4A4453]">
-            <AlertCircle className="w-4 h-4 text-[#8061C9] shrink-0" />
-            <span>
-              {playerMode === 'poster'
-                ? 'Previewing video card & timeline. Embed restrictions (e.g. Formula 1) bypassed.'
-                : 'If YouTube shows "Video unavailable", switch back to Poster View.'}
-            </span>
+            <Download className="w-4 h-4 text-[#8061C9] shrink-0" />
+            <span className="font-semibold text-[#211D25]">Quick Download:</span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {[
+                { label: '1080p MP4', href: `/api/fetch-media?kind=video&q=1080&url=${encodeURIComponent(media.sourceUrl)}` },
+                { label: '720p MP4', href: `/api/fetch-media?kind=video&q=720&url=${encodeURIComponent(media.sourceUrl)}` },
+                { label: '320k MP3', href: `/api/fetch-media?kind=audio&format=mp3&bitrate=320&url=${encodeURIComponent(media.sourceUrl)}` },
+              ].map((l) => (
+                <a
+                  key={l.label}
+                  href={l.href}
+                  className="px-2.5 py-1 rounded-[8px] bg-white border border-[#DDD6E2] text-[#6D3FC0] hover:bg-[#F0EAF8] font-medium transition cursor-pointer"
+                >
+                  {l.label}
+                </a>
+              ))}
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setPlayerMode(playerMode === 'embed' ? 'poster' : 'embed')}
-              className="px-3 py-1.5 rounded-[10px] bg-white border border-[#DDD6E2] text-[#211D25] hover:border-[#8061C9] font-medium transition cursor-pointer flex items-center gap-1.5"
-            >
-              <ImageIcon className="w-3.5 h-3.5 text-[#6D3FC0]" />
-              <span>{playerMode === 'embed' ? 'Switch to Poster' : 'Try Embedded Player'}</span>
-            </button>
-
-            {media.sourceUrl && (
-              <a
-                href={media.sourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 py-1.5 rounded-[10px] bg-[#F5F1FA] text-[#6D3FC0] hover:bg-[#EFE7FA] font-medium flex items-center gap-1.5 transition"
+            {media.youtubeId && (
+              <button
+                onClick={() => setPlayerMode(playerMode === 'embed' ? 'poster' : 'embed')}
+                className="px-3 py-1.5 rounded-[10px] bg-white border border-[#DDD6E2] text-[#211D25] hover:border-[#8061C9] font-medium transition cursor-pointer flex items-center gap-1.5"
               >
-                <span>Watch on YouTube</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
+                <ImageIcon className="w-3.5 h-3.5 text-[#6D3FC0]" />
+                <span>{playerMode === 'embed' ? 'Poster View' : 'Embed Player'}</span>
+              </button>
             )}
+
+            <a
+              href={media.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-1.5 rounded-[10px] bg-[#F5F1FA] text-[#6D3FC0] hover:bg-[#EFE7FA] font-medium flex items-center gap-1.5 transition"
+            >
+              <span>Original Link</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
 
             <label className="px-3 py-1.5 rounded-[10px] bg-[#6D3FC0] text-white hover:bg-[#5C35A3] font-medium flex items-center gap-1.5 cursor-pointer transition">
               <Upload className="w-3.5 h-3.5" />
-              <span>Upload local file</span>
+              <span>Upload local</span>
               <input type="file" accept="video/*,audio/*" onChange={handleReplaceFile} className="hidden" />
             </label>
           </div>
@@ -1483,6 +1524,8 @@ export function Workspace({ media, initialTool = 'trim', onCloseWorkspace }: Wor
           </span>
         </button>
       </div>
+      </>
+      )}
     </div>
   );
 }
