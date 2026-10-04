@@ -13,20 +13,26 @@ import { WorkspaceMedia, WorkspaceTool } from '@/lib/media/types';
 export default function Home() {
   const [activeView, setActiveView] = useState<'home' | 'tools' | 'library' | 'playlists'>('home');
   const [loadedMedia, setLoadedMedia] = useState<WorkspaceMedia | null>(null);
-  const [selectedTool, setSelectedTool] = useState<WorkspaceTool>('trim');
+  const [selectedTool, setSelectedTool] = useState<WorkspaceTool>('editor');
 
   const handleMediaLoaded = (media: WorkspaceMedia) => {
     setLoadedMedia(media);
   };
 
-  const handleSelectToolFromHome = (tool: 'cut' | 'audio' | 'ringtone' | 'reel' | 'subtitles' | 'compress' | 'frame' | 'all') => {
+  const handleSelectToolFromHome = (tool: 'download' | 'cut' | 'audio' | 'ringtone' | 'reel' | 'subtitles' | 'compress' | 'frame' | 'all') => {
     if (tool === 'all') {
       setActiveView('tools');
       return;
     }
 
+    if (tool === 'download') {
+      // Scroll to the HeroMediaInput bar to paste link
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     const toolMap: Record<string, WorkspaceTool> = {
-      cut: 'trim',
+      cut: 'editor',
       audio: 'audio_extract',
       ringtone: 'ringtone',
       reel: 'reel',
@@ -36,19 +42,9 @@ export default function Home() {
     };
     setSelectedTool(toolMap[tool] || 'trim');
 
-    // If media is not yet loaded, load a clean sample session so user can immediately experiment
+    // No media yet → take the user to the paste/upload box; the chosen tool opens once media loads
     if (!loadedMedia) {
-      setLoadedMedia({
-        id: 'sample-session',
-        filename: 'Sample Media Session.mp4',
-        url: '/sample-video.mp4',
-        thumbnailUrl: '/clapfetch-ui-ref.png',
-        title: 'Sample Media Session',
-        mimeType: 'video/mp4',
-        fileSize: 2.5 * 1024 * 1024,
-        durationSeconds: 15,
-        source: 'link',
-      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 

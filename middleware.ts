@@ -43,6 +43,10 @@ const isPublicRoute = createRouteMatcher([
   '/api/upload(.*)',
   '/api/process(.*)',
   '/api/download(.*)',
+  '/api/media(.*)',
+  '/api/fetch-media(.*)',
+  '/api/import-url(.*)',
+  '/api/editor(.*)',
   '/sample-video.mp4(.*)',
   '/landing-hero-demo.mp4(.*)',
   // ── CRM Builder ─────────────────────────────────────────────────────────────

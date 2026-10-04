@@ -3,7 +3,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { v4 as uuid } from 'uuid';
-import { UPLOADS_DIR, OUTPUTS_DIR, THUMBNAILS_DIR, TEMP_FILE_MAX_AGE_HOURS } from './config';
+import { STORAGE_ROOT, UPLOADS_DIR, OUTPUTS_DIR, THUMBNAILS_DIR, TEMP_FILE_MAX_AGE_HOURS } from './config';
 
 /**
  * Ensure all storage directories exist.
@@ -66,6 +66,25 @@ export function resolveStoragePath(storagePath: string): string {
   // If already absolute, return as-is
   if (path.isAbsolute(storagePath)) return storagePath;
   return path.resolve(process.cwd(), storagePath);
+}
+
+/**
+ * Resolve a client-supplied storage path, refusing anything that escapes
+ * the storage root (path traversal) or does not exist. Returns null if unsafe.
+ */
+export function resolveInsideStorage(storagePath: unknown): string | null {
+  if (typeof storagePath !== 'string' || !storagePath) return null;
+  const fsSync = require('fs');
+  const abs = path.resolve(process.cwd(), storagePath);
+  const rel = path.relative(STORAGE_ROOT, abs);
+  if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) return null;
+  if (!fsSync.existsSync(abs) || !fsSync.statSync(abs).isFile()) return null;
+  return abs;
+}
+
+/** URL the browser can use to stream a stored file (supports seeking). */
+export function mediaUrlFor(absPath: string): string {
+  return `/api/media?path=${encodeURIComponent(path.relative(process.cwd(), absPath))}`;
 }
 
 /**

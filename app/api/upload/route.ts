@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuid } from 'uuid';
 import { validateFileType, validateFileSize, sanitizeFilename } from '@/lib/media/validation';
-import { saveUpload, resolveStoragePath, getTempOutputPath } from '@/lib/media/storage';
+import { saveUpload, resolveStoragePath, getTempOutputPath, mediaUrlFor } from '@/lib/media/storage';
 import { probeMedia, generateThumbnail } from '@/lib/media/ffmpeg';
 import fs from 'fs';
 
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
           if (fs.existsSync(tempThumbPath)) {
             const thumbBuffer = fs.readFileSync(tempThumbPath);
             const thumbSave = await saveUpload(thumbBuffer, `${id}-thumb.jpg`, sessionId);
-            thumbnailUrl = `/api/download/${id}-thumb.jpg`;
+            thumbnailUrl = mediaUrlFor(thumbSave.absolutePath);
             try { fs.unlinkSync(tempThumbPath); } catch {}
           }
         } catch (thumbErr) {
@@ -77,6 +77,7 @@ export async function POST(req: NextRequest) {
         codec,
         thumbnailUrl,
         storagePath,
+        serverUrl: mediaUrlFor(absolutePath),
         source: 'upload',
       },
     });

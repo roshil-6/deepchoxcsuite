@@ -605,6 +605,125 @@ async function runTests() {
     report('URL Import Metadata API', false, err.message);
   }
 
+  // ─── Helpers for output verification ───
+  const { execFileSync } = await import('child_process');
+  const ffprobeMod = await import('@ffprobe-installer/ffprobe');
+  const ffprobeBin = ffprobeMod.default?.path || ffprobeMod.path;
+  const probeBuffer = (buf, ext) => {
+    const tmp = path.join(testDir, `probe_${Date.now()}.${ext}`);
+    fs.writeFileSync(tmp, Buffer.from(buf));
+    try {
+      const out = execFileSync(ffprobeBin, ['-v', 'error', '-show_entries', 'format=duration:stream=codec_type,width,height', '-of', 'json', tmp]).toString();
+      const j = JSON.parse(out);
+      const v = j.streams.find((s) => s.codec_type === 'video');
+      return { duration: Number(j.format.duration), width: v?.width, height: v?.height, hasAudio: j.streams.some((s) => s.codec_type === 'audio'), hasVideo: !!v };
+    } finally {
+      fs.unlinkSync(tmp);
+    }
+  };
+  const waitJob = async (jobId) => {
+    for (let i = 0; i < 240; i++) {
+      await new Promise((r) => setTimeout(r, 500));
+      const j = (await (await fetch(`${BASE_URL}/api/process/${jobId}`)).json()).job;
+      if (j && (j.status === 'completed' || j.status === 'failed')) return j;
+    }
+    return { status: 'timeout' };
+  };
+  const renderTimeline = async (body) => {
+    const r = await (await fetch(`${BASE_URL}/api/editor/render`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })).json();
+    if (!r.ok) throw new Error(r.error);
+    const job = await waitJob(r.jobId);
+    if (job.status !== 'completed') throw new Error(`job ${job.status}: ${job.errorMessage || ''}`);
+    const dl = await fetch(`${BASE_URL}${job.outputUrl}`);
+    return probeBuffer(await dl.arrayBuffer(), 'mp4');
+  };
+
+  // ─── TEST 13: Real link download (yt-dlp) — 1st YouTube video ever, 19s ───
+  const realLink = 'https://www.youtube.com/watch?v=jNQXAC9IVRw';
+  try {
+    const meta = await (await fetch(`${BASE_URL}/api/downloader`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: realLink }) })).json();
+    const vfmt = meta.data?.formats?.find((f) => f.type === 'video');
+    const dl = await fetch(`${BASE_URL}${vfmt.downloadUrl}`);
+    const info = probeBuffer(await dl.arrayBuffer(), 'mp4');
+    report(
+      'Real Link Download returns the ACTUAL video (not a sample)',
+      dl.ok && Math.abs(info.duration - 19) < 1.5 && info.hasVideo && info.hasAudio,
+      `Title: ${meta.data?.title}, format: ${vfmt?.id}, downloaded duration: ${info.duration.toFixed(2)}s (expected ≈19s), ${info.width}x${info.height}`
+    );
+    const mp3 = await fetch(`${BASE_URL}${meta.data.formats.find((f) => f.id === 'mp3-320').downloadUrl}`);
+    const a = probeBuffer(await mp3.arrayBuffer(), 'mp3');
+    report('Real Link → MP3 audio extraction', mp3.ok && !a.hasVideo && a.hasAudio && Math.abs(a.duration - 19) < 1.5, `MP3 duration ${a.duration.toFixed(2)}s, type ${mp3.headers.get('content-type')}`);
+  } catch (err) {
+    report('Real Link Download', false, err.message);
+  }
+
+  // ─── TEST 14: Link import into editor storage ───
+  try {
+    const imp = await (await fetch(`${BASE_URL}/api/import-url`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: realLink }) })).json();
+    const stream = await fetch(`${BASE_URL}${imp.media?.url}`, { headers: { Range: 'bytes=0-1023' } });
+    report(
+      'Link Import → server storage + seekable stream (HTTP 206)',
+      imp.ok && imp.media.storagePath && stream.status === 206,
+      `storagePath: ${imp.media?.storagePath}, duration ${imp.media?.durationSeconds}s, range status ${stream.status}`
+    );
+  } catch (err) {
+    report('Link Import', false, err.message);
+  }
+
+  // ─── TEST 15–18: Timeline editor renders ───
+  if (uploadedMedia) {
+    const sp = uploadedMedia.storagePath;
+    try {
+      const info = await renderTimeline({ clips: [{ storagePath: sp, inMs: 3000, outMs: 5000 }, { storagePath: sp, inMs: 0, outMs: 2000 }] });
+      report('Editor: reordered clips render (3–5s + 0–2s)', Math.abs(info.duration - 4) < 0.2 && info.hasAudio, `duration ${info.duration.toFixed(2)}s, ${info.width}x${info.height}`);
+    } catch (err) {
+      report('Editor: reorder render', false, err.message);
+    }
+    try {
+      const info = await renderTimeline({ clips: [{ storagePath: sp, inMs: 0, outMs: 2000 }, { storagePath: sp, inMs: 2000, outMs: 4000 }, { storagePath: sp, inMs: 0, outMs: 2000, muted: true }] });
+      report('Editor: split + paste + muted clip render', Math.abs(info.duration - 6) < 0.2, `duration ${info.duration.toFixed(2)}s`);
+    } catch (err) {
+      report('Editor: split/paste render', false, err.message);
+    }
+    try {
+      const info = await renderTimeline({ clips: [{ storagePath: sp, inMs: 0, outMs: 3000 }], crop: { x: 0.341796875, y: 0, w: 0.31640625, h: 1 } });
+      const ratio = info.width / info.height;
+      report('Editor: 9:16 crop', Math.abs(ratio - 9 / 16) < 0.02 && info.width % 2 === 0 && info.height % 2 === 0, `${info.width}x${info.height} (ratio ${ratio.toFixed(3)})`);
+    } catch (err) {
+      report('Editor: crop render', false, err.message);
+    }
+    try {
+      // second source: 640x360, NO audio track → joined with 1280x720 + audio
+      const ffm = await import('@ffmpeg-installer/ffmpeg');
+      const silentPath = path.join(testDir, 'silent_small.mp4');
+      if (!fs.existsSync(silentPath)) {
+        execFileSync(ffm.default?.path || ffm.path, ['-y', '-f', 'lavfi', '-i', 'testsrc=duration=3:size=640x360:rate=25', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', silentPath], { stdio: 'pipe' });
+      }
+      const fd = new FormData();
+      fd.append('file', new Blob([fs.readFileSync(silentPath)], { type: 'video/mp4' }), 'silent_small.mp4');
+      const up2 = await (await fetch(`${BASE_URL}/api/upload`, { method: 'POST', body: fd })).json();
+      const info = await renderTimeline({ clips: [{ storagePath: sp, inMs: 0, outMs: 2000 }, { storagePath: up2.media.storagePath, inMs: 0, outMs: 3000 }], outputHeight: 720 });
+      report('Editor: join different sizes + clip without audio', Math.abs(info.duration - 5) < 0.2 && info.hasAudio && info.height === 720, `duration ${info.duration.toFixed(2)}s, ${info.width}x${info.height}, audio ${info.hasAudio}`);
+    } catch (err) {
+      report('Editor: mixed sources render', false, err.message);
+    }
+  }
+
+  // ─── TEST 19: Safety / no fake fallbacks ───
+  try {
+    const trav = await fetch(`${BASE_URL}/api/editor/render`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clips: [{ storagePath: '../package.json', inMs: 0, outMs: 1000 }] }) });
+    const noSrc = await fetch(`${BASE_URL}/api/process`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mediaId: 'x', type: 'cut', params: { startMs: 0, endMs: 1000 } }) });
+    const fake = await fetch(`${BASE_URL}/api/download/online-video-1080p.mp4`);
+    const media = await fetch(`${BASE_URL}/api/media?path=${encodeURIComponent('../package.json')}`);
+    report(
+      'No sample-video fallbacks & path traversal blocked',
+      trav.status === 400 && noSrc.status === 404 && fake.status === 404 && media.status === 404,
+      `traversal ${trav.status}, missing source ${noSrc.status}, old fake id ${fake.status}, media traversal ${media.status}`
+    );
+  } catch (err) {
+    report('Safety checks', false, err.message);
+  }
+
   console.log('\n====================================================');
   console.log(`  FINAL RESULT: ${passed} PASSED, ${failed} FAILED`);
   console.log('====================================================\n');
