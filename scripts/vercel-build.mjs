@@ -41,12 +41,7 @@ if (dbUrl) {
   );
 }
 
-// Ensure yt-dlp binary is installed for serverless media operations
-try {
-  console.log('[deepchox] Setting up yt-dlp for production serverless deployment...');
-  execSync('node scripts/setup-ytdlp.mjs', { stdio: 'inherit' });
-} catch (e) {
-  console.warn('[deepchox] Warning: setup-ytdlp build step failed; runtime self-healing will auto-download on first use:', e?.message);
-}
+// yt-dlp is NOT bundled (would push functions past Vercel's 250 MB limit);
+// lib/media/ytdlp.ts downloads it into /tmp on first use.
 
 execSync('npx next build', { stdio: 'inherit' });

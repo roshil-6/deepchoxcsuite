@@ -2,8 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   serverExternalPackages: ['fluent-ffmpeg', '@ffmpeg-installer/ffmpeg', '@ffprobe-installer/ffprobe'],
-  outputFileTracingIncludes: {
-    '/api/**': ['./bin/**'],
+  outputFileTracingExcludes: {
+    '/*': ['./bin/**', './storage/**'],
   },
   async rewrites() {
     return [
