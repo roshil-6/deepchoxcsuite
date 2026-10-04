@@ -41,4 +41,7 @@ if (dbUrl) {
   );
 }
 
+// yt-dlp is NOT bundled (would push functions past Vercel's 250 MB limit);
+// lib/media/ytdlp.ts downloads it into /tmp on first use.
+
 execSync('npx next build', { stdio: 'inherit' });

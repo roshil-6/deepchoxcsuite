@@ -1,6 +1,5 @@
-/* ─── CLAPFETCH MEDIA ENGINE — CONFIGURATION ─── */
-
 import path from 'path';
+import os from 'os';
 
 /** Maximum upload file size in bytes (500 MB) */
 export const MAX_UPLOAD_SIZE_BYTES = 500 * 1024 * 1024;
@@ -17,8 +16,14 @@ export const MAX_AI_CLIP_RESULTS = 3;
 /** Temporary file auto-cleanup threshold */
 export const TEMP_FILE_MAX_AGE_HOURS = 4;
 
-/** Storage root — local dev uses project-level `storage/` dir */
-export const STORAGE_ROOT = path.resolve(process.cwd(), 'storage');
+/** Storage root — on Vercel/serverless environments, process.cwd() is read-only, so use os.tmpdir() */
+const defaultStorageRoot =
+  process.env.STORAGE_ROOT ||
+  (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME
+    ? path.join(os.tmpdir(), 'deepchox-storage')
+    : path.resolve(process.cwd(), 'storage'));
+
+export const STORAGE_ROOT = defaultStorageRoot;
 export const UPLOADS_DIR = path.join(STORAGE_ROOT, 'uploads');
 export const OUTPUTS_DIR = path.join(STORAGE_ROOT, 'outputs');
 export const THUMBNAILS_DIR = path.join(STORAGE_ROOT, 'thumbnails');

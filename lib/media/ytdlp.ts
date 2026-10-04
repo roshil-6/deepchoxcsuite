@@ -3,22 +3,130 @@
 import { spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import crypto from 'crypto';
 import { STORAGE_ROOT } from './config';
 
-const ffmpegPath: string = require('@ffmpeg-installer/ffmpeg').path;
-
 export const LINK_CACHE_DIR = path.join(STORAGE_ROOT, 'links');
 
+function getFfmpegLocation(): string | null {
+  try {
+    const p = require('@ffmpeg-installer/ffmpeg').path;
+    if (p && fs.existsSync(p)) return p;
+  } catch {}
+  return null;
+}
+
 export function getYtdlpPath(): string | null {
+  const isWin = process.platform === 'win32';
+  const binName = isWin ? 'yt-dlp.exe' : 'yt-dlp';
   const candidates = [
     process.env.YTDLP_PATH,
-    path.resolve(process.cwd(), 'bin', process.platform === 'win32' ? 'yt-dlp.exe' : 'yt-dlp'),
+    path.join(os.tmpdir(), binName),
+    path.resolve(process.cwd(), 'bin', binName),
+    path.join('/tmp', binName),
   ].filter(Boolean) as string[];
+
   for (const c of candidates) {
-    if (fs.existsSync(c)) return c;
+    try {
+      if (fs.existsSync(c)) {
+        const stat = fs.statSync(c);
+        if (stat.size > 5_000_000) {
+          if (!isWin) {
+            try { fs.chmodSync(c, 0o755); } catch {}
+          }
+          return c;
+        }
+      }
+    } catch {}
   }
   return null;
+}
+
+let provisioningPromise: Promise<string> | null = null;
+
+/**
+ * Automatically provisions yt-dlp if not found on the system.
+ * Works seamlessly in local dev, Docker, and serverless environments (e.g. Vercel).
+ */
+export async function ensureYtdlp(): Promise<string> {
+  const existing = getYtdlpPath();
+  if (existing) return existing;
+
+  if (provisioningPromise) return provisioningPromise;
+
+  provisioningPromise = (async () => {
+    try {
+      const isWin = process.platform === 'win32';
+      const isMac = process.platform === 'darwin';
+      const isArm = process.arch === 'arm64';
+      const binName = isWin ? 'yt-dlp.exe' : 'yt-dlp';
+      const tmpTarget = path.join(os.tmpdir(), binName);
+
+      // Check if project bin has it (e.g. bundled during build or Next.js outputFileTracing)
+      const projectBin = path.resolve(process.cwd(), 'bin', binName);
+      if (fs.existsSync(projectBin)) {
+        try {
+          const stat = fs.statSync(projectBin);
+          if (stat.size > 5_000_000) {
+            // In serverless / read-only containers, copy to tmpTarget to ensure execution permission
+            if (projectBin !== tmpTarget) {
+              fs.copyFileSync(projectBin, tmpTarget);
+              if (!isWin) {
+                try { fs.chmodSync(tmpTarget, 0o755); } catch {}
+              }
+              return tmpTarget;
+            }
+            if (!isWin) {
+              try { fs.chmodSync(projectBin, 0o755); } catch {}
+            }
+            return projectBin;
+          }
+        } catch (err) {
+          console.warn('[clapfetch] Could not use project bin, falling back to download:', err);
+        }
+      }
+
+      // If not present in project bin, download directly from GitHub release to tmpTarget
+      const asset = isWin
+        ? 'yt-dlp.exe'
+        : isMac
+        ? 'yt-dlp_macos'
+        : isArm
+        ? 'yt-dlp_linux_aarch64'
+        : 'yt-dlp_linux';
+
+      const downloadUrl = `https://github.com/yt-dlp/yt-dlp/releases/latest/download/${asset}`;
+      console.log(`[clapfetch] Auto-provisioning yt-dlp binary from ${downloadUrl} to ${tmpTarget}...`);
+
+      const res = await fetch(downloadUrl, {
+        redirect: 'follow',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; DeepChox/1.0; +https://deepchox.com)',
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to download yt-dlp binary: HTTP ${res.status}`);
+      }
+
+      const buffer = Buffer.from(await res.arrayBuffer());
+      if (buffer.length < 5_000_000) {
+        throw new Error(`Downloaded yt-dlp binary is incomplete (${buffer.length} bytes)`);
+      }
+
+      fs.writeFileSync(tmpTarget, buffer);
+      if (!isWin) {
+        try { fs.chmodSync(tmpTarget, 0o755); } catch {}
+      }
+      console.log(`[clapfetch] Successfully provisioned yt-dlp to ${tmpTarget} (${(buffer.length / 1048576).toFixed(1)} MB)`);
+      return tmpTarget;
+    } finally {
+      provisioningPromise = null;
+    }
+  })();
+
+  return provisioningPromise;
 }
 
 export class LinkError extends Error {
@@ -29,16 +137,34 @@ export class LinkError extends Error {
   }
 }
 
-function runYtdlp(args: string[], timeoutMs: number): Promise<string> {
-  const bin = getYtdlpPath();
+async function runYtdlp(args: string[], timeoutMs: number): Promise<string> {
+  let bin = getYtdlpPath();
   if (!bin) {
-    return Promise.reject(
-      new LinkError('Link downloader is not installed on the server. Run `node scripts/setup-ytdlp.mjs`.', 503)
-    );
+    try {
+      bin = await ensureYtdlp();
+    } catch (e: any) {
+      console.error('[clapfetch] Failed to provision yt-dlp:', e);
+      throw new LinkError(
+        'Link downloader is initializing or temporarily unavailable. Please try again in a few moments.',
+        503
+      );
+    }
   }
+
+  const ffmpegLoc = getFfmpegLocation();
+  const spawnArgs = ['--no-warnings', '--no-playlist', '--no-progress', '--cache-dir', path.join(os.tmpdir(), 'yt-dlp-cache')];
+  if (ffmpegLoc) {
+    spawnArgs.push('--ffmpeg-location', ffmpegLoc);
+  }
+  const cookies = getCookiesFile();
+  if (cookies) spawnArgs.push('--cookies', cookies);
+  if (process.execPath) spawnArgs.push('--js-runtimes', `node:${process.execPath}`);
+  spawnArgs.push(...args);
+
   return new Promise((resolve, reject) => {
-    const child = spawn(bin, ['--no-warnings', '--no-playlist', '--ffmpeg-location', ffmpegPath, ...args], {
+    const child = spawn(bin!, spawnArgs, {
       windowsHide: true,
+      env: { ...process.env, HOME: process.env.HOME || os.tmpdir(), TMPDIR: os.tmpdir() },
     });
     let out = '';
     let err = '';
@@ -55,14 +181,33 @@ function runYtdlp(args: string[], timeoutMs: number): Promise<string> {
     child.on('close', (code) => {
       clearTimeout(timer);
       if (code === 0) return resolve(out);
+      console.error('[clapfetch] yt-dlp failed:', err.slice(-1500));
       reject(new LinkError(friendlyError(err), 422));
     });
   });
 }
 
+/** Optional: YTDLP_COOKIES env (Netscape cookies.txt content) helps with YouTube bot checks on cloud IPs. */
+let cookiesPath: string | null | undefined;
+function getCookiesFile(): string | null {
+  if (cookiesPath !== undefined) return cookiesPath;
+  const raw = process.env.YTDLP_COOKIES;
+  if (!raw || !raw.trim()) return (cookiesPath = null);
+  try {
+    const p = path.join(os.tmpdir(), 'yt-dlp-cookies.txt');
+    const text = raw.includes('\t') ? raw : Buffer.from(raw, 'base64').toString('utf8');
+    fs.writeFileSync(p, text);
+    return (cookiesPath = p);
+  } catch {
+    return (cookiesPath = null);
+  }
+}
+
 function friendlyError(stderr: string): string {
   const s = stderr.toLowerCase();
   if (s.includes('unsupported url')) return 'This link is not supported. Paste a direct video page link.';
+  if (s.includes('confirm you') && s.includes('not a bot'))
+    return 'YouTube is temporarily blocking our server. Please try again in a minute, or try a different link.';
   if (s.includes('private video') || s.includes('login') || s.includes('sign in'))
     return 'This video is private or requires login, so it cannot be downloaded.';
   if (s.includes('video unavailable') || s.includes('404')) return 'This video is unavailable or was removed.';
