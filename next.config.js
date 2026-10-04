@@ -2,6 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
   serverExternalPackages: ['fluent-ffmpeg', '@ffmpeg-installer/ffmpeg', '@ffprobe-installer/ffprobe'],
+  outputFileTracingIncludes: {
+    '/api/**': ['./bin/**'],
+  },
   async rewrites() {
     return [
       /** 200 at /favicon.ico (Google crawlers expect it; serve same mark as SVG). */

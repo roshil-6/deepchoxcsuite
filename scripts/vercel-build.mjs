@@ -37,8 +37,14 @@ if (dbUrl) {
   process.exit(1);
 } else {
   console.warn(
-    '[deepchox] DATABASE_URL unset — skipping prisma migrate deploy. Add DATABASE_URL for Preview in Vercel if you need migrate + API routes on branch deploys.'
-  );
+}
+
+// Ensure yt-dlp binary is installed for serverless media operations
+try {
+  console.log('[deepchox] Setting up yt-dlp for production serverless deployment...');
+  execSync('node scripts/setup-ytdlp.mjs', { stdio: 'inherit' });
+} catch (e) {
+  console.warn('[deepchox] Warning: setup-ytdlp build step failed; runtime self-healing will auto-download on first use:', e?.message);
 }
 
 execSync('npx next build', { stdio: 'inherit' });

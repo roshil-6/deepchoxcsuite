@@ -29,7 +29,7 @@ export async function saveUpload(
   const ext = path.extname(originalFilename) || '.bin';
   const filename = `${uuid()}${ext}`;
   const absolutePath = path.join(sessionDir, filename);
-  const storagePath = path.relative(process.cwd(), absolutePath);
+  const storagePath = path.relative(STORAGE_ROOT, absolutePath);
 
   await fs.writeFile(absolutePath, buffer);
 
@@ -49,7 +49,7 @@ export async function saveOutput(
   await fs.mkdir(jobDir, { recursive: true });
 
   const absolutePath = path.join(jobDir, outputFilename);
-  const storagePath = path.relative(process.cwd(), absolutePath);
+  const storagePath = path.relative(STORAGE_ROOT, absolutePath);
 
   // Move from temp to output location
   await fs.copyFile(sourcePath, absolutePath);
@@ -63,8 +63,10 @@ export async function saveOutput(
  * Resolve a storage path to an absolute filesystem path.
  */
 export function resolveStoragePath(storagePath: string): string {
-  // If already absolute, return as-is
   if (path.isAbsolute(storagePath)) return storagePath;
+  const fsSync = require('fs');
+  const inRoot = path.resolve(STORAGE_ROOT, storagePath);
+  if (fsSync.existsSync(inRoot)) return inRoot;
   return path.resolve(process.cwd(), storagePath);
 }
 
@@ -75,16 +77,28 @@ export function resolveStoragePath(storagePath: string): string {
 export function resolveInsideStorage(storagePath: unknown): string | null {
   if (typeof storagePath !== 'string' || !storagePath) return null;
   const fsSync = require('fs');
-  const abs = path.resolve(process.cwd(), storagePath);
-  const rel = path.relative(STORAGE_ROOT, abs);
-  if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) return null;
-  if (!fsSync.existsSync(abs) || !fsSync.statSync(abs).isFile()) return null;
-  return abs;
+
+  // Try relative to STORAGE_ROOT first
+  let abs = path.resolve(STORAGE_ROOT, storagePath);
+  let rel = path.relative(STORAGE_ROOT, abs);
+  if (!rel.startsWith('..') && !path.isAbsolute(rel) && fsSync.existsSync(abs) && fsSync.statSync(abs).isFile()) {
+    return abs;
+  }
+
+  // Try relative to process.cwd() (backwards compatibility)
+  abs = path.resolve(process.cwd(), storagePath);
+  rel = path.relative(STORAGE_ROOT, abs);
+  if (!rel.startsWith('..') && !path.isAbsolute(rel) && fsSync.existsSync(abs) && fsSync.statSync(abs).isFile()) {
+    return abs;
+  }
+
+  return null;
 }
 
 /** URL the browser can use to stream a stored file (supports seeking). */
 export function mediaUrlFor(absPath: string): string {
-  return `/api/media?path=${encodeURIComponent(path.relative(process.cwd(), absPath))}`;
+  const rel = path.relative(STORAGE_ROOT, absPath);
+  return `/api/media?path=${encodeURIComponent(rel)}`;
 }
 
 /**
