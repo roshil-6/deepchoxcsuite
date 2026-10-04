@@ -152,16 +152,19 @@ async function runYtdlp(args: string[], timeoutMs: number): Promise<string> {
   }
 
   const ffmpegLoc = getFfmpegLocation();
-  const spawnArgs = ['--no-warnings', '--no-playlist'];
+  const spawnArgs = ['--no-warnings', '--no-playlist', '--no-progress', '--cache-dir', path.join(os.tmpdir(), 'yt-dlp-cache')];
   if (ffmpegLoc) {
     spawnArgs.push('--ffmpeg-location', ffmpegLoc);
   }
-  spawnArgs.push('--extractor-args', 'youtube:player_client=default,ios,android');
+  const cookies = getCookiesFile();
+  if (cookies) spawnArgs.push('--cookies', cookies);
+  if (process.execPath) spawnArgs.push('--js-runtimes', `node:${process.execPath}`);
   spawnArgs.push(...args);
 
   return new Promise((resolve, reject) => {
     const child = spawn(bin!, spawnArgs, {
       windowsHide: true,
+      env: { ...process.env, HOME: process.env.HOME || os.tmpdir(), TMPDIR: os.tmpdir() },
     });
     let out = '';
     let err = '';
@@ -178,14 +181,33 @@ async function runYtdlp(args: string[], timeoutMs: number): Promise<string> {
     child.on('close', (code) => {
       clearTimeout(timer);
       if (code === 0) return resolve(out);
+      console.error('[clapfetch] yt-dlp failed:', err.slice(-1500));
       reject(new LinkError(friendlyError(err), 422));
     });
   });
 }
 
+/** Optional: YTDLP_COOKIES env (Netscape cookies.txt content) helps with YouTube bot checks on cloud IPs. */
+let cookiesPath: string | null | undefined;
+function getCookiesFile(): string | null {
+  if (cookiesPath !== undefined) return cookiesPath;
+  const raw = process.env.YTDLP_COOKIES;
+  if (!raw || !raw.trim()) return (cookiesPath = null);
+  try {
+    const p = path.join(os.tmpdir(), 'yt-dlp-cookies.txt');
+    const text = raw.includes('\t') ? raw : Buffer.from(raw, 'base64').toString('utf8');
+    fs.writeFileSync(p, text);
+    return (cookiesPath = p);
+  } catch {
+    return (cookiesPath = null);
+  }
+}
+
 function friendlyError(stderr: string): string {
   const s = stderr.toLowerCase();
   if (s.includes('unsupported url')) return 'This link is not supported. Paste a direct video page link.';
+  if (s.includes('confirm you') && s.includes('not a bot'))
+    return 'YouTube is temporarily blocking our server. Please try again in a minute, or try a different link.';
   if (s.includes('private video') || s.includes('login') || s.includes('sign in'))
     return 'This video is private or requires login, so it cannot be downloaded.';
   if (s.includes('video unavailable') || s.includes('404')) return 'This video is unavailable or was removed.';
