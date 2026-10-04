@@ -97,21 +97,58 @@ export function HeroMediaInput({ onMediaLoaded }: HeroMediaInputProps) {
   };
 
   const [preparing, setPreparing] = useState<string | null>(null);
+  const [dlProgress, setDlProgress] = useState<string>('');
 
   const handleDownload = async (fmt: MediaFormat) => {
     setErrorMsg('');
     setPreparing(fmt.id);
+    setDlProgress('Getting the file from the source…');
     try {
-      // Ask the server to fetch + convert first so we can show progress and real errors
-      const res = await fetch(`${fmt.downloadUrl}&prepare=1`);
-      const json = await res.json().catch(() => ({ ok: false, error: 'Download failed' }));
-      if (!json.ok) throw new Error(json.error || 'Download failed');
-      // File is now cached on the server → this navigation downloads instantly
-      window.location.href = fmt.downloadUrl;
+      // ONE request: the server fetches the real media and streams it back.
+      const res = await fetch(fmt.downloadUrl);
+      const ctype = res.headers.get('content-type') || '';
+      if (!res.ok || ctype.includes('application/json')) {
+        const json = await res.json().catch(() => ({ error: `Download failed (HTTP ${res.status})` }));
+        throw new Error(json.error || `Download failed (HTTP ${res.status})`);
+      }
+      const total = Number(res.headers.get('content-length') || 0);
+      const disp = res.headers.get('content-disposition') || '';
+      const nameMatch = /filename\*=UTF-8''([^;]+)/i.exec(disp) || /filename="([^"]+)"/i.exec(disp);
+      const filename = nameMatch ? decodeURIComponent(nameMatch[1]) : `clapfetch.${fmt.ext}`;
+
+      let blob: Blob;
+      if (res.body) {
+        const reader = res.body.getReader();
+        const chunks: BlobPart[] = [];
+        let received = 0;
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          chunks.push(value as BlobPart);
+          received += value.length;
+          const mb = (received / 1048576).toFixed(1);
+          setDlProgress(total ? `Downloading… ${Math.round((received / total) * 100)}% (${mb} MB)` : `Downloading… ${mb} MB`);
+        }
+        blob = new Blob(chunks, { type: ctype || 'application/octet-stream' });
+      } else {
+        blob = await res.blob();
+      }
+      if (!blob.size) throw new Error('The server returned an empty file. Please try again.');
+
+      const objUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = objUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(objUrl), 60_000);
+      setInfoMsg(`Saved “${filename}”.`);
     } catch (e: any) {
       setErrorMsg(e?.message || 'Download failed');
     } finally {
       setPreparing(null);
+      setDlProgress('');
     }
   };
 
@@ -274,12 +311,12 @@ export function HeroMediaInput({ onMediaLoaded }: HeroMediaInputProps) {
               {isProcessing ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Fetching...</span>
+                  <span>Loading...</span>
                 </>
               ) : (
                 <>
-                  <span>Fetch Video</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <Download className="w-4 h-4" />
+                  <span>Download Video</span>
                 </>
               )}
             </button>
@@ -379,7 +416,7 @@ export function HeroMediaInput({ onMediaLoaded }: HeroMediaInputProps) {
               </div>
               {preparing && (
                 <p className="text-[11px] text-[#918B95] text-center">
-                  Fetching the real video from the source. Long videos can take a minute.
+                  {dlProgress || 'Getting the real video from the source. Long videos can take a minute.'}
                 </p>
               )}
             </div>

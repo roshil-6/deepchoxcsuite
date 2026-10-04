@@ -37,6 +37,8 @@ if (dbUrl) {
   process.exit(1);
 } else {
   console.warn(
+    '[deepchox] DATABASE_URL unset — skipping prisma migrate deploy. Add DATABASE_URL for Preview in Vercel if you need migrate + API routes on branch deploys.'
+  );
 }
 
 // Ensure yt-dlp binary is installed for serverless media operations
